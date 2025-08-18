@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-RVKCCWBFKE');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Bubble Tap Therapy - Fine Motor Exercise | Fine Point Rehab</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Interactive bubble therapy exercise for stroke rehabilitation and fine motor skills. Evidence-based hand-eye coordination game for physical therapy, occupational therapy, and traumatic brain injury recovery. Home exercise program for finger isolation and reaction time training.">
+    <meta name="keywords" content="bubble exercise therapy, stroke hand exercises, fine motor rehabilitation, reaction time training, finger isolation therapy, hand-eye coordination, occupational therapy games, physical therapy exercises, TBI recovery exercises, neurological rehabilitation">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Bubble Tap Therapy - Fine Motor Exercise for Fine Point Rehab">
+    <meta property="og:description" content="Interactive bubble therapy exercise for stroke rehabilitation and fine motor skills. Evidence-based tool for physical and occupational therapy.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://finepointrehab.com/exercises/bubble-tap-therapy">
+    <meta property="og:image" content="https://finepointrehab.com/images/bubble-therapy-preview.jpg">
+    
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Bubble Tap Therapy - Fine Motor Exercise | Fine Point Rehab">
+    <meta name="twitter:description" content="Interactive rehabilitation exercise for stroke recovery and fine motor skills">
+    <meta name="twitter:image" content="https://finepointrehab.com/images/bubble-therapy-preview.jpg">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://finepointrehab.com/exercises/bubble-tap-therapy">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ExercisePlan",
+      "name": "Bubble Tap Therapy",
+      "description": "Interactive bubble popping exercise for reaction time, finger isolation, and hand-eye coordination.",
+      "activityDuration": "PT2M",
+      "about": [
+        {"@type": "MedicalCondition", "name": "Stroke"},
+        {"@type": "MedicalCondition", "name": "Traumatic Brain Injury"},
+        {"@type": "MedicalCondition", "name": "Fine Motor Impairment"},
+        {"@type": "MedicalCondition", "name": "Upper Limb Dysfunction"}
+      ],
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Patients"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "Fine Point Rehab",
+        "url": "https://finepointrehab.com"
+      }
+    }
+    </script>
+    
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="../css/tokens.css">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/components.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family-sans);
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.4) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.5) 0%, transparent 70%),
+                linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
+        }
+        
+        #playable-area {
+            position: absolute;
+            top: 15px; /* Space for timer bar only */
+            left: 0;
+            right: 0;
+            bottom: 140px; /* Space for finger guide, stats panel and navigation bars */
+            pointer-events: none; /* Doesn't block touches, just for boundaries */
+        }
+        
+        #bubble {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #121d33;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--brand-aqua, #48cae4));
+            box-shadow: 0 0 15px rgba(111, 211, 245, 0.4);
+            cursor: pointer;
+            transition: transform 0.1s ease-out;
+            z-index: 5;
+            pointer-events: auto;
+        }
+        
+        #bubble:active {
+            transform: scale(0.9);
+        }
+        
+        .burst {
+            animation: burstAnim 0.3s ease-out forwards;
+        }
+        
+        @keyframes burstAnim {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        /* Respect reduced motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            .burst {
+                animation: none;
+                opacity: 0;
+                transition: opacity 0.1s ease-out;
+            }
+            
+            button {
+                transition: none;
+            }
+            
+            #bubble {
+                transition: none;
+            }
+        }
+        
+        #settings-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, rgba(30, 50, 80, 0.95), rgba(20, 35, 60, 0.95));
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            width: 85%;
+            max-width: 450px;
+            max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
+            overflow-y: auto;
+            border: 1px solid rgba(111, 211, 245, 0.2);
+            backdrop-filter: blur(20px);
+        }
+        
+        #settings-panel h2 {
+            text-align: center;
+            color: white;
+            margin-top: 0;
+            margin-bottom: var(--space-6);
+            font-size: var(--font-size-2xl);
+            letter-spacing: 0.5px;
+        }
+        
+        .settings-group {
+            margin-bottom: var(--space-5);
+        }
+        
+        .settings-label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-weight: var(--font-weight-semibold);
+            color: var(--brand-aqua);
+            font-size: var(--font-size-base);
+        }
+        
+        .setting-description {
+            font-size: var(--font-size-sm);
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: var(--space-3);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        select, input {
+            width: 100%;
+            padding: var(--space-3);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: var(--font-size-base);
+            background: linear-gradient(145deg, rgba(20, 30, 53, 0.9), rgba(15, 26, 46, 0.9));
+            color: white;
+            box-sizing: border-box;
+            transition: all var(--duration-fast) var(--easing);
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--brand-aqua);
+            box-shadow: var(--shadow-focus);
+        }
+        
+        button {
+            background: var(--brand-gradient);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: var(--space-4);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            margin-top: var(--space-4);
+            width: 100%;
+            transition: all var(--duration-fast) var(--easing);
+            box-shadow: var(--shadow);
+            box-sizing: border-box;
+            min-height: var(--touch-target);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #stats-panel {
+            position: absolute;
+            bottom: env(safe-area-inset-bottom);
+            left: env(safe-area-inset-left);
+            right: env(safe-area-inset-right);
+            background-color: rgba(8, 15, 35, 0.8);
+            padding: var(--space-4);
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-box {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--brand-aqua);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: var(--space-1);
+        }
+        
+        #timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 8px;
+            background-color: var(--brand-aqua);
+            width: 100%;
+            z-index: 20;
+            transition: width 0.1s linear;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        #completion-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, rgba(30, 50, 80, 0.95), rgba(20, 35, 60, 0.95));
+            padding: var(--space-8);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            max-width: 80%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 101;
+            max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+        }
+        
+        #completion-message h2 {
+            color: white;
+            margin-top: 0;
+            font-size: var(--font-size-3xl);
+        }
+        
+        #completion-scores {
+            margin: var(--space-5) 0;
+            font-size: var(--font-size-lg);
+        }
+        
+        .score-highlight {
+            color: var(--brand-aqua);
+            font-weight: var(--font-weight-bold);
+        }
+        
+        #stars-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        
+        /* Home button */
+        #home-button {
+            position: fixed;
+            bottom: calc(15px + env(safe-area-inset-bottom));
+            right: calc(15px + env(safe-area-inset-right));
+            background: var(--brand-gradient);
+            color: white;
+            border: none;
+            border-radius: var(--radius-full);
+            width: 60px;
+            height: 60px;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            z-index: 90;
+            transition: all var(--duration-fast) var(--easing);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #home-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Finger guide panel */
+        #finger-guide {
+            position: absolute;
+            bottom: calc(80px + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(8, 15, 35, 0.85);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            z-index: 50;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+        }
+        
+        #finger-guide h3 {
+            margin: 0 0 var(--space-2) 0;
+            font-size: var(--font-size-sm);
+            text-align: center;
+            color: var(--brand-aqua);
+        }
+        
+        .finger-legend {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .finger-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-size: var(--font-size-sm);
+        }
+        
+        .finger-number {
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--brand-aqua));
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            color: #121d33;
+        }
+        
+        .game-description {
+            background: linear-gradient(145deg, rgba(111, 211, 245, 0.15), rgba(111, 211, 245, 0.05));
+            padding: var(--space-4);
+            border-radius: var(--radius);
+            margin-bottom: var(--space-6);
+            border-left: 4px solid var(--brand-aqua);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .game-description p {
+            margin: 0;
+            font-size: var(--font-size-sm);
+            line-height: var(--line-height-relaxed);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: var(--font-size-xl);
+            }
+            
+            .stat-label {
+                font-size: var(--font-size-xs);
+            }
+            
+            #finger-guide {
+                width: 95%;
+                padding: var(--space-1) var(--space-3);
+            }
+            
+            #finger-guide h3 {
+                font-size: var(--font-size-xs);
+                margin-bottom: var(--space-1);
+            }
+            
+            .finger-legend {
+                gap: var(--space-2);
+            }
+            
+            .finger-item {
+                font-size: var(--font-size-xs);
+            }
+            
+            .finger-number {
+                width: 20px;
+                height: 20px;
+                font-size: var(--font-size-xs);
+            }
+            
+            #playable-area {
+                bottom: 120px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #settings-panel {
+                width: 90%;
+                padding: var(--space-5);
+            }
+            
+            button {
+                padding: var(--space-4);
+                font-size: var(--font-size-lg);
+                min-height: 52px;
+            }
+            
+            select, input {
+                padding: var(--space-3);
+                font-size: var(--font-size-lg);
+            }
+        }
+        
+        /* Landscape mode adjustments */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #settings-panel {
+                width: 70%;
+                max-width: 500px;
+                padding: var(--space-4);
+            }
+            
+            #settings-panel h2 {
+                font-size: var(--font-size-xl);
+                margin-bottom: var(--space-4);
+            }
+            
+            .settings-group {
+                margin-bottom: var(--space-3);
+            }
+            
+            button {
+                padding: var(--space-3);
+                margin-top: var(--space-3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="stars-container"></div>
+        <div id="timer-bar"></div>
+        <div id="playable-area"></div>
+        <div id="bubble"></div>
+        
+        <a id="home-button" href="../index.html" role="button" aria-label="Return to home page">Home</a>
+        
+        <div id="finger-guide" class="hidden">
+            <h3>Finger Guide</h3>
+            <div class="finger-legend">
+                <div class="finger-item">
+                    <div class="finger-number">1</div>
+                    <span>Thumb</span>
+                </div>
+                <div class="finger-item">
+                    <div class="finger-number">2</div>
+                    <span>Index</span>
+                </div>
+                <div class="finger-item">
+                    <div class="finger-number">3</div>
+                    <span>Middle</span>
+                </div>
+                <div class="finger-item">
+                    <div class="finger-number">4</div>
+                    <span>Ring</span>
+                </div>
+                <div class="finger-item">
+                    <div class="finger-number">5</div>
+                    <span>Pinky</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="settings-panel">
+            <h2>Bubble Tap Therapy</h2>
+            
+            <div class="settings-group">
+                <div class="game-description">
+                    <p><strong>About this exercise:</strong> Tap the moving bubbles as quickly as you can to improve hand-eye coordination, reaction time, and finger precision. This helps with fine motor skills and cognitive response training.</p>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label" for="difficulty-select">Bubble Size:</label>
+                <p class="setting-description">Choose larger bubbles for easier targeting, smaller for more precise movement practice.</p>
+                <select id="difficulty-select">
+                    <option value="very-large">Very Large - Easiest to tap</option>
+                    <option value="large">Large - Easy to tap</option>
+                    <option value="medium" selected>Medium - Moderate difficulty</option>
+                    <option value="small">Small - Requires precision</option>
+                </select>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label" for="session-duration">Session Duration (minutes):</label>
+                <p class="setting-description">Start with shorter sessions (1-2 minutes) and gradually increase as you improve.</p>
+                <input type="number" id="session-duration" min="1" max="10" value="2">
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label" for="finger-option">Finger Training Mode:</label>
+                <p class="setting-description">Practice with specific fingers or all fingers. Numbers show which finger to use for each bubble.</p>
+                <select id="finger-option">
+                    <option value="none">No finger guidance - Tap with any finger</option>
+                    <option value="all" selected>All fingers (1-5) - Random finger practice</option>
+                    <option value="1">Thumb only (1) - Thumb isolation practice</option>
+                    <option value="2">Index finger only (2) - Index finger practice</option>
+                    <option value="3">Middle finger only (3) - Middle finger practice</option>
+                    <option value="4">Ring finger only (4) - Ring finger practice</option>
+                    <option value="5">Pinky only (5) - Pinky finger practice</option>
+                </select>
+            </div>
+            
+            <button id="start-session" type="button">Start Therapy Session</button>
+        </div>
+        
+        <div id="stats-panel" class="hidden" aria-live="polite">
+            <div class="stat-box">
+                <div id="score" class="stat-value">0</div>
+                <div class="stat-label">Score</div>
+            </div>
+            <div class="stat-box">
+                <div id="taps" class="stat-value">0</div>
+                <div class="stat-label">Bubbles Tapped</div>
+            </div>
+            <div class="stat-box">
+                <div id="time-left" class="stat-value">2:00</div>
+                <div class="stat-label">Time Left</div>
+            </div>
+            <div class="stat-box">
+                <div id="avg-time" class="stat-value">0.0s</div>
+                <div class="stat-label">Avg. Response</div>
+            </div>
+        </div>
+        
+        <div id="completion-message" class="hidden">
+            <h2>Session Complete!</h2>
+            <div id="completion-scores">
+                <p>Final Score: <span id="final-score" class="score-highlight">0</span></p>
+                <p>Bubbles Tapped: <span id="final-taps" class="score-highlight">0</span></p>
+                <p>Average Response Time: <span id="final-avg-time" class="score-highlight">0.0s</span> seconds</p>
+            </div>
+            <button id="restart-button" type="button">Start New Session</button>
+        </div>
+    </div>
+    
+    <!-- Core JavaScript modules -->
+    <script type="module">
+        // Import utilities and session enhancement
+        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
+        import { sessionEnhancement } from '../js/session-enhancement.js';
+        
+        // Initialize utilities
+        initUtils();
+        
+        // SESSION ENHANCEMENT INTEGRATION
+        const currentExerciseId = 'bubble';
+        
+        // Get current difficulty from UI or default
+        function getCurrentDifficulty() {
+            const difficultySelect = document.getElementById('difficulty-select');
+            return difficultySelect ? difficultySelect.value : 'medium';
+        }
+        
+        // Initialize with current settings
+        sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
+        
+        // Re-initialize when difficulty changes
+        const difficultySelect = document.getElementById('difficulty-select');
+        if (difficultySelect) {
+            difficultySelect.addEventListener('change', () => {
+                sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
+            });
+        }
+        
+        // Game elements
+        const gameContainer = document.getElementById('game-container');
+        const bubble = document.getElementById('bubble');
+        const timerBar = document.getElementById('timer-bar');
+        const settingsPanel = document.getElementById('settings-panel');
+        const statsPanel = document.getElementById('stats-panel');
+        const completionMessage = document.getElementById('completion-message');
+        const starsContainer = document.getElementById('stars-container');
+        const fingerGuide = document.getElementById('finger-guide');
+        const playableArea = document.getElementById('playable-area');
+        
+        // Initialize starfield
+        starfield.generate(starsContainer, 50);
+        
+        // Settings elements (updated to match difficulty-select)
+        const bubbleSizeSelect = document.getElementById('difficulty-select');
+        const sessionDurationInput = document.getElementById('session-duration');
+        const fingerOptionSelect = document.getElementById('finger-option');
+        const startSessionButton = document.getElementById('start-session');
+        const restartButton = document.getElementById('restart-button');
+        
+        // Stats elements
+        const scoreElement = document.getElementById('score');
+        const tapsElement = document.getElementById('taps');
+        const timeLeftElement = document.getElementById('time-left');
+        const avgTimeElement = document.getElementById('avg-time');
+        
+        // Completion elements
+        const finalScoreElement = document.getElementById('final-score');
+        const finalTapsElement = document.getElementById('final-taps');
+        const finalAvgTimeElement = document.getElementById('final-avg-time');
+        
+        // Game state variables
+        let isSessionActive = false;
+        let sessionDuration = 2 * 60 * 1000; // 2 minutes in milliseconds
+        let timeRemaining = 0;
+        let timerInterval = null;
+        let score = 0;
+        let taps = 0;
+        let misses = 0; // Track misses for accuracy calculation
+        let lastBubbleTime = 0;
+        let totalResponseTime = 0;
+        let bubbleSize = 100; // Default medium size
+        let fingerOption = 'all';
+        
+        // Bubble size mapping (in pixels)
+        const bubbleSizes = {
+            'very-large': 150,
+            'large': 120,
+            'medium': 100,
+            'small': 70
+        };
+        
+        // Home button functionality (removed JS redirect since using anchor)
+        
+        // Start new session
+        startSessionButton.addEventListener('click', startSession);
+        restartButton.addEventListener('click', () => {
+            completionMessage.classList.add('hidden');
+            settingsPanel.classList.remove('hidden');
+            fingerGuide.classList.add('hidden');
+        });
+        
+        // Initialize
+        resetBubble();
+        loadSettings();
+        
+        // Handle bubble tap
+        bubble.addEventListener('click', handleBubbleTap);
+        bubble.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handleBubbleTap();
+        }, false);
+        
+        function startSession() {
+            // Get settings
+            bubbleSize = bubbleSizes[bubbleSizeSelect.value];
+            sessionDuration = parseInt(sessionDurationInput.value) * 60 * 1000;
+            fingerOption = fingerOptionSelect.value;
+            
+            // Save settings
+            saveSettings();
+            
+            // Reset game state
+            score = 0;
+            taps = 0;
+            misses = 0;
+            totalResponseTime = 0;
+            timeRemaining = sessionDuration;
+            
+            // Update UI
+            updateBubbleSize();
+            updateStats();
+            updateTimer();
+            
+            // Hide settings, show stats
+            settingsPanel.classList.add('hidden');
+            statsPanel.classList.remove('hidden');
+            
+            // Show finger guide if finger numbers are enabled
+            if (fingerOption !== 'none') {
+                fingerGuide.classList.remove('hidden');
+            } else {
+                fingerGuide.classList.add('hidden');
+            }
+            
+            // Start timer
+            isSessionActive = true;
+            lastBubbleTime = Date.now();
+            
+            // Set timer bar to full width initially
+            timerBar.style.width = '100%';
+            resetBubble();
+            
+            timerInterval = setInterval(() => {
+                timeRemaining -= 100;
+                
+                // Update timer bar
+                const progress = timeRemaining / sessionDuration;
+                timerBar.style.width = `${progress * 100}%`;
+                
+                // Update time display
+                updateTimer();
+                
+                // Check if session is over
+                if (timeRemaining <= 0) {
+                    endSession();
+                }
+            }, 100);
+        }
+        
+        function endSession() {
+            clearInterval(timerInterval);
+            isSessionActive = false;
+            
+            // Calculate final stats
+            const accuracy = taps > 0 ? Math.round((taps / (taps + misses)) * 100) : 0;
+            const avgResponseTime = taps > 0 ? (totalResponseTime / taps / 1000).toFixed(2) : 0;
+            
+            // *** SESSION ENHANCEMENT INTEGRATION ***
+            sessionEnhancement.handleSessionComplete({
+                score: score,
+                taps: taps,
+                accuracy: accuracy,
+                avgResponseTime: parseFloat(avgResponseTime)
+            });
+            
+            // Hide bubble, stats, and finger guide
+            bubble.classList.add('hidden');
+            statsPanel.classList.add('hidden');
+            fingerGuide.classList.add('hidden');
+            
+            // Show completion message
+            finalScoreElement.textContent = score;
+            finalTapsElement.textContent = taps;
+            finalAvgTimeElement.textContent = avgResponseTime;
+            completionMessage.classList.remove('hidden');
+            
+            // Reset timer bar
+            timerBar.style.width = '0%';
+        }
+        
+        function handleBubbleTap() {
+            if (!isSessionActive) return;
+            
+            // Calculate response time
+            const now = Date.now();
+            const responseTime = now - lastBubbleTime;
+            totalResponseTime += responseTime;
+            
+            // Calculate points (faster taps = more points, with 3000ms as minimum score of 10)
+            const points = Math.max(10, Math.floor(3000 / responseTime * 100));
+            score += points;
+            taps++;
+            
+            // Update stats
+            updateStats();
+            
+            // Burst animation
+            bubble.classList.add('burst');
+            setTimeout(() => {
+                bubble.classList.remove('burst');
+                resetBubble();
+                lastBubbleTime = Date.now();
+            }, 300);
+        }
+        
+        function resetBubble() {
+            if (!isSessionActive) {
+                bubble.classList.add('hidden');
+                return;
+            }
+            
+            bubble.classList.remove('hidden');
+            
+            // Get the playable area bounds
+            const playableRect = playableArea.getBoundingClientRect();
+            const gameRect = gameContainer.getBoundingClientRect();
+            
+            // Calculate relative positions accounting for safe areas
+            const minY = playableRect.top - gameRect.top;
+            const maxY = playableRect.bottom - gameRect.top - bubbleSize;
+            const minX = 0;
+            const maxX = gameRect.width - bubbleSize;
+            
+            // Additional padding to ensure bubble is fully accessible
+            const padding = 10;
+            
+            // Get random position within safe bounds
+            const x = Math.max(minX + padding, Math.min(maxX - padding, Math.random() * maxX));
+            const y = Math.max(minY + padding, Math.min(maxY - padding, Math.random() * (maxY - minY) + minY));
+            
+            // Position bubble
+            bubble.style.left = `${x}px`;
+            bubble.style.top = `${y}px`;
+            
+            // Set finger number if finger training is enabled
+            if (fingerOption !== 'none') {
+                let fingerNumber;
+                if (fingerOption === 'all') {
+                    fingerNumber = Math.floor(Math.random() * 5) + 1;
+                } else {
+                    fingerNumber = parseInt(fingerOption);
+                }
+                bubble.textContent = fingerNumber;
+            } else {
+                bubble.textContent = '';
+            }
+        }
+        
+        function updateBubbleSize() {
+            bubble.style.width = `${bubbleSize}px`;
+            bubble.style.height = `${bubbleSize}px`;
+            bubble.style.fontSize = `${bubbleSize * 0.3}px`;
+        }
+        
+        function updateStats() {
+            scoreElement.textContent = score;
+            tapsElement.textContent = taps;
+            avgTimeElement.textContent = taps > 0 ? (totalResponseTime / taps / 1000).toFixed(1) + 's' : '0.0s';
+        }
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeRemaining / 60000);
+            const seconds = Math.floor((timeRemaining % 60000) / 1000);
+            timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function saveSettings() {
+            storage.setItem('bubbleSettings', {
+                bubbleSize: bubbleSizeSelect.value,
+                sessionDuration: sessionDurationInput.value,
+                fingerOption: fingerOptionSelect.value
+            });
+        }
+        
+        function loadSettings() {
+            const settings = storage.getItem('bubbleSettings');
+            if (settings) {
+                bubbleSizeSelect.value = settings.bubbleSize || 'medium';
+                sessionDurationInput.value = settings.sessionDuration || '2';
+                fingerOptionSelect.value = settings.fingerOption || 'all';
+            }
+        }
+        
+        // Track missed bubbles for accuracy calculation
+        function trackMiss() {
+            if (isSessionActive) {
+                misses++;
+            }
+        }
+        
+        // Add miss tracking for clicks outside bubble
+        gameContainer.addEventListener('click', function(e) {
+            // Don't count misses when settings panel is visible
+            if (!settingsPanel.classList.contains('hidden')) return;
+            
+            if (isSessionActive && e.target !== bubble) {
+                trackMiss();
+            }
+        });
+        
+        gameContainer.addEventListener('touchstart', function(e) {
+            // Don't count misses when settings panel is visible
+            if (!settingsPanel.classList.contains('hidden')) return;
+            
+            if (isSessionActive && e.target !== bubble) {
+                e.preventDefault();
+                trackMiss();
+            }
+        }, false);
+    </script>
+</body>
+</html>

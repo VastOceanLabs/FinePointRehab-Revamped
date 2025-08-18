@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-RVKCCWBFKE', { 'anonymize_ip': true });
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Cosmic Maze Exercise - Fine Motor Skills Rehabilitation | Fine Point Rehab</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Interactive cosmic maze exercise for fine motor skills rehabilitation, stroke recovery, and upper limb therapy. Digital therapeutic exercise for neurological rehabilitation, hand-eye coordination, and dexterity improvement.">
+    
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="../css/tokens.css">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/components.css">
+    
+    <style>
+        /* Maze-specific styles that extend the design system */
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.4) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.5) 0%, transparent 70%),
+                linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        
+        #maze-container {
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--brand-aqua);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(111, 211, 245, 0.2);
+            touch-action: none;
+            outline: none;
+        }
+        
+        .maze-wall {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(7, 25, 59, 0.9), rgba(11, 42, 88, 0.9));
+            border: 1px solid var(--brand-aqua);
+            box-shadow: 0 0 8px rgba(111, 211, 245, 0.2);
+        }
+        
+        /* Path lines styling */
+        .path-line {
+            position: absolute;
+            z-index: 2;
+        }
+        
+        .path-line.horizontal {
+            height: 2px;
+            background-image: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 4px,
+                var(--brand-aqua) 4px,
+                var(--brand-aqua) 8px
+            );
+            opacity: 0.5;
+        }
+        
+        .path-line.vertical {
+            width: 2px;
+            background-image: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 4px,
+                var(--brand-aqua) 4px,
+                var(--brand-aqua) 8px
+            );
+            opacity: 0.5;
+        }
+        
+        .path-node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: var(--brand-aqua);
+            border-radius: var(--radius-full);
+            z-index: 3;
+            transform: translate(-50%, -50%);
+            opacity: 0.7;
+        }
+        
+        /* Enhanced player spaceship */
+        #player {
+            position: absolute;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='bodyGrad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23e8eef5'/%3E%3Cstop offset='100%25' style='stop-color:%239fb5d4'/%3E%3C/linearGradient%3E%3ClinearGradient id='windowGrad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%236495ed'/%3E%3Cstop offset='100%25' style='stop-color:%232856a8'/%3E%3C/linearGradient%3E%3ClinearGradient id='flameGrad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ffef00'/%3E%3Cstop offset='50%25' style='stop-color:%23ff8c00'/%3E%3Cstop offset='100%25' style='stop-color:%23ff4500'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- Main body --%3E%3Cellipse cx='20' cy='20' rx='12' ry='16' fill='url(%23bodyGrad)' stroke='%23364a69' stroke-width='1'/%3E%3C!-- Cockpit window --%3E%3Cellipse cx='20' cy='12' rx='6' ry='7' fill='url(%23windowGrad)' stroke='%231a3a6e' stroke-width='0.5'/%3E%3C!-- Window shine --%3E%3Cellipse cx='18' cy='10' rx='2' ry='3' fill='%23a8ccff' opacity='0.6'/%3E%3C!-- Side fins --%3E%3Cpath d='M8 18 L2 28 L8 26 Z' fill='%23536b8a' stroke='%23364a69' stroke-width='0.5'/%3E%3Cpath d='M32 18 L38 28 L32 26 Z' fill='%23536b8a' stroke='%23364a69' stroke-width='0.5'/%3E%3C!-- Engine nozzles --%3E%3Crect x='14' y='32' width='4' height='3' rx='1' fill='%23434d5a'/%3E%3Crect x='22' y='32' width='4' height='3' rx='1' fill='%23434d5a'/%3E%3C!-- Engine flames --%3E%3Cellipse cx='16' cy='36' rx='3' ry='5' fill='url(%23flameGrad)' opacity='0.9'/%3E%3Cellipse cx='24' cy='36' rx='3' ry='5' fill='url(%23flameGrad)' opacity='0.9'/%3E%3C!-- Body details --%3E%3Cline x1='12' y1='20' x2='28' y2='20' stroke='%23536b8a' stroke-width='0.5'/%3E%3Cline x1='12' y1='24' x2='28' y2='24' stroke='%23536b8a' stroke-width='0.5'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform: translate(-50%, -50%) rotate(90deg);
+            box-shadow: 0 0 20px var(--brand-aqua);
+            z-index: 10;
+            cursor: pointer;
+            touch-action: none;
+            transition: box-shadow var(--duration-fast) var(--easing);
+            animation: hover 2s ease-in-out infinite;
+        }
+        
+        @keyframes hover {
+            0%, 100% { transform: translate(-50%, -50%) rotate(90deg) translateY(0); }
+            50% { transform: translate(-50%, -50%) rotate(90deg) translateY(-2px); }
+        }
+        
+        /* Enhanced Earth goal */
+        #goal {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cdefs%3E%3CradialGradient id='earthGlow'%3E%3Cstop offset='70%25' style='stop-color:%2300ff00;stop-opacity:0'/%3E%3Cstop offset='100%25' style='stop-color:%2300ff00;stop-opacity:0.3'/%3E%3C/radialGradient%3E%3C/defs%3E%3C!-- Outer glow --%3E%3Ccircle cx='25' cy='25' r='24' fill='url(%23earthGlow)'/%3E%3C!-- Earth sphere --%3E%3Ccircle cx='25' cy='25' r='20' fill='%232E86AB' stroke='%231a5a7a' stroke-width='0.5'/%3E%3C!-- Continents --%3E%3Cpath d='M15 15 Q20 12 25 14 T35 18 Q33 25 30 28 Q25 30 20 28 Q15 25 15 20 Z' fill='%23228B22' opacity='0.8'/%3E%3Cpath d='M10 25 Q12 23 15 24 Q18 28 15 32 Q12 33 10 30 Z' fill='%23228B22' opacity='0.8'/%3E%3Cpath d='M30 10 Q35 12 37 15 Q35 18 32 16 Q30 13 30 10 Z' fill='%23228B22' opacity='0.8'/%3E%3Cpath d='M25 32 Q28 35 32 36 Q35 38 33 40 Q28 39 25 36 Z' fill='%23228B22' opacity='0.8'/%3E%3C!-- Cloud wisps --%3E%3Cpath d='M12 18 Q15 17 18 18' stroke='white' stroke-width='1' fill='none' opacity='0.4'/%3E%3Cpath d='M28 22 Q31 21 34 22' stroke='white' stroke-width='1' fill='none' opacity='0.4'/%3E%3Cpath d='M20 35 Q23 34 26 35' stroke='white' stroke-width='1' fill='none' opacity='0.4'/%3E%3C!-- Atmosphere highlight --%3E%3Cpath d='M10 20 Q10 10 20 7 Q30 5 38 12' stroke='%2387CEEB' stroke-width='1.5' fill='none' opacity='0.5'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: var(--radius-full);
+            z-index: 5;
+            box-shadow: 0 0 30px rgba(46, 134, 171, 0.7);
+            animation: earth-rotate 20s linear infinite;
+            transform: translate(-50%, -50%);
+        }
+        
+        @keyframes earth-rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        /* START and END labels */
+        .point-label {
+            position: absolute;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius);
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+        }
+        
+        #start-label {
+            color: var(--brand-aqua);
+            background-color: var(--bg-primary);
+            border: 1px solid var(--brand-aqua);
+            box-shadow: 0 0 8px rgba(111, 211, 245, 0.5);
+        }
+        
+        #end-label {
+            color: var(--success);
+            background-color: var(--bg-primary);
+            border: 1px solid var(--success);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+        }
+        
+        .path-trace {
+            position: absolute;
+            background-color: rgba(111, 211, 245, 0.3);
+            border-radius: var(--radius-full);
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        #timer-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 8px;
+            background-color: var(--brand-aqua);
+            width: 100%;
+            z-index: 20;
+            transition: width 0.1s linear;
+        }
+        
+        /* Settings panel with design system integration */
+        #settings-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            width: 85%;
+            max-width: 450px;
+            max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+        }
+        
+        #settings-panel h2 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-top: 0;
+            margin-bottom: var(--space-6);
+            font-size: var(--font-size-2xl);
+            letter-spacing: 0.5px;
+        }
+        
+        .game-description {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius);
+            padding: var(--space-4);
+            margin-bottom: var(--space-5);
+            border: 1px solid var(--border);
+        }
+        
+        .game-description h3 {
+            color: var(--brand-aqua);
+            margin: 0 0 var(--space-2) 0;
+            font-size: var(--font-size-base);
+        }
+        
+        .game-description p {
+            margin: 0 0 var(--space-3) 0;
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        .settings-group {
+            margin-bottom: var(--space-5);
+        }
+        
+        .settings-label {
+            display: block;
+            margin-bottom: var(--space-2);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            font-size: var(--font-size-base);
+        }
+        
+        .setting-help {
+            display: block;
+            color: var(--text-muted);
+            font-size: var(--font-size-xs);
+            margin-top: var(--space-1);
+            font-style: italic;
+        }
+        
+        /* Home button */
+        #home-button {
+            position: fixed;
+            bottom: calc(15px + env(safe-area-inset-bottom));
+            right: calc(15px + env(safe-area-inset-right));
+            z-index: 90;
+        }
+        
+        /* Stats panel */
+        #stats-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(8, 15, 35, 0.8);
+            padding: var(--space-4);
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-box {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--brand-aqua);
+        }
+        
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        #completion-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            padding: var(--space-8);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            max-width: 80%;
+            max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            z-index: 101;
+            backdrop-filter: blur(20px);
+        }
+        
+        #completion-message h2 {
+            color: var(--text-primary);
+            margin-top: 0;
+        }
+        
+        #completion-scores {
+            margin: var(--space-5) 0;
+            font-size: var(--font-size-lg);
+        }
+        
+        .score-highlight {
+            color: var(--brand-aqua);
+            font-weight: var(--font-weight-bold);
+        }
+        
+        .instructions {
+            text-align: center;
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: var(--font-size-base);
+            padding: var(--space-4);
+            background-color: rgba(8, 15, 35, 0.7);
+            border-radius: var(--radius);
+            margin-bottom: var(--space-4);
+            max-width: 600px;
+        }
+        
+        #error-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--error-bg);
+            color: var(--error);
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius);
+            z-index: 200;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translate(-50%, -100%); }
+            to { transform: translate(-50%, 0); }
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: var(--font-size-xl);
+            }
+            
+            .stat-label {
+                font-size: var(--font-size-xs);
+            }
+            
+            .instructions {
+                font-size: var(--font-size-sm);
+                padding: var(--space-3);
+            }
+            
+            .point-label {
+                font-size: 10px;
+                padding: var(--space-1) var(--space-2);
+            }
+            
+            #settings-panel {
+                width: 90%;
+                padding: var(--space-5);
+                max-height: 80vh;
+            }
+            
+            #settings-panel h2 {
+                font-size: var(--font-size-xl);
+                margin-bottom: var(--space-5);
+            }
+            
+            .game-description {
+                padding: var(--space-3);
+            }
+            
+            .game-description h3 {
+                font-size: var(--font-size-sm);
+            }
+            
+            .game-description p {
+                font-size: var(--font-size-xs);
+            }
+            
+            .settings-label {
+                font-size: var(--font-size-sm);
+            }
+            
+            .setting-help {
+                font-size: 11px;
+            }
+            
+            /* Adjust stats panel for mobile */
+            #stats-panel {
+                padding: var(--space-3) var(--space-2);
+                padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+            }
+            
+            /* Ensure maze container doesn't go under nav bars */
+            #maze-container {
+                margin-bottom: var(--space-3);
+            }
+        }
+        
+        /* Extra small devices */
+        @media (max-width: 400px) {
+            #settings-panel {
+                width: 95%;
+                padding: var(--space-4);
+            }
+            
+            .game-description {
+                display: none; /* Hide description on very small screens to save space */
+            }
+            
+            .instructions {
+                font-size: var(--font-size-xs);
+                padding: var(--space-2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="stars-container"></div>
+        <div id="timer-bar" class="hidden"></div>
+        <div id="error-message"></div>
+        <p class="instructions">Guide the spaceship through the cosmic maze to reach Earth. This therapeutic exercise improves fine motor skills, hand-eye coordination, and precision movements. Drag the spaceship or use arrow keys to navigate along the dotted lines.</p>
+        
+        <div id="maze-container" tabindex="0"></div>
+        
+        <button id="home-button" class="btn btn-primary">Home</button>
+        
+        <div id="settings-panel">
+            <h2>Cosmic Maze Exercise</h2>
+            
+            <div class="game-description">
+                <h3>About This Exercise</h3>
+                <p>Navigate a spaceship through randomly generated mazes to reach Earth. This therapeutic exercise helps improve fine motor skills, hand-eye coordination, and precision movements.</p>
+                
+                <h3>How to Play</h3>
+                <p><strong>Controls:</strong> Drag the spaceship or use arrow keys to move along the dotted path lines. The spaceship can only move to connected areas - no cutting through walls!</p>
+                
+                <p><strong>Goal:</strong> Guide your spaceship from the START point to the FINISH (Earth) as quickly as possible. Complete as many mazes as you can within your session time.</p>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">Difficulty Level:</label>
+                <select id="difficulty-select" aria-label="Select difficulty level">
+                    <option value="easy" selected>Easy - Wide paths, larger spaceship (beginners)</option>
+                    <option value="medium">Medium - Standard paths and spaceship size</option>
+                    <option value="hard">Hard - Narrow paths, smaller spaceship (advanced)</option>
+                </select>
+                <small class="setting-help">Higher difficulty requires more precise movements and motor control.</small>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">Session Duration:</label>
+                <input type="number" id="session-duration" min="1" max="10" value="5" aria-label="Set session duration">
+                <small class="setting-help">How many minutes to practice (1-10 minutes recommended).</small>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">Movement Trail:</label>
+                <select id="show-trace" aria-label="Enable or disable path trace">
+                    <option value="yes" selected>Show Trail - See where you've moved</option>
+                    <option value="no">No Trail - Clean view</option>
+                </select>
+                <small class="setting-help">The trail helps track your movement patterns for progress monitoring.</small>
+            </div>
+            
+            <button id="start-session" class="btn btn-primary btn-full">Start Exercise</button>
+        </div>
+        
+        <div id="stats-panel" class="hidden">
+            <div class="stat-box">
+                <div id="mazes-completed" class="stat-value">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-box">
+                <div id="current-maze" class="stat-value">1</div>
+                <div class="stat-label">Current Maze</div>
+            </div>
+            <div class="stat-box">
+                <div id="time-left" class="stat-value">5:00</div>
+                <div class="stat-label">Time Left</div>
+            </div>
+            <div class="stat-box">
+                <div id="avg-time" class="stat-value">0.0s</div>
+                <div class="stat-label">Avg. Completion</div>
+            </div>
+        </div>
+        
+        <div id="completion-message" class="hidden">
+            <h2>Therapy Session Complete!</h2>
+            <div id="completion-scores">
+                <p>Mazes Completed: <span id="final-completed" class="score-highlight">0</span></p>
+                <p>Average Completion Time: <span id="final-avg-time" class="score-highlight">0.0s</span></p>
+                <p>Motor Performance Score: <span id="final-score" class="score-highlight">0</span></p>
+            </div>
+            <button id="restart-button" class="btn btn-primary btn-full">Start New Therapy Session</button>
+        </div>
+    </div>
+    
+    <!-- Core JavaScript modules -->
+    <script type="module">
+        // Import utilities and session enhancement
+        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
+        import { sessionEnhancement } from '../js/session-enhancement.js';
+        
+        // Initialize utilities
+        initUtils();
+        
+        // SESSION ENHANCEMENT INTEGRATION
+        const currentExerciseId = 'maze';
+        
+        // Get current difficulty from UI or default
+        function getCurrentDifficulty() {
+            const difficultySelect = document.getElementById('difficulty-select');
+            return difficultySelect ? difficultySelect.value : 'easy';
+        }
+        
+        // Initialize with current settings
+        sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
+        
+        // Re-initialize when difficulty changes
+        const difficultySelect = document.getElementById('difficulty-select');
+        if (difficultySelect) {
+            difficultySelect.addEventListener('change', () => {
+                sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
+            });
+        }
+        
+        // Game elements
+        const gameContainer = document.getElementById('game-container');
+        const mazeContainer = document.getElementById('maze-container');
+        const timerBar = document.getElementById('timer-bar');
+        const settingsPanel = document.getElementById('settings-panel');
+        const statsPanel = document.getElementById('stats-panel');
+        const completionMessage = document.getElementById('completion-message');
+        const starsContainer = document.getElementById('stars-container');
+        const instructions = document.querySelector('.instructions');
+        const errorMessage = document.getElementById('error-message');
+        
+        // Initialize starfield
+        starfield.generate(starsContainer, 150);
+        
+        // Settings elements
+        const sessionDurationInput = document.getElementById('session-duration');
+        const showTraceSelect = document.getElementById('show-trace');
+        const startSessionButton = document.getElementById('start-session');
+        const restartButton = document.getElementById('restart-button');
+        
+        // Stats elements
+        const mazesCompletedElement = document.getElementById('mazes-completed');
+        const currentMazeElement = document.getElementById('current-maze');
+        const timeLeftElement = document.getElementById('time-left');
+        const avgTimeElement = document.getElementById('avg-time');
+        
+        // Completion elements
+        const finalCompletedElement = document.getElementById('final-completed');
+        const finalAvgTimeElement = document.getElementById('final-avg-time');
+        const finalScoreElement = document.getElementById('final-score');
+        
+        // Home button functionality
+        document.getElementById('home-button').addEventListener('click', function() {
+            window.location.href = '../index.html';
+        });
+        
+        // Game variables
+        let isSessionActive = false;
+        let sessionDuration = 5 * 60 * 1000; // 5 minutes in milliseconds
+        let timeRemaining = 0;
+        let timerInterval = null;
+        let mazesCompleted = 0;
+        let currentMaze = 1;
+        let totalCompletionTime = 0;
+        let mazeStartTime = 0;
+        let showTrace = true;
+        let player = null;
+        let goal = null;
+        let startLabel = null;
+        let endLabel = null;
+        let isDragging = false;
+        let maze = [];
+        let mazeWidth = 600;
+        let mazeHeight = 400;
+        let cellSize = 50;
+        let wallThickness = 10;
+        let currentDifficulty = 'easy';
+        let pathTraces = [];
+        let pathNodes = []; // Store path node positions for navigation
+        
+        // Event handlers storage
+        let eventHandlers = {
+            keydown: null,
+            mousedown: null,
+            touchstart: null,
+            mousemove: null,
+            touchmove: null,
+            mouseup: null,
+            touchend: null
+        };
+        
+        // Difficulty settings
+        const difficultySizes = {
+            'easy': { cellSize: 60, wallThickness: 12 },
+            'medium': { cellSize: 45, wallThickness: 10 },
+            'hard': { cellSize: 30, wallThickness: 8 }
+        };
+        
+        // Initialize the game once the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add mobile class if on mobile device
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                document.body.classList.add('mobile-device');
+            }
+            
+            adjustMazeSize();
+            showSettings();
+            loadSettings();
+        });
+        
+        // Start new session
+        startSessionButton.addEventListener('click', startSession);
+        restartButton.addEventListener('click', () => {
+            completionMessage.classList.add('hidden');
+            settingsPanel.classList.remove('hidden');
+        });
+        
+        // Adjust maze size based on screen
+        function adjustMazeSize() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            // Account for mobile UI elements
+            const safeBottomSpace = 100; // Space for stats panel and system UI
+            const safeTopSpace = 80; // Space for instructions
+            
+            // Maximum maze size based on screen (with margins)
+            mazeWidth = Math.min(600, windowWidth * 0.9);
+            
+            // On mobile, be more conservative with height
+            if (windowWidth <= 768) {
+                mazeHeight = Math.min(400, (windowHeight - safeBottomSpace - safeTopSpace) * 0.8);
+            } else {
+                mazeHeight = Math.min(400, windowHeight * 0.6);
+            }
+            
+            // Update maze container size
+            mazeContainer.style.width = `${mazeWidth}px`;
+            mazeContainer.style.height = `${mazeHeight}px`;
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            adjustMazeSize();
+            if (isSessionActive) {
+                // Regenerate maze with new size
+                generateMaze();
+            }
+        });
+        
+        // Clear intervals on page unload
+        window.addEventListener('beforeunload', () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            // Clean up any remaining event listeners
+            removeAllEventListeners();
+        });
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Update stats display
+        function updateStats() {
+            mazesCompletedElement.textContent = mazesCompleted;
+            currentMazeElement.textContent = currentMaze;
+            
+            // Calculate and display average completion time
+            const avgTime = mazesCompleted > 0 ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
+            avgTimeElement.textContent = `${avgTime}s`;
+        }
+        
+        // Update timer display
+        function updateTimer() {
+            const minutes = Math.floor(timeRemaining / 60000);
+            const seconds = Math.floor((timeRemaining % 60000) / 1000);
+            timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Clear maze elements AND event listeners
+        function clearMaze() {
+            console.log("Clearing maze");
+            
+            // First, remove all event listeners
+            removeAllEventListeners();
+            
+            // Remove all child elements from maze container
+            while (mazeContainer.firstChild) {
+                mazeContainer.removeChild(mazeContainer.firstChild);
+            }
+            
+            // Clear path traces array
+            pathTraces = [];
+            
+            // Ensure pathNodes is reset to an empty array
+            pathNodes = [];
+            
+            console.log("Maze cleared");
+        }
+        
+        // Remove all event listeners
+        function removeAllEventListeners() {
+            // Remove keyboard event listener
+            if (eventHandlers.keydown) {
+                mazeContainer.removeEventListener('keydown', eventHandlers.keydown);
+                eventHandlers.keydown = null;
+            }
+            
+            // Remove mouse/touch event listeners
+            if (player) {
+                if (eventHandlers.mousedown) {
+                    player.removeEventListener('mousedown', eventHandlers.mousedown);
+                    eventHandlers.mousedown = null;
+                }
+                
+                if (eventHandlers.touchstart) {
+                    player.removeEventListener('touchstart', eventHandlers.touchstart);
+                    eventHandlers.touchstart = null;
+                }
+            }
+            
+            // Remove document level event listeners
+            if (eventHandlers.mousemove) {
+                document.removeEventListener('mousemove', eventHandlers.mousemove);
+                eventHandlers.mousemove = null;
+            }
+            
+            if (eventHandlers.touchmove) {
+                document.removeEventListener('touchmove', eventHandlers.touchmove);
+                eventHandlers.touchmove = null;
+            }
+            
+            if (eventHandlers.mouseup) {
+                document.removeEventListener('mouseup', eventHandlers.mouseup);
+                eventHandlers.mouseup = null;
+            }
+            
+            if (eventHandlers.touchend) {
+                document.removeEventListener('touchend', eventHandlers.touchend);
+                eventHandlers.touchend = null;
+            }
+        }
+        
+        // Show settings panel
+        function showSettings() {
+            settingsPanel.classList.remove('hidden');
+            statsPanel.classList.add('hidden');
+            timerBar.classList.add('hidden');
+        }
+        
+        function startSession() {
+            try {
+                // Get settings
+                currentDifficulty = difficultySelect.value;
+                sessionDuration = parseInt(sessionDurationInput.value) * 60 * 1000; // Convert minutes to ms
+                showTrace = showTraceSelect.value === 'yes';
+                
+                // Save settings
+                saveSettings();
+                
+                // Initialize game state
+                mazesCompleted = 0;
+                currentMaze = 1;
+                totalCompletionTime = 0;
+                timeRemaining = sessionDuration;
+                
+                console.log("Session initialized, settings applied");
+                
+                // Update UI
+                updateStats();
+                updateTimer();
+                
+                // Clear any existing maze and event listeners
+                clearMaze();
+                
+                // Hide settings, show stats
+                settingsPanel.classList.add('hidden');
+                instructions.classList.remove('hidden');
+                statsPanel.classList.remove('hidden');
+                timerBar.classList.remove('hidden');
+                
+                console.log("UI updated, about to start timer");
+                
+                // Start timer
+                isSessionActive = true;
+                
+                timerInterval = setInterval(() => {
+                    timeRemaining -= 100; // Update every 100ms
+                    
+                    // Update timer bar
+                    const progress = timeRemaining / sessionDuration;
+                    timerBar.style.width = `${progress * 100}%`;
+                    
+                    // Update time display
+                    updateTimer();
+                    
+                    // Check if session is over
+                    if (timeRemaining <= 0) {
+                        endSession();
+                    }
+                }, 100);
+                
+                console.log("Timer started, about to generate maze");
+                
+                // Generate first maze
+                generateMaze();
+                mazeStartTime = Date.now();
+                
+                // Focus on maze for keyboard controls
+                mazeContainer.focus();
+                
+                console.log("Session successfully started");
+                
+            } catch (error) {
+                console.error('Failed to start session:', error);
+                showError('Failed to start session: ' + error.message);
+            }
+        }
+        
+        // Complete current maze and generate a new one
+        function completeCurrentMaze() {
+            // Calculate completion time
+            const completionTime = Date.now() - mazeStartTime;
+            totalCompletionTime += completionTime;
+            
+            // Update statistics
+            mazesCompleted++;
+            currentMaze++;
+            updateStats();
+            
+            // Generate a new maze
+            generateMaze();
+            mazeStartTime = Date.now();
+        }
+        
+        // End the current session and show results
+        function endSession() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            // Clean up
+            isSessionActive = false;
+            clearMaze();
+            
+            // Hide timer and stats panels
+            timerBar.classList.add('hidden');
+            statsPanel.classList.add('hidden');
+            
+            // Calculate final stats for session enhancement
+            const avgTime = mazesCompleted > 0 ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
+            const performanceScore = Math.round((mazesCompleted * 100) / (parseFloat(avgTime) > 0 ? parseFloat(avgTime) : 1));
+            
+            // *** SESSION ENHANCEMENT INTEGRATION ***
+            sessionEnhancement.handleSessionComplete({
+                score: performanceScore,
+                mazesCompleted: mazesCompleted,
+                avgCompletionTime: parseFloat(avgTime),
+                totalSessionTime: (sessionDuration - timeRemaining) / 1000
+            });
+            
+            // Show completion message with results
+            finalCompletedElement.textContent = mazesCompleted;
+            finalAvgTimeElement.textContent = `${avgTime}s`;
+            finalScoreElement.textContent = performanceScore;
+            completionMessage.classList.remove('hidden');
+        }
+        
+        // Get unvisited neighboring cells for maze generation
+        function getUnvisitedNeighbors(x, y) {
+            const neighbors = [];
+            const rows = maze.length;
+            const cols = maze[0].length;
+            
+            // Check each direction (up, right, down, left)
+            const directions = [
+                { dx: 0, dy: -1 }, // up
+                { dx: 1, dy: 0 },  // right
+                { dx: 0, dy: 1 },  // down
+                { dx: -1, dy: 0 }  // left
+            ];
+            
+            // Shuffle directions to create a more random maze
+            shuffleArray(directions);
+            
+            for (const dir of directions) {
+                const newX = x + dir.dx;
+                const newY = y + dir.dy;
+                
+                // Check if the new coordinates are within the grid
+                if (newX >= 0 && newX < cols && newY >= 0 && newY < rows) {
+                    // Check if the neighbor has not been visited
+                    if (!maze[newY][newX].visited) {
+                        neighbors.push({ x: newX, y: newY });
+                    }
+                }
+            }
+            
+            return neighbors;
+        }
+        
+        // Helper function to shuffle an array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        // Create maze walls based on the generated maze data
+        function createMazeWalls(cols, rows) {
+            // Create outer walls
+            const topWall = document.createElement('div');
+            topWall.className = 'maze-wall';
+            topWall.style.top = '0';
+            topWall.style.left = '0';
+            topWall.style.width = `${cols * cellSize}px`;
+            topWall.style.height = `${wallThickness}px`;
+            mazeContainer.appendChild(topWall);
+            
+            const leftWall = document.createElement('div');
+            leftWall.className = 'maze-wall';
+            leftWall.style.top = '0';
+            leftWall.style.left = '0';
+            leftWall.style.width = `${wallThickness}px`;
+            leftWall.style.height = `${rows * cellSize}px`;
+            mazeContainer.appendChild(leftWall);
+            
+            const rightWall = document.createElement('div');
+            rightWall.className = 'maze-wall';
+            rightWall.style.top = '0';
+            rightWall.style.left = `${cols * cellSize - wallThickness}px`;
+            rightWall.style.width = `${wallThickness}px`;
+            rightWall.style.height = `${rows * cellSize}px`;
+            mazeContainer.appendChild(rightWall);
+            
+            const bottomWall = document.createElement('div');
+            bottomWall.className = 'maze-wall';
+            bottomWall.style.top = `${rows * cellSize - wallThickness}px`;
+            bottomWall.style.left = '0';
+            bottomWall.style.width = `${cols * cellSize}px`;
+            bottomWall.style.height = `${wallThickness}px`;
+            mazeContainer.appendChild(bottomWall);
+            
+            // Create inner walls based on the maze data
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const cell = maze[i][j];
+                    
+                    // Add right wall if needed
+                    if (cell.walls.right && j < cols - 1) {
+                        const rightWall = document.createElement('div');
+                        rightWall.className = 'maze-wall';
+                        rightWall.style.top = `${i * cellSize}px`;
+                        rightWall.style.left = `${(j + 1) * cellSize - wallThickness / 2}px`;
+                        rightWall.style.width = `${wallThickness}px`;
+                        rightWall.style.height = `${cellSize}px`;
+                        mazeContainer.appendChild(rightWall);
+                    }
+                    
+                    // Add bottom wall if needed
+                    if (cell.walls.bottom && i < rows - 1) {
+                        const bottomWall = document.createElement('div');
+                        bottomWall.className = 'maze-wall';
+                        bottomWall.style.top = `${(i + 1) * cellSize - wallThickness / 2}px`;
+                        bottomWall.style.left = `${j * cellSize}px`;
+                        bottomWall.style.width = `${cellSize}px`;
+                        bottomWall.style.height = `${wallThickness}px`;
+                        mazeContainer.appendChild(bottomWall);
+                    }
+                }
+            }
+        }
+        
+        // Create path lines and nodes for navigation
+        function createPathLines(cols, rows) {
+            try {
+                console.log("Creating path lines and nodes");
+                
+                // Create path nodes at the center of each cell
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        const centerX = j * cellSize + cellSize / 2;
+                        const centerY = i * cellSize + cellSize / 2;
+                        
+                        // Create a node at this position
+                        const node = {
+                            x: centerX,
+                            y: centerY,
+                            gridX: j,
+                            gridY: i,
+                            connections: []
+                        };
+                        
+                        // Add to pathNodes array
+                        pathNodes.push(node);
+                        
+                        // Create visible node element
+                        const nodeElement = document.createElement('div');
+                        nodeElement.className = 'path-node';
+                        nodeElement.style.left = `${centerX}px`;
+                        nodeElement.style.top = `${centerY}px`;
+                        mazeContainer.appendChild(nodeElement);
+                    }
+                }
+                
+                // Connect nodes based on maze structure
+                connectPathNodes(cols, rows);
+                
+                // Create path lines between connected nodes
+                for (let i = 0; i < pathNodes.length; i++) {
+                    const node = pathNodes[i];
+                    
+                    for (const connectedIndex of node.connections) {
+                        const connectedNode = pathNodes[connectedIndex];
+                        
+                        // Only create path line if this is the "forward" connection
+                        // (to avoid duplicate lines)
+                        if (i < connectedIndex) {
+                            // Create a path line between these nodes
+                            const line = document.createElement('div');
+                            line.className = 'path-line';
+                            
+                            if (node.gridX === connectedNode.gridX) {
+                                // Vertical path line
+                                line.classList.add('vertical');
+                                const top = Math.min(node.y, connectedNode.y);
+                                const height = Math.abs(node.y - connectedNode.y);
+                                
+                                line.style.left = `${node.x}px`;
+                                line.style.top = `${top}px`;
+                                line.style.height = `${height}px`;
+                            } else {
+                                // Horizontal path line
+                                line.classList.add('horizontal');
+                                const left = Math.min(node.x, connectedNode.x);
+                                const width = Math.abs(node.x - connectedNode.x);
+                                
+                                line.style.left = `${left}px`;
+                                line.style.top = `${node.y}px`;
+                                line.style.width = `${width}px`;
+                            }
+                            
+                            mazeContainer.appendChild(line);
+                        }
+                    }
+                }
+                
+                console.log(`Created ${pathNodes.length} path nodes`);
+                
+            } catch (error) {
+                console.error("Error creating path lines:", error);
+                showError("Path creation failed: " + error.message);
+            }
+        }
+        
+        // Connect path nodes based on maze structure
+        function connectPathNodes(cols, rows) {
+            try {
+                console.log("Connecting path nodes...");
+                
+                // Iterate through each cell in the grid
+                for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        // Find the index of the node at this grid position
+                        const currentNodeIndex = pathNodes.findIndex(node => node.gridX === x && node.gridY === y);
+                        
+                        if (currentNodeIndex === -1) continue; // No node at this position
+                        
+                        const currentNode = pathNodes[currentNodeIndex];
+                        
+                        // Check each direction for potential connections
+                        if (x > 0 && !maze[y][x].walls.left) {
+                            // Connect to the node to the left
+                            const leftNodeIndex = pathNodes.findIndex(node => node.gridX === x - 1 && node.gridY === y);
+                            if (leftNodeIndex !== -1 && !currentNode.connections.includes(leftNodeIndex)) {
+                                currentNode.connections.push(leftNodeIndex);
+                                pathNodes[leftNodeIndex].connections.push(currentNodeIndex);
+                            }
+                        }
+                        
+                        if (x < cols - 1 && !maze[y][x].walls.right) {
+                            // Connect to the node to the right
+                            const rightNodeIndex = pathNodes.findIndex(node => node.gridX === x + 1 && node.gridY === y);
+                            if (rightNodeIndex !== -1 && !currentNode.connections.includes(rightNodeIndex)) {
+                                currentNode.connections.push(rightNodeIndex);
+                                pathNodes[rightNodeIndex].connections.push(currentNodeIndex);
+                            }
+                        }
+                        
+                        if (y > 0 && !maze[y][x].walls.top) {
+                            // Connect to the node above
+                            const topNodeIndex = pathNodes.findIndex(node => node.gridX === x && node.gridY === y - 1);
+                            if (topNodeIndex !== -1 && !currentNode.connections.includes(topNodeIndex)) {
+                                currentNode.connections.push(topNodeIndex);
+                                pathNodes[topNodeIndex].connections.push(currentNodeIndex);
+                            }
+                        }
+                        
+                        if (y < rows - 1 && !maze[y][x].walls.bottom) {
+                            // Connect to the node below
+                            const bottomNodeIndex = pathNodes.findIndex(node => node.gridX === x && node.gridY === y + 1);
+                            if (bottomNodeIndex !== -1 && !currentNode.connections.includes(bottomNodeIndex)) {
+                                currentNode.connections.push(bottomNodeIndex);
+                                pathNodes[bottomNodeIndex].connections.push(currentNodeIndex);
+                            }
+                        }
+                    }
+                }
+                
+                console.log("Path nodes connected");
+            } catch (error) {
+                console.error("Error connecting path nodes:", error);
+                throw new Error("Node connection failed: " + error.message);
+            }
+        }
+        
+        // Generate a new maze
+        function generateMaze() {
+            try {
+                console.log("Beginning maze generation");
+                
+                // Update cell size and wall thickness based on difficulty
+                cellSize = difficultySizes[currentDifficulty].cellSize;
+                wallThickness = difficultySizes[currentDifficulty].wallThickness;
+                
+                console.log(`Difficulty: ${currentDifficulty}, cellSize: ${cellSize}, wallThickness: ${wallThickness}`);
+                
+                // Calculate grid size
+                const cols = Math.floor(mazeWidth / cellSize);
+                const rows = Math.floor(mazeHeight / cellSize);
+                
+                if (cols <= 0 || rows <= 0) {
+                    throw new Error(`Invalid grid dimensions: ${cols}x${rows}`);
+                }
+                
+                console.log(`Grid size: ${cols}x${rows}`);
+                
+                // Clear maze container and reset arrays
+                clearMaze();
+                
+                // Initialize arrays
+                maze = [];
+                pathNodes = [];
+                
+                // Initialize maze grid with cells
+                for (let i = 0; i < rows; i++) {
+                    const row = [];
+                    for (let j = 0; j < cols; j++) {
+                        row.push({
+                            x: j,
+                            y: i,
+                            visited: false,
+                            walls: { top: true, right: true, bottom: true, left: true }
+                        });
+                    }
+                    maze.push(row);
+                }
+                
+                if (maze.length === 0 || maze[0].length === 0) {
+                    throw new Error("Failed to create maze grid");
+                }
+                
+                console.log("Maze grid initialized, generating paths");
+                
+                // Generate maze using depth-first search algorithm
+                const stack = [];
+                const startX = 0;
+                const startY = 0;
+                
+                // Mark the starting cell as visited
+                maze[startY][startX].visited = true;
+                stack.push({ x: startX, y: startY });
+                
+                // Continue until all cells are visited
+                while (stack.length > 0) {
+                    // Get the current cell
+                    const current = stack[stack.length - 1];
+                    const { x, y } = current;
+                    
+                    // Get unvisited neighbors
+                    const neighbors = getUnvisitedNeighbors(x, y);
+                    
+                    if (neighbors.length === 0) {
+                        // No unvisited neighbors, backtrack
+                        stack.pop();
+                    } else {
+                        // Choose a random unvisited neighbor
+                        const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                        
+                        // Remove walls between current cell and chosen neighbor
+                        if (next.x > x) {
+                            // Remove right wall of current and left wall of neighbor
+                            maze[y][x].walls.right = false;
+                            maze[next.y][next.x].walls.left = false;
+                        } else if (next.x < x) {
+                            // Remove left wall of current and right wall of neighbor
+                            maze[y][x].walls.left = false;
+                            maze[next.y][next.x].walls.right = false;
+                        } else if (next.y > y) {
+                            // Remove bottom wall of current and top wall of neighbor
+                            maze[y][x].walls.bottom = false;
+                            maze[next.y][next.x].walls.top = false;
+                        } else if (next.y < y) {
+                            // Remove top wall of current and bottom wall of neighbor
+                            maze[y][x].walls.top = false;
+                            maze[next.y][next.x].walls.bottom = false;
+                        }
+                        
+                        // Mark the neighbor as visited and push to stack
+                        maze[next.y][next.x].visited = true;
+                        stack.push(next);
+                    }
+                }
+                
+                console.log("Maze paths generated, creating visual elements");
+                
+                // Create the maze walls
+                createMazeWalls(cols, rows);
+                
+                // Create path lines and nodes for navigation
+                createPathLines(cols, rows);
+                
+                // Add player
+                createPlayer(startX, startY);
+                
+                // Add goal at the opposite corner (bottom-right)
+                createGoal(cols - 1, rows - 1);
+                
+                // Add START and END labels
+                createPointLabels(startX, startY, cols - 1, rows - 1);
+                
+                // Set up player movement
+                setupPlayerMovement();
+                
+                console.log("Maze generation complete");
+                
+            } catch (error) {
+                console.error("Error during maze generation:", error);
+                showError("Maze creation failed: " + error.message);
+                throw error;
+            }
+        }
+        
+        // Create the player element
+        function createPlayer(x, y) {
+            player = document.createElement('div');
+            player.id = 'player';
+            
+            // Scale player size based on cell size
+            const playerWidth = Math.max(cellSize * 0.75, 24);
+            const playerHeight = Math.max(cellSize * 0.85, 28);
+            
+            player.style.width = `${playerWidth}px`;
+            player.style.height = `${playerHeight}px`;
+            
+            // Position at the center of the starting cell
+            const posX = x * cellSize + cellSize / 2;
+            const posY = y * cellSize + cellSize / 2;
+            
+            player.style.left = `${posX}px`;
+            player.style.top = `${posY}px`;
+            
+            mazeContainer.appendChild(player);
+        }
+        
+        // Create the goal element
+        function createGoal(x, y) {
+            goal = document.createElement('div');
+            goal.id = 'goal';
+            
+            // Position at the center of the goal cell
+            const posX = x * cellSize + cellSize / 2;
+            const posY = y * cellSize + cellSize / 2;
+            
+            goal.style.left = `${posX}px`;
+            goal.style.top = `${posY}px`;
+            goal.style.width = `${cellSize * 0.7}px`;
+            goal.style.height = `${cellSize * 0.7}px`;
+            
+            mazeContainer.appendChild(goal);
+        }
+        
+        // Create START and END labels
+        function createPointLabels(startX, startY, endX, endY) {
+            // Create START label
+            startLabel = document.createElement('div');
+            startLabel.id = 'start-label';
+            startLabel.className = 'point-label';
+            startLabel.textContent = 'START';
+            
+            // Position slightly above the start point
+            const startPosX = startX * cellSize + cellSize / 2;
+            const startPosY = startY * cellSize - 15;
+            
+            startLabel.style.left = `${startPosX}px`;
+            startLabel.style.top = `${startPosY}px`;
+            
+            // Create END label
+            endLabel = document.createElement('div');
+            endLabel.id = 'end-label';
+            endLabel.className = 'point-label';
+            endLabel.textContent = 'FINISH';
+            
+            // Position slightly below the end point
+            const endPosX = endX * cellSize + cellSize / 2;
+            const endPosY = endY * cellSize + cellSize + 15;
+            
+            endLabel.style.left = `${endPosX}px`;
+            endLabel.style.top = `${endPosY}px`;
+            
+            // Add labels to maze container
+            mazeContainer.appendChild(startLabel);
+            mazeContainer.appendChild(endLabel);
+        }
+        
+        // Setup player movement with keyboard and drag controls
+        function setupPlayerMovement() {
+            if (!player || pathNodes.length === 0) {
+                console.error("Player or pathNodes not initialized");
+                return;
+            }
+            
+            // Reference to player position
+            let playerX = parseFloat(player.style.left);
+            let playerY = parseFloat(player.style.top);
+            let closestNodeIndex = 0;
+            
+            // SMOOTHER DRAGGING VARIABLES
+            let dragPath = [];
+            let lastVisitedNode = 0;
+            
+            // Find the closest node index for starting position
+            try {
+                updateClosestNodeIndex();
+            } catch (error) {
+                console.error("Error finding closest node:", error);
+                return;
+            }
+            
+            // Define all event handlers using named functions
+            function handleKeyDown(e) {
+                if (!isSessionActive) return;
+                
+                const currentNode = pathNodes[closestNodeIndex];
+                let nextNodeIndex = -1;
+                
+                // Check which connected node to move to based on key press
+                switch (e.key) {
+                    case 'ArrowUp':
+                        nextNodeIndex = currentNode.connections.find(index => 
+                            pathNodes[index].y < currentNode.y && 
+                            pathNodes[index].x === currentNode.x
+                        );
+                        break;
+                    case 'ArrowDown':
+                        nextNodeIndex = currentNode.connections.find(index => 
+                            pathNodes[index].y > currentNode.y && 
+                            pathNodes[index].x === currentNode.x
+                        );
+                        break;
+                    case 'ArrowLeft':
+                        nextNodeIndex = currentNode.connections.find(index => 
+                            pathNodes[index].x < currentNode.x && 
+                            pathNodes[index].y === currentNode.y
+                        );
+                        break;
+                    case 'ArrowRight':
+                        nextNodeIndex = currentNode.connections.find(index => 
+                            pathNodes[index].x > currentNode.x && 
+                            pathNodes[index].y === currentNode.y
+                        );
+                        break;
+                    default:
+                        return;
+                }
+                
+                // If valid connection found, move to the next node
+                if (nextNodeIndex !== undefined && nextNodeIndex !== -1) {
+                    moveToNode(nextNodeIndex);
+                    e.preventDefault();
+                }
+            }
+            
+            function startDrag(e) {
+                if (!isSessionActive) return;
+                
+                isDragging = true;
+                dragPath = [closestNodeIndex];
+                lastVisitedNode = closestNodeIndex;
+                
+                // Add active class for visual feedback
+                player.style.boxShadow = '0 0 30px rgba(111, 211, 245, 1)';
+                
+                e.preventDefault();
+            }
+            
+            function drag(e) {
+                if (!isDragging || !isSessionActive) return;
+                
+                // Get container's position relative to viewport
+                const rect = mazeContainer.getBoundingClientRect();
+                
+                let currentX, currentY;
+                
+                // Get current position relative to the maze container
+                if (e.type === 'mousemove') {
+                    currentX = e.clientX - rect.left;
+                    currentY = e.clientY - rect.top;
+                } else if (e.type === 'touchmove') {
+                    currentX = e.touches[0].clientX - rect.left;
+                    currentY = e.touches[0].clientY - rect.top;
+                    e.preventDefault();
+                }
+                
+                // Find the closest connected node to the drag position
+                const currentNode = pathNodes[closestNodeIndex];
+                let bestNodeIndex = -1;
+                let minDistance = Infinity;
+                
+                // Check all connected nodes
+                const nodesToCheck = new Set([closestNodeIndex]);
+                
+                // Add all immediately connected nodes
+                for (const connectedIndex of currentNode.connections) {
+                    nodesToCheck.add(connectedIndex);
+                    
+                    // Also check nodes connected to those (for smoother movement)
+                    const connectedNode = pathNodes[connectedIndex];
+                    for (const secondLevelIndex of connectedNode.connections) {
+                        nodesToCheck.add(secondLevelIndex);
+                    }
+                }
+                
+                // Find closest node from the candidates
+                for (const nodeIndex of nodesToCheck) {
+                    const node = pathNodes[nodeIndex];
+                    const dx = node.x - currentX;
+                    const dy = node.y - currentY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Prefer nodes we haven't visited in this drag
+                    const visitedPenalty = dragPath.includes(nodeIndex) ? cellSize * 0.5 : 0;
+                    const adjustedDistance = distance + visitedPenalty;
+                    
+                    if (adjustedDistance < minDistance && nodeIndex !== lastVisitedNode) {
+                        minDistance = adjustedDistance;
+                        bestNodeIndex = nodeIndex;
+                    }
+                }
+                
+                // If we found a good node and it's close enough, move there
+                if (bestNodeIndex !== -1 && minDistance < cellSize * 0.7) {
+                    // Check if there's a valid path from current position to target
+                    const path = findPath(closestNodeIndex, bestNodeIndex);
+                    
+                    if (path.length > 0) {
+                        // Move along the path
+                        for (let i = 1; i < path.length; i++) {
+                            const nodeIndex = path[i];
+                            if (!dragPath.includes(nodeIndex)) {
+                                dragPath.push(nodeIndex);
+                            }
+                            moveToNode(nodeIndex);
+                            lastVisitedNode = nodeIndex;
+                        }
+                    }
+                }
+            }
+            
+            function endDrag() {
+                isDragging = false;
+                player.style.boxShadow = '0 0 20px rgba(111, 211, 245, 0.8)';
+                dragPath = [];
+                lastVisitedNode = closestNodeIndex;
+            }
+            
+            // Simple pathfinding to ensure smooth movement
+            function findPath(startIndex, targetIndex) {
+                if (startIndex === targetIndex) return [startIndex];
+                
+                const visited = new Set();
+                const queue = [[startIndex]];
+                
+                while (queue.length > 0) {
+                    const path = queue.shift();
+                    const currentIndex = path[path.length - 1];
+                    
+                    if (currentIndex === targetIndex) {
+                        return path;
+                    }
+                    
+                    if (!visited.has(currentIndex)) {
+                        visited.add(currentIndex);
+                        
+                        const currentNode = pathNodes[currentIndex];
+                        for (const connectedIndex of currentNode.connections) {
+                            if (!visited.has(connectedIndex)) {
+                                queue.push([...path, connectedIndex]);
+                            }
+                        }
+                    }
+                }
+                
+                return []; // No path found
+            }
+            
+            // Store references to event handlers
+            eventHandlers.keydown = handleKeyDown;
+            eventHandlers.mousedown = startDrag;
+            eventHandlers.touchstart = startDrag;
+            eventHandlers.mousemove = drag;
+            eventHandlers.touchmove = drag;
+            eventHandlers.mouseup = endDrag;
+            eventHandlers.touchend = endDrag;
+            
+            // Attach the event listeners
+            mazeContainer.addEventListener('keydown', eventHandlers.keydown);
+            player.addEventListener('mousedown', eventHandlers.mousedown);
+            player.addEventListener('touchstart', eventHandlers.touchstart, { passive: false });
+            document.addEventListener('mousemove', eventHandlers.mousemove);
+            document.addEventListener('touchmove', eventHandlers.touchmove, { passive: false });
+            document.addEventListener('mouseup', eventHandlers.mouseup);
+            document.addEventListener('touchend', eventHandlers.touchend);
+            
+            function moveToNode(nodeIndex) {
+                if (nodeIndex >= 0 && nodeIndex < pathNodes.length) {
+                    const targetNode = pathNodes[nodeIndex];
+                    
+                    // Add path trace if enabled
+                    if (showTrace) {
+                        addPathTrace(playerX, playerY, targetNode.x, targetNode.y);
+                    }
+                    
+                    // Update player position
+                    playerX = targetNode.x;
+                    playerY = targetNode.y;
+                    player.style.left = `${playerX}px`;
+                    player.style.top = `${playerY}px`;
+                    closestNodeIndex = nodeIndex;
+                    
+                    // Check if player reached the goal
+                    checkGoalReached();
+                }
+            }
+            
+            function updateClosestNodeIndex() {
+                // Find the closest node to the player
+                if (pathNodes.length === 0) {
+                    console.error("No path nodes available");
+                    return;
+                }
+                
+                let minDistance = Infinity;
+                
+                for (let i = 0; i < pathNodes.length; i++) {
+                    const node = pathNodes[i];
+                    const dx = node.x - playerX;
+                    const dy = node.y - playerY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestNodeIndex = i;
+                    }
+                }
+            }
+            
+            function addPathTrace(fromX, fromY, toX, toY) {
+                const trace = document.createElement('div');
+                trace.className = 'path-trace';
+                
+                // Calculate center point and dimensions
+                const centerX = (fromX + toX) / 2;
+                const centerY = (fromY + toY) / 2;
+                const width = Math.abs(toX - fromX) + 10;
+                const height = Math.abs(toY - fromY) + 10;
+                
+                // Position trace
+                trace.style.left = `${centerX - width / 2}px`;
+                trace.style.top = `${centerY - height / 2}px`;
+                trace.style.width = `${width}px`;
+                trace.style.height = `${height}px`;
+                
+                // Add to container and track
+                mazeContainer.appendChild(trace);
+                pathTraces.push(trace);
+            }
+            
+            function checkGoalReached() {
+                // Get goal position
+                const goalX = parseFloat(goal.style.left);
+                const goalY = parseFloat(goal.style.top);
+                
+                // Calculate distance between player and goal
+                const dx = playerX - goalX;
+                const dy = playerY - goalY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // If player is close enough to goal, consider it reached
+                const goalRadius = parseFloat(goal.style.width) / 2;
+                if (distance < goalRadius) {
+                    completeCurrentMaze();
+                }
+            }
+        }
+        
+        // Settings management using design system storage
+        function saveSettings() {
+            storage.set('mazeSessionDuration', sessionDurationInput.value);
+            storage.set('mazeDifficulty', difficultySelect.value);
+            storage.set('mazeShowTrace', showTraceSelect.value);
+        }
+        
+        function loadSettings() {
+            sessionDurationInput.value = storage.get('mazeSessionDuration', 5);
+            difficultySelect.value = storage.get('mazeDifficulty', 'easy');
+            showTraceSelect.value = storage.get('mazeShowTrace', 'yes');
+        }
+        
+        // Prevent zooming on double tap
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Additional mobile optimizations
+        document.addEventListener('touchmove', function(event) {
+            // Prevent pull-to-refresh during gameplay
+            if (isSessionActive) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Prevent context menu on long press
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+        
+        // Handle visibility change (e.g., when user switches apps)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && isSessionActive) {
+                // Game continues running when backgrounded
+            }
+        });
+    </script>
+</body>
+</html>

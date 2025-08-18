@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RVKCCWBFKE');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Fine Point Rehab</title>
+    <meta name="description" content="Get in touch with Fine Point Rehab for questions about our rehabilitation exercises, partnership opportunities, or technical support.">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fine Point Rehab">
+
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon-180x180.png" sizes="180x180">
+    <link rel="apple-touch-icon" href="icons/icon-152x152.png" sizes="152x152">
+    <link rel="apple-touch-icon" href="icons/icon-144x144.png" sizes="144x144">
+    <link rel="apple-touch-icon" href="icons/icon-128x128.png" sizes="128x128">
+
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+
+    <!-- Theme color for browsers (light/dark support) -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)">
+    <meta name="msapplication-TileColor" content="#2563eb">
+
+    <!-- Consolidated Design System -->
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div class="container">
+        <header class="site-header">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html" class="brand">Fine Point Rehab</a>
+                    <p class="tagline">Your Path to Recovery</p>
+                </div>
+                
+                <!-- Theme switcher -->
+                <div class="theme-controls" aria-label="Theme selection">
+                    <button id="theme-toggle" class="btn btn-ghost btn-sm" aria-label="Toggle theme">
+                        <span class="theme-icon" aria-hidden="true">🌙</span>
+                    </button>
+                </div>
+            </div>
+            
+            <nav class="nav" aria-label="Main navigation" role="navigation">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#exercises" class="nav-link">Exercises</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="faq.html" class="nav-link">FAQ</a>
+                <a href="contact.html" class="nav-link nav-link-active" aria-current="page">Contact</a>
+                <a href="privacy-policy.html" class="nav-link">Privacy</a>
+                <a href="terms-of-service.html" class="nav-link">Terms</a>
+            </nav>
+        </header>
+
+        <main id="main-content">
+            <div class="page-header">
+                <h1>Contact Us</h1>
+                <p class="page-description">
+                    We'd love to hear from you! Whether you have questions about our exercises, 
+                    feedback on your experience, or want to explore partnership opportunities, 
+                    our team is here to help.
+                </p>
+            </div>
+
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Get in Touch</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="contact-item">
+                                <div class="contact-icon" aria-hidden="true">📧</div>
+                                <div class="contact-details">
+                                    <h3>Email</h3>
+                                    <p>info@finepointrehab.com</p>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon" aria-hidden="true">💬</div>
+                                <div class="contact-details">
+                                    <h3>Response Time</h3>
+                                    <p>We typically respond within 1–2 business days</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Connect With Us</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="social-links">
+                                <button class="social-link" aria-disabled="true" disabled>
+                                    <span aria-hidden="true">📘</span> Facebook
+                                </button>
+                                <button class="social-link" aria-disabled="true" disabled>
+                                    <span aria-hidden="true">🐦</span> Twitter
+                                </button>
+                                <button class="social-link" aria-disabled="true" disabled>
+                                    <span aria-hidden="true">📷</span> Instagram
+                                </button>
+                                <button class="social-link" aria-disabled="true" disabled>
+                                    <span aria-hidden="true">💼</span> LinkedIn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Send Us a Message</h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="contactForm" class="contact-form" novalidate>
+                                <div class="form-group">
+                                    <label for="name">Your Name</label>
+                                    <input type="text" id="name" name="name" autocomplete="name" required aria-describedby="name-error">
+                                    <div id="name-error" class="form-error" role="alert"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email">Email Address</label>
+                                    <input type="email" id="email" name="email" autocomplete="email" inputmode="email" required aria-describedby="email-error">
+                                    <div id="email-error" class="form-error" role="alert"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="subject">Subject</label>
+                                    <select id="subject" name="subject" aria-describedby="subject-help">
+                                        <option value="general">General Inquiry</option>
+                                        <option value="support">Technical Support</option>
+                                        <option value="feedback">Feedback</option>
+                                        <option value="partnership">Partnership Opportunity</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                    <div id="subject-help" class="form-help">Select the category that best describes your inquiry</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="message">Your Message</label>
+                                    <textarea id="message" name="message" required aria-describedby="message-error message-help" rows="5"></textarea>
+                                    <div id="message-help" class="form-help">Please provide as much detail as possible</div>
+                                    <div id="message-error" class="form-error" role="alert"></div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    <span class="btn-text">Send Message</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="additional-info">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Partnership Opportunities</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            We actively collaborate with rehabilitation centers, healthcare professionals, 
+                            researchers, and technology companies. If you're interested in working with 
+                            Fine Point Rehab, please reach out to us at info@finepointrehab.com or use 
+                            the contact form above with "Partnership Opportunity" as your subject.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Technical Support</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Having trouble with one of our exercises? Our support team is ready to help. 
+                            Email info@finepointrehab.com with details about the issue you're experiencing, 
+                            including your device type and browser. For faster assistance, please include 
+                            any error messages you may have seen.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">Fine Point Rehab</div>
+                    <p class="footer-tagline">Your Path to Recovery</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h3>Navigation</h3>
+                        <ul>
+                            <li><a href="index.html">Home</a></li>
+                            <li><a href="index.html#exercises">Exercises</a></li>
+                            <li><a href="about.html">About</a></li>
+                            <li><a href="faq.html">FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3>Support</h3>
+                        <ul>
+                            <li><a href="contact.html">Contact</a></li>
+                            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                            <li><a href="terms-of-service.html">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="footer-social">
+                    <h3>Connect</h3>
+                    <div class="social-links">
+                        <button aria-disabled="true" disabled>📘</button>
+                        <button aria-disabled="true" disabled>🐦</button>
+                        <button aria-disabled="true" disabled>📷</button>
+                        <button aria-disabled="true" disabled>💼</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Fine Point Rehab. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load JavaScript utilities -->
+    <script src="js/utils.js"></script>
+    
+    <script>
+        // Theme toggle initialization
+        (function(){
+            const toggle = document.getElementById('theme-toggle');
+            if(!toggle) return;
+            const root = document.documentElement;
+            const saved = localStorage.getItem('theme');
+            const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+            const initial = saved || (prefersDark ? 'dark':'light');
+            set(initial);
+            toggle.addEventListener('click', () => set(root.getAttribute('data-theme')==='dark'?'light':'dark'));
+            function set(t){ 
+                root.setAttribute('data-theme', t); 
+                localStorage.setItem('theme', t);
+                // Update icon
+                toggle.querySelector('.theme-icon').textContent = t === 'dark' ? '☀️' : '🌙';
+            }
+        })();
+
+        // Contact form validation and submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('contactForm');
+            const fields = {
+                name: document.getElementById('name'),
+                email: document.getElementById('email'),
+                message: document.getElementById('message')
+            };
+
+            // Form validation
+            function validateField(field, errorId) {
+                const errorElement = document.getElementById(errorId);
+                let isValid = true;
+                let errorMessage = '';
+
+                if (field.type === 'email') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!field.value.trim()) {
+                        errorMessage = 'Email address is required';
+                        isValid = false;
+                    } else if (!emailRegex.test(field.value)) {
+                        errorMessage = 'Please enter a valid email address';
+                        isValid = false;
+                    }
+                } else if (field.required && !field.value.trim()) {
+                    const labelText = field.labels?.[0]?.textContent || 'This field';
+                    errorMessage = `${labelText} is required`;
+                    isValid = false;
+                }
+
+                errorElement.textContent = errorMessage;
+                field.setAttribute('aria-invalid', isValid ? 'false' : 'true');
+                
+                return isValid;
+            }
+
+            // Add event listeners for real-time validation
+            Object.keys(fields).forEach(fieldName => {
+                const field = fields[fieldName];
+                const errorId = `${fieldName}-error`;
+                
+                field.addEventListener('blur', () => validateField(field, errorId));
+                field.addEventListener('input', () => {
+                    if (field.getAttribute('aria-invalid') === 'true') {
+                        validateField(field, errorId);
+                    }
+                });
+            });
+
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Validate all fields
+                let isFormValid = true;
+                Object.keys(fields).forEach(fieldName => {
+                    const field = fields[fieldName];
+                    const errorId = `${fieldName}-error`;
+                    if (!validateField(field, errorId)) {
+                        isFormValid = false;
+                    }
+                });
+
+                if (isFormValid) {
+                    // Simulate form submission
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    const originalText = submitButton.querySelector('.btn-text').textContent;
+                    
+                    submitButton.disabled = true;
+                    submitButton.classList.add('btn-loading');
+                    submitButton.querySelector('.btn-text').textContent = 'Sending...';
+
+                    setTimeout(() => {
+                        submitButton.disabled = false;
+                        submitButton.classList.remove('btn-loading');
+                        submitButton.querySelector('.btn-text').textContent = originalText;
+                        
+                        // Show success message using toast if available
+                        if (window.toast) {
+                            window.toast.show('Thank you for your message! This is a demo form. In a live website, this would send your message to our team.', {
+                                type: 'success',
+                                duration: 5000
+                            });
+                        } else {
+                            alert('Thank you for your message! This is a demo form. In a live website, this would send your message to our team.');
+                        }
+                        
+                        form.reset();
+                        
+                        // Clear any validation states
+                        Object.keys(fields).forEach(fieldName => {
+                            const field = fields[fieldName];
+                            const errorId = `${fieldName}-error`;
+                            document.getElementById(errorId).textContent = '';
+                            field.setAttribute('aria-invalid', 'false');
+                        });
+                    }, 1500);
+                } else {
+                    // Focus first invalid field
+                    const firstInvalid = form.querySelector('[aria-invalid="true"]');
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                }
+            });
+        });
+    </script>
+
+    <style>
+        /* Skip link styles */
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+        
+        .skip-link:focus {
+            left: var(--space-4);
+            top: var(--space-4);
+            width: auto;
+            height: auto;
+            padding: var(--space-2) var(--space-3);
+            background: var(--brand-blue);
+            color: #fff;
+            border-radius: var(--radius);
+            z-index: var(--z-tooltip);
+            text-decoration: none;
+        }
+
+        /* Ensure nav is flex */
+        .nav {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Page-specific styles that work with the design system */
+        .site-header {
+            text-align: center;
+            padding: var(--space-8) 0 var(--space-6);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: var(--space-8);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .logo .brand {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color var(--duration-fast) var(--easing);
+        }
+
+        .logo .brand:hover {
+            color: var(--brand-blue);
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: var(--font-size-lg);
+            margin: var(--space-1) 0 0;
+        }
+
+        .theme-controls {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: var(--space-10);
+        }
+
+        .page-header h1 {
+            font-size: var(--font-size-4xl);
+            color: var(--brand-blue);
+            margin-bottom: var(--space-4);
+        }
+
+        .page-description {
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: var(--line-height-relaxed);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--space-8);
+            margin-bottom: var(--space-12);
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-4);
+            padding: var(--space-4) 0;
+        }
+
+        .contact-icon {
+            font-size: var(--font-size-2xl);
+            width: 40px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .contact-details h3 {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+
+        .contact-details p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .social-links {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transition: all var(--duration-fast) var(--easing);
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-5);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .form-group label {
+            font-weight: var(--font-weight-medium);
+            color: var(--text-primary);
+        }
+
+        .form-help {
+            font-size: var(--font-size-sm);
+            color: var(--text-muted);
+        }
+
+        .form-error {
+            font-size: var(--font-size-sm);
+            color: var(--error);
+            min-height: 1.2em;
+        }
+
+        .additional-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+            margin-bottom: var(--space-12);
+        }
+
+        .site-footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: var(--space-12) 0 var(--space-6);
+            margin-top: var(--space-16);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: var(--space-8);
+            margin-bottom: var(--space-8);
+        }
+
+        .footer-brand .footer-logo {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+
+        .footer-tagline {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: var(--space-8);
+        }
+
+        .footer-section h3 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-3);
+        }
+
+        .footer-section ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: var(--space-2);
+        }
+
+        .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color var(--duration-fast) var(--easing);
+        }
+
+        .footer-section a:hover {
+            color: var(--brand-blue);
+        }
+
+        .footer-social h3 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-3);
+        }
+
+        .footer-social .social-links {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        .footer-social .social-links button {
+            font-size: var(--font-size-xl);
+            background: none;
+            border: none;
+            cursor: not-allowed;
+            color: var(--text-muted);
+            padding: var(--space-2);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--space-6);
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: var(--font-size-sm);
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: var(--space-4);
+            }
+
+            .nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: var(--space-2);
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .additional-info {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-links {
+                justify-content: center;
+            }
+
+            .page-header h1 {
+                font-size: var(--font-size-3xl);
+            }
+        }
+
+        /* Small mobile adjustments */
+        @media (max-width: 480px) {
+            .nav {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-link {
+                justify-content: center;
+                padding: var(--space-3) var(--space-4);
+            }
+
+            .contact-item {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--space-2);
+            }
+
+            .social-links {
+                align-items: center;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirror Match Exercise - FinePointRehab</title>
+    <link rel="stylesheet" href="../css/tokens.css">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <style>
+        .mirror-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .mirror-area {
+            display: flex;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.1) 100%);
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .mirror-side {
+            flex: 1;
+            position: relative;
+            min-height: 400px;
+            overflow: hidden;
+        }
+        
+        .mirror-side.left {
+            border-right: 1px solid var(--primary-color);
+        }
+        
+        .mirror-target {
+            position: absolute;
+            background: var(--accent-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .mirror-target.pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .mirror-target.touched {
+            background: var(--success-color);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .mirror-target.completed {
+            background: var(--success-color);
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0.7;
+        }
+        
+        .mirror-target.failed {
+            background: var(--error-color);
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .mirror-path {
+            fill: none;
+            stroke: var(--primary-color);
+            stroke-width: 3;
+            stroke-dasharray: 5, 5;
+            opacity: 0.6;
+        }
+        
+        .mirror-path.completed {
+            stroke: var(--success-color);
+            stroke-dasharray: none;
+            opacity: 0.8;
+        }
+        
+        .touch-indicator {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .touch-indicator.active {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .feedback-message {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .feedback-message.success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .feedback-message.error {
+            background: var(--error-color);
+            color: white;
+        }
+        
+        .progress-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        
+        .instructions {
+            text-align: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(100, 100, 100, 0.1);
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+            25% { transform: translate(-50%, -50%) translateX(-5px); }
+            75% { transform: translate(-50%, -50%) translateX(5px); }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .mirror-target.pulse {
+                animation: none;
+            }
+            
+            .mirror-target.failed {
+                animation: none;
+                background: var(--error-color) !important;
+            }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .timer-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .timer-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--warning-color), var(--error-color));
+            transition: width 0.1s linear;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button id="home-button" type="button" class="btn btn-secondary" aria-label="Return to main menu">
+                ← Home
+            </button>
+            <h1>Mirror Match Exercise</h1>
+            <div class="timer-bar-container">
+                <div id="timer-bar" class="timer-bar" style="width: 100%;"></div>
+            </div>
+        </header>
+
+        <div id="stars-container" class="stars-background"></div>
+
+        <div id="game-container" class="mirror-container">
+            <div id="settings-panel">
+                <h2>Therapy Settings</h2>
+                
+                <div class="settings-group">
+                    <label for="difficulty-select" class="settings-label">Difficulty Level:</label>
+                    <div class="setting-description">Controls pattern complexity and timing requirements</div>
+                    <select id="difficulty-select">
+                        <option value="easy">Easy - Simple patterns, relaxed timing</option>
+                        <option value="medium" selected>Medium - Moderate complexity</option>
+                        <option value="hard">Hard - Complex patterns, precise timing</option>
+                    </select>
+                </div>
+                
+                <div class="settings-group">
+                    <label for="target-size-select" class="settings-label">Target Size:</label>
+                    <div class="setting-description">Size of touch targets for motor precision</div>
+                    <select id="target-size-select">
+                        <option value="large">Large - Easier targeting</option>
+                        <option value="medium" selected>Medium - Standard size</option>
+                        <option value="small">Small - Precision training</option>
+                    </select>
+                </div>
+                
+                <div class="settings-group">
+                    <label for="mirror-mode-select" class="settings-label">Mirror Mode:</label>
+                    <div class="setting-description">How the mirror coordination works</div>
+                    <select id="mirror-mode-select">
+                        <option value="simultaneous" selected>Simultaneous - Touch both at same time</option>
+                        <option value="sequential">Sequential - Touch one after another</option>
+                    </select>
+                </div>
+                
+                <div class="settings-group">
+                    <label for="adaptive-timing-select" class="settings-label">Adaptive Timing:</label>
+                    <div class="setting-description">Automatically adjusts timing based on performance</div>
+                    <select id="adaptive-timing-select">
+                        <option value="on" selected>On - Adapts to your skill</option>
+                        <option value="off">Off - Fixed timing</option>
+                    </select>
+                </div>
+                
+                <div class="settings-group">
+                    <label class="settings-label">Session Duration (minutes):</label>
+                    <div class="setting-description">How long your therapy session will last</div>
+                    <input type="number" id="session-duration-input" min="1" max="10" value="3">
+                </div>
+                
+                <button id="start-session-button" class="btn btn-primary btn-full">Start Therapy Session</button>
+            </div>
+            
+            <div id="progress-display" class="progress-display hidden">
+                <h3>Pattern Progress</h3>
+                <p>Pattern <span id="current-pattern">1</span> of <span id="total-patterns">10</span></p>
+            </div>
+            
+            <div id="instructions" class="instructions hidden">
+                Touch both circles simultaneously to complete the pattern
+            </div>
+            
+            <div id="feedback-message" class="feedback-message hidden" role="status" aria-live="polite"></div>
+            
+            <div id="mirror-area" class="mirror-area hidden">
+                <div class="mirror-side left" id="left-side"></div>
+                <div class="mirror-side right" id="right-side"></div>
+            </div>
+            
+            <div id="stats-panel" class="stats-container hidden">
+                <div class="stat-box">
+                    <div id="score" class="stat-value">0</div>
+                    <div class="stat-label">Score</div>
+                </div>
+                <div class="stat-box">
+                    <div id="patterns-completed" class="stat-value">0</div>
+                    <div class="stat-label">Patterns</div>
+                </div>
+                <div class="stat-box">
+                    <div id="time-left" class="stat-value">3:00</div>
+                    <div class="stat-label">Time Left</div>
+                </div>
+                <div class="stat-box">
+                    <div id="sync-rate" class="stat-value">0%</div>
+                    <div class="stat-label">Sync Rate</div>
+                </div>
+            </div>
+            
+            <div id="completion-message" class="completion-panel hidden">
+                <h2>Session Complete!</h2>
+                <div id="completion-scores">
+                    <p>Final Score: <span id="final-score" class="score-highlight">0</span></p>
+                    <p>Patterns Completed: <span id="final-patterns" class="score-highlight">0</span></p>
+                    <p>Synchronization Rate: <span id="final-sync-rate" class="score-highlight">0%</span></p>
+                    <p>Average Sync Time: <span id="final-avg-sync" class="score-highlight">0ms</span></p>
+                </div>
+                <button id="restart-button" class="btn btn-primary btn-full">Start New Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Enhancement Integration: Step 1 - Script Imports -->
+    <script type="module">
+        // Session Enhancement Integration: Step 1 - Import session enhancement
+        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
+        import { sessionEnhancement } from '../js/session-enhancement.js';
+        
+        // Initialize utilities
+        initUtils();
+        
+        // Session Enhancement Integration: Step 2 - Initialize session enhancement
+        const currentExerciseId = 'mirror'; // Mirror match exercise ID
+        
+        function getCurrentDifficulty() {
+            const difficultySelect = document.getElementById('difficulty-select');
+            return difficultySelect ? difficultySelect.value : 'medium';
+        }
+        
+        // Initialize with current settings
+        sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
+        
+        // Re-initialize when difficulty changes
+        const difficultySelect = document.getElementById('difficulty-select');
+        if (difficultySelect) {
+            difficultySelect.addEventListener('change', () => {
+                sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
+            });
+        }
+        
+        // Game elements
+        const gameContainer = document.getElementById('game-container');
+        const mirrorArea = document.getElementById('mirror-area');
+        const leftSide = document.getElementById('left-side');
+        const rightSide = document.getElementById('right-side');
+        const timerBar = document.getElementById('timer-bar');
+        const settingsPanel = document.getElementById('settings-panel');
+        const statsPanel = document.getElementById('stats-panel');
+        const completionMessage = document.getElementById('completion-message');
+        const starsContainer = document.getElementById('stars-container');
+        const progressDisplay = document.getElementById('progress-display');
+        const instructions = document.getElementById('instructions');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const currentPatternElement = document.getElementById('current-pattern');
+        const totalPatternsElement = document.getElementById('total-patterns');
+        
+        // Initialize starfield
+        starfield.generate(starsContainer, 50);
+        
+        // Settings elements
+        const targetSizeSelect = document.getElementById('target-size-select');
+        const mirrorModeSelect = document.getElementById('mirror-mode-select');
+        const adaptiveTimingSelect = document.getElementById('adaptive-timing-select');
+        const sessionDurationInput = document.getElementById('session-duration-input');
+        const startSessionButton = document.getElementById('start-session-button');
+        const restartButton = document.getElementById('restart-button');
+        
+        // Stats elements
+        const scoreElement = document.getElementById('score');
+        const patternsCompletedElement = document.getElementById('patterns-completed');
+        const timeLeftElement = document.getElementById('time-left');
+        const syncRateElement = document.getElementById('sync-rate');
+        
+        // Completion elements
+        const finalScoreElement = document.getElementById('final-score');
+        const finalPatternsElement = document.getElementById('final-patterns');
+        const finalSyncRateElement = document.getElementById('final-sync-rate');
+        const finalAvgSyncElement = document.getElementById('final-avg-sync');
+        
+        // Game state variables
+        let isSessionActive = false;
+        let timerInterval = null;
+        let sessionDuration = 3 * 60 * 1000; // 3 minutes default
+        let timeRemaining = sessionDuration;
+        let score = 0;
+        let patternsCompleted = 0;
+        let totalAttempts = 0;
+        let successfulAttempts = 0;
+        let syncTimes = [];
+        let currentPatternIndex = 0;
+        let currentTargetIndex = 0;
+        let pattern = [];
+        let patterns = [];
+        let usedPatternTypes = [];
+        let adaptiveSyncWindow = 500;
+        let leftTouched = false;
+        let rightTouched = false;
+        let leftTouchTime = 0;
+        let rightTouchTime = 0;
+        let currentTargets = { left: null, right: null };
+        let feedbackTimeout = null;
+        
+        // Touch indicators
+        const leftTouchIndicator = document.createElement('div');
+        leftTouchIndicator.classList.add('touch-indicator');
+        gameContainer.appendChild(leftTouchIndicator);
+        
+        const rightTouchIndicator = document.createElement('div');
+        rightTouchIndicator.classList.add('touch-indicator');
+        gameContainer.appendChild(rightTouchIndicator);
+        
+        // Target sizes
+        const targetSizes = {
+            'small': 40,
+            'medium': 55,
+            'large': 70
+        };
+        
+        // Difficulty settings
+        const difficultySetting = {
+            'easy': { pointsPerPattern: 100, patternLength: 3, timeLimit: 60000, baseSync: 750 },
+            'medium': { pointsPerPattern: 200, patternLength: 5, timeLimit: 45000, baseSync: 500 },
+            'hard': { pointsPerPattern: 300, patternLength: 7, timeLimit: 30000, baseSync: 350 }
+        };
+        
+        // Pattern types for variety
+        const patternTypes = ['random', 'circle', 'square', 'triangle', 'zigzag', 'line', 'spiral'];
+        
+        // Helper function to layout mirror area and handle resizing
+        function layoutMirrorArea() {
+            const areaWidth = Math.min(900, window.innerWidth * 0.9);
+            const areaHeight = Math.min(500, window.innerHeight * 0.7);
+            mirrorArea.style.width = `${areaWidth}px`;
+            mirrorArea.style.height = `${areaHeight}px`;
+            leftSide.style.width = `${areaWidth / 2}px`;
+            leftSide.style.height = `${areaHeight}px`;
+            rightSide.style.width = `${areaWidth / 2}px`;
+            rightSide.style.height = `${areaHeight}px`;
+            return { areaWidth, areaHeight };
+        }
+        
+        // Helper function to make targets keyboard accessible
+        function makeTargetAccessible(el, label) {
+            el.setAttribute('role', 'button');
+            el.setAttribute('tabindex', '0');
+            el.setAttribute('aria-label', label);
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    el.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
+                }
+            });
+        }
+        // Home button functionality
+        document.getElementById('home-button').addEventListener('click', function() {
+            window.location.href = '../index.html';
+        });
+        
+        // Start new session
+        startSessionButton.addEventListener('click', startSession);
+        restartButton.addEventListener('click', () => {
+            completionMessage.classList.add('hidden');
+            settingsPanel.classList.remove('hidden');
+        });
+        
+        function startSession() {
+            // Get settings
+            const difficulty = difficultySelect.value;
+            const targetSize = targetSizeSelect.value;
+            const mirrorMode = mirrorModeSelect.value;
+            const adaptiveTiming = adaptiveTimingSelect.value === 'on';
+            // Validate and clamp session duration
+            const minutes = Math.max(1, Math.min(10, Number.parseInt(sessionDurationInput.value, 10) || 3));
+            sessionDuration = minutes * 60 * 1000;
+            
+            // Reset game state
+            score = 0;
+            patternsCompleted = 0;
+            totalAttempts = 0;
+            successfulAttempts = 0;
+            syncTimes = [];
+            timeRemaining = sessionDuration;
+            currentPatternIndex = 0;
+            pattern = [];
+            patterns = [];
+            usedPatternTypes = [];
+            adaptiveSyncWindow = difficultySetting[difficulty].baseSync;
+            
+            // Set up mirror area size based on window size
+            const { areaWidth, areaHeight } = layoutMirrorArea();
+            
+            // Generate patterns with variety
+            generateDiversePatterns(difficulty, areaWidth / 2, areaHeight);
+            
+            // Update UI
+            updateStats();
+            updateTimer();
+            currentPatternElement.textContent = '1';
+            totalPatternsElement.textContent = patterns.length;
+            
+            // Update instructions
+            if (mirrorMode === 'simultaneous') {
+                instructions.textContent = 'Touch both circles simultaneously to complete the pattern';
+            } else {
+                instructions.textContent = 'Touch circles one after another to complete the pattern';
+            }
+            
+            // Hide settings, show game elements
+            settingsPanel.classList.add('hidden');
+            statsPanel.classList.remove('hidden');
+            progressDisplay.classList.remove('hidden');
+            instructions.classList.remove('hidden');
+            mirrorArea.classList.remove('hidden');
+            
+            // Start session
+            isSessionActive = true;
+            startPattern(targetSize);
+            
+            timerInterval = setInterval(() => {
+                timeRemaining -= 100;
+                
+                // Update timer bar
+                const progress = timeRemaining / sessionDuration;
+                timerBar.style.width = `${progress * 100}%`;
+                
+                // Update time display
+                updateTimer();
+                
+                // Check if session is over
+                if (timeRemaining <= 0) {
+                    endSession();
+                }
+            }, 100);
+        }
+        
+        function generateDiversePatterns(difficulty, sideWidth, areaHeight) {
+            const settings = difficultySetting[difficulty];
+            const patternLength = settings.patternLength;
+            const numPatterns = 10;
+            
+            for (let p = 0; p < numPatterns; p++) {
+                let patternPoints = [];
+                
+                // Ensure pattern variety by avoiding consecutive similar patterns
+                let availableTypes = patternTypes.filter(type => !usedPatternTypes.includes(type));
+                if (availableTypes.length === 0) {
+                    usedPatternTypes = [];
+                    availableTypes = [...patternTypes];
+                }
+                
+                const patternType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+                usedPatternTypes.push(patternType);
+                
+                if (usedPatternTypes.length > 3) {
+                    usedPatternTypes.shift();
+                }
+                
+                patternPoints = generatePatternByType(patternType, patternLength, sideWidth, areaHeight);
+                patterns.push(patternPoints);
+            }
+        }
+        
+        function generatePatternByType(type, length, sideWidth, areaHeight) {
+            const centerX = sideWidth / 2;
+            const centerY = areaHeight / 2;
+            const radius = Math.min(sideWidth, areaHeight) * 0.3;
+            let points = [];
+            
+            switch (type) {
+                case 'circle': {
+                    for (let i = 0; i < length; i++) {
+                        const angle = (i / length) * 2 * Math.PI;
+                        const x = centerX + Math.cos(angle) * radius;
+                        const y = centerY + Math.sin(angle) * radius;
+                        points.push({ x, y });
+                    }
+                    break;
+                }
+                    
+                case 'square': {
+                    const squareSize = radius * 1.5;
+                    const halfSize = squareSize / 2;
+                    const corners = [
+                        { x: centerX - halfSize, y: centerY - halfSize },
+                        { x: centerX + halfSize, y: centerY - halfSize },
+                        { x: centerX + halfSize, y: centerY + halfSize },
+                        { x: centerX - halfSize, y: centerY + halfSize }
+                    ];
+                    
+                    for (let i = 0; i < length; i++) {
+                        points.push(corners[i % 4]);
+                    }
+                    break;
+                }
+                    
+                case 'triangle': {
+                    const trianglePoints = [];
+                    for (let i = 0; i < 3; i++) {
+                        const angle = (i / 3) * 2 * Math.PI - Math.PI / 2;
+                        const x = centerX + Math.cos(angle) * radius;
+                        const y = centerY + Math.sin(angle) * radius;
+                        trianglePoints.push({ x, y });
+                    }
+                    
+                    for (let i = 0; i < length; i++) {
+                        points.push(trianglePoints[i % 3]);
+                    }
+                    break;
+                }
+                    
+                case 'zigzag': {
+                    const stepY = areaHeight / (length + 1);
+                    for (let i = 0; i < length; i++) {
+                        const y = stepY + i * stepY;
+                        const x = (i % 2 === 0) ? sideWidth * 0.25 : sideWidth * 0.75;
+                        points.push({ x, y });
+                    }
+                    break;
+                }
+                    
+                case 'line': {
+                    const startX = sideWidth * 0.2;
+                    const endX = sideWidth * 0.8;
+                    const startY = areaHeight * 0.3;
+                    const endY = areaHeight * 0.7;
+                    
+                    for (let i = 0; i < length; i++) {
+                        const progress = i / (length - 1);
+                        const x = startX + (endX - startX) * progress;
+                        const y = startY + (endY - startY) * progress;
+                        points.push({ x, y });
+                    }
+                    break;
+                }
+                    
+                case 'spiral': {
+                    for (let i = 0; i < length; i++) {
+                        const angle = (i / length) * 4 * Math.PI;
+                        const spiralRadius = (i / length) * radius;
+                        const x = centerX + Math.cos(angle) * spiralRadius;
+                        const y = centerY + Math.sin(angle) * spiralRadius;
+                        points.push({ x, y });
+                    }
+                    break;
+                }
+                    
+                default: { // random
+                    for (let i = 0; i < length; i++) {
+                        const x = Math.floor(Math.random() * (sideWidth - 100) + 50);
+                        const y = Math.floor(Math.random() * (areaHeight - 100) + 50);
+                        points.push({ x, y });
+                    }
+                    break;
+                }
+            }
+            
+            return points;
+        }
+        
+        function startPattern(targetSizeOption) {
+            if (!isSessionActive) return;
+            
+            // Clear previous pattern
+            leftSide.innerHTML = '';
+            rightSide.innerHTML = '';
+            leftTouched = false;
+            rightTouched = false;
+            
+            // Get current pattern
+            pattern = patterns[currentPatternIndex];
+            if (!pattern) {
+                endSession();
+                return;
+            }
+            
+            // Update progress display
+            currentPatternElement.textContent = currentPatternIndex + 1;
+            
+            // Draw pattern paths
+            drawPatternPaths();
+            
+            // Set the first target pair
+            currentTargetIndex = 0;
+            createTargetPair(targetSizeOption);
+        }
+        
+        function drawPatternPaths() {
+            // Create SVG for left side
+            const leftSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            leftSvg.setAttribute("width", "100%");
+            leftSvg.setAttribute("height", "100%");
+            leftSvg.style.position = "absolute";
+            leftSvg.style.top = "0";
+            leftSvg.style.left = "0";
+            leftSvg.style.pointerEvents = "none";
+            
+            // Create path for left side
+            const leftPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            leftPath.classList.add("mirror-path");
+            
+            // Build path data
+            let pathData = "";
+            pattern.forEach((point, index) => {
+                if (index === 0) {
+                    pathData += `M ${point.x} ${point.y} `;
+                } else {
+                    pathData += `L ${point.x} ${point.y} `;
+                }
+            });
+            
+            leftPath.setAttribute("d", pathData);
+            leftSvg.appendChild(leftPath);
+            leftSide.appendChild(leftSvg);
+            
+            // Create SVG for right side
+            const rightSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            rightSvg.setAttribute("width", "100%");
+            rightSvg.setAttribute("height", "100%");
+            rightSvg.style.position = "absolute";
+            rightSvg.style.top = "0";
+            rightSvg.style.left = "0";
+            rightSvg.style.pointerEvents = "none";
+            
+            // Create path for right side (mirrored)
+            const rightPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            rightPath.classList.add("mirror-path");
+            
+            // Build mirrored path data
+            pathData = "";
+            pattern.forEach((point, index) => {
+                // Mirror the x coordinate using clientWidth to avoid border issues
+                const mirroredX = leftSide.clientWidth - point.x;
+                if (index === 0) {
+                    pathData += `M ${mirroredX} ${point.y} `;
+                } else {
+                    pathData += `L ${mirroredX} ${point.y} `;
+                }
+            });
+            
+            rightPath.setAttribute("d", pathData);
+            rightSvg.appendChild(rightPath);
+            rightSide.appendChild(rightSvg);
+        }
+        
+        function createTargetPair(targetSizeOption) {
+            // Get current point
+            const point = pattern[currentTargetIndex];
+            if (!point) return;
+            
+            // Determine target size
+            const size = targetSizes[targetSizeOption];
+            
+            // Create left target
+            const leftTarget = document.createElement("div");
+            leftTarget.className = "mirror-target pulse";
+            leftTarget.style.width = `${size}px`;
+            leftTarget.style.height = `${size}px`;
+            leftTarget.style.left = `${point.x}px`;
+            leftTarget.style.top = `${point.y}px`;
+            leftTarget.dataset.index = currentTargetIndex;
+            
+            // Create right target (mirrored using clientWidth)
+            const rightTarget = document.createElement("div");
+            rightTarget.className = "mirror-target pulse";
+            rightTarget.style.width = `${size}px`;
+            rightTarget.style.height = `${size}px`;
+            rightTarget.style.left = `${leftSide.clientWidth - point.x}px`;
+            rightTarget.style.top = `${point.y}px`;
+            rightTarget.dataset.index = currentTargetIndex;
+            
+            // Improved touch event listeners
+            leftTarget.addEventListener("touchstart", handleLeftTouch, { passive: false });
+            leftTarget.addEventListener("mousedown", handleLeftTouch);
+            rightTarget.addEventListener("touchstart", handleRightTouch, { passive: false });
+            rightTarget.addEventListener("mousedown", handleRightTouch);
+            
+            // Prevent context menu on long press
+            leftTarget.addEventListener("contextmenu", e => e.preventDefault());
+            rightTarget.addEventListener("contextmenu", e => e.preventDefault());
+            
+            // Add targets to sides
+            leftSide.appendChild(leftTarget);
+            rightSide.appendChild(rightTarget);
+            
+            // Make targets keyboard accessible
+            makeTargetAccessible(leftTarget, `Left target ${currentTargetIndex + 1}`);
+            makeTargetAccessible(rightTarget, `Right target ${currentTargetIndex + 1}`);
+            
+            // Store references to current targets
+            currentTargets.left = leftTarget;
+            currentTargets.right = rightTarget;
+        }
+        
+        function handleLeftTouch(e) {
+            if (!isSessionActive || leftTouched) return;
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Show touch indicator
+            showTouchIndicator(e, leftTouchIndicator);
+            
+            // Mark left side as touched
+            leftTouched = true;
+            leftTouchTime = Date.now();
+            currentTargets.left.classList.remove("pulse");
+            currentTargets.left.classList.add("touched");
+            
+            // Visual feedback
+            currentTargets.left.style.transform = "translate(-50%, -50%) scale(1.1)";
+            
+            // Check if this completes the pair
+            checkTargetPair(mirrorModeSelect.value);
+        }
+        
+        function handleRightTouch(e) {
+            if (!isSessionActive || rightTouched) return;
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Show touch indicator
+            showTouchIndicator(e, rightTouchIndicator);
+            
+            // Mark right side as touched
+            rightTouched = true;
+            rightTouchTime = Date.now();
+            currentTargets.right.classList.remove("pulse");
+            currentTargets.right.classList.add("touched");
+            
+            // Visual feedback
+            currentTargets.right.style.transform = "translate(-50%, -50%) scale(1.1)";
+            
+            // Check if this completes the pair
+            checkTargetPair(mirrorModeSelect.value);
+        }
+        
+        function showTouchIndicator(e, indicator) {
+            const rect = e.target.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            
+            indicator.style.left = `${x}px`;
+            indicator.style.top = `${y}px`;
+            indicator.classList.add('active');
+            
+            setTimeout(() => {
+                indicator.classList.remove('active');
+            }, 300);
+        }
+        
+        function checkTargetPair(mode) {
+            if (!leftTouched || !rightTouched) return;
+            
+            totalAttempts++;
+            
+            // Calculate synchronization time difference
+            const timeDiff = Math.abs(leftTouchTime - rightTouchTime);
+            
+            // Use adaptive timing if enabled
+            const currentSyncWindow = adaptiveTimingSelect.value === 'on' ? adaptiveSyncWindow : difficultySetting[difficultySelect.value].baseSync;
+            
+            // Check if targets were touched within the acceptable time window
+            const isSync = mode === 'simultaneous' ? timeDiff < currentSyncWindow : true;
+            
+            if (isSync) {
+                // Successful synchronization
+                successfulAttempts++;
+                syncTimes.push(timeDiff);
+                
+                // Show success feedback
+                showFeedback(`Great! Sync time: ${timeDiff}ms`, 'success');
+                
+                // Mark targets as completed
+                currentTargets.left.classList.remove("touched");
+                currentTargets.right.classList.remove("touched");
+                currentTargets.left.classList.add("completed");
+                currentTargets.right.classList.add("completed");
+                
+                // Highlight the path segment that's completed
+                const leftPaths = leftSide.querySelectorAll(".mirror-path");
+                const rightPaths = rightSide.querySelectorAll(".mirror-path");
+                
+                if (leftPaths.length > 0 && rightPaths.length > 0) {
+                    leftPaths[0].classList.add("completed");
+                    rightPaths[0].classList.add("completed");
+                }
+                
+                // Adaptive timing adjustment
+                if (adaptiveTimingSelect.value === 'on') {
+                    if (timeDiff < adaptiveSyncWindow * 0.7) {
+                        // Too easy, make it harder
+                        adaptiveSyncWindow = Math.max(200, adaptiveSyncWindow - 25);
+                    } else if (timeDiff > adaptiveSyncWindow * 0.9) {
+                        // Getting close to limit, make it slightly easier
+                        adaptiveSyncWindow = Math.min(1000, adaptiveSyncWindow + 10);
+                    }
+                }
+                
+                // Move to next target
+                currentTargetIndex++;
+                
+                // Check if pattern is complete
+                if (currentTargetIndex >= pattern.length) {
+                    // Pattern completed
+                    patternsCompleted++;
+                    
+                    // Calculate score based on difficulty and performance
+                    const settings = difficultySetting[difficultySelect.value];
+                    let patternScore = settings.pointsPerPattern;
+                    
+                    // Bonus for good synchronization (guard against insufficient samples)
+                    if (syncTimes.length >= pattern.length) {
+                        const avgSyncTime = syncTimes.slice(-pattern.length).reduce((a, b) => a + b, 0) / pattern.length;
+                        if (avgSyncTime < currentSyncWindow * 0.5) {
+                            patternScore *= 1.5; // 50% bonus for excellent sync
+                        } else if (avgSyncTime < currentSyncWindow * 0.75) {
+                            patternScore *= 1.25; // 25% bonus for good sync
+                        }
+                    }
+                    
+                    score += Math.round(patternScore);
+                    
+                    // Update stats
+                    updateStats();
+                    
+                    // Move to next pattern
+                    currentPatternIndex++;
+                    
+                    // Check if all patterns are completed
+                    if (currentPatternIndex >= patterns.length) {
+                        setTimeout(endSession, 1000);
+                    } else {
+                        // Start next pattern after a brief delay
+                        setTimeout(() => {
+                            startPattern(targetSizeSelect.value);
+                        }, 1000);
+                    }
+                } else {
+                    // Move to next target in current pattern
+                    leftTouched = false;
+                    rightTouched = false;
+                    
+                    // Create next target pair
+                    setTimeout(() => {
+                        createTargetPair(targetSizeSelect.value);
+                    }, 500);
+                }
+            } else {
+                // Failed synchronization
+                showFeedback(`Try again! Sync time: ${timeDiff}ms (need < ${currentSyncWindow}ms)`, 'error');
+                
+                currentTargets.left.classList.remove("touched");
+                currentTargets.right.classList.remove("touched");
+                currentTargets.left.classList.add("failed");
+                currentTargets.right.classList.add("failed");
+                
+                // Reset and try again
+                setTimeout(() => {
+                    if (currentTargets.left && currentTargets.right) {
+                        currentTargets.left.classList.remove("failed");
+                        currentTargets.right.classList.remove("failed");
+                        currentTargets.left.classList.add("pulse");
+                        currentTargets.right.classList.add("pulse");
+                    }
+                    leftTouched = false;
+                    rightTouched = false;
+                }, 1000);
+            }
+            
+            // Update stats
+            updateStats();
+        }
+        
+        function showFeedback(message, type) {
+            if (feedbackTimeout) {
+                clearTimeout(feedbackTimeout);
+            }
+            
+            feedbackMessage.textContent = message;
+            feedbackMessage.className = `feedback-message ${type}`;
+            feedbackMessage.classList.remove('hidden');
+            
+            feedbackTimeout = setTimeout(() => {
+                feedbackMessage.classList.add('hidden');
+            }, 2000);
+        }
+        
+        function updateStats() {
+            scoreElement.textContent = score;
+            patternsCompletedElement.textContent = patternsCompleted;
+            
+            // Calculate and display sync rate
+            const syncRate = totalAttempts > 0 ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
+            syncRateElement.textContent = `${syncRate}%`;
+        }
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeRemaining / 60000);
+            const seconds = Math.floor((timeRemaining % 60000) / 1000);
+            timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Session Enhancement Integration: Step 3 - Update session completion handler
+        function endSession() {
+            clearInterval(timerInterval);
+            isSessionActive = false;
+            
+            // Hide game elements
+            progressDisplay.classList.add('hidden');
+            instructions.classList.add('hidden');
+            feedbackMessage.classList.add('hidden');
+            statsPanel.classList.add('hidden');
+            mirrorArea.classList.add('hidden');
+            
+            // Calculate final stats for mirror match exercise
+            const avgSyncTime = syncTimes.length > 0 ? Math.round(syncTimes.reduce((a, b) => a + b, 0) / syncTimes.length) : 0;
+            const syncRate = totalAttempts > 0 ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
+            
+            // *** SESSION ENHANCEMENT INTEGRATION: Handle session completion ***
+            sessionEnhancement.handleSessionComplete({
+                score: score,
+                patternsCompleted: patternsCompleted,
+                accuracy: syncRate,
+                avgSyncTime: avgSyncTime,
+                totalAttempts: totalAttempts,
+                successfulAttempts: successfulAttempts
+            });
+            
+            // Show completion message with final stats
+            finalScoreElement.textContent = score;
+            finalPatternsElement.textContent = patternsCompleted;
+            finalSyncRateElement.textContent = `${syncRate}%`;
+            finalAvgSyncElement.textContent = `${avgSyncTime}ms`;
+            
+            completionMessage.classList.remove('hidden');
+            
+            // Reset timer bar
+            timerBar.style.width = '0%';
+        }
+        
+        // Enhanced touch prevention for better mobile experience
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+        
+        // Prevent zoom gestures
+        document.addEventListener('gesturestart', function(event) {
+            event.preventDefault();
+        });
+        
+        // Resize handler to adjust mirror area size and regenerate layout
+        window.addEventListener('resize', function() {
+            if (isSessionActive) {
+                layoutMirrorArea();
+                // Regenerate current pattern with new dimensions
+                if (pattern && pattern.length > 0) {
+                    const { areaWidth, areaHeight } = layoutMirrorArea();
+                    // Regenerate the current pattern for new dimensions
+                    const difficulty = difficultySelect.value;
+                    const patternType = usedPatternTypes[usedPatternTypes.length - 1] || 'random';
+                    const newPattern = generatePatternByType(patternType, pattern.length, areaWidth / 2, areaHeight);
+                    patterns[currentPatternIndex] = newPattern;
+                    pattern = newPattern;
+                    // Redraw paths and targets
+                    drawPatternPaths();
+                    if (currentTargetIndex < pattern.length) {
+                        leftSide.innerHTML = '';
+                        rightSide.innerHTML = '';
+                        drawPatternPaths();
+                        createTargetPair(targetSizeSelect.value);
+                    }
+                }
+            }
+        });
+        
+        // Load/save settings
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved settings if they exist
+            if (localStorage.getItem('mirrorDifficulty')) {
+                difficultySelect.value = localStorage.getItem('mirrorDifficulty');
+            }
+            
+            if (localStorage.getItem('mirrorTargetSize')) {
+                targetSizeSelect.value = localStorage.getItem('mirrorTargetSize');
+            }
+            
+            if (localStorage.getItem('mirrorMode')) {
+                mirrorModeSelect.value = localStorage.getItem('mirrorMode');
+            }
+            
+            if (localStorage.getItem('mirrorAdaptiveTiming')) {
+                adaptiveTimingSelect.value = localStorage.getItem('mirrorAdaptiveTiming');
+            }
+            
+            if (localStorage.getItem('mirrorDuration')) {
+                sessionDurationInput.value = localStorage.getItem('mirrorDuration');
+            }
+            
+            // Save settings when they change
+            difficultySelect.addEventListener('change', saveSettings);
+            targetSizeSelect.addEventListener('change', saveSettings);
+            mirrorModeSelect.addEventListener('change', saveSettings);
+            adaptiveTimingSelect.addEventListener('change', saveSettings);
+            sessionDurationInput.addEventListener('change', saveSettings);
+        });
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('mirrorDifficulty', difficultySelect.value);
+            localStorage.setItem('mirrorTargetSize', targetSizeSelect.value);
+            localStorage.setItem('mirrorMode', mirrorModeSelect.value);
+            localStorage.setItem('mirrorAdaptiveTiming', adaptiveTimingSelect.value);
+            localStorage.setItem('mirrorDuration', sessionDurationInput.value);
+        }
+        
+        // Mobile-specific improvements
+        function handleMobileUI() {
+            // Check if we're on a mobile device
+            const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Adjust viewport height on mobile to account for address bar changes
+                const setViewportHeight = () => {
+                    const vh = window.innerHeight * 0.01;
+                    document.documentElement.style.setProperty('--vh', `${vh}px`);
+                };
+                
+                setViewportHeight();
+                window.addEventListener('resize', setViewportHeight);
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(setViewportHeight, 100);
+                });
+                
+                // Prevent scrolling when touching the game area (single touchmove handler)
+                document.addEventListener('touchmove', function(e) {
+                    if (isSessionActive) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                // Ensure settings panel scrolls to show button when opened
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.target === settingsPanel && !settingsPanel.classList.contains('hidden')) {
+                            setTimeout(() => {
+                                const startButton = document.getElementById('start-session-button');
+                                if (startButton) {
+                                    startButton.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                                }
+                            }, 300);
+                        }
+                    });
+                });
+                
+                observer.observe(settingsPanel, { attributes: true, attributeFilter: ['class'] });
+                
+                // Clean up observer when session starts
+                startSessionButton.addEventListener('click', () => {
+                    observer.disconnect();
+                });
+            }
+        }
+        
+        // Initialize mobile UI improvements
+        document.addEventListener('DOMContentLoaded', handleMobileUI);
+    </script>
+</body>
+</html>
