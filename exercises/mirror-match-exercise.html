@@ -294,10 +294,8 @@
     <!-- Session Enhancement Integration: Step 1 - Script Imports -->
     <script type="module">
         // Session Enhancement Integration: Step 1 - Import session enhancement
-        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
-        import { sessionEnhancement } from '../js/session-enhancement.js';
-        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
-        import { recordSession } from '../js/progress.js';
+        import { storage, starfield, theme, viewport, audio, initUtils } from '/js/utils.js';
+        import { sessionEnhancement } from '/js/session-enhancement.js';
         
         // Initialize utilities
         initUtils();
@@ -1022,19 +1020,10 @@
             // *** ACHIEVEMENTS INTEGRATION: Handle session completion ***
             const difficulty = getCurrentDifficulty();
             
-            // Record the session (updates totals, streaks, personal bests)
-            recordSession(currentExerciseId, difficulty, score);
-            
-            // Mark this exercise as tried (for Explorer achievement)
-            markExerciseTried(currentExerciseId);
-            
-            // Check for newly unlocked achievements
-            const newAchievements = checkAndUnlockAchievements();
-            
-            // Show achievement notifications
-            newAchievements.forEach(achievementId => {
-                showAchievementNotification(achievementId);
-            });
+            // Call the global endSession function to handle progress and achievements
+            if (window.endSession) {
+                window.endSession(score, difficulty);
+            }
             
             // Show completion message with final stats
             finalScoreElement.textContent = score;
@@ -1184,6 +1173,40 @@
         
         // Initialize mobile UI improvements
         document.addEventListener('DOMContentLoaded', handleMobileUI);
+    </script>
+
+    <!-- Standardized Module Imports & EndSession Wiring -->
+    <script type="module">
+        import { recordSession } from '/js/progress.js';
+        import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+        
+        const EXERCISE_ID = 'mirror-match';
+        
+        // Call this when an exercise session ends
+        window.endSession = function(score, difficulty = 'easy') {
+            recordSession(EXERCISE_ID, difficulty, score);
+            
+            // If markExerciseTried expects an id, pass it; if not, remove the argument.
+            try {
+                markExerciseTried(EXERCISE_ID);
+            } catch (e) {
+                /* no-op if signature differs */
+            }
+            
+            try {
+                const newAchievements = checkAndUnlockAchievements();
+                // Show achievement notifications if any were unlocked
+                if (newAchievements && newAchievements.length > 0) {
+                    newAchievements.forEach(achievementId => {
+                        if (window.showNotification) {
+                            window.showNotification(`Achievement Unlocked: ${achievementId}`, 'achievement');
+                        }
+                    });
+                }
+            } catch (e) {
+                /* optional */
+            }
+        };
     </script>
 </body>
 </html>

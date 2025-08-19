@@ -870,15 +870,33 @@
         </div>
     </div>
     
-    <script type="module" src="../js/utils.js"></script>
-    <script type="module" src="../js/session-enhancement.js"></script>
+    <script type="module" src="/js/utils.js"></script>
+    <script type="module" src="/js/session-enhancement.js"></script>
     <script type="module">
-        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
-        import { sessionEnhancement } from '../js/session-enhancement.js';
-        // import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js'; // Uncomment when file exists
-        import { recordSession } from '../js/progress.js';
+        import { storage, starfield, theme, viewport, audio, initUtils } from '/js/utils.js';
+        import { sessionEnhancement } from '/js/session-enhancement.js';
         
         initUtils();
+        
+        // SESSION ENHANCEMENT INTEGRATION
+        const currentExerciseId = 'trace-reveal'; // Using 'trace-reveal' as the exercise ID
+        
+        // Get current difficulty from UI or default
+        function getCurrentDifficulty() {
+            const difficultySelect = document.getElementById('difficulty-level');
+            return difficultySelect ? difficultySelect.value : 'medium';
+        }
+        
+        // Initialize with current settings
+        sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
+        
+        // Re-initialize when difficulty changes
+        const difficultySelect = document.getElementById('difficulty-level');
+        if (difficultySelect) {
+            difficultySelect.addEventListener('change', () => {
+                sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
+            });
+        }
         
         // Achievement notification function
         function showAchievementNotification(achievementId) {
@@ -926,43 +944,6 @@
                 notification.classList.remove('show');
                 setTimeout(() => notification.remove(), 500);
             }, 4000);
-        }
-        
-        // SESSION ENHANCEMENT INTEGRATION
-        const currentExerciseId = 'trace'; // Using 'trace' as the exercise ID for trace-reveal
-        
-        // Get current difficulty from UI or default
-        function getCurrentDifficulty() {
-            const difficultySelect = document.getElementById('difficulty-level');
-            return difficultySelect ? difficultySelect.value : 'medium';
-        }
-        
-        // Initialize with current settings
-        sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
-        
-        // Re-initialize when difficulty changes
-        const difficultySelect = document.getElementById('difficulty-level');
-        if (difficultySelect) {
-            difficultySelect.addEventListener('change', () => {
-                sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
-            });
-        }
-        
-        // Function to call when exercise session ends
-        function handleAchievements(score, difficulty = 'easy') {
-            // Record the session (updates totals, streaks, personal bests)
-            recordSession('trace', difficulty, score);
-            
-            // Mark this exercise as tried (for Explorer achievement)
-            // markExerciseTried('trace'); // Uncomment when achievements.js exists
-            
-            // Check for newly unlocked achievements
-            // const newAchievements = checkAndUnlockAchievements(); // Uncomment when achievements.js exists
-            
-            // Show achievement notifications
-            // newAchievements.forEach(achievementId => {
-            //     showAchievementNotification(achievementId);
-            // });
         }
         
         // Mobile viewport handling (added from working comet exercise)
@@ -2016,7 +1997,7 @@
             timeRemaining -= 1000;
             
             if (timeRemaining <= 0) {
-                endSession();
+                endSessionInternal();
                 return;
             }
             
@@ -2030,15 +2011,17 @@
         }
         
         // End session
-        function endSession() {
+        function endSessionInternal() {
             isSessionActive = false;
             clearInterval(timerInterval);
             
             // Calculate final score based on shapes completed and perfect traces
             const score = shapesCompleted * 10 + perfectTraces * 5;
             
-            // Call achievement system function
-            handleAchievements(score, getCurrentDifficulty());
+            // Call the global endSession function
+            if (window.endSession) {
+                window.endSession(score, getCurrentDifficulty());
+            }
             
             // Show completion message
             document.getElementById('final-shapes').textContent = shapesCompleted;
@@ -2120,6 +2103,42 @@
         // Initial canvas setup
         resizeCanvas();
         
+    </script>
+    
+    <!-- Standardized module imports and endSession wiring -->
+    <script type="module">
+        import { recordSession } from '/js/progress.js';
+        import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+        
+        const EXERCISE_ID = 'trace-reveal';
+        
+        // Call this when an exercise session ends
+        window.endSession = function(score, difficulty = 'easy') {
+            recordSession(EXERCISE_ID, difficulty, score);
+            
+            // If markExerciseTried expects an id, pass it; if not, remove the argument.
+            try {
+                markExerciseTried(EXERCISE_ID);
+            } catch (e) {
+                /* no-op if signature differs */
+            }
+            
+            try {
+                const newAchievements = checkAndUnlockAchievements();
+                
+                // Show achievement notifications if any unlocked
+                if (newAchievements && newAchievements.length > 0) {
+                    newAchievements.forEach(achievementId => {
+                        // Call the notification function from the main script
+                        if (window.showAchievementNotification) {
+                            window.showAchievementNotification(achievementId);
+                        }
+                    });
+                }
+            } catch (e) {
+                /* optional */
+            }
+        };
     </script>
 </body>
 </html>

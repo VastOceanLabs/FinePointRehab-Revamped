@@ -698,14 +698,53 @@
         </section>
     </main>
     
+    <!-- Standardized module imports and endSession integration -->
+    <script type="module">
+        import { recordSession } from '/js/progress.js';
+        import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+        
+        const EXERCISE_ID = 'precision-drop';
+        
+        // Call this when an exercise session ends
+        window.endSession = function(score, difficulty = 'easy') {
+            recordSession(EXERCISE_ID, difficulty, score);
+            try {
+                markExerciseTried(EXERCISE_ID);
+            } catch (e) {
+                /* no-op if signature differs */
+            }
+            try {
+                const newAchievements = checkAndUnlockAchievements();
+                // Show achievement notifications
+                newAchievements.forEach(achievementId => {
+                    showAchievementNotification(achievementId);
+                });
+            } catch (e) {
+                /* optional */
+            }
+        };
+        
+        // Tiny achievement toast fallback
+        function showAchievementNotification(achievementId) {
+            const existing = document.getElementById('achievement-toast');
+            if (existing) existing.remove();
+            const box = document.createElement('div');
+            box.id = 'achievement-toast';
+            box.textContent = `🏆 Achievement unlocked: ${achievementId}`;
+            box.style.cssText = `
+                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                background: rgba(0,0,0,0.85); color: #fff; padding: 10px 16px;
+                border-radius: 12px; font-weight: 700; z-index: 9999; box-shadow: 0 4px 14px rgba(0,0,0,0.4)
+            `;
+            document.body.appendChild(box);
+            setTimeout(() => box.remove(), 3000);
+        }
+    </script>
+    
     <!-- SESSION ENHANCEMENT INTEGRATION: Inline module only -->
     <script type="module">
-        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
-        import { sessionEnhancement } from '../js/session-enhancement.js';
-
-        // NEW: Achievement + progress imports (requested change)
-        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
-        import { recordSession } from '../js/progress.js';
+        import { storage, starfield, theme, viewport, audio, initUtils } from '/js/utils.js';
+        import { sessionEnhancement } from '/js/session-enhancement.js';
         
         // Initialize utilities
         initUtils();
@@ -817,23 +856,6 @@
             medium: { targetSize: 70, objectSize: 35, points: 200, spacing: 100 },
             hard: { targetSize: 50, objectSize: 28, points: 300, spacing: 80 }
         };
-
-        // ---- NEW: tiny, self-contained achievement toast (fallback) ----
-        function showAchievementNotification(achievementId) {
-          const existing = document.getElementById('achievement-toast');
-          if (existing) existing.remove();
-          const box = document.createElement('div');
-          box.id = 'achievement-toast';
-          box.textContent = `🏆 Achievement unlocked: ${achievementId}`;
-          box.style.cssText = `
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); color: #fff; padding: 10px 16px;
-            border-radius: 12px; font-weight: 700; z-index: 9999; box-shadow: 0 4px 14px rgba(0,0,0,0.4)
-          `;
-          document.body.appendChild(box);
-          setTimeout(() => box.remove(), 3000);
-        }
-        // ----------------------------------------------------------------
         
         // Utility functions
         function showSettings() {
@@ -1181,7 +1203,6 @@
                 
                 createRound(difficulty, numTargets, showNumbers);
             } else {
-                // UPDATED: call finishSession (internal) so we can pass stats to the new endSession helper
                 finishSession();
             }
         }
@@ -1241,7 +1262,6 @@
                 updateTimer();
                 
                 if (timeRemaining <= 0) {
-                    // UPDATED: call finishSession instead of previous endSession
                     finishSession();
                 }
             }, 100);
@@ -1249,7 +1269,7 @@
             createRound(difficulty, numTargets, showNumbers);
         }
         
-        // UPDATED: internal finisher; calculates stats, updates UI, then calls the requested endSession(score,difficulty)
+        // Finish session function
         function finishSession() {
             clearInterval(timerInterval);
             isSessionActive = false;
@@ -1268,9 +1288,9 @@
                 avgDropTime: parseFloat(avgDropTime)
             });
 
-            // NEW: Call the requested helper to record & unlock
+            // Call the standardized endSession helper
             const difficulty = difficultySelect ? difficultySelect.value : 'easy';
-            endSession(score, difficulty); // <-- This is the new helper per your spec
+            window.endSession(score, difficulty);
             
             // UI completion panel
             finalScoreElement.textContent = score;
@@ -1282,21 +1302,6 @@
             
             timerBar.style.width = '0%';
             timerBar.setAttribute('aria-valuenow', '0');
-        }
-
-        // NEW (requested): standardized helper for tracking & achievements
-        // Matches the exact signature you provided and is reusable by any exercise
-        function endSession(finalScore, difficulty = 'easy') {
-            // Record the session (updates totals, streaks, personal bests)
-            recordSession('precision', difficulty, finalScore);
-            // Mark this exercise as tried (for Explorer achievement)
-            markExerciseTried('precision');
-            // Check for newly unlocked achievements
-            const newAchievements = checkAndUnlockAchievements();
-            // Show achievement notifications
-            newAchievements.forEach(achievementId => {
-                showAchievementNotification(achievementId);
-            });
         }
         
         function createRound(difficulty, numTargets, showNumbers) {

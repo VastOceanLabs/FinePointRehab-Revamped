@@ -22,701 +22,173 @@
     <link rel="canonical" href="https://finepointrehab.com/exercises/sequence-builder-exercise.html">
     
     <style>
-        * {
-            box-sizing: border-box;
-        }
-        
-        /* Respect reduced motion preferences */
+        * { box-sizing: border-box; }
         @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition: none !important;
-            }
+            * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
         }
-        
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
-            background: #121d33;
-            color: white;
-            min-height: 100vh;
+            margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; touch-action: manipulation; user-select: none; -webkit-user-select: none;
+            background: #121d33; color: white; min-height: 100vh;
         }
-        
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
+        #game-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
         #sequence-area {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            background: #1c2a4e;
-            border: 2px solid rgba(111, 211, 245, 0.9);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(111, 211, 245, 0.3);
-            z-index: 10;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; background: #1c2a4e;
+            border: 2px solid rgba(111, 211, 245, 0.9); border-radius: 15px; overflow: hidden;
+            box-shadow: 0 0 20px rgba(111, 211, 245, 0.3); z-index: 10;
         }
-        
-        #model-container {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            border-bottom: 1px solid rgba(111, 211, 245, 0.5);
-            background: rgba(8, 15, 35, 0.5);
-            position: relative;
-        }
-        
-        .section-label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(111, 211, 245, 0.8);
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        
+        #model-container { display: flex; flex-direction: column; padding: 20px; border-bottom: 1px solid rgba(111, 211, 245, 0.5); background: rgba(8, 15, 35, 0.5); position: relative; }
+        .section-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: rgba(111, 211, 245, 0.8); font-weight: 600; margin-bottom: 10px; }
         #model-display {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            padding: 15px;
-            border: 1px dashed rgba(111, 211, 245, 0.5);
-            border-radius: 10px;
-            background: rgba(8, 15, 35, 0.5);
-            min-height: 80px;
-            transition: all 0.3s ease;
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; padding: 15px;
+            border: 1px dashed rgba(111, 211, 245, 0.5); border-radius: 10px; background: rgba(8, 15, 35, 0.5);
+            min-height: 80px; transition: all 0.3s ease;
         }
-        
-        #model-display.hidden {
-            opacity: 0.1;
-            filter: blur(4px);
-        }
-        
-        .memory-timer {
-            position: absolute;
-            bottom: 5px;
-            right: 20px;
-            font-size: 14px;
-            color: rgba(111, 211, 245, 1);
-            font-weight: 600;
-        }
-        
-        #build-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-        
-        .user-sequence-container {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
+        #model-display.hidden { opacity: 0.1; filter: blur(4px); }
+        .memory-timer { position: absolute; bottom: 5px; right: 20px; font-size: 14px; color: rgba(111, 211, 245, 1); font-weight: 600; }
+        #build-area { flex: 1; display: flex; flex-direction: column; padding: 20px; }
+        .user-sequence-container { position: relative; margin-bottom: 20px; }
         #user-sequence {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            padding: 15px;
-            border: 1px dashed rgba(111, 211, 245, 0.5);
-            border-radius: 10px;
-            background: rgba(8, 15, 35, 0.3);
-            min-height: 100px;
-            transition: all 0.3s ease;
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; padding: 15px;
+            border: 1px dashed rgba(111, 211, 245, 0.5); border-radius: 10px; background: rgba(8, 15, 35, 0.3);
+            min-height: 100px; transition: all 0.3s ease;
         }
-        
-        #user-sequence.active {
-            border-color: rgba(111, 211, 245, 0.8);
-            background: rgba(8, 15, 35, 0.5);
-            box-shadow: inset 0 0 15px rgba(111, 211, 245, 0.2);
-        }
-        
+        #user-sequence.active { border-color: rgba(111, 211, 245, 0.8); background: rgba(8, 15, 35, 0.5); box-shadow: inset 0 0 15px rgba(111, 211, 245, 0.2); }
         #pieces-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px;
-            background: rgba(8, 15, 35, 0.5);
-            border-radius: 10px;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 10px;
+            background: rgba(8, 15, 35, 0.5); border-radius: 10px;
         }
-        
         .sequence-piece {
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(111, 211, 245, 0.9));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(111, 211, 245, 0.4);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            user-select: none;
-            position: relative;
-            /* Accessibility improvements */
-            role: button;
-            tabindex: 0;
+            width: 60px; height: 60px; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(111, 211, 245, 0.9));
+            border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px;
+            cursor: pointer; box-shadow: 0 0 15px rgba(111, 211, 245, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease; user-select: none; position: relative; role: button; tabindex: 0;
         }
-        
-        .sequence-piece:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(111, 211, 245, 0.6);
-        }
-        
-        .sequence-piece:active {
-            transform: scale(0.98);
-        }
-        
-        .sequence-piece:focus {
-            outline: 2px solid rgba(111, 211, 245, 1);
-            outline-offset: 2px;
-        }
-        
-        .sequence-piece.selected {
-            transform: scale(1.1);
-            box-shadow: 0 0 30px rgba(111, 211, 245, 0.9);
-            animation: selectedPulse 1s ease-in-out infinite;
-        }
-        
-        @keyframes selectedPulse {
-            0%, 100% { box-shadow: 0 0 30px rgba(111, 211, 245, 0.9); }
-            50% { box-shadow: 0 0 40px rgba(111, 211, 245, 1); }
-        }
-        
-        .sequence-piece.model {
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(111, 211, 245, 0.7));
-            cursor: default;
-            transform: none;
-            box-shadow: 0 0 10px rgba(111, 211, 245, 0.3);
-            tabindex: -1;
-        }
-        
-        .sequence-piece.model:hover {
-            transform: none;
-            box-shadow: 0 0 10px rgba(111, 211, 245, 0.3);
-        }
-        
-        .sequence-piece.correct {
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(46, 204, 113, 0.9));
-            box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
-            animation: correctPulse 0.5s ease-out;
-        }
-        
-        @keyframes correctPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1); }
-        }
-        
-        .sequence-piece.incorrect {
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(231, 76, 60, 0.9));
-            box-shadow: 0 0 15px rgba(231, 76, 60, 0.6);
-            animation: shake 0.4s ease;
-        }
-        
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
-        }
-        
-        .sequence-piece.placeholder {
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: none;
-            border: 2px dashed rgba(111, 211, 245, 0.5);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .sequence-piece.placeholder:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(111, 211, 245, 0.7);
-            transform: scale(1.05);
-        }
-        
-        .sequence-piece.placeholder.next {
-            border-color: rgba(111, 211, 245, 0.8);
-            background: rgba(111, 211, 245, 0.1);
-            animation: nextPulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes nextPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(111, 211, 245, 0.5); }
-            50% { box-shadow: 0 0 15px 3px rgba(111, 211, 245, 0.3); }
-        }
-        
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
+        .sequence-piece:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(111, 211, 245, 0.6); }
+        .sequence-piece:active { transform: scale(0.98); }
+        .sequence-piece:focus { outline: 2px solid rgba(111, 211, 245, 1); outline-offset: 2px; }
+        .sequence-piece.selected { transform: scale(1.1); box-shadow: 0 0 30px rgba(111, 211, 245, 0.9); animation: selectedPulse 1s ease-in-out infinite; }
+        @keyframes selectedPulse { 0%, 100% { box-shadow: 0 0 30px rgba(111, 211, 245, 0.9); } 50% { box-shadow: 0 0 40px rgba(111, 211, 245, 1); } }
+        .sequence-piece.model { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(111, 211, 245, 0.7)); cursor: default; transform: none; box-shadow: 0 0 10px rgba(111, 211, 245, 0.3); tabindex: -1; }
+        .sequence-piece.model:hover { transform: none; box-shadow: 0 0 10px rgba(111, 211, 245, 0.3); }
+        .sequence-piece.correct { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(46, 204, 113, 0.9)); box-shadow: 0 0 15px rgba(46, 204, 113, 0.6); animation: correctPulse 0.5s ease-out; }
+        @keyframes correctPulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+        .sequence-piece.incorrect { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(231, 76, 60, 0.9)); box-shadow: 0 0 15px rgba(231, 76, 60, 0.6); animation: shake 0.4s ease; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        .sequence-piece.placeholder { background: rgba(255, 255, 255, 0.1); box-shadow: none; border: 2px dashed rgba(111, 211, 245, 0.5); cursor: pointer; transition: all 0.2s ease; }
+        .sequence-piece.placeholder:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(111, 211, 245, 0.7); transform: scale(1.05); }
+        .sequence-piece.placeholder.next { border-color: rgba(111, 211, 245, 0.8); background: rgba(111, 211, 245, 0.1); animation: nextPulse 2s ease-in-out infinite; }
+        @keyframes nextPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(111, 211, 245, 0.5); } 50% { box-shadow: 0 0 15px 3px rgba(111, 211, 245, 0.3); } }
+        .button-container { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
         .control-button {
-            background-color: rgba(111, 211, 245, 0.8);
-            color: #121d33;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            min-height: 44px; /* Touch target accessibility */
+            background-color: rgba(111, 211, 245, 0.8); color: #121d33; border: none; border-radius: 8px;
+            padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); min-height: 44px;
         }
-        
-        .control-button:hover {
-            background-color: rgba(111, 211, 245, 1);
-            transform: translateY(-2px);
-        }
-        
-        .control-button:active {
-            transform: translateY(0);
-        }
-        
-        .control-button.check {
-            background-color: rgba(46, 204, 113, 0.8);
-        }
-        
-        .control-button.check:hover {
-            background-color: rgba(46, 204, 113, 1);
-        }
-        
-        .control-button.reset {
-            background-color: rgba(231, 76, 60, 0.8);
-        }
-        
-        .control-button.reset:hover {
-            background-color: rgba(231, 76, 60, 1);
-        }
-        
-        .control-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
+        .control-button:hover { background-color: rgba(111, 211, 245, 1); transform: translateY(-2px); }
+        .control-button:active { transform: translateY(0); }
+        .control-button.check { background-color: rgba(46, 204, 113, 0.8); }
+        .control-button.check:hover { background-color: rgba(46, 204, 113, 1); }
+        .control-button.reset { background-color: rgba(231, 76, 60, 0.8); }
+        .control-button.reset:hover { background-color: rgba(231, 76, 60, 1); }
+        .control-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .status-indicator {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            background: rgba(8, 15, 35, 0.7);
-            font-size: 16px;
+            display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; margin-bottom: 15px;
+            border-radius: 8px; background: rgba(8, 15, 35, 0.7); font-size: 16px;
         }
-        
-        .current-step {
-            color: rgba(111, 211, 245, 1);
-            font-weight: bold;
-        }
-        
+        .current-step { color: rgba(111, 211, 245, 1); font-weight: bold; }
         #sequence-progress {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            background: rgba(8, 15, 35, 0.8);
-            border-radius: 15px;
-            z-index: 20;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            padding: 10px 20px; background: rgba(8, 15, 35, 0.8); border-radius: 15px; z-index: 20; font-size: 18px; font-weight: bold; text-align: center;
         }
-        
-        #timer-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 8px;
-            background-color: rgba(111, 211, 245, 0.9);
-            width: 100%;
-            z-index: 20;
-            transition: width 0.1s linear;
-        }
-        
+        #timer-bar { position: absolute; top: 0; left: 0; height: 8px; background-color: rgba(111, 211, 245, 0.9); width: 100%; z-index: 20; transition: width 0.1s linear; }
         #settings-panel {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(8, 15, 35, 0.95);
-            border-radius: 15px;
-            padding: 25px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background-color: rgba(8, 15, 35, 0.95); border-radius: 15px; padding: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
-            z-index: 100;
-            width: 80%;
-            max-width: 500px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-height: 85vh;
-            overflow-y: auto;
+            z-index: 100; width: 80%; max-width: 500px; border: 1px solid rgba(255, 255, 255, 0.1); max-height: 85vh; overflow-y: auto;
         }
-        
-        #settings-panel h2 {
-            text-align: center;
-            color: white;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 24px;
-            letter-spacing: 0.5px;
-        }
-        
+        #settings-panel h2 { text-align: center; color: white; margin-top: 0; margin-bottom: 15px; font-size: 24px; letter-spacing: 0.5px; }
         .game-description {
-            background: rgba(111, 211, 245, 0.1);
-            border: 1px solid rgba(111, 211, 245, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 25px;
-            font-size: 14px;
-            line-height: 1.5;
+            background: rgba(111, 211, 245, 0.1); border: 1px solid rgba(111, 211, 245, 0.3); border-radius: 10px;
+            padding: 15px; margin-bottom: 25px; font-size: 14px; line-height: 1.5;
         }
-        
-        .game-description h3 {
-            color: rgba(111, 211, 245, 1);
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        
+        .game-description h3 { color: rgba(111, 211, 245, 1); margin-top: 0; margin-bottom: 10px; font-size: 16px; }
         #home-button {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            background-color: rgba(111, 211, 245, 0.8);
-            color: #121d33;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 90;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; bottom: 15px; right: 15px; background-color: rgba(111, 211, 245, 0.8); color: #121d33;
+            border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 14px; font-weight: bold; cursor: pointer;
+            z-index: 90; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;
         }
-        
-        #home-button:hover {
-            background-color: rgba(111, 211, 245, 1);
-            transform: translateY(-2px);
-        }
-        
-        .settings-group {
-            margin-bottom: 20px;
-        }
-        
-        .settings-label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: white;
-            font-size: 16px;
-        }
-        
-        .setting-description {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-        
-        .option-explanations {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 5px;
-            padding-left: 10px;
-        }
-        
-        .option-explanations li {
-            margin-bottom: 3px;
-        }
-        
+        #home-button:hover { background-color: rgba(111, 211, 245, 1); transform: translateY(-2px); }
+        .settings-group { margin-bottom: 20px; }
+        .settings-label { display: block; margin-bottom: 10px; font-weight: bold; color: white; font-size: 16px; }
+        .setting-description { font-size: 13px; color: rgba(255, 255, 255, 0.8); margin-bottom: 8px; line-height: 1.4; }
+        .option-explanations { font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-top: 5px; padding-left: 10px; }
+        .option-explanations li { margin-bottom: 3px; }
         select, input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 16px;
-            background-color: rgba(0, 10, 30, 0.8);
-            color: white;
-            min-height: 44px; /* Touch target accessibility */
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 16px; background-color: rgba(0, 10, 30, 0.8); color: white; min-height: 44px;
         }
-        
-        select:focus, input:focus {
-            outline: none;
-            border-color: rgba(111, 211, 245, 0.8);
-            box-shadow: 0 0 0 2px rgba(111, 211, 245, 0.3);
-        }
-        
+        select:focus, input:focus { outline: none; border-color: rgba(111, 211, 245, 0.8); box-shadow: 0 0 0 2px rgba(111, 211, 245, 0.3); }
         button {
-            background-color: rgba(111, 211, 245, 0.9);
-            color: #121d33;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 15px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            width: 100%;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            min-height: 44px; /* Touch target accessibility */
+            background-color: rgba(111, 211, 245, 0.9); color: #121d33; border: none; border-radius: 10px;
+            padding: 12px 15px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%;
+            transition: all 0.2s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.2); min-height: 44px;
         }
-        
-        button:hover {
-            background-color: rgba(111, 211, 245, 1);
-            transform: translateY(-2px);
-        }
-        
+        button:hover { background-color: rgba(111, 211, 245, 1); transform: translateY(-2px); }
         #stats-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(8, 15, 35, 0.8);
-            padding: 15px;
-            display: flex;
-            justify-content: space-around;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            position: absolute; bottom: 0; left: 0; right: 0; background-color: rgba(8, 15, 35, 0.8);
+            padding: 15px; display: flex; justify-content: space-around; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
         }
-        
-        .stat-box {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: rgba(111, 211, 245, 1);
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
+        .stat-box { text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; color: rgba(111, 211, 245, 1); }
+        .stat-label { font-size: 14px; color: rgba(255, 255, 255, 0.8); }
+        .hidden { display: none !important; }
         #completion-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(8, 15, 35, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
-            text-align: center;
-            max-width: 80%;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 100;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(8, 15, 35, 0.95);
+            padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+            text-align: center; max-width: 80%; border: 1px solid rgba(255, 255, 255, 0.1); z-index: 100;
         }
-        
-        #completion-message h2 {
-            color: white;
-            margin-top: 0;
-        }
-        
-        #completion-scores {
-            margin: 20px 0;
-            font-size: 18px;
-        }
-        
-        .score-highlight {
-            color: rgba(111, 211, 245, 1);
-            font-weight: bold;
-        }
-        
-        #stars-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-            pointer-events: none;
-        }
-        
-        .star {
-            position: absolute;
-            background-color: white;
-            width: 2px;
-            height: 2px;
-            border-radius: 50%;
-            opacity: 0.4;
-        }
-        
+        #completion-message h2 { color: white; margin-top: 0; }
+        #completion-scores { margin: 20px 0; font-size: 18px; }
+        .score-highlight { color: rgba(111, 211, 245, 1); font-weight: bold; }
+        #stars-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; overflow: hidden; pointer-events: none; }
+        .star { position: absolute; background-color: white; width: 2px; height: 2px; border-radius: 50%; opacity: 0.4; }
         .feedback-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px 40px;
-            border-radius: 12px;
-            font-size: 20px;
-            font-weight: bold;
-            z-index: 200;
-            animation: feedbackAnimation 1.2s ease-out forwards;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px 40px; border-radius: 12px;
+            font-size: 20px; font-weight: bold; z-index: 200; animation: feedbackAnimation 1.2s ease-out forwards; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
-        
-        .feedback-message.success {
-            background-color: rgba(46, 204, 113, 0.9);
-            color: white;
-        }
-        
-        .feedback-message.error {
-            background-color: rgba(231, 76, 60, 0.9);
-            color: white;
-        }
-        
+        .feedback-message.success { background-color: rgba(46, 204, 113, 0.9); color: white; }
+        .feedback-message.error { background-color: rgba(231, 76, 60, 0.9); color: white; }
         @keyframes feedbackAnimation {
-            0% { 
-                opacity: 0; 
-                transform: translate(-50%, -50%) scale(0.8);
-            }
-            20% { 
-                opacity: 1; 
-                transform: translate(-50%, -50%) scale(1.05);
-            }
-            90% { 
-                opacity: 1; 
-                transform: translate(-50%, -50%) scale(1);
-            }
-            100% { 
-                opacity: 0; 
-                transform: translate(-50%, -50%) scale(0.95);
-            }
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
         }
-        
         .instructions-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(8, 15, 35, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 150;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(8, 15, 35, 0.95);
+            display: flex; align-items: center; justify-content: center; z-index: 150; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-        
-        .instructions-overlay.show {
-            opacity: 1;
-            pointer-events: all;
-        }
-        
+        .instructions-overlay.show { opacity: 1; pointer-events: all; }
         .instructions-content {
-            background: #1c2a4e;
-            border: 2px solid rgba(111, 211, 245, 0.9);
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(111, 211, 245, 0.3);
+            background: #1c2a4e; border: 2px solid rgba(111, 211, 245, 0.9); padding: 30px; border-radius: 15px;
+            max-width: 500px; text-align: center; box-shadow: 0 0 20px rgba(111, 211, 245, 0.3);
         }
-        
-        .instructions-content h3 {
-            color: rgba(111, 211, 245, 1);
-            margin-top: 0;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        
-        .instructions-content p {
-            font-size: 16px;
-            line-height: 1.6;
-            margin: 15px 0;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        
-        .instructions-content button {
-            padding: 12px 30px;
-            font-size: 16px;
-            margin-top: 20px;
-            width: auto;
-            display: inline-block;
-        }
-        
+        .instructions-content h3 { color: rgba(111, 211, 245, 1); margin-top: 0; font-size: 24px; margin-bottom: 20px; }
+        .instructions-content p { font-size: 16px; line-height: 1.6; margin: 15px 0; color: rgba(255, 255, 255, 0.9); }
+        .instructions-content button { padding: 12px 30px; font-size: 16px; margin-top: 20px; width: auto; display: inline-block; }
         @media (max-width: 768px) {
-            .stat-value {
-                font-size: 20px;
-            }
-            
-            .stat-label {
-                font-size: 12px;
-            }
-            
-            .sequence-piece {
-                width: 45px;
-                height: 45px;
-                font-size: 22px;
-            }
-            
-            #sequence-progress {
-                font-size: 16px;
-                padding: 8px 15px;
-            }
-            
-            .control-button {
-                padding: 8px 15px;
-                font-size: 14px;
-            }
-            
-            #model-container, #build-area {
-                padding: 15px;
-            }
-            
-            #model-display, #user-sequence {
-                padding: 10px;
-                gap: 8px;
-            }
-            
-            #settings-panel {
-                width: 95%;
-                padding: 20px;
-                max-height: 80vh;
-            }
-            
-            .game-description {
-                font-size: 13px;
-                padding: 12px;
-            }
+            .stat-value { font-size: 20px; }
+            .stat-label { font-size: 12px; }
+            .sequence-piece { width: 45px; height: 45px; font-size: 22px; }
+            #sequence-progress { font-size: 16px; padding: 8px 15px; }
+            .control-button { padding: 8px 15px; font-size: 14px; }
+            #model-container, #build-area { padding: 15px; }
+            #model-display, #user-sequence { padding: 10px; gap: 8px; }
+            #settings-panel { width: 95%; padding: 20px; max-height: 80vh; }
+            .game-description { font-size: 13px; padding: 12px; }
         }
     </style>
 </head>
@@ -863,20 +335,23 @@
     </div>
     
     <!-- SESSION ENHANCEMENT SYSTEM INTEGRATION -->
-    <script type="module" src="../js/utils.js"></script>
-    <script type="module" src="../js/session-enhancement.js"></script>
+    <!-- ⬇️ UPDATED: root-relative module imports -->
+    <script type="module" src="/js/utils.js"></script>
+    <script type="module" src="/js/session-enhancement.js"></script>
+
     <script type="module">
-        import { storage, starfield, theme, viewport, audio, initUtils, toast } from '../js/utils.js';
-        import { sessionEnhancement } from '../js/session-enhancement.js';
+        import { storage, starfield, theme, viewport, audio, initUtils, toast } from '/js/utils.js';
+        import { sessionEnhancement } from '/js/session-enhancement.js';
         /* ✅ Achievements & Progress integration */
-        import { checkAndUnlockAchievements, markExerciseTried, showAchievementNotification } from '../js/achievements.js';
-        import { recordSession } from '../js/progress.js';
+        import { checkAndUnlockAchievements, markExerciseTried, showAchievementNotification } from '/js/achievements.js';
+        import { recordSession } from '/js/progress.js';
         
         // Initialize utilities first
         initUtils();
         
         // SESSION ENHANCEMENT INTEGRATION
-        const currentExerciseId = 'sequence';
+        // ⬇️ UPDATED: correct exercise id per mapping
+        const currentExerciseId = 'sequence-builder';
         
         function getCurrentDifficulty() {
             const difficultySelect = document.getElementById('difficulty');
@@ -916,7 +391,6 @@
         
         // Create stars for background effect
         const starsCount = 50;
-        
         for (let i = 0; i < starsCount; i++) {
             const star = document.createElement('div');
             star.classList.add('star');
@@ -977,33 +451,24 @@
             pattern: {
                 pieces: ['🔹', '🔸', '🔺', '🔻', '⭐', '💫', '🌟', '✨', '⚡', '❄️', '🌀', '🟡', '🔄', '➿', '➰'],
                 generators: [
-                    // Alternating patterns
                     (steps) => {
                         const pieces = getRandomSubset(sequenceLibraries.pattern.pieces, 2);
                         return Array(steps).fill().map((_, i) => pieces[i % 2]);
                     },
-                    // Repeating groups
                     (steps) => {
                         const pieces = getRandomSubset(sequenceLibraries.pattern.pieces, 3);
                         return Array(steps).fill().map((_, i) => pieces[i % 3]);
                     },
-                    // Fibonacci-like pattern
                     (steps) => {
                         const pieces = getRandomSubset(sequenceLibraries.pattern.pieces, 3);
                         const result = [];
                         for (let i = 0; i < steps; i++) {
-                            if (i === 0) {
-                                result.push(pieces[0]);
-                            } else if (i === 1) {
-                                result.push(pieces[1]);
-                            } else {
-                                // Alternate between the two previous patterns
-                                result.push(i % 2 === 0 ? pieces[0] : pieces[1]);
-                            }
+                            if (i === 0) result.push(pieces[0]);
+                            else if (i === 1) result.push(pieces[1]);
+                            else result.push(i % 2 === 0 ? pieces[0] : pieces[1]);
                         }
                         return result;
                     },
-                    // Symbol progression
                     (steps) => {
                         const pieces = getRandomSubset(sequenceLibraries.pattern.pieces, steps);
                         return pieces;
@@ -1013,17 +478,11 @@
             assembly: {
                 pieces: ['🧱', '🔨', '🔧', '🪚', '🔩', '⚙️', '🧰', '🧲', '🧪', '🔬', '📊', '🔋', '📚', '📍', '🔒'],
                 generators: [
-                    // Tool sequence
-                    (steps) => {
-                        const pieces = getRandomSubset(sequenceLibraries.assembly.pieces, steps);
-                        return pieces;
-                    },
-                    // Building sequence
+                    (steps) => getRandomSubset(sequenceLibraries.assembly.pieces, steps),
                     (steps) => {
                         const pieces = ['🧱', '🔨', '🔧', '⚙️', '🔩', '🧰', '🗝️', '🚧'];
                         return getRandomSubset(pieces, steps);
                     },
-                    // Laboratory sequence
                     (steps) => {
                         const pieces = ['🧪', '🔬', '⚗️', '🧫', '📊', '📍', '💡', '📚'];
                         return getRandomSubset(pieces, steps);
@@ -1033,46 +492,18 @@
             numerical: {
                 pieces: ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔢', '🔣', '➕', '➖', '✖️', '➗'],
                 generators: [
-                    // Counting sequence
-                    (steps) => {
-                        const numbers = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
-                        return numbers.slice(0, steps);
-                    },
-                    // Even numbers
-                    (steps) => {
-                        const numbers = ['0️⃣', '2️⃣', '4️⃣', '6️⃣', '8️⃣', '🔟'];
-                        return numbers.slice(0, steps);
-                    },
-                    // Odd numbers
-                    (steps) => {
-                        const numbers = ['1️⃣', '3️⃣', '5️⃣', '7️⃣', '9️⃣'];
-                        return numbers.slice(0, steps);
-                    },
-                    // Basic math operations
-                    (steps) => {
-                        const operations = ['1️⃣', '➕', '2️⃣', '➖', '3️⃣', '✖️', '4️⃣', '➗'];
-                        return operations.slice(0, steps);
-                    }
+                    (steps) => ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣'].slice(0, steps),
+                    (steps) => ['0️⃣','2️⃣','4️⃣','6️⃣','8️⃣','🔟'].slice(0, steps),
+                    (steps) => ['1️⃣','3️⃣','5️⃣','7️⃣','9️⃣'].slice(0, steps),
+                    (steps) => ['1️⃣','➕','2️⃣','➖','3️⃣','✖️','4️⃣','➗'].slice(0, steps)
                 ]
             },
             spatial: {
                 pieces: ['⬆️', '⬇️', '⬅️', '➡️', '↗️', '↘️', '↙️', '↖️', '↕️', '↔️', '🔄', '🔀', '🔂', '🔃'],
                 generators: [
-                    // Direction sequence
-                    (steps) => {
-                        const directions = ['⬆️', '⬇️', '⬅️', '➡️', '↗️', '↘️', '↙️', '↖️'];
-                        return getRandomSubset(directions, steps);
-                    },
-                    // Rotational sequence
-                    (steps) => {
-                        const rotations = ['🔄', '🔀', '🔂', '🔃', '🔀'];
-                        return getRandomSubset(rotations, steps);
-                    },
-                    // Movement pattern
-                    (steps) => {
-                        const movements = ['⬆️', '⬇️', '⬅️', '➡️'];
-                        return Array(steps).fill().map((_, i) => movements[i % 4]);
-                    }
+                    (steps) => getRandomSubset(['⬆️','⬇️','⬅️','➡️','↗️','↘️','↙️','↖️'], steps),
+                    (steps) => getRandomSubset(['🔄','🔀','🔂','🔃','🔀'], steps),
+                    (steps) => Array(steps).fill().map((_, i) => ['⬆️','⬇️','⬅️','➡️'][i % 4])
                 ]
             }
         };
@@ -1106,11 +537,9 @@
         // Load saved settings
         loadSettings();
         
-        // Add keyboard support for sequence pieces
+        // Keyboard support for pieces
         document.addEventListener('keydown', (e) => {
             if (!isSessionActive) return;
-            
-            // Handle Enter/Space for selected pieces
             if ((e.key === 'Enter' || e.key === ' ') && document.activeElement.classList.contains('sequence-piece')) {
                 e.preventDefault();
                 if (document.activeElement.classList.contains('placeholder')) {
@@ -1124,36 +553,20 @@
         function createSequencePiece(symbol, type = '') {
             const piece = document.createElement('div');
             piece.className = 'sequence-piece';
-            if (type) {
-                piece.classList.add(type);
-            }
+            if (type) piece.classList.add(type);
             piece.textContent = symbol;
             piece.dataset.symbol = symbol;
-            
-            if (type === '') {
-                piece.addEventListener('click', () => selectPiece(piece));
-            }
-            
+            if (type === '') piece.addEventListener('click', () => selectPiece(piece));
             return piece;
         }
         
         function selectPiece(piece) {
             if (!isSessionActive || piece.classList.contains('placeholder')) return;
-            
-            // Deselect previous piece
-            if (selectedPiece) {
-                selectedPiece.classList.remove('selected');
-            }
-            
-            // Select new piece
+            if (selectedPiece) selectedPiece.classList.remove('selected');
             selectedPiece = piece;
             selectedPiece.classList.add('selected');
             selectedPiece.focus();
-            
-            // Update status
             statusText.textContent = 'Now click an empty slot to place it';
-            
-            // Add active state to user sequence area
             userSequence.classList.add('active');
         }
         
@@ -1166,12 +579,7 @@
                 placeholder.setAttribute('role', 'button');
                 placeholder.setAttribute('tabindex', '0');
                 placeholder.setAttribute('aria-label', `Empty slot ${i + 1} of ${count}`);
-                
-                // Highlight the next slot to fill
-                if (i === currentStepIndex) {
-                    placeholder.classList.add('next');
-                }
-                
+                if (i === currentStepIndex) placeholder.classList.add('next');
                 placeholder.addEventListener('click', () => placePiece(placeholder));
                 userSequence.appendChild(placeholder);
             }
@@ -1179,47 +587,25 @@
         
         function placePiece(placeholder) {
             if (!selectedPiece || !isSessionActive) return;
-            
             const index = parseInt(placeholder.dataset.index);
-            
-            // Place the piece
             const newPiece = selectedPiece.cloneNode(true);
             newPiece.classList.remove('selected');
             newPiece.setAttribute('aria-label', `Placed ${newPiece.dataset.symbol} in position ${index + 1}`);
             newPiece.addEventListener('click', () => removePiece(newPiece, index));
-            
             userSequence.replaceChild(newPiece, placeholder);
             userSteps[index] = newPiece.dataset.symbol;
-            
-            // Update current step
             currentStepIndex = userSteps.filter(s => s).length;
             currentStepElement.textContent = Math.min(currentStepIndex + 1, currentSequence.length);
-            
-            // Deselect piece
             selectedPiece.classList.remove('selected');
             selectedPiece = null;
-            
-            // Update status
-            if (currentStepIndex < currentSequence.length) {
-                statusText.textContent = 'Select the next piece';
-            } else {
-                statusText.textContent = 'Sequence complete! Click Check';
-            }
-            
-            // Remove active state
+            statusText.textContent = currentStepIndex < currentSequence.length ? 'Select the next piece' : 'Sequence complete! Click Check';
             userSequence.classList.remove('active');
-            
-            // Update next slot highlight
             updatePlaceholderHighlights();
-            
-            // Enable check button if sequence is complete
             checkButton.disabled = currentStepIndex < currentSequence.length;
         }
         
         function removePiece(piece, index) {
             if (!isSessionActive) return;
-            
-            // Replace with placeholder
             const placeholder = document.createElement('div');
             placeholder.className = 'sequence-piece placeholder';
             placeholder.dataset.index = index;
@@ -1227,21 +613,12 @@
             placeholder.setAttribute('tabindex', '0');
             placeholder.setAttribute('aria-label', `Empty slot ${index + 1}`);
             placeholder.addEventListener('click', () => placePiece(placeholder));
-            
             userSequence.replaceChild(placeholder, piece);
             userSteps[index] = null;
-            
-            // Update current step
             currentStepIndex = userSteps.filter(s => s).length;
             currentStepElement.textContent = Math.min(currentStepIndex + 1, currentSequence.length);
-            
-            // Update status
             statusText.textContent = 'Piece removed - select a piece to continue';
-            
-            // Update highlights
             updatePlaceholderHighlights();
-            
-            // Disable check button
             checkButton.disabled = true;
         }
         
@@ -1249,29 +626,18 @@
             const placeholders = userSequence.querySelectorAll('.placeholder');
             placeholders.forEach((p, i) => {
                 p.classList.remove('next');
-                // Find the first empty slot
                 if (!userSteps[i] && !p.classList.contains('next')) {
                     let hasNext = false;
-                    for (let j = 0; j < i; j++) {
-                        if (!userSteps[j]) {
-                            hasNext = true;
-                            break;
-                        }
-                    }
-                    if (!hasNext) {
-                        p.classList.add('next');
-                    }
+                    for (let j = 0; j < i; j++) if (!userSteps[j]) { hasNext = true; break; }
+                    if (!hasNext) p.classList.add('next');
                 }
             });
         }
         
         function checkSequence() {
             if (!isSessionActive || currentStepIndex < currentSequence.length) return;
-            
             totalAttempts++;
             let isCorrect = true;
-            
-            // Check each step
             for (let i = 0; i < currentSequence.length; i++) {
                 const piece = userSequence.children[i];
                 if (userSteps[i] === currentSequence[i]) {
@@ -1281,62 +647,41 @@
                     isCorrect = false;
                 }
             }
-            
-            // Update score and stats
             if (isCorrect) {
-                correctSequences++;
-                sequencesCompleted++;
+                correctSequences++; sequencesCompleted++;
                 score += 100 + (50 * currentSequence.length);
                 showFeedback('✅ Perfect!', 'success');
             } else {
                 score = Math.max(0, score - 25);
                 showFeedback('❌ Try Again!', 'error');
             }
-            
             updateStats();
-            
-            // Disable interaction during feedback
-            checkButton.disabled = true;
-            resetButton.disabled = true;
-            
+            checkButton.disabled = true; resetButton.disabled = true;
             setTimeout(() => {
-                if (isSessionActive) {
-                    if (isCorrect) {
-                        // Move to next sequence
-                        currentSequenceIndex++;
-                        if (currentSequenceIndex < sequences.length) {
-                            currentSequenceElement.textContent = currentSequenceIndex + 1;
-                            modelVisible = true;
-                            startSequence(sequences[currentSequenceIndex]);
-                        } else {
-                            endSession(); // ⬅ existing endSession now also records & unlocks
-                        }
+                if (!isSessionActive) return;
+                if (isCorrect) {
+                    currentSequenceIndex++;
+                    if (currentSequenceIndex < sequences.length) {
+                        currentSequenceElement.textContent = currentSequenceIndex + 1;
+                        modelVisible = true;
+                        startSequence(sequences[currentSequenceIndex]);
                     } else {
-                        // Allow retry
-                        resetUserSequence();
-                        checkButton.disabled = false;
-                        resetButton.disabled = false;
+                        endSession(); // existing endSession now also records & unlocks
                     }
+                } else {
+                    resetUserSequence();
+                    checkButton.disabled = false; resetButton.disabled = false;
                 }
             }, 1500);
         }
         
         function resetUserSequence() {
             if (!isSessionActive) return;
-            
-            currentStepIndex = 0;
-            userSteps = [];
-            currentStepElement.textContent = '1';
+            currentStepIndex = 0; userSteps = []; currentStepElement.textContent = '1';
             createUserPlaceholders(currentSequence.length);
-            
             statusText.textContent = 'Select a piece below to place';
             checkButton.disabled = true;
-            
-            if (selectedPiece) {
-                selectedPiece.classList.remove('selected');
-                selectedPiece = null;
-            }
-            
+            if (selectedPiece) { selectedPiece.classList.remove('selected'); selectedPiece = null; }
             userSequence.classList.remove('active');
         }
         
@@ -1345,22 +690,14 @@
             feedback.className = `feedback-message ${type}`;
             feedback.textContent = message;
             feedback.setAttribute('aria-live', 'polite');
-            
             document.body.appendChild(feedback);
-            
-            setTimeout(() => {
-                if (feedback.parentNode) {
-                    feedback.parentNode.removeChild(feedback);
-                }
-            }, 1200);
+            setTimeout(() => { if (feedback.parentNode) feedback.parentNode.removeChild(feedback); }, 1200);
         }
         
         function updateStats() {
             scoreElement.textContent = score;
             sequencesCompletedElement.textContent = sequencesCompleted;
-            
-            const accuracy = totalAttempts > 0 ? 
-                Math.round((correctSequences / totalAttempts) * 100) : 100;
+            const accuracy = totalAttempts > 0 ? Math.round((correctSequences / totalAttempts) * 100) : 100;
             accuracyElement.textContent = `${accuracy}%`;
         }
         
@@ -1380,11 +717,9 @@
             clearInterval(memoryTimerInterval);
             isSessionActive = false;
             
-            // Calculate final stats
-            const accuracy = totalAttempts > 0 ? 
-                Math.round((correctSequences / totalAttempts) * 100) : 0;
+            const accuracy = totalAttempts > 0 ? Math.round((correctSequences / totalAttempts) * 100) : 0;
             
-            // *** SESSION ENHANCEMENT INTEGRATION ***
+            // Session enhancement hook
             sessionEnhancement.handleSessionComplete({
                 score: score,
                 sequences: sequencesCompleted,
@@ -1396,20 +731,13 @@
             try {
                 const difficultyUsed = passedDifficulty || getCurrentDifficulty();
                 const scoreUsed = typeof passedScore === 'number' ? passedScore : score;
-                
-                // Record the session (updates totals, streaks, personal bests)
                 recordSession(currentExerciseId, difficultyUsed, scoreUsed);
-                
-                // Mark this exercise as tried (for Explorer achievement)
                 markExerciseTried(currentExerciseId);
-                
-                // Check for newly unlocked achievements and show notifications
                 const newAchievements = checkAndUnlockAchievements() || [];
                 newAchievements.forEach((achievementId) => {
                     if (typeof showAchievementNotification === 'function') {
                         showAchievementNotification(achievementId);
                     } else if (typeof toast === 'function') {
-                        // Fallback toast if helper not available
                         toast(`Achievement unlocked: ${achievementId}`);
                     }
                 });
@@ -1426,170 +754,100 @@
             finalScoreElement.textContent = score;
             finalSequencesElement.textContent = sequencesCompleted;
             finalAccuracyElement.textContent = `${accuracy}%`;
-            
             completionMessage.classList.remove('hidden');
-            
-            // Reset timer bar
             timerBar.style.width = '0%';
         }
         
         function startSession() {
-            // Get settings
             const sequenceType = sequenceTypeSelect.value;
             const difficulty = difficultySelect.value;
             const showCompleted = showCompletedSelect.value;
             sessionDuration = parseInt(sessionDurationInput.value) * 60 * 1000;
             
-            // Reset game state
-            score = 0;
-            sequencesCompleted = 0;
-            totalAttempts = 0;
-            correctSequences = 0;
-            timeRemaining = sessionDuration;
-            currentSequenceIndex = 0;
+            score = 0; sequencesCompleted = 0; totalAttempts = 0; correctSequences = 0;
+            timeRemaining = sessionDuration; currentSequenceIndex = 0;
             
-            // Generate sequences for the session
             generateSequences(sequenceType, difficulty);
             
-            // Set up sequence area size based on window size
             const areaWidth = Math.min(800, window.innerWidth * 0.9);
             const areaHeight = Math.min(600, window.innerHeight * 0.8);
             sequenceArea.style.width = `${areaWidth}px`;
             sequenceArea.style.height = `${areaHeight}px`;
             
-            // Update sequence progress
             currentSequenceElement.textContent = '1';
             totalSequencesElement.textContent = sequences.length;
             
-            // Update stats
-            updateStats();
-            updateTimer();
-            
-            // Hide settings, show stats and progress
+            updateStats(); updateTimer();
             settingsPanel.classList.add('hidden');
             statsPanel.classList.remove('hidden');
             sequenceProgress.classList.remove('hidden');
             
-            // Start session
-            isSessionActive = true;
-            modelVisible = true;
-            
-            // Start first sequence
+            isSessionActive = true; modelVisible = true;
             startSequence(sequences[0]);
             
-            // Start timer
             timerInterval = setInterval(() => {
                 timeRemaining -= 100;
-                
-                // Update timer bar
                 const progress = timeRemaining / sessionDuration;
                 timerBar.style.width = `${progress * 100}%`;
-                
-                // Update time display
                 updateTimer();
-                
-                // Check if session is over
-                if (timeRemaining <= 0) {
-                    endSession(); // will also record & unlock
-                }
+                if (timeRemaining <= 0) endSession();
             }, 100);
             
-            // Save settings
             saveSettings();
         }
         
         function generateSequences(type, difficulty) {
-            // Clear existing sequences
             sequences = [];
-            
-            // Determine steps per sequence based on difficulty
             let stepsPerSequence;
             switch (difficulty) {
-                case 'easy': stepsPerSequence = Math.floor(Math.random() * 2) + 3; break; // 3-4 steps
-                case 'hard': stepsPerSequence = Math.floor(Math.random() * 2) + 7; break; // 7-8 steps
-                default: stepsPerSequence = Math.floor(Math.random() * 2) + 5; break; // 5-6 steps
+                case 'easy': stepsPerSequence = Math.floor(Math.random() * 2) + 3; break;
+                case 'hard': stepsPerSequence = Math.floor(Math.random() * 2) + 7; break;
+                default: stepsPerSequence = Math.floor(Math.random() * 2) + 5; break;
             }
-            
-            // Generate 10 sequences
             for (let i = 0; i < 10; i++) {
                 const library = sequenceLibraries[type];
                 const generatorIndex = Math.floor(Math.random() * library.generators.length);
                 const generator = library.generators[generatorIndex];
-                
-                // Generate sequence
                 const sequence = generator(stepsPerSequence);
                 sequences.push(sequence);
             }
         }
         
         function startSequence(sequence) {
-            // Clear previous sequence
-            modelDisplay.innerHTML = '';
-            modelDisplay.classList.remove('hidden');
-            userSequence.innerHTML = '';
-            piecesContainer.innerHTML = '';
-            
-            // Save current sequence
-            currentSequence = sequence;
-            savedModelSequence = [...sequence]; // Save a copy of the model sequence
-            userSteps = [];
-            currentStepIndex = 0;
-            
-            // Update step counter
+            modelDisplay.innerHTML = ''; modelDisplay.classList.remove('hidden');
+            userSequence.innerHTML = ''; piecesContainer.innerHTML = '';
+            currentSequence = sequence; savedModelSequence = [...sequence];
+            userSteps = []; currentStepIndex = 0;
             currentStepElement.textContent = '1';
             totalStepsElement.textContent = sequence.length;
-            
-            // Update status
             statusText.textContent = 'Study the pattern above';
-            checkButton.disabled = true;
-            resetButton.disabled = false;
-            
-            // Display model sequence
-            sequence.forEach(item => {
-                const piece = createSequencePiece(item, 'model');
-                modelDisplay.appendChild(piece);
-            });
-            
-            // Create available pieces for user to choose from
+            checkButton.disabled = true; resetButton.disabled = false;
+            sequence.forEach(item => { const piece = createSequencePiece(item, 'model'); modelDisplay.appendChild(piece); });
             createAvailablePieces(sequence);
-            
-            // Create placeholders for user sequence
             createUserPlaceholders(sequence.length);
-            
-            // Hide model after a delay if setting is "initially"
             const showMode = showCompletedSelect.value;
             if (showMode === 'initially') {
                 memoryTimer.classList.remove('hidden');
-                let countdown = 5;
-                memoryTimer.textContent = `Memorize: ${countdown}s`;
-                
+                let countdown = 5; memoryTimer.textContent = `Memorize: ${countdown}s`;
                 memoryTimerInterval = setInterval(() => {
-                    countdown--;
-                    memoryTimer.textContent = `Memorize: ${countdown}s`;
-                    
+                    countdown--; memoryTimer.textContent = `Memorize: ${countdown}s`;
                     if (countdown <= 0) {
                         clearInterval(memoryTimerInterval);
                         modelDisplay.classList.add('hidden');
                         memoryTimer.classList.add('hidden');
-                        modelVisible = false;
-                        statusText.textContent = 'Recreate the pattern from memory';
+                        modelVisible = false; statusText.textContent = 'Recreate the pattern from memory';
                     }
                 }, 1000);
             } else if (showMode === 'never') {
                 memoryTimer.classList.remove('hidden');
-                let countdown = 2;
-                memoryTimer.textContent = `Quick look: ${countdown}s`;
-                
+                let countdown = 2; memoryTimer.textContent = `Quick look: ${countdown}s`;
                 memoryTimerInterval = setInterval(() => {
-                    countdown--;
-                    memoryTimer.textContent = `Quick look: ${countdown}s`;
-                    
+                    countdown--; memoryTimer.textContent = `Quick look: ${countdown}s`;
                     if (countdown <= 0) {
                         clearInterval(memoryTimerInterval);
                         modelDisplay.classList.add('hidden');
                         memoryTimer.classList.add('hidden');
-                        modelVisible = false;
-                        statusText.textContent = 'Recreate the pattern from memory';
+                        modelVisible = false; statusText.textContent = 'Recreate the pattern from memory';
                     }
                 }, 1000);
             } else {
@@ -1598,62 +856,28 @@
         }
         
         function createAvailablePieces(sequence) {
-            // Get unique pieces from the sequence
             const uniquePieces = [...new Set(sequence)];
-            
-            // Add some distractor pieces based on difficulty
             const library = sequenceLibraries[sequenceTypeSelect.value];
             let allPieces = [...uniquePieces];
-            
-            // Add distractors based on difficulty
             let numDistractors = 0;
             switch (difficultySelect.value) {
                 case 'easy': numDistractors = 2; break;
                 case 'medium': numDistractors = 4; break;
                 case 'hard': numDistractors = 6; break;
             }
-            
-            // Find pieces not in the sequence to use as distractors
             const distractors = library.pieces.filter(p => !uniquePieces.includes(p));
             const selectedDistractors = getRandomSubset(distractors, numDistractors);
-            
             allPieces = [...allPieces, ...selectedDistractors];
-            // Shuffle the pieces
             shuffleArray(allPieces);
-            
-            // Create piece elements
-            allPieces.forEach(symbol => {
-                const piece = createSequencePiece(symbol);
-                piecesContainer.appendChild(piece);
-            });
-            
-            // Save available pieces
+            allPieces.forEach(symbol => { const piece = createSequencePiece(symbol); piecesContainer.appendChild(piece); });
             availablePieces = allPieces;
         }
         
-        function hideInstructions() {
-            instructionsOverlay.classList.remove('show');
-            startSession();
-        }
-        
-        // Make hideInstructions globally available for onclick
+        function hideInstructions() { instructionsOverlay.classList.remove('show'); startSession(); }
         window.hideInstructions = hideInstructions;
         
-        // Helper function to get random subset of array
-        function getRandomSubset(array, size) {
-            // Clone array to avoid modifying original
-            const shuffled = [...array].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, size);
-        }
-        
-        // Helper function to shuffle array
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
+        function getRandomSubset(array, size) { const shuffled = [...array].sort(() => 0.5 - Math.random()); return shuffled.slice(0, size); }
+        function shuffleArray(array) { for (let i = array.length - 1; i > 0; i++) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
         
         function saveSettings() {
             localStorage.setItem('sequenceType', sequenceTypeSelect.value);
@@ -1661,39 +885,18 @@
             localStorage.setItem('showCompleted', showCompletedSelect.value);
             localStorage.setItem('sequenceDuration', sessionDurationInput.value);
         }
-        
         function loadSettings() {
-            if (localStorage.getItem('sequenceType')) {
-                sequenceTypeSelect.value = localStorage.getItem('sequenceType');
-            }
-            if (localStorage.getItem('sequenceDifficulty')) {
-                difficultySelect.value = localStorage.getItem('sequenceDifficulty');
-            }
-            if (localStorage.getItem('showCompleted')) {
-                showCompletedSelect.value = localStorage.getItem('showCompleted');
-            }
-            if (localStorage.getItem('sequenceDuration')) {
-                sessionDurationInput.value = localStorage.getItem('sequenceDuration');
-            }
+            if (localStorage.getItem('sequenceType')) sequenceTypeSelect.value = localStorage.getItem('sequenceType');
+            if (localStorage.getItem('sequenceDifficulty')) difficultySelect.value = localStorage.getItem('sequenceDifficulty');
+            if (localStorage.getItem('showCompleted')) showCompletedSelect.value = localStorage.getItem('showCompleted');
+            if (localStorage.getItem('sequenceDuration')) sessionDurationInput.value = localStorage.getItem('sequenceDuration');
         }
         
         // Prevent zooming on double tap
-        document.addEventListener('touchstart', function(event) {
-            if (event.touches.length > 1) {
-                event.preventDefault();
-            }
-        }, { passive: false });
-        
+        document.addEventListener('touchstart', function(event) { if (event.touches.length > 1) event.preventDefault(); }, { passive: false });
         let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = Date.now();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-        
-        // Resize handler to adjust sequence area size
+        document.addEventListener('touchend', function(event) { const now = Date.now(); if (now - lastTouchEnd <= 300) event.preventDefault(); lastTouchEnd = now; }, false);
+        // Resize handler
         window.addEventListener('resize', function() {
             if (isSessionActive) {
                 const areaWidth = Math.min(800, window.innerWidth * 0.9);
@@ -1702,6 +905,37 @@
                 sequenceArea.style.height = `${areaHeight}px`;
             }
         });
+
+        // ⬇️ Expose endSession globally so in-page UI can call it
+        // (Primary path: call the internal endSession; Fallback: record hooks directly)
+        window.endSession = function(scoreArg, difficultyArg = 'easy') {
+            try {
+                // Use the internal function which already records hooks
+                endSession(scoreArg, difficultyArg);
+            } catch (e) {
+                // Fallback if local endSession not available
+                try { recordSession(currentExerciseId, difficultyArg, typeof scoreArg === 'number' ? scoreArg : 0); } catch {}
+                try { markExerciseTried(currentExerciseId); } catch {}
+                try { checkAndUnlockAchievements(); } catch {}
+            }
+        };
+    </script>
+
+    <!-- ⬇️ Required standard module block (root-relative imports + explicit EXERCISE_ID) -->
+    <script type="module">
+      import { recordSession } from '/js/progress.js';
+      import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+
+      const EXERCISE_ID = 'sequence-builder';
+
+      // If another script hasn't already exposed a window.endSession, wire a minimal one.
+      if (typeof window.endSession !== 'function') {
+        window.endSession = function(score, difficulty = 'easy') {
+          recordSession(EXERCISE_ID, difficulty, score);
+          try { markExerciseTried(EXERCISE_ID); } catch (e) { /* no-op if signature differs */ }
+          try { checkAndUnlockAchievements(); } catch (e) { /* optional */ }
+        };
+      }
     </script>
 </body>
 </html>

@@ -884,70 +884,20 @@
     <!-- Screen reader announcements -->
     <div id="sr-announcements" class="visually-hidden" aria-live="assertive"></div>
 
-    <!-- Achievement and Progress Tracking -->
+    <!-- Standardized Achievement & Progress hook (root-relative imports) -->
     <script type="module">
-        // Import achievement and progress tracking functions
-        // Note: These imports will work when the JS files are created
-        let checkAndUnlockAchievements, markExerciseTried, recordSession;
-        
-        try {
-            const achievementModule = await import('../js/achievements.js');
-            const progressModule = await import('../js/progress.js');
-            
-            checkAndUnlockAchievements = achievementModule.checkAndUnlockAchievements;
-            markExerciseTried = achievementModule.markExerciseTried;
-            recordSession = progressModule.recordSession;
-        } catch (error) {
-            console.log('Achievement/Progress modules not yet available:', error.message);
-            // Provide fallback functions
-            checkAndUnlockAchievements = () => [];
-            markExerciseTried = () => {};
-            recordSession = () => {};
-        }
+      import { recordSession } from '/js/progress.js';
+      import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
 
-        // Call this when exercise session ends
-        function endSession(score, difficulty = 'easy') {
-            try {
-                // Record the session (updates totals, streaks, personal bests)
-                recordSession('rhythm', difficulty, score);
-                
-                // Mark this exercise as tried (for Explorer achievement)
-                markExerciseTried('rhythm');
-                
-                // Check for newly unlocked achievements
-                const newAchievements = checkAndUnlockAchievements();
-                
-                // Show achievement notifications
-                newAchievements.forEach(achievementId => {
-                    showAchievementNotification(achievementId);
-                });
-            } catch (error) {
-                console.log('Achievement tracking temporarily disabled:', error.message);
-            }
-        }
+      const EXERCISE_ID = 'rhythm';
 
-        // Function to show achievement notification
-        function showAchievementNotification(achievementId) {
-            // This function should be implemented to show a visual notification
-            // For now, we'll use a simple console log - this should be replaced with a proper notification system
-            console.log(`Achievement unlocked: ${achievementId}`);
-            
-            // You can add a visual notification here later
-            // For example, a toast notification or modal
-            const statusMessage = document.getElementById('status-message');
-            if (statusMessage) {
-                statusMessage.textContent = `🏆 Achievement Unlocked: ${achievementId}`;
-                statusMessage.style.opacity = '1';
-                statusMessage.style.color = '#FFD700';
-                setTimeout(() => {
-                    statusMessage.style.opacity = '0';
-                }, 3000);
-            }
-        }
-
-        // Make these functions available globally so they can be called from the game logic
-        window.endSession = endSession;
-        window.showAchievementNotification = showAchievementNotification;
+      // Call this when an exercise session ends
+      window.endSession = function(score, difficulty = 'easy') {
+        recordSession(EXERCISE_ID, difficulty, score);
+        // If markExerciseTried expects an id, pass it; if not, remove the argument.
+        try { markExerciseTried(EXERCISE_ID); } catch (e) { /* no-op if signature differs */ }
+        try { checkAndUnlockAchievements(); } catch (e) { /* optional */ }
+      };
     </script>
 
     <script>
@@ -1214,12 +1164,12 @@
             showStatusMessage('Watch the sequence...', 'info');
             
             // Show sequence numbers
-            sequenceDisplay.innerHTML = gameState.sequence.map(num => 
+            document.getElementById('sequence-display').innerHTML = gameState.sequence.map(num => 
                 `<span>${num}</span>`
             ).join(' ');
             
             setTimeout(() => {
-                sequenceDisplay.innerHTML = '';
+                document.getElementById('sequence-display').innerHTML = '';
                 playSequence(delay);
             }, 1000);
         }
@@ -1341,7 +1291,7 @@
             
             completionMessage.classList.remove('hidden');
             
-            // Call the achievement tracking function
+            // Call the achievement & progress hook
             const difficulty = gameState.settings.difficulty;
             if (window.endSession) {
                 window.endSession(gameState.score, difficulty);

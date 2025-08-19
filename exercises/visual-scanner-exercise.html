@@ -508,13 +508,9 @@
     
     <!-- SESSION ENHANCEMENT + GAMIFICATION INTEGRATION -->
     <script type="module">
-        // Core utils and session enhancement
-        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
-        import { sessionEnhancement } from '../js/session-enhancement.js';
-
-        // ✨ Gamification imports (per your spec)
-        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
-        import { recordSession } from '../js/progress.js';
+        // Core utils and session enhancement - UPDATED TO ROOT-RELATIVE IMPORTS
+        import { storage, starfield, theme, viewport, audio, initUtils } from '/js/utils.js';
+        import { sessionEnhancement } from '/js/session-enhancement.js';
 
         // Initialize utils
         initUtils();
@@ -538,7 +534,6 @@
         
         // Exercise identity
         const currentExerciseId = 'visual-scanner';
-        const PROGRESS_EXERCISE_ID = 'scanner'; // used for progress/achievements per your ID list
         
         function getCurrentDifficulty() {
             const difficultySelect = document.getElementById('difficulty');
@@ -625,10 +620,10 @@
         
         // Object libraries
         const objectLibraries = {
-            shapes: ['●', '■', '▲', '◆', '★', '◑', '○', '□', '△', '◇', '☆', '▣', '▬', '▮', '◎', '◐', '◒', '◓', '◕'],
+            shapes: ['●', '■', '▲', '◆', '★', '◐', '○', '□', '△', '◇', '☆', '▣', '▬', '▮', '◎', '◉', '◑', '◒', '◕'],
             letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'],
             numbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '11', '22', '33', '44', '55', '66', '77', '88', '99'],
-            emoji: ['🔍', '⚡', '🔔', '🔑', '🌟', '🎯', '🏆', '💡', '🎮', '🎨', '📌', '⏰', '📍', '🚀', '🎁', '📎', '🔎', '📢', '🔮']
+            emoji: ['🔍', '⚡', '🔓', '🔒', '🌟', '🎯', '🏆', '💡', '🎮', '🎨', '📌', '⏰', '📊', '🚀', '🎊', '🔎', '🔍', '📢', '🔮']
         };
         
         // Difficulty settings
@@ -688,7 +683,7 @@
                 
                 // Check if session is over
                 if (timeRemaining <= 0) {
-                    endSession();
+                    endSessionInternal();
                 }
             }, 100);
         }
@@ -896,7 +891,7 @@
             
             if (availableObjects.length === 0) {
                 // All objects found, end session
-                endSession();
+                endSessionInternal();
                 return;
             }
             
@@ -966,26 +961,8 @@
             const seconds = Math.floor((timeRemaining % 60000) / 1000);
             timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
-
-        // 🔔 Gamification helper (matches your requested snippet but avoids name collision)
-        function gamificationEndSession(finalScore, difficulty = 'easy') {
-            // Record the session (updates totals, streaks, personal bests)
-            recordSession(PROGRESS_EXERCISE_ID, difficulty, finalScore);
-            // Mark this exercise as tried (for Explorer achievement)
-            markExerciseTried(PROGRESS_EXERCISE_ID);
-            // Check for newly unlocked achievements
-            const newAchievements = checkAndUnlockAchievements() || [];
-            // Show achievement notifications (guard if not present)
-            if (Array.isArray(newAchievements)) {
-                newAchievements.forEach(achievementId => {
-                    if (typeof window.showAchievementNotification === 'function') {
-                        window.showAchievementNotification(achievementId);
-                    }
-                });
-            }
-        }
         
-        function endSession() {
+        function endSessionInternal() {
             clearInterval(timerInterval);
             isSessionActive = false;
             
@@ -1012,8 +989,10 @@
             // Reset timer bar
             timerBar.style.width = '0%';
 
-            // ✅ Call your requested gamification hook
-            gamificationEndSession(score, getCurrentDifficulty());
+            // Call standardized endSession hook
+            if (typeof window.endSession === 'function') {
+                window.endSession(score, getCurrentDifficulty());
+            }
         }
         
         // Helper function to shuffle an array
@@ -1068,6 +1047,31 @@
                 scanArea.style.height = `${areaHeight}px`;
             }
         });
+    </script>
+
+    <!-- STANDARDIZED GAMIFICATION INTEGRATION -->
+    <script type="module">
+        import { recordSession } from '/js/progress.js';
+        import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+
+        const EXERCISE_ID = 'visual-scanner';
+
+        // Standardized endSession function exposed on window
+        window.endSession = function(score, difficulty = 'easy') {
+            recordSession(EXERCISE_ID, difficulty, score);
+            
+            try {
+                markExerciseTried(EXERCISE_ID);
+            } catch (e) {
+                // Silent fail if signature differs
+            }
+            
+            try {
+                checkAndUnlockAchievements();
+            } catch (e) {
+                // Silent fail if not available
+            }
+        };
     </script>
 </body>
 </html>

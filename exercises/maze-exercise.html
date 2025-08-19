@@ -17,9 +17,9 @@
     <meta name="description" content="Interactive cosmic maze exercise for fine motor skills rehabilitation, stroke recovery, and upper limb therapy. Digital therapeutic exercise for neurological rehabilitation, hand-eye coordination, and dexterity improvement.">
     
     <!-- Design System CSS -->
-    <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/base.css">
-    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
     
     <style>
         /* Maze-specific styles that extend the design system */
@@ -523,13 +523,8 @@
     <!-- Core JavaScript modules -->
     <script type="module">
         // Import utilities and session enhancement
-        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
-        import { sessionEnhancement } from '../js/session-enhancement.js';
-
-        // >>> Added per "Changes Needed Per File"
-        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
-        import { recordSession } from '../js/progress.js';
-        // <<<
+        import { storage, starfield, theme, viewport, audio, initUtils } from '/js/utils.js';
+        import { sessionEnhancement } from '/js/session-enhancement.js';
 
         // Initialize utilities
         initUtils();
@@ -587,7 +582,7 @@
         
         // Home button functionality
         document.getElementById('home-button').addEventListener('click', function() {
-            window.location.href = '../index.html';
+            window.location.href = '/index.html';
         });
         
         // Game variables
@@ -874,13 +869,7 @@
             mazeStartTime = Date.now();
         }
         
-        // >>> Reworked endSession to integrate progress + achievements
-        /**
-         * End the session and handle scoring & achievements.
-         * If called without args, score is computed and difficulty uses current selection.
-         * @param {number|null} score
-         * @param {string|null} difficulty - 'easy' | 'medium' | 'hard'
-         */
+        // Internal endSession function for use within the page
         function endSession(score = null, difficulty = null) {
             if (timerInterval) {
                 clearInterval(timerInterval);
@@ -909,30 +898,17 @@
                 totalSessionTime: (sessionDuration - timeRemaining) / 1000
             });
 
-            // *** NEW: Progress & Achievements integration ***
-            try {
-                // Record the session
-                recordSession('maze', selectedDifficulty, computedScore);
-                // Mark this exercise as tried (Explorer achievement path)
-                markExerciseTried('maze');
-                // Check for newly unlocked achievements and optionally notify
-                const newAchievements = checkAndUnlockAchievements() || [];
-                newAchievements.forEach((achievementId) => {
-                    if (typeof window.showAchievementNotification === 'function') {
-                        window.showAchievementNotification(achievementId);
-                    }
-                });
-            } catch (e) {
-                console.warn('Achievement/progress integration error:', e);
-            }
-            
             // Show completion message with results
             finalCompletedElement.textContent = mazesCompleted;
             finalAvgTimeElement.textContent = `${avgTimeStr}s`;
             finalScoreElement.textContent = computedScore;
             completionMessage.classList.remove('hidden');
+            
+            // Call the global endSession function to handle progress and achievements
+            if (typeof window.endSession === 'function') {
+                window.endSession(computedScore, selectedDifficulty);
+            }
         }
-        // <<<
 
         // Get unvisited neighboring cells for maze generation
         function getUnvisitedNeighbors(x, y) {
@@ -1722,6 +1698,32 @@
                 // Game continues running when backgrounded
             }
         });
+    </script>
+    
+    <!-- Standardized module imports and endSession function -->
+    <script type="module">
+        import { recordSession } from '/js/progress.js';
+        import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+        
+        const EXERCISE_ID = 'maze';
+        
+        // Call this when an exercise session ends
+        window.endSession = function(score, difficulty = 'easy') {
+            recordSession(EXERCISE_ID, difficulty, score);
+            
+            // If markExerciseTried expects an id, pass it; if not, remove the argument.
+            try {
+                markExerciseTried(EXERCISE_ID);
+            } catch (e) {
+                /* no-op if signature differs */
+            }
+            
+            try {
+                checkAndUnlockAchievements();
+            } catch (e) {
+                /* optional */
+            }
+        };
     </script>
 </body>
 </html>
