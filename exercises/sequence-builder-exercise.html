@@ -866,8 +866,11 @@
     <script type="module" src="../js/utils.js"></script>
     <script type="module" src="../js/session-enhancement.js"></script>
     <script type="module">
-        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
+        import { storage, starfield, theme, viewport, audio, initUtils, toast } from '../js/utils.js';
         import { sessionEnhancement } from '../js/session-enhancement.js';
+        /* ✅ Achievements & Progress integration */
+        import { checkAndUnlockAchievements, markExerciseTried, showAchievementNotification } from '../js/achievements.js';
+        import { recordSession } from '../js/progress.js';
         
         // Initialize utilities first
         initUtils();
@@ -1306,7 +1309,7 @@
                             modelVisible = true;
                             startSequence(sequences[currentSequenceIndex]);
                         } else {
-                            endSession();
+                            endSession(); // ⬅ existing endSession now also records & unlocks
                         }
                     } else {
                         // Allow retry
@@ -1367,7 +1370,12 @@
             timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
         
-        function endSession() {
+        /* 
+         * 🔗 Enhanced: endSession()
+         * - Keeps existing UI flow
+         * - Also records session, marks tried, and unlocks/show achievements
+         */
+        function endSession(passedScore, passedDifficulty = undefined) {
             clearInterval(timerInterval);
             clearInterval(memoryTimerInterval);
             isSessionActive = false;
@@ -1383,6 +1391,32 @@
                 accuracy: accuracy,
                 totalAttempts: totalAttempts
             });
+            
+            // === ✅ PROGRESS & ACHIEVEMENTS HOOKS ===
+            try {
+                const difficultyUsed = passedDifficulty || getCurrentDifficulty();
+                const scoreUsed = typeof passedScore === 'number' ? passedScore : score;
+                
+                // Record the session (updates totals, streaks, personal bests)
+                recordSession(currentExerciseId, difficultyUsed, scoreUsed);
+                
+                // Mark this exercise as tried (for Explorer achievement)
+                markExerciseTried(currentExerciseId);
+                
+                // Check for newly unlocked achievements and show notifications
+                const newAchievements = checkAndUnlockAchievements() || [];
+                newAchievements.forEach((achievementId) => {
+                    if (typeof showAchievementNotification === 'function') {
+                        showAchievementNotification(achievementId);
+                    } else if (typeof toast === 'function') {
+                        // Fallback toast if helper not available
+                        toast(`Achievement unlocked: ${achievementId}`);
+                    }
+                });
+            } catch (e) {
+                console.warn('Achievement/progress hook error:', e);
+            }
+            // === ✅ END HOOKS ===
             
             // Hide game elements
             sequenceProgress.classList.add('hidden');
@@ -1456,7 +1490,7 @@
                 
                 // Check if session is over
                 if (timeRemaining <= 0) {
-                    endSession();
+                    endSession(); // will also record & unlock
                 }
             }, 100);
             

@@ -780,3 +780,603 @@
         }
     </style>
 </head>
+<body>
+    <div id="game-container">
+        <!-- Star field background -->
+        <div id="stars-container"></div>
+        
+        <!-- Timer bar -->
+        <div id="timer-bar"></div>
+        
+        <!-- Game area -->
+        <div id="game-area">
+            <div class="pad" data-pad="1">1</div>
+            <div class="pad" data-pad="2">2</div>
+            <div class="pad" data-pad="3">3</div>
+            <div class="pad" data-pad="4">4</div>
+            <div class="pad" data-pad="5">5</div>
+            <div class="pad" data-pad="6">6</div>
+            <div class="pad" data-pad="7">7</div>
+            <div class="pad" data-pad="8">8</div>
+            <div class="pad" data-pad="9">9</div>
+        </div>
+        
+        <!-- Status message -->
+        <div id="status-message" aria-live="polite"></div>
+        
+        <!-- Sequence display -->
+        <div id="sequence-display" aria-live="polite"></div>
+        
+        <!-- Stats panel -->
+        <div id="stats-panel">
+            <div class="stat-box">
+                <div class="stat-value" id="level-display">1</div>
+                <div class="stat-label">Level</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="score-display">0</div>
+                <div class="stat-label">Score</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="streak-display">0</div>
+                <div class="stat-label">Streak</div>
+            </div>
+        </div>
+        
+        <!-- Completion message -->
+        <div id="completion-message" class="hidden">
+            <h2>Great Work!</h2>
+            <div id="completion-scores">
+                <p>Final Score: <span class="score-highlight" id="final-score">0</span></p>
+                <p>Level Reached: <span class="score-highlight" id="final-level">1</span></p>
+                <p>Best Streak: <span class="score-highlight" id="final-streak">0</span></p>
+            </div>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+    
+    <!-- Settings panel -->
+    <div id="settings-panel" class="hidden">
+        <h2>Rhythm Reach</h2>
+        
+        <div class="game-description">
+            <h3>How to Play</h3>
+            <p>Watch the sequence of flashing pads, then repeat it by clicking them in the same order. Each level adds one more step to remember!</p>
+            <p>Perfect for improving memory, attention, and cognitive processing speed.</p>
+        </div>
+        
+        <div class="settings-group">
+            <label class="settings-label" for="difficulty">Difficulty Level</label>
+            <div class="setting-description">Choose your challenge level - affects sequence speed and timing</div>
+            <select id="difficulty">
+                <option value="easy">Easy - Slower pace, more time</option>
+                <option value="medium" selected>Medium - Balanced challenge</option>
+                <option value="hard">Hard - Fast pace, quick thinking</option>
+            </select>
+        </div>
+        
+        <div class="settings-group">
+            <label class="settings-label" for="sequence-speed">Sequence Speed</label>
+            <div class="setting-description">How fast the pattern is shown (1-10, where 1 is slowest)</div>
+            <input type="range" id="sequence-speed" min="1" max="10" value="5">
+        </div>
+        
+        <div class="settings-group">
+            <label class="settings-label" for="starting-length">Starting Sequence Length</label>
+            <div class="setting-description">Number of steps in the first pattern (2-5)</div>
+            <input type="range" id="starting-length" min="2" max="5" value="3">
+        </div>
+        
+        <div class="settings-group">
+            <label class="settings-label" for="max-level">Maximum Level</label>
+            <div class="setting-description">Game ends when you reach this level (5-20)</div>
+            <input type="range" id="max-level" min="5" max="20" value="12">
+        </div>
+        
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    
+    <!-- Settings toggle button -->
+    <button id="settings-toggle" onclick="toggleSettings()">
+        Settings
+    </button>
+    
+    <!-- Screen reader announcements -->
+    <div id="sr-announcements" class="visually-hidden" aria-live="assertive"></div>
+
+    <!-- Achievement and Progress Tracking -->
+    <script type="module">
+        // Import achievement and progress tracking functions
+        // Note: These imports will work when the JS files are created
+        let checkAndUnlockAchievements, markExerciseTried, recordSession;
+        
+        try {
+            const achievementModule = await import('../js/achievements.js');
+            const progressModule = await import('../js/progress.js');
+            
+            checkAndUnlockAchievements = achievementModule.checkAndUnlockAchievements;
+            markExerciseTried = achievementModule.markExerciseTried;
+            recordSession = progressModule.recordSession;
+        } catch (error) {
+            console.log('Achievement/Progress modules not yet available:', error.message);
+            // Provide fallback functions
+            checkAndUnlockAchievements = () => [];
+            markExerciseTried = () => {};
+            recordSession = () => {};
+        }
+
+        // Call this when exercise session ends
+        function endSession(score, difficulty = 'easy') {
+            try {
+                // Record the session (updates totals, streaks, personal bests)
+                recordSession('rhythm', difficulty, score);
+                
+                // Mark this exercise as tried (for Explorer achievement)
+                markExerciseTried('rhythm');
+                
+                // Check for newly unlocked achievements
+                const newAchievements = checkAndUnlockAchievements();
+                
+                // Show achievement notifications
+                newAchievements.forEach(achievementId => {
+                    showAchievementNotification(achievementId);
+                });
+            } catch (error) {
+                console.log('Achievement tracking temporarily disabled:', error.message);
+            }
+        }
+
+        // Function to show achievement notification
+        function showAchievementNotification(achievementId) {
+            // This function should be implemented to show a visual notification
+            // For now, we'll use a simple console log - this should be replaced with a proper notification system
+            console.log(`Achievement unlocked: ${achievementId}`);
+            
+            // You can add a visual notification here later
+            // For example, a toast notification or modal
+            const statusMessage = document.getElementById('status-message');
+            if (statusMessage) {
+                statusMessage.textContent = `🏆 Achievement Unlocked: ${achievementId}`;
+                statusMessage.style.opacity = '1';
+                statusMessage.style.color = '#FFD700';
+                setTimeout(() => {
+                    statusMessage.style.opacity = '0';
+                }, 3000);
+            }
+        }
+
+        // Make these functions available globally so they can be called from the game logic
+        window.endSession = endSession;
+        window.showAchievementNotification = showAchievementNotification;
+    </script>
+
+    <script>
+        // Game state
+        let gameState = {
+            sequence: [],
+            userSequence: [],
+            level: 1,
+            score: 0,
+            streak: 0,
+            maxStreak: 0,
+            isShowingSequence: false,
+            isGameActive: false,
+            settings: {
+                difficulty: 'medium',
+                sequenceSpeed: 5,
+                startingLength: 3,
+                maxLevel: 12
+            }
+        };
+
+        // Game settings based on difficulty
+        const difficultySettings = {
+            easy: { baseSpeed: 1000, speedDecrease: 50, inputTime: 3000 },
+            medium: { baseSpeed: 800, speedDecrease: 75, inputTime: 2500 },
+            hard: { baseSpeed: 600, speedDecrease: 100, inputTime: 2000 }
+        };
+
+        // DOM elements
+        const gameArea = document.getElementById('game-area');
+        const pads = document.querySelectorAll('.pad');
+        const settingsPanel = document.getElementById('settings-panel');
+        const completionMessage = document.getElementById('completion-message');
+        const timerBar = document.getElementById('timer-bar');
+        const starsContainer = document.getElementById('stars-container');
+        
+        // Stats displays
+        const levelDisplay = document.getElementById('level-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const streakDisplay = document.getElementById('streak-display');
+        const statusMessage = document.getElementById('status-message');
+        const sequenceDisplay = document.getElementById('sequence-display');
+
+        // Initialize the game
+        function initGame() {
+            createStarField();
+            loadSettings();
+            attachEventListeners();
+            showSettings();
+        }
+
+        // Create animated star field background
+        function createStarField() {
+            const numStars = 50;
+            for (let i = 0; i < numStars; i++) {
+                createStar();
+            }
+            
+            // Create shooting stars occasionally
+            setInterval(createShootingStar, 3000);
+        }
+
+        function createStar() {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = Math.random() * 3 + 1 + 'px';
+            star.style.height = star.style.width;
+            star.style.animationDelay = Math.random() * 4 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        function createShootingStar() {
+            if (Math.random() < 0.3) {
+                const star = document.createElement('div');
+                star.className = 'star shooting';
+                star.style.left = Math.random() * 50 + 50 + '%';
+                star.style.top = Math.random() * 50 + '%';
+                starsContainer.appendChild(star);
+                
+                setTimeout(() => {
+                    if (star.parentNode) {
+                        star.parentNode.removeChild(star);
+                    }
+                }, 3000);
+            }
+        }
+
+        // Load settings from form
+        function loadSettings() {
+            const difficulty = document.getElementById('difficulty').value;
+            const sequenceSpeed = parseInt(document.getElementById('sequence-speed').value);
+            const startingLength = parseInt(document.getElementById('starting-length').value);
+            const maxLevel = parseInt(document.getElementById('max-level').value);
+
+            gameState.settings = {
+                difficulty,
+                sequenceSpeed,
+                startingLength,
+                maxLevel
+            };
+        }
+
+        // Attach event listeners
+        function attachEventListeners() {
+            pads.forEach(pad => {
+                pad.addEventListener('click', handlePadClick);
+                pad.addEventListener('touchstart', handleTouchStart, { passive: false });
+            });
+
+            // Keyboard support
+            document.addEventListener('keydown', handleKeyPress);
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            if (!gameState.isShowingSequence && gameState.isGameActive) {
+                handlePadClick(e);
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (!gameState.isShowingSequence && gameState.isGameActive) {
+                const keyMap = {
+                    '1': '1', '2': '2', '3': '3',
+                    '4': '4', '5': '5', '6': '6',
+                    '7': '7', '8': '8', '9': '9'
+                };
+                
+                if (keyMap[e.key]) {
+                    const pad = document.querySelector(`[data-pad="${keyMap[e.key]}"]`);
+                    if (pad) {
+                        handlePadClick({ target: pad });
+                    }
+                }
+            }
+        }
+
+        // Handle pad clicks
+        function handlePadClick(e) {
+            if (gameState.isShowingSequence || !gameState.isGameActive) return;
+
+            const padNumber = parseInt(e.target.dataset.pad);
+            const expectedNumber = gameState.sequence[gameState.userSequence.length];
+
+            // Visual feedback
+            activatePad(e.target);
+            createRippleEffect(e);
+
+            // Add to user sequence
+            gameState.userSequence.push(padNumber);
+
+            // Check if correct
+            if (padNumber === expectedNumber) {
+                showFeedback(e.target, 'correct');
+                
+                // Check if sequence is complete
+                if (gameState.userSequence.length === gameState.sequence.length) {
+                    handleCorrectSequence();
+                }
+            } else {
+                showFeedback(e.target, 'incorrect');
+                handleIncorrectInput();
+            }
+
+            updateDisplay();
+        }
+
+        // Visual feedback for pad interaction
+        function activatePad(pad) {
+            pad.classList.add('active');
+            setTimeout(() => {
+                pad.classList.remove('active');
+            }, 300);
+        }
+
+        function showFeedback(pad, type) {
+            pad.classList.add(type);
+            setTimeout(() => {
+                pad.classList.remove(type);
+            }, 500);
+        }
+
+        function createRippleEffect(e) {
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const rect = e.target.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            e.target.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        // Handle correct sequence completion
+        function handleCorrectSequence() {
+            gameState.streak++;
+            gameState.maxStreak = Math.max(gameState.maxStreak, gameState.streak);
+            gameState.score += gameState.level * 10 * gameState.streak;
+            
+            showStatusMessage('Perfect! Moving to next level...', 'success');
+            
+            // Check if game is complete
+            if (gameState.level >= gameState.settings.maxLevel) {
+                setTimeout(() => endGame(), 1500);
+            } else {
+                setTimeout(() => nextLevel(), 1500);
+            }
+        }
+
+        // Handle incorrect input
+        function handleIncorrectInput() {
+            gameState.streak = 0;
+            showStatusMessage('Oops! Try this level again...', 'error');
+            
+            setTimeout(() => {
+                resetLevel();
+            }, 1500);
+        }
+
+        // Progress to next level
+        function nextLevel() {
+            gameState.level++;
+            gameState.userSequence = [];
+            generateSequence();
+            showSequence();
+        }
+
+        // Reset current level
+        function resetLevel() {
+            gameState.userSequence = [];
+            showSequence();
+        }
+
+        // Generate new sequence
+        function generateSequence() {
+            const sequenceLength = gameState.settings.startingLength + gameState.level - 1;
+            gameState.sequence = [];
+            
+            for (let i = 0; i < sequenceLength; i++) {
+                gameState.sequence.push(Math.floor(Math.random() * 9) + 1);
+            }
+        }
+
+        // Show sequence to player
+        function showSequence() {
+            gameState.isShowingSequence = true;
+            gameState.userSequence = [];
+            
+            const difficulty = difficultySettings[gameState.settings.difficulty];
+            const baseDelay = difficulty.baseSpeed - (gameState.level * difficulty.speedDecrease);
+            const delay = Math.max(baseDelay, 200); // Minimum 200ms
+            
+            showStatusMessage('Watch the sequence...', 'info');
+            
+            // Show sequence numbers
+            sequenceDisplay.innerHTML = gameState.sequence.map(num => 
+                `<span>${num}</span>`
+            ).join(' ');
+            
+            setTimeout(() => {
+                sequenceDisplay.innerHTML = '';
+                playSequence(delay);
+            }, 1000);
+        }
+
+        function playSequence(delay) {
+            gameState.sequence.forEach((padNumber, index) => {
+                setTimeout(() => {
+                    const pad = document.querySelector(`[data-pad="${padNumber}"]`);
+                    activatePad(pad);
+                    
+                    // Create particles
+                    createParticles(pad);
+                    
+                    if (index === gameState.sequence.length - 1) {
+                        setTimeout(() => {
+                            gameState.isShowingSequence = false;
+                            showStatusMessage('Your turn! Click the pads...', 'info');
+                            startInputTimer();
+                        }, delay);
+                    }
+                }, index * delay);
+            });
+        }
+
+        // Create particle effects
+        function createParticles(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < 6; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const angle = (Math.PI * 2 * i) / 6;
+                const distance = 50 + Math.random() * 30;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+                particle.style.setProperty('--x', x + 'px');
+                particle.style.setProperty('--y', y + 'px');
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        // Input timer
+        function startInputTimer() {
+            const difficulty = difficultySettings[gameState.settings.difficulty];
+            const timeLimit = difficulty.inputTime;
+            
+            timerBar.style.width = '100%';
+            timerBar.style.transition = `width ${timeLimit}ms linear`;
+            
+            setTimeout(() => {
+                timerBar.style.width = '0%';
+            }, 100);
+            
+            setTimeout(() => {
+                if (gameState.userSequence.length < gameState.sequence.length && gameState.isGameActive) {
+                    handleIncorrectInput();
+                }
+            }, timeLimit);
+        }
+
+        // Show status messages
+        function showStatusMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = type;
+            statusMessage.style.opacity = '1';
+            
+            setTimeout(() => {
+                statusMessage.style.opacity = '0';
+            }, 2000);
+        }
+
+        // Update display
+        function updateDisplay() {
+            levelDisplay.textContent = gameState.level;
+            scoreDisplay.textContent = gameState.score.toLocaleString();
+            streakDisplay.textContent = gameState.streak;
+        }
+
+        // Start game
+        function startGame() {
+            loadSettings();
+            hideSettings();
+            
+            // Reset game state
+            gameState = {
+                ...gameState,
+                sequence: [],
+                userSequence: [],
+                level: 1,
+                score: 0,
+                streak: 0,
+                maxStreak: 0,
+                isShowingSequence: false,
+                isGameActive: true
+            };
+            
+            updateDisplay();
+            generateSequence();
+            showSequence();
+        }
+
+        // End game
+        function endGame() {
+            gameState.isGameActive = false;
+            
+            // Update completion message
+            document.getElementById('final-score').textContent = gameState.score.toLocaleString();
+            document.getElementById('final-level').textContent = gameState.level;
+            document.getElementById('final-streak').textContent = gameState.maxStreak;
+            
+            completionMessage.classList.remove('hidden');
+            
+            // Call the achievement tracking function
+            const difficulty = gameState.settings.difficulty;
+            if (window.endSession) {
+                window.endSession(gameState.score, difficulty);
+            }
+        }
+
+        // Restart game
+        function restartGame() {
+            completionMessage.classList.add('hidden');
+            showSettings();
+        }
+
+        // Settings management
+        function showSettings() {
+            settingsPanel.classList.remove('hidden');
+        }
+
+        function hideSettings() {
+            settingsPanel.classList.add('hidden');
+        }
+
+        function toggleSettings() {
+            if (gameState.isGameActive) {
+                return; // Don't allow settings during active game
+            }
+            
+            if (settingsPanel.classList.contains('hidden')) {
+                showSettings();
+            } else {
+                hideSettings();
+            }
+        }
+
+        // Initialize the game when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

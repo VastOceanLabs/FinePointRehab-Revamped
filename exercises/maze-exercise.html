@@ -525,7 +525,12 @@
         // Import utilities and session enhancement
         import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
         import { sessionEnhancement } from '../js/session-enhancement.js';
-        
+
+        // >>> Added per "Changes Needed Per File"
+        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
+        import { recordSession } from '../js/progress.js';
+        // <<<
+
         // Initialize utilities
         initUtils();
         
@@ -832,7 +837,7 @@
                     
                     // Check if session is over
                     if (timeRemaining <= 0) {
-                        endSession();
+                        endSession(); // no args -> auto-compute score & use selected difficulty
                     }
                 }, 100);
                 
@@ -869,8 +874,14 @@
             mazeStartTime = Date.now();
         }
         
-        // End the current session and show results
-        function endSession() {
+        // >>> Reworked endSession to integrate progress + achievements
+        /**
+         * End the session and handle scoring & achievements.
+         * If called without args, score is computed and difficulty uses current selection.
+         * @param {number|null} score
+         * @param {string|null} difficulty - 'easy' | 'medium' | 'hard'
+         */
+        function endSession(score = null, difficulty = null) {
             if (timerInterval) {
                 clearInterval(timerInterval);
                 timerInterval = null;
@@ -884,25 +895,45 @@
             timerBar.classList.add('hidden');
             statsPanel.classList.add('hidden');
             
-            // Calculate final stats for session enhancement
-            const avgTime = mazesCompleted > 0 ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
-            const performanceScore = Math.round((mazesCompleted * 100) / (parseFloat(avgTime) > 0 ? parseFloat(avgTime) : 1));
-            
-            // *** SESSION ENHANCEMENT INTEGRATION ***
+            // Compute final stats
+            const avgTimeStr = mazesCompleted > 0 ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
+            const avgTime = parseFloat(avgTimeStr);
+            const computedScore = score ?? Math.round((mazesCompleted * 100) / (avgTime > 0 ? avgTime : 1));
+            const selectedDifficulty = difficulty ?? getCurrentDifficulty();
+
+            // Notify session enhancement (existing integration)
             sessionEnhancement.handleSessionComplete({
-                score: performanceScore,
+                score: computedScore,
                 mazesCompleted: mazesCompleted,
-                avgCompletionTime: parseFloat(avgTime),
+                avgCompletionTime: avgTime,
                 totalSessionTime: (sessionDuration - timeRemaining) / 1000
             });
+
+            // *** NEW: Progress & Achievements integration ***
+            try {
+                // Record the session
+                recordSession('maze', selectedDifficulty, computedScore);
+                // Mark this exercise as tried (Explorer achievement path)
+                markExerciseTried('maze');
+                // Check for newly unlocked achievements and optionally notify
+                const newAchievements = checkAndUnlockAchievements() || [];
+                newAchievements.forEach((achievementId) => {
+                    if (typeof window.showAchievementNotification === 'function') {
+                        window.showAchievementNotification(achievementId);
+                    }
+                });
+            } catch (e) {
+                console.warn('Achievement/progress integration error:', e);
+            }
             
             // Show completion message with results
             finalCompletedElement.textContent = mazesCompleted;
-            finalAvgTimeElement.textContent = `${avgTime}s`;
-            finalScoreElement.textContent = performanceScore;
+            finalAvgTimeElement.textContent = `${avgTimeStr}s`;
+            finalScoreElement.textContent = computedScore;
             completionMessage.classList.remove('hidden');
         }
-        
+        // <<<
+
         // Get unvisited neighboring cells for maze generation
         function getUnvisitedNeighbors(x, y) {
             const neighbors = [];

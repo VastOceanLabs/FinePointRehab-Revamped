@@ -446,6 +446,41 @@
             opacity: 0.4;
         }
         
+        /* Achievement notification styles */
+        .achievement-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #1a1a1a;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.4);
+            z-index: 1000;
+            min-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.5s ease;
+            font-weight: bold;
+            border: 2px solid #b8860b;
+        }
+        
+        .achievement-notification.show {
+            transform: translateX(0);
+        }
+        
+        .achievement-notification .title {
+            font-size: 18px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .achievement-notification .description {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
         /* Mobile-specific adjustments */
         @media (max-width: 768px) {
             #canvas-wrapper {
@@ -531,6 +566,13 @@
             .stat-box {
                 padding: 3px;
             }
+            
+            .achievement-notification {
+                top: 10px;
+                right: 10px;
+                min-width: 250px;
+                transform: translateX(350px);
+            }
         }
         
         /* Very small mobile screens */
@@ -566,6 +608,20 @@
             
             .settings-label {
                 margin-bottom: 6px;
+            }
+            
+            .achievement-notification {
+                min-width: 200px;
+                padding: 12px 16px;
+                transform: translateX(300px);
+            }
+            
+            .achievement-notification .title {
+                font-size: 16px;
+            }
+            
+            .achievement-notification .description {
+                font-size: 13px;
             }
         }
         
@@ -819,8 +875,58 @@
     <script type="module">
         import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
         import { sessionEnhancement } from '../js/session-enhancement.js';
+        // import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js'; // Uncomment when file exists
+        import { recordSession } from '../js/progress.js';
         
         initUtils();
+        
+        // Achievement notification function
+        function showAchievementNotification(achievementId) {
+            // Get achievement data from achievements.js (you might need to import achievement definitions)
+            const achievementTitles = {
+                'first_steps': '🎯 First Steps',
+                'explorer': '🔍 Explorer',
+                'dedicated': '⭐ Dedicated Player',
+                'streak_master': '🔥 Streak Master',
+                'precision_master': '🎯 Precision Master',
+                'endurance_champion': '⏱️ Endurance Champion',
+                'perfectionist': '💎 Perfectionist',
+                'speed_demon': '⚡ Speed Demon',
+                'consistency_king': '👑 Consistency King',
+                'milestone_hunter': '🏆 Milestone Hunter'
+            };
+            
+            const achievementDescriptions = {
+                'first_steps': 'Completed your first exercise session!',
+                'explorer': 'Tried all available exercises!',
+                'dedicated': 'Completed 10 exercise sessions!',
+                'streak_master': 'Maintained a 7-day practice streak!',
+                'precision_master': 'Achieved 95%+ accuracy 5 times!',
+                'endurance_champion': 'Completed 30+ minute sessions 3 times!',
+                'perfectionist': 'Achieved perfect scores 10 times!',
+                'speed_demon': 'Completed exercises quickly 5 times!',
+                'consistency_king': 'Practiced for 30 consecutive days!',
+                'milestone_hunter': 'Unlocked 5 other achievements!'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = 'achievement-notification';
+            notification.innerHTML = `
+                <div class="title">${achievementTitles[achievementId] || '🏆 Achievement Unlocked!'}</div>
+                <div class="description">${achievementDescriptions[achievementId] || 'You\'ve unlocked a new achievement!'}</div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 500);
+            }, 4000);
+        }
         
         // SESSION ENHANCEMENT INTEGRATION
         const currentExerciseId = 'trace'; // Using 'trace' as the exercise ID for trace-reveal
@@ -840,6 +946,23 @@
             difficultySelect.addEventListener('change', () => {
                 sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
             });
+        }
+        
+        // Function to call when exercise session ends
+        function handleAchievements(score, difficulty = 'easy') {
+            // Record the session (updates totals, streaks, personal bests)
+            recordSession('trace', difficulty, score);
+            
+            // Mark this exercise as tried (for Explorer achievement)
+            // markExerciseTried('trace'); // Uncomment when achievements.js exists
+            
+            // Check for newly unlocked achievements
+            // const newAchievements = checkAndUnlockAchievements(); // Uncomment when achievements.js exists
+            
+            // Show achievement notifications
+            // newAchievements.forEach(achievementId => {
+            //     showAchievementNotification(achievementId);
+            // });
         }
         
         // Mobile viewport handling (added from working comet exercise)
@@ -1463,4 +1586,540 @@
                 },
                 
                 airplane: () => {
-                    const size = Math.min(canvas.width, canvas
+                    const size = Math.min(canvas.width, canvas.height) * 0.6;
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    
+                    return [
+                        // Body
+                        { x: centerX - size / 2, y: centerY },
+                        { x: centerX + size / 2, y: centerY },
+                        // Right wing
+                        { x: centerX + size * 0.1, y: centerY - size * 0.3 },
+                        { x: centerX - size * 0.2, y: centerY - size * 0.3 },
+                        { x: centerX - size * 0.1, y: centerY },
+                        // Left wing
+                        { x: centerX - size * 0.2, y: centerY + size * 0.3 },
+                        { x: centerX + size * 0.1, y: centerY + size * 0.3 },
+                        { x: centerX + size / 2, y: centerY }
+                    ];
+                },
+                
+                flower: () => {
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const petalRadius = Math.min(canvas.width, canvas.height) * 0.15;
+                    const points = [];
+                    
+                    // Create flower petals (6 petals around center)
+                    for (let petal = 0; petal < 6; petal++) {
+                        const petalAngle = (petal / 6) * Math.PI * 2;
+                        const petalCenterX = centerX + Math.cos(petalAngle) * petalRadius * 1.5;
+                        const petalCenterY = centerY + Math.sin(petalAngle) * petalRadius * 1.5;
+                        
+                        // Create circular petal
+                        for (let i = 0; i <= 20; i++) {
+                            const angle = (i / 20) * Math.PI * 2;
+                            points.push({
+                                x: petalCenterX + Math.cos(angle) * petalRadius * 0.8,
+                                y: petalCenterY + Math.sin(angle) * petalRadius * 0.8
+                            });
+                        }
+                    }
+                    
+                    return points;
+                },
+                
+                sun: () => {
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const radius = Math.min(canvas.width, canvas.height) * 0.2;
+                    const rayLength = radius * 0.8;
+                    const points = [];
+                    
+                    // Center circle
+                    for (let i = 0; i <= 50; i++) {
+                        const angle = (i / 50) * Math.PI * 2;
+                        points.push({
+                            x: centerX + Math.cos(angle) * radius,
+                            y: centerY + Math.sin(angle) * radius
+                        });
+                    }
+                    
+                    // Sun rays (8 rays)
+                    for (let ray = 0; ray < 8; ray++) {
+                        const rayAngle = (ray / 8) * Math.PI * 2;
+                        const startX = centerX + Math.cos(rayAngle) * radius;
+                        const startY = centerY + Math.sin(rayAngle) * radius;
+                        const endX = centerX + Math.cos(rayAngle) * (radius + rayLength);
+                        const endY = centerY + Math.sin(rayAngle) * (radius + rayLength);
+                        
+                        points.push({ x: startX, y: startY });
+                        points.push({ x: endX, y: endY });
+                        points.push({ x: startX, y: startY });
+                    }
+                    
+                    return points;
+                },
+                
+                phone: () => {
+                    const size = Math.min(canvas.width, canvas.height) * 0.5;
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const width = size * 0.6;
+                    const height = size;
+                    const cornerRadius = width * 0.1;
+                    
+                    return [
+                        // Phone outline (rounded rectangle)
+                        { x: centerX - width / 2 + cornerRadius, y: centerY - height / 2 },
+                        { x: centerX + width / 2 - cornerRadius, y: centerY - height / 2 },
+                        { x: centerX + width / 2, y: centerY - height / 2 + cornerRadius },
+                        { x: centerX + width / 2, y: centerY + height / 2 - cornerRadius },
+                        { x: centerX + width / 2 - cornerRadius, y: centerY + height / 2 },
+                        { x: centerX - width / 2 + cornerRadius, y: centerY + height / 2 },
+                        { x: centerX - width / 2, y: centerY + height / 2 - cornerRadius },
+                        { x: centerX - width / 2, y: centerY - height / 2 + cornerRadius },
+                        { x: centerX - width / 2 + cornerRadius, y: centerY - height / 2 }
+                    ];
+                }
+            }
+        };
+        
+        // Get random shape based on difficulty
+        function getRandomShape(difficulty) {
+            const shapes = Object.keys(shapeGenerators[difficulty]);
+            const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+            return {
+                type: randomShape,
+                points: shapeGenerators[difficulty][randomShape]()
+            };
+        }
+        
+        // Draw dotted guide line
+        function drawGuideLine(points) {
+            guideCtx.clearRect(0, 0, guideCanvas.width, guideCanvas.height);
+            
+            if (points.length < 2) return;
+            
+            guideCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            guideCtx.lineWidth = 3;
+            guideCtx.setLineDash([8, 8]);
+            guideCtx.lineCap = 'round';
+            
+            guideCtx.beginPath();
+            guideCtx.moveTo(points[0].x, points[0].y);
+            
+            for (let i = 1; i < points.length; i++) {
+                guideCtx.lineTo(points[i].x, points[i].y);
+            }
+            
+            guideCtx.stroke();
+        }
+        
+        // Create hidden colorful image
+        function createHiddenImage(shapeType) {
+            hiddenCtx.clearRect(0, 0, hiddenImage.width, hiddenImage.height);
+            
+            // Create gradient background
+            const gradient = hiddenCtx.createRadialGradient(
+                hiddenImage.width / 2, hiddenImage.height / 2, 0,
+                hiddenImage.width / 2, hiddenImage.height / 2, hiddenImage.width / 2
+            );
+            gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(255, 105, 180, 0.6)');
+            gradient.addColorStop(1, 'rgba(70, 130, 180, 0.4)');
+            
+            hiddenCtx.fillStyle = gradient;
+            hiddenCtx.fillRect(0, 0, hiddenImage.width, hiddenImage.height);
+            
+            // Draw shape emoji/symbol in center
+            const emoji = shapeImages[shapeType] || '✨';
+            hiddenCtx.font = `${Math.min(hiddenImage.width, hiddenImage.height) * 0.3}px Arial`;
+            hiddenCtx.textAlign = 'center';
+            hiddenCtx.textBaseline = 'middle';
+            hiddenCtx.fillStyle = '#ffffff';
+            hiddenCtx.strokeStyle = '#333333';
+            hiddenCtx.lineWidth = 2;
+            
+            hiddenCtx.strokeText(emoji, hiddenImage.width / 2, hiddenImage.height / 2);
+            hiddenCtx.fillText(emoji, hiddenImage.width / 2, hiddenImage.height / 2);
+            
+            // Add sparkle effects
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * hiddenImage.width;
+                const y = Math.random() * hiddenImage.height;
+                const size = Math.random() * 4 + 2;
+                
+                hiddenCtx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`;
+                hiddenCtx.beginPath();
+                hiddenCtx.arc(x, y, size, 0, Math.PI * 2);
+                hiddenCtx.fill();
+            }
+        }
+        
+        // Initialize mask canvas
+        function initMask() {
+            maskCtx.fillStyle = '#000000';
+            maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+        }
+        
+        // Generate coverage points along path
+        function generateCoveragePoints(points) {
+            const coverageSet = new Set();
+            
+            for (let i = 0; i < points.length - 1; i++) {
+                const startPoint = points[i];
+                const endPoint = points[i + 1];
+                
+                const distance = Math.sqrt(
+                    Math.pow(endPoint.x - startPoint.x, 2) + 
+                    Math.pow(endPoint.y - startPoint.y, 2)
+                );
+                
+                const steps = Math.ceil(distance / 5); // Point every 5 pixels
+                
+                for (let j = 0; j <= steps; j++) {
+                    const t = j / steps;
+                    const x = Math.round(startPoint.x + (endPoint.x - startPoint.x) * t);
+                    const y = Math.round(startPoint.y + (endPoint.y - startPoint.y) * t);
+                    coverageSet.add(`${x},${y}`);
+                }
+            }
+            
+            return coverageSet;
+        }
+        
+        // Load new shape
+        function loadNewShape() {
+            updateCanvasSizes();
+            initMask();
+            
+            const shape = getRandomShape(currentDifficulty);
+            pathPoints = shape.points;
+            currentShapeType = shape.type;
+            
+            coveragePoints = generateCoveragePoints(pathPoints);
+            coveredPoints = new Set();
+            
+            createHiddenImage(currentShapeType);
+            drawGuideLine(pathPoints);
+            
+            // Clear main canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Reset coverage display
+            updateCoverageDisplay();
+        }
+        
+        // Drawing functions
+        function startDrawing(event) {
+            if (!isSessionActive || isCompleting) return;
+            
+            isDrawing = true;
+            draw(event);
+        }
+        
+        function draw(event) {
+            if (!isDrawing || !isSessionActive || isCompleting) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            let clientX, clientY;
+            
+            if (event.type.includes('touch')) {
+                event.preventDefault();
+                if (event.touches.length > 0) {
+                    clientX = event.touches[0].clientX;
+                    clientY = event.touches[0].clientY;
+                } else {
+                    return;
+                }
+            } else {
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+            
+            const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+            
+            // Draw on main canvas
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = 'rgba(111, 211, 245, 0.8)';
+            ctx.beginPath();
+            ctx.arc(x, y, currentBrushSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw on mask (white reveals the image)
+            maskCtx.globalCompositeOperation = 'source-over';
+            maskCtx.fillStyle = '#ffffff';
+            maskCtx.beginPath();
+            maskCtx.arc(x, y, currentBrushSize / 2, 0, Math.PI * 2);
+            maskCtx.fill();
+            
+            // Add particle effect
+            createParticle(x, y);
+            
+            // Check coverage
+            checkCoverage(x, y);
+            updateCoverageDisplay();
+        }
+        
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        // Particle effect
+        function createParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            
+            const rect = canvas.getBoundingClientRect();
+            const canvasRect = canvasContainer.getBoundingClientRect();
+            
+            particle.style.left = (canvasRect.left + (x / canvas.width) * rect.width) + 'px';
+            particle.style.top = (canvasRect.top + (y / canvas.height) * rect.height) + 'px';
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 1000);
+        }
+        
+        // Check coverage around brush position
+        function checkCoverage(x, y) {
+            const radius = currentBrushSize / 2;
+            
+            for (let dx = -radius; dx <= radius; dx++) {
+                for (let dy = -radius; dy <= radius; dy++) {
+                    if (dx * dx + dy * dy <= radius * radius) {
+                        const checkX = Math.round(x + dx);
+                        const checkY = Math.round(y + dy);
+                        const key = `${checkX},${checkY}`;
+                        
+                        if (coveragePoints.has(key)) {
+                            coveredPoints.add(key);
+                        }
+                    }
+                }
+            }
+            
+            // Check if we've reached the required coverage
+            const coveragePercent = (coveredPoints.size / coveragePoints.size) * 100;
+            if (coveragePercent >= requiredCoverage && !isCompleting) {
+                completeShape();
+            }
+        }
+        
+        // Update coverage display
+        function updateCoverageDisplay() {
+            const coveragePercent = Math.round((coveredPoints.size / coveragePoints.size) * 100);
+            coverageElement.textContent = coveragePercent + '%';
+            coverageProgress.textContent = coveragePercent + '%';
+            
+            // Update best coverage
+            if (coveragePercent > bestCoverage) {
+                bestCoverage = coveragePercent;
+            }
+        }
+        
+        // Complete shape animation
+        function completeShape() {
+            if (isCompleting) return;
+            isCompleting = true;
+            
+            // Count as perfect trace if we hit 95% or higher
+            const finalCoverage = (coveredPoints.size / coveragePoints.size) * 100;
+            if (finalCoverage >= 95) {
+                perfectTraces++;
+                completionsElement.textContent = perfectTraces;
+            }
+            
+            shapesCompleted++;
+            shapesCompletedElement.textContent = shapesCompleted;
+            
+            // Show completion text
+            const completionText = document.createElement('div');
+            completionText.classList.add('completion-text');
+            completionText.textContent = 'Revealed!';
+            canvasContainer.appendChild(completionText);
+            
+            // Celebration particles
+            createCelebrationParticles();
+            
+            // Reveal the hidden image
+            setTimeout(() => {
+                revealHiddenImage();
+            }, 500);
+            
+            // Load next shape after delay
+            setTimeout(() => {
+                completionText.remove();
+                isCompleting = false;
+                loadNewShape();
+            }, 3000);
+        }
+        
+        // Reveal hidden image
+        function revealHiddenImage() {
+            completionCtx.clearRect(0, 0, completionCanvas.width, completionCanvas.height);
+            
+            // Use the mask to reveal the hidden image
+            completionCtx.globalCompositeOperation = 'source-over';
+            completionCtx.drawImage(hiddenImage, 0, 0);
+            
+            completionCtx.globalCompositeOperation = 'destination-in';
+            completionCtx.drawImage(maskCanvas, 0, 0);
+            
+            // Add a glow effect
+            completionCtx.globalCompositeOperation = 'source-over';
+            completionCtx.shadowColor = 'rgba(111, 211, 245, 0.8)';
+            completionCtx.shadowBlur = 20;
+            completionCtx.drawImage(hiddenImage, 0, 0);
+        }
+        
+        // Create celebration particles
+        function createCelebrationParticles() {
+            const rect = canvas.getBoundingClientRect();
+            const canvasRect = canvasContainer.getBoundingClientRect();
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('celebration-particle');
+                
+                if (Math.random() > 0.5) {
+                    particle.classList.add('star-particle');
+                } else {
+                    particle.classList.add('circle-particle');
+                }
+                
+                const startX = canvasRect.left + rect.width / 2;
+                const startY = canvasRect.top + rect.height / 2;
+                
+                particle.style.left = startX + 'px';
+                particle.style.top = startY + 'px';
+                
+                const tx = (Math.random() - 0.5) * 400;
+                const ty = (Math.random() - 0.5) * 400;
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 2000);
+            }
+        }
+        
+        // Timer functions
+        function updateTimer() {
+            timeRemaining -= 1000;
+            
+            if (timeRemaining <= 0) {
+                endSession();
+                return;
+            }
+            
+            const minutes = Math.floor(timeRemaining / 60000);
+            const seconds = Math.floor((timeRemaining % 60000) / 1000);
+            timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update progress bar
+            const progress = ((sessionDuration - timeRemaining) / sessionDuration) * 100;
+            progressBar.style.width = progress + '%';
+        }
+        
+        // End session
+        function endSession() {
+            isSessionActive = false;
+            clearInterval(timerInterval);
+            
+            // Calculate final score based on shapes completed and perfect traces
+            const score = shapesCompleted * 10 + perfectTraces * 5;
+            
+            // Call achievement system function
+            handleAchievements(score, getCurrentDifficulty());
+            
+            // Show completion message
+            document.getElementById('final-shapes').textContent = shapesCompleted;
+            document.getElementById('perfect-traces').textContent = perfectTraces;
+            document.getElementById('best-coverage').textContent = bestCoverage + '%';
+            
+            settingsPanel.classList.add('hidden');
+            statsPanel.classList.add('hidden');
+            instructions.classList.add('hidden');
+            progressBar.classList.add('hidden');
+            coverageProgress.classList.add('hidden');
+            completionMessage.classList.remove('hidden');
+        }
+        
+        // Event listeners
+        startButton.addEventListener('click', () => {
+            // Get settings
+            currentBrushSize = parseInt(brushSizeSelect.value);
+            sessionDuration = parseInt(sessionDurationInput.value) * 60000;
+            timeRemaining = sessionDuration;
+            currentDifficulty = difficultyLevelSelect.value;
+            requiredCoverage = parseInt(coverageRequiredSelect.value);
+            
+            // Reset stats
+            shapesCompleted = 0;
+            perfectTraces = 0;
+            bestCoverage = 0;
+            isCompleting = false;
+            
+            shapesCompletedElement.textContent = '0';
+            completionsElement.textContent = '0';
+            timeLeftElement.textContent = `${Math.floor(sessionDuration / 60000)}:00`;
+            
+            // Start session
+            isSessionActive = true;
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Show game UI
+            settingsPanel.classList.add('hidden');
+            statsPanel.classList.remove('hidden');
+            instructions.classList.remove('hidden');
+            progressBar.classList.remove('hidden');
+            coverageProgress.classList.remove('hidden');
+            
+            // Load first shape
+            loadNewShape();
+        });
+        
+        restartButton.addEventListener('click', () => {
+            completionMessage.classList.add('hidden');
+            settingsPanel.classList.remove('hidden');
+            
+            // Clear canvases
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            guideCtx.clearRect(0, 0, guideCanvas.width, guideCanvas.height);
+            completionCtx.clearRect(0, 0, completionCanvas.width, completionCanvas.height);
+        });
+        
+        homeButton.addEventListener('click', () => {
+            window.location.href = '../index.html';
+        });
+        
+        // Canvas event listeners
+        // Mouse events
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        
+        // Touch events
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+        
+        // Prevent context menu on right click
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        // Initial canvas setup
+        resizeCanvas();
+        
+    </script>
+</body>
+</html>

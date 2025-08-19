@@ -782,8 +782,11 @@
     <!-- Session Enhancement System Integration - Single module import -->
     <script type="module">
         // Import utilities and session enhancement - FIXED: Single import to avoid duplicate loading
-        import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
+        import { storage, starfield, theme, viewport, audio, initUtils, toast } from '../js/utils.js';
         import { sessionEnhancement } from '../js/session-enhancement.js';
+        // 🔗 Achievements + Progress (NEW)
+        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
+        import { recordSession } from '../js/progress.js';
         
         // Initialize utilities
         initUtils();
@@ -1099,6 +1102,22 @@
             updateTimerDisplay();
         }
         
+        // 🔔 Achievement toast helper (safe fallback)
+        function showAchievementNotification(achievementId) {
+            try {
+                if (toast && typeof toast.show === 'function') {
+                    toast.show(`Achievement unlocked: ${achievementId}`, { duration: 4000 });
+                } else if (toast) {
+                    // Some utils implement toast as a function
+                    toast(`Achievement unlocked: ${achievementId}`);
+                } else {
+                    console.log('Achievement unlocked:', achievementId);
+                }
+            } catch {
+                console.log('Achievement unlocked:', achievementId);
+            }
+        }
+        
         // SESSION ENHANCEMENT INTEGRATION - Enhanced endSession function
         function endSession() {
             isSessionActive = false;
@@ -1118,6 +1137,26 @@
                 accuracy: accuracy,
                 avgResponseTime: parseFloat(avgResponseTime)
             });
+            
+            // *** NEW: Progress & Achievements Hooks ***
+            const difficulty = getCurrentDifficulty();
+            try {
+                // Record the session (updates totals, streaks, personal bests)
+                recordSession(currentExerciseId, difficulty, score);
+                
+                // Mark this exercise as tried (for Explorer achievement)
+                markExerciseTried(currentExerciseId);
+                
+                // Check for newly unlocked achievements
+                const newAchievements = checkAndUnlockAchievements();
+                
+                // Show achievement notifications
+                newAchievements.forEach((achievementId) => {
+                    showAchievementNotification(achievementId);
+                });
+            } catch (e) {
+                console.warn('Progress/Achievement integration error:', e);
+            }
             
             // Update completion message UI
             finalScoreElement.textContent = score;

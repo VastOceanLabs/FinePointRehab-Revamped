@@ -506,12 +506,16 @@
         </div>
     </div>
     
-    <!-- SESSION ENHANCEMENT INTEGRATION: Single module script with imports only -->
+    <!-- SESSION ENHANCEMENT + GAMIFICATION INTEGRATION -->
     <script type="module">
-        // SESSION ENHANCEMENT INTEGRATION: Import session enhancement
+        // Core utils and session enhancement
         import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
         import { sessionEnhancement } from '../js/session-enhancement.js';
-        
+
+        // ✨ Gamification imports (per your spec)
+        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
+        import { recordSession } from '../js/progress.js';
+
         // Initialize utils
         initUtils();
         
@@ -532,8 +536,9 @@
             }
         }
         
-        // SESSION ENHANCEMENT INTEGRATION: Initialize session enhancement
+        // Exercise identity
         const currentExerciseId = 'visual-scanner';
+        const PROGRESS_EXERCISE_ID = 'scanner'; // used for progress/achievements per your ID list
         
         function getCurrentDifficulty() {
             const difficultySelect = document.getElementById('difficulty');
@@ -564,7 +569,6 @@
         
         // Create stars for background effect
         const starsCount = 50;
-        
         for (let i = 0; i < starsCount; i++) {
             const star = document.createElement('div');
             star.classList.add('star');
@@ -962,6 +966,24 @@
             const seconds = Math.floor((timeRemaining % 60000) / 1000);
             timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
+
+        // 🔔 Gamification helper (matches your requested snippet but avoids name collision)
+        function gamificationEndSession(finalScore, difficulty = 'easy') {
+            // Record the session (updates totals, streaks, personal bests)
+            recordSession(PROGRESS_EXERCISE_ID, difficulty, finalScore);
+            // Mark this exercise as tried (for Explorer achievement)
+            markExerciseTried(PROGRESS_EXERCISE_ID);
+            // Check for newly unlocked achievements
+            const newAchievements = checkAndUnlockAchievements() || [];
+            // Show achievement notifications (guard if not present)
+            if (Array.isArray(newAchievements)) {
+                newAchievements.forEach(achievementId => {
+                    if (typeof window.showAchievementNotification === 'function') {
+                        window.showAchievementNotification(achievementId);
+                    }
+                });
+            }
+        }
         
         function endSession() {
             clearInterval(timerInterval);
@@ -989,6 +1011,9 @@
             
             // Reset timer bar
             timerBar.style.width = '0%';
+
+            // ✅ Call your requested gamification hook
+            gamificationEndSession(score, getCurrentDifficulty());
         }
         
         // Helper function to shuffle an array

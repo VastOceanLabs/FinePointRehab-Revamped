@@ -702,6 +702,10 @@
     <script type="module">
         import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
         import { sessionEnhancement } from '../js/session-enhancement.js';
+
+        // NEW: Achievement + progress imports (requested change)
+        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
+        import { recordSession } from '../js/progress.js';
         
         // Initialize utilities
         initUtils();
@@ -813,6 +817,23 @@
             medium: { targetSize: 70, objectSize: 35, points: 200, spacing: 100 },
             hard: { targetSize: 50, objectSize: 28, points: 300, spacing: 80 }
         };
+
+        // ---- NEW: tiny, self-contained achievement toast (fallback) ----
+        function showAchievementNotification(achievementId) {
+          const existing = document.getElementById('achievement-toast');
+          if (existing) existing.remove();
+          const box = document.createElement('div');
+          box.id = 'achievement-toast';
+          box.textContent = `🏆 Achievement unlocked: ${achievementId}`;
+          box.style.cssText = `
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.85); color: #fff; padding: 10px 16px;
+            border-radius: 12px; font-weight: 700; z-index: 9999; box-shadow: 0 4px 14px rgba(0,0,0,0.4)
+          `;
+          document.body.appendChild(box);
+          setTimeout(() => box.remove(), 3000);
+        }
+        // ----------------------------------------------------------------
         
         // Utility functions
         function showSettings() {
@@ -820,8 +841,6 @@
             settingsPanel.classList.remove('hidden');
             statsPanel.classList.add('hidden');
             completionMessage.classList.add('hidden');
-            
-            // Update settings toggle state
             settingsToggle.setAttribute('aria-pressed', 'true');
         }
         
@@ -894,10 +913,8 @@
         
         // Create particle effect with performance cap
         function createParticles(x, y, color) {
-            // Check current particle count and limit for performance
             const existingParticles = gameArea.querySelectorAll('.particle');
             if (existingParticles.length > maxParticles) {
-                // Remove oldest particles
                 for (let i = 0; i < Math.min(5, existingParticles.length); i++) {
                     existingParticles[i].remove();
                 }
@@ -920,7 +937,6 @@
                 
                 gameArea.appendChild(particle);
                 
-                // Animate particle
                 let startTime = null;
                 function animateParticle(timestamp) {
                     if (!startTime) startTime = timestamp;
@@ -946,13 +962,11 @@
         // Create drag trail effect with performance cap
         function createDragTrail(x, y) {
             const now = Date.now();
-            if (now - lastTrailTime < 50) return; // Limit trail creation rate
+            if (now - lastTrailTime < 50) return;
             lastTrailTime = now;
             
-            // Check current trail count and limit for performance
             const existingTrails = gameArea.querySelectorAll('.drag-trail');
             if (existingTrails.length > maxTrails) {
-                // Remove oldest trails
                 for (let i = 0; i < Math.min(3, existingTrails.length); i++) {
                     existingTrails[i].remove();
                 }
@@ -979,7 +993,6 @@
             const rect = currentDragging.getBoundingClientRect();
             const gameRect = gameArea.getBoundingClientRect();
             
-            // Calculate offset
             if (e.type === 'mousedown') {
                 dragOffsetX = e.clientX - rect.left;
                 dragOffsetY = e.clientY - rect.top;
@@ -988,7 +1001,6 @@
                 dragOffsetY = e.touches[0].clientY - rect.top;
             }
             
-            // Add event listeners for drag and end
             document.addEventListener('mousemove', dragElement);
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchmove', dragElement, { passive: false });
@@ -1010,11 +1022,9 @@
                 clientY = e.touches[0].clientY;
             }
             
-            // Calculate new position relative to game area
             let newX = clientX - gameRect.left - dragOffsetX;
             let newY = clientY - gameRect.top - dragOffsetY;
             
-            // Keep within bounds (use getBoundingClientRect for reliable sizing)
             const elementRect = currentDragging.getBoundingClientRect();
             const elementSize = elementRect.width;
             newX = Math.max(0, Math.min(newX, gameRect.width - elementSize));
@@ -1031,16 +1041,13 @@
             
             e.preventDefault();
             
-            // Remove event listeners with proper options
             document.removeEventListener('mousemove', dragElement);
             document.removeEventListener('mouseup', endDrag);
             document.removeEventListener('touchmove', dragElement, { passive: false });
             document.removeEventListener('touchend', endDrag);
             
-            // Check for successful drop
             checkDrop();
             
-            // Reset dragging state
             currentDragging.classList.remove('dragging');
             activeTargets.forEach(target => target.classList.remove('active'));
             currentDragging = null;
@@ -1061,13 +1068,10 @@
                 y: dragRect.top + dragRect.height / 2 - gameRect.top
             };
             
-            // Create drag trail
             createDragTrail(dragCenter.x, dragCenter.y);
             
-            // Reset all targets
             activeTargets.forEach(target => target.classList.remove('active'));
             
-            // Check each target
             activeTargets.forEach(target => {
                 const targetRect = target.getBoundingClientRect();
                 const targetCenter = {
@@ -1080,7 +1084,6 @@
                     dragRect.top + dragRect.height / 2 - targetCenter.y
                 );
                 
-                // Activate target if close enough
                 if (distance < targetRect.width / 2 + dragRect.width / 2 + 20) {
                     target.classList.add('active');
                 }
@@ -1112,17 +1115,14 @@
                     dragCenter.y - targetCenter.y
                 );
                 
-                // Check if drop is successful
                 if (distance < targetRect.width / 3 && 
                     target.dataset.targetId === currentDragging.dataset.targetId) {
                     successfulDrop = true;
                     
                     const color = currentDragging.dataset.color;
                     
-                    // Success animation
                     target.classList.add('success');
                     
-                    // Create particle effect at target center
                     const gameRect = gameArea.getBoundingClientRect();
                     createParticles(
                         targetCenter.x - gameRect.left,
@@ -1134,25 +1134,20 @@
                         target.classList.remove('success');
                     }, 600);
                     
-                    // Update score
                     const dropTime = Date.now() - roundStartTime;
                     totalDropTime += dropTime;
                     
-                    // Award points based on speed and difficulty
                     const timeBonus = Math.max(0, Math.floor((5000 - dropTime) / 100));
                     const points = settings.points + timeBonus;
                     score += points;
                     successfulDrops++;
                     
-                    // Remove this draggable
                     currentDragging.remove();
                     activeDroppables = activeDroppables.filter(d => d !== currentDragging);
                     
-                    // Show success message
                     statusMessage.textContent = `Perfect! +${points} points`;
                     statusMessage.style.color = 'var(--success-color)';
                     
-                    // Check if round is complete
                     if (activeDroppables.length === 0) {
                         setTimeout(() => nextRound(), 1000);
                     }
@@ -1160,7 +1155,6 @@
             });
             
             if (!successfulDrop) {
-                // Shake animation for failed drop
                 currentDragging.style.animation = 'shake 0.3s ease';
                 setTimeout(() => {
                     if (currentDragging) {
@@ -1187,7 +1181,8 @@
                 
                 createRound(difficulty, numTargets, showNumbers);
             } else {
-                endSession();
+                // UPDATED: call finishSession (internal) so we can pass stats to the new endSession helper
+                finishSession();
             }
         }
         
@@ -1209,16 +1204,13 @@
         
         // Start new session
         function startSession() {
-            // Get settings with input validation
             const difficulty = difficultySelect.value;
             const numTargets = parseInt(numTargetsSelect.value);
             
-            // Validate and clamp session duration input
             const minutes = Math.max(1, Math.min(10, Number.parseInt(sessionDurationInput.value, 10) || 2));
             sessionDuration = minutes * 60 * 1000;
             const showNumbers = showNumbersSelect.value === 'yes';
             
-            // Reset game state
             score = 0;
             successfulDrops = 0;
             totalDrops = 0;
@@ -1227,77 +1219,84 @@
             totalDropTime = 0;
             maxRounds = Math.floor(timeRemaining / 6000);
             
-            // Clear previous game elements
             clearGameElements();
             
-            // Update UI
             updateStats();
             updateTimer();
             updateProgress();
             
-            // Hide settings, show stats
             hideSettings();
             statsPanel.classList.remove('hidden');
             
-            // Start timer
             isSessionActive = true;
             roundStartTime = Date.now();
             
             timerInterval = setInterval(() => {
                 timeRemaining -= 100;
                 
-                // Update timer bar with accessibility
                 const percent = Math.max(0, Math.round((timeRemaining / sessionDuration) * 100));
                 timerBar.style.width = `${percent}%`;
                 timerBar.setAttribute('aria-valuenow', String(percent));
                 
-                // Update time display
                 updateTimer();
                 
-                // Check if session is over
                 if (timeRemaining <= 0) {
-                    endSession();
+                    // UPDATED: call finishSession instead of previous endSession
+                    finishSession();
                 }
             }, 100);
             
-            // Create first round
             createRound(difficulty, numTargets, showNumbers);
         }
         
-        // SESSION ENHANCEMENT INTEGRATION: Updated endSession function
-        function endSession() {
+        // UPDATED: internal finisher; calculates stats, updates UI, then calls the requested endSession(score,difficulty)
+        function finishSession() {
             clearInterval(timerInterval);
             isSessionActive = false;
             
-            // Clear game elements
             clearGameElements();
-            
-            // Hide stats
             statsPanel.classList.add('hidden');
             
-            // Calculate final stats
             const accuracy = totalDrops > 0 ? Math.round(successfulDrops / totalDrops * 100) : 0;
             const avgDropTime = successfulDrops > 0 ? (totalDropTime / successfulDrops / 1000).toFixed(2) : 0;
             
-            // SESSION ENHANCEMENT INTEGRATION: Handle session completion
+            // Existing session enhancement path
             sessionEnhancement.handleSessionComplete({
                 score: score,
                 drops: successfulDrops,
                 accuracy: accuracy,
                 avgDropTime: parseFloat(avgDropTime)
             });
+
+            // NEW: Call the requested helper to record & unlock
+            const difficulty = difficultySelect ? difficultySelect.value : 'easy';
+            endSession(score, difficulty); // <-- This is the new helper per your spec
             
-            // Show completion message with focus management
+            // UI completion panel
             finalScoreElement.textContent = score;
             finalDropsElement.textContent = successfulDrops;
             finalAccuracyElement.textContent = accuracy + '%';
             finalAvgTimeElement.textContent = avgDropTime + 's';
             completionMessage.classList.remove('hidden');
-            completionMessage.focus(); // Focus for screen readers
+            completionMessage.focus();
             
-            // Reset timer bar
             timerBar.style.width = '0%';
             timerBar.setAttribute('aria-valuenow', '0');
+        }
+
+        // NEW (requested): standardized helper for tracking & achievements
+        // Matches the exact signature you provided and is reusable by any exercise
+        function endSession(finalScore, difficulty = 'easy') {
+            // Record the session (updates totals, streaks, personal bests)
+            recordSession('precision', difficulty, finalScore);
+            // Mark this exercise as tried (for Explorer achievement)
+            markExerciseTried('precision');
+            // Check for newly unlocked achievements
+            const newAchievements = checkAndUnlockAchievements();
+            // Show achievement notifications
+            newAchievements.forEach(achievementId => {
+                showAchievementNotification(achievementId);
+            });
         }
         
         function createRound(difficulty, numTargets, showNumbers) {
@@ -1312,7 +1311,6 @@
                 const target = document.createElement('div');
                 target.classList.add('target');
                 
-                // Apply color to the target
                 const colorData = colorPalette[i % colorPalette.length];
                 target.style.borderColor = colorData.solid;
                 target.style.background = `radial-gradient(circle at center, ${colorData.solid}22 0%, transparent 60%)`;
@@ -1320,7 +1318,6 @@
                 target.style.width = `${settings.targetSize}px`;
                 target.style.height = `${settings.targetSize}px`;
                 
-                // Find non-overlapping position
                 const position = findNonOverlappingPosition(settings.targetSize, positions, gameRect, settings.spacing);
                 positions.push(position);
                 
@@ -1328,7 +1325,6 @@
                 target.style.top = `${position.y}px`;
                 target.dataset.targetId = i;
                 
-                // Add numbers if enabled
                 if (showNumbers) {
                     const numberLabel = document.createElement('div');
                     numberLabel.style.cssText = `
@@ -1355,7 +1351,6 @@
                 draggable.style.width = `${settings.objectSize}px`;
                 draggable.style.height = `${settings.objectSize}px`;
                 
-                // Apply matching color gradient
                 const colorData = colorPalette[i % colorPalette.length];
                 draggable.style.background = colorData.gradient;
                 draggable.style.boxShadow = `0 4px 15px ${colorData.solid}66`;
@@ -1367,25 +1362,24 @@
                     draggable.style.textShadow = '0 1px 3px rgba(0,0,0,0.5)';
                 }
                 
-                // Position draggables around edges
                 let x, y;
                 const edge = Math.floor(Math.random() * 4);
                 const margin = 30;
                 
                 switch(edge) {
-                    case 0: // left
+                    case 0:
                         x = margin;
                         y = margin + Math.random() * (gameRect.height - settings.objectSize - 2 * margin);
                         break;
-                    case 1: // right
+                    case 1:
                         x = gameRect.width - settings.objectSize - margin;
                         y = margin + Math.random() * (gameRect.height - settings.objectSize - 2 * margin);
                         break;
-                    case 2: // top
+                    case 2:
                         x = margin + Math.random() * (gameRect.width - settings.objectSize - 2 * margin);
                         y = margin;
                         break;
-                    case 3: // bottom
+                    case 3:
                         x = margin + Math.random() * (gameRect.width - settings.objectSize - 2 * margin);
                         y = gameRect.height - settings.objectSize - margin;
                         break;
@@ -1397,17 +1391,14 @@
                 draggable.dataset.targetId = i;
                 draggable.dataset.color = colorData.solid;
                 
-                // Add random animation delay
                 draggable.style.animationDelay = `${Math.random() * 2}s`;
                 
-                // Add drag event listeners
                 addDragListeners(draggable);
                 
                 gameArea.appendChild(draggable);
                 activeDroppables.push(draggable);
             }
             
-            // Update status
             statusMessage.textContent = "Drag objects to their matching colored targets";
             statusMessage.style.color = 'var(--text-primary)';
             roundStartTime = Date.now();

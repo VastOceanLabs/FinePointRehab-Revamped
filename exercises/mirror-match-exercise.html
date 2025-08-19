@@ -296,6 +296,8 @@
         // Session Enhancement Integration: Step 1 - Import session enhancement
         import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
         import { sessionEnhancement } from '../js/session-enhancement.js';
+        import { checkAndUnlockAchievements, markExerciseTried } from '../js/achievements.js';
+        import { recordSession } from '../js/progress.js';
         
         // Initialize utilities
         initUtils();
@@ -406,6 +408,17 @@
         
         // Pattern types for variety
         const patternTypes = ['random', 'circle', 'square', 'triangle', 'zigzag', 'line', 'spiral'];
+        
+        // Achievement notification function
+        function showAchievementNotification(achievementId) {
+            // Check if we have access to the showNotification function from session-enhancement
+            if (window.showNotification) {
+                window.showNotification(`Achievement Unlocked: ${achievementId}`, 'achievement');
+            } else {
+                // Fallback notification
+                showFeedback(`Achievement Unlocked: ${achievementId}`, 'success');
+            }
+        }
         
         // Helper function to layout mirror area and handle resizing
         function layoutMirrorArea() {
@@ -1004,6 +1017,23 @@
                 avgSyncTime: avgSyncTime,
                 totalAttempts: totalAttempts,
                 successfulAttempts: successfulAttempts
+            });
+            
+            // *** ACHIEVEMENTS INTEGRATION: Handle session completion ***
+            const difficulty = getCurrentDifficulty();
+            
+            // Record the session (updates totals, streaks, personal bests)
+            recordSession(currentExerciseId, difficulty, score);
+            
+            // Mark this exercise as tried (for Explorer achievement)
+            markExerciseTried(currentExerciseId);
+            
+            // Check for newly unlocked achievements
+            const newAchievements = checkAndUnlockAchievements();
+            
+            // Show achievement notifications
+            newAchievements.forEach(achievementId => {
+                showAchievementNotification(achievementId);
             });
             
             // Show completion message with final stats

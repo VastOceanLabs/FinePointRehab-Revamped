@@ -429,6 +429,41 @@
             color: rgba(255, 255, 255, 0.9);
         }
         
+        /* Achievement Notification Styles */
+        .achievement-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(145deg, rgba(30, 50, 80, 0.95), rgba(20, 35, 60, 0.95));
+            color: white;
+            padding: var(--space-4);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            border: 1px solid var(--brand-aqua);
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+        
+        .achievement-notification.show {
+            transform: translateX(0);
+        }
+        
+        .achievement-icon {
+            font-size: var(--font-size-2xl);
+            flex-shrink: 0;
+        }
+        
+        .achievement-text {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+        }
+        
         /* Mobile responsive */
         @media (max-width: 768px) {
             .stat-value {
@@ -465,6 +500,13 @@
             
             #playable-area {
                 bottom: 120px;
+            }
+            
+            .achievement-notification {
+                top: 10px;
+                right: 10px;
+                max-width: calc(100vw - 20px);
+                font-size: var(--font-size-xs);
             }
         }
         
@@ -624,6 +666,28 @@
         import { storage, starfield, theme, viewport, audio, initUtils } from '../js/utils.js';
         import { sessionEnhancement } from '../js/session-enhancement.js';
         
+        // *** ACHIEVEMENTS & PROGRESS IMPORTS ***
+        // Note: These imports will fail gracefully if files don't exist yet
+        let checkAndUnlockAchievements, markExerciseTried, recordSession;
+        
+        try {
+            const achievementsModule = await import('../js/achievements.js');
+            checkAndUnlockAchievements = achievementsModule.checkAndUnlockAchievements;
+            markExerciseTried = achievementsModule.markExerciseTried;
+        } catch (error) {
+            console.log('Achievements module not available yet:', error.message);
+            checkAndUnlockAchievements = () => [];
+            markExerciseTried = () => {};
+        }
+        
+        try {
+            const progressModule = await import('../js/progress.js');
+            recordSession = progressModule.recordSession;
+        } catch (error) {
+            console.log('Progress module not available yet:', error.message);
+            recordSession = () => {};
+        }
+        
         // Initialize utilities
         initUtils();
         
@@ -691,253 +755,3 @@
         let totalResponseTime = 0;
         let bubbleSize = 100; // Default medium size
         let fingerOption = 'all';
-        
-        // Bubble size mapping (in pixels)
-        const bubbleSizes = {
-            'very-large': 150,
-            'large': 120,
-            'medium': 100,
-            'small': 70
-        };
-        
-        // Home button functionality (removed JS redirect since using anchor)
-        
-        // Start new session
-        startSessionButton.addEventListener('click', startSession);
-        restartButton.addEventListener('click', () => {
-            completionMessage.classList.add('hidden');
-            settingsPanel.classList.remove('hidden');
-            fingerGuide.classList.add('hidden');
-        });
-        
-        // Initialize
-        resetBubble();
-        loadSettings();
-        
-        // Handle bubble tap
-        bubble.addEventListener('click', handleBubbleTap);
-        bubble.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            handleBubbleTap();
-        }, false);
-        
-        function startSession() {
-            // Get settings
-            bubbleSize = bubbleSizes[bubbleSizeSelect.value];
-            sessionDuration = parseInt(sessionDurationInput.value) * 60 * 1000;
-            fingerOption = fingerOptionSelect.value;
-            
-            // Save settings
-            saveSettings();
-            
-            // Reset game state
-            score = 0;
-            taps = 0;
-            misses = 0;
-            totalResponseTime = 0;
-            timeRemaining = sessionDuration;
-            
-            // Update UI
-            updateBubbleSize();
-            updateStats();
-            updateTimer();
-            
-            // Hide settings, show stats
-            settingsPanel.classList.add('hidden');
-            statsPanel.classList.remove('hidden');
-            
-            // Show finger guide if finger numbers are enabled
-            if (fingerOption !== 'none') {
-                fingerGuide.classList.remove('hidden');
-            } else {
-                fingerGuide.classList.add('hidden');
-            }
-            
-            // Start timer
-            isSessionActive = true;
-            lastBubbleTime = Date.now();
-            
-            // Set timer bar to full width initially
-            timerBar.style.width = '100%';
-            resetBubble();
-            
-            timerInterval = setInterval(() => {
-                timeRemaining -= 100;
-                
-                // Update timer bar
-                const progress = timeRemaining / sessionDuration;
-                timerBar.style.width = `${progress * 100}%`;
-                
-                // Update time display
-                updateTimer();
-                
-                // Check if session is over
-                if (timeRemaining <= 0) {
-                    endSession();
-                }
-            }, 100);
-        }
-        
-        function endSession() {
-            clearInterval(timerInterval);
-            isSessionActive = false;
-            
-            // Calculate final stats
-            const accuracy = taps > 0 ? Math.round((taps / (taps + misses)) * 100) : 0;
-            const avgResponseTime = taps > 0 ? (totalResponseTime / taps / 1000).toFixed(2) : 0;
-            
-            // *** SESSION ENHANCEMENT INTEGRATION ***
-            sessionEnhancement.handleSessionComplete({
-                score: score,
-                taps: taps,
-                accuracy: accuracy,
-                avgResponseTime: parseFloat(avgResponseTime)
-            });
-            
-            // Hide bubble, stats, and finger guide
-            bubble.classList.add('hidden');
-            statsPanel.classList.add('hidden');
-            fingerGuide.classList.add('hidden');
-            
-            // Show completion message
-            finalScoreElement.textContent = score;
-            finalTapsElement.textContent = taps;
-            finalAvgTimeElement.textContent = avgResponseTime;
-            completionMessage.classList.remove('hidden');
-            
-            // Reset timer bar
-            timerBar.style.width = '0%';
-        }
-        
-        function handleBubbleTap() {
-            if (!isSessionActive) return;
-            
-            // Calculate response time
-            const now = Date.now();
-            const responseTime = now - lastBubbleTime;
-            totalResponseTime += responseTime;
-            
-            // Calculate points (faster taps = more points, with 3000ms as minimum score of 10)
-            const points = Math.max(10, Math.floor(3000 / responseTime * 100));
-            score += points;
-            taps++;
-            
-            // Update stats
-            updateStats();
-            
-            // Burst animation
-            bubble.classList.add('burst');
-            setTimeout(() => {
-                bubble.classList.remove('burst');
-                resetBubble();
-                lastBubbleTime = Date.now();
-            }, 300);
-        }
-        
-        function resetBubble() {
-            if (!isSessionActive) {
-                bubble.classList.add('hidden');
-                return;
-            }
-            
-            bubble.classList.remove('hidden');
-            
-            // Get the playable area bounds
-            const playableRect = playableArea.getBoundingClientRect();
-            const gameRect = gameContainer.getBoundingClientRect();
-            
-            // Calculate relative positions accounting for safe areas
-            const minY = playableRect.top - gameRect.top;
-            const maxY = playableRect.bottom - gameRect.top - bubbleSize;
-            const minX = 0;
-            const maxX = gameRect.width - bubbleSize;
-            
-            // Additional padding to ensure bubble is fully accessible
-            const padding = 10;
-            
-            // Get random position within safe bounds
-            const x = Math.max(minX + padding, Math.min(maxX - padding, Math.random() * maxX));
-            const y = Math.max(minY + padding, Math.min(maxY - padding, Math.random() * (maxY - minY) + minY));
-            
-            // Position bubble
-            bubble.style.left = `${x}px`;
-            bubble.style.top = `${y}px`;
-            
-            // Set finger number if finger training is enabled
-            if (fingerOption !== 'none') {
-                let fingerNumber;
-                if (fingerOption === 'all') {
-                    fingerNumber = Math.floor(Math.random() * 5) + 1;
-                } else {
-                    fingerNumber = parseInt(fingerOption);
-                }
-                bubble.textContent = fingerNumber;
-            } else {
-                bubble.textContent = '';
-            }
-        }
-        
-        function updateBubbleSize() {
-            bubble.style.width = `${bubbleSize}px`;
-            bubble.style.height = `${bubbleSize}px`;
-            bubble.style.fontSize = `${bubbleSize * 0.3}px`;
-        }
-        
-        function updateStats() {
-            scoreElement.textContent = score;
-            tapsElement.textContent = taps;
-            avgTimeElement.textContent = taps > 0 ? (totalResponseTime / taps / 1000).toFixed(1) + 's' : '0.0s';
-        }
-        
-        function updateTimer() {
-            const minutes = Math.floor(timeRemaining / 60000);
-            const seconds = Math.floor((timeRemaining % 60000) / 1000);
-            timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-        
-        function saveSettings() {
-            storage.setItem('bubbleSettings', {
-                bubbleSize: bubbleSizeSelect.value,
-                sessionDuration: sessionDurationInput.value,
-                fingerOption: fingerOptionSelect.value
-            });
-        }
-        
-        function loadSettings() {
-            const settings = storage.getItem('bubbleSettings');
-            if (settings) {
-                bubbleSizeSelect.value = settings.bubbleSize || 'medium';
-                sessionDurationInput.value = settings.sessionDuration || '2';
-                fingerOptionSelect.value = settings.fingerOption || 'all';
-            }
-        }
-        
-        // Track missed bubbles for accuracy calculation
-        function trackMiss() {
-            if (isSessionActive) {
-                misses++;
-            }
-        }
-        
-        // Add miss tracking for clicks outside bubble
-        gameContainer.addEventListener('click', function(e) {
-            // Don't count misses when settings panel is visible
-            if (!settingsPanel.classList.contains('hidden')) return;
-            
-            if (isSessionActive && e.target !== bubble) {
-                trackMiss();
-            }
-        });
-        
-        gameContainer.addEventListener('touchstart', function(e) {
-            // Don't count misses when settings panel is visible
-            if (!settingsPanel.classList.contains('hidden')) return;
-            
-            if (isSessionActive && e.target !== bubble) {
-                e.preventDefault();
-                trackMiss();
-            }
-        }, false);
-    </script>
-</body>
-</html>
