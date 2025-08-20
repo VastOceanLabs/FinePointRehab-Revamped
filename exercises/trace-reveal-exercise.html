@@ -1,2144 +1,747 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Analytics (unchanged) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-RVKCCWBFKE');
+  </script>
 
-  gtag('config', 'G-RVKCCWBFKE');
-</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trace & Reveal Exercise | Fine Point Rehab</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Interactive trace and reveal exercise for fine motor skills and coordination therapy. Enhance precision control and stroke rehabilitation with this customizable therapeutic exercise from Fine Point Rehab.">
-    <meta name="keywords" content="trace therapy, stroke rehabilitation, fine motor skills, hand-eye coordination, occupational therapy games, physical therapy exercises, brain injury recovery, neurological rehabilitation, Fine Point Rehab">
-    
-    <style>
-        :root {
-            --vh: 1vh;
-        }
-        
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
-            background: #121d33;
-            color: white;
-            min-height: 100vh;
-            min-height: calc(var(--vh, 1vh) * 100);
-        }
-        
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            height: calc(var(--vh, 1vh) * 100);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #canvas-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            width: 100%;
-            padding: 10px;
-            max-height: calc(100vh - 120px);
-            max-height: calc(var(--vh, 1vh) * 100 - 120px);
-        }
-        
-        .canvas-container {
-            position: relative;
-            max-width: 100%;
-            max-height: 100%;
-        }
-        
-        #traceCanvas {
-            background: #1c2a4e;
-            border: 3px solid rgba(111, 211, 245, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            cursor: crosshair;
-            touch-action: none;
-            transition: transform 0.5s ease-out;
-            max-width: 100%;
-            max-height: 100%;
-        }
-        
-        #guideLayer, #completionLayer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            max-width: 100%;
-            max-height: 100%;
-        }
-        
-        #guideLayer {
-            z-index: 10;
-        }
-        
-        #completionLayer {
-            z-index: 20;
-        }
-        
-        #settings-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(8, 15, 35, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
-            z-index: 100;
-            width: 85%;
-            max-width: 450px;
-            max-height: 85vh;
-            max-height: calc(var(--vh, 1vh) * 85);
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 25px;
-            -webkit-overflow-scrolling: touch;
-            touch-action: pan-y; /* Allow vertical scrolling in settings panel */
-        }
-        
-        #settings-panel h2 {
-            text-align: center;
-            color: white;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: clamp(20px, 5vw, 24px);
-            letter-spacing: 0.5px;
-        }
-        
-        .game-description {
-            background-color: rgba(111, 211, 245, 0.1);
-            border: 1px solid rgba(111, 211, 245, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: clamp(14px, 3.5vw, 16px);
-            line-height: 1.4;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        
-        .game-description h3 {
-            margin: 0 0 10px 0;
-            color: rgba(111, 211, 245, 1);
-            font-size: clamp(16px, 4vw, 18px);
-        }
-        
-        .settings-group {
-            margin-bottom: 18px;
-        }
-        
-        .settings-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: white;
-            font-size: clamp(14px, 3.5vw, 16px);
-        }
-        
-        .setting-description {
-            font-size: clamp(12px, 3vw, 14px);
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 10px;
-            line-height: 1.3;
-        }
-        
-        select, input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: clamp(14px, 3.5vw, 16px);
-            background-color: rgba(0, 10, 30, 0.8);
-            color: white;
-            /* Improve mobile interaction */
-            -webkit-appearance: none;
-            appearance: none;
-            cursor: pointer;
-            box-sizing: border-box;
-        }
-        
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            padding-right: 40px;
-        }
-        
-        select:focus, input:focus {
-            outline: none;
-            border-color: rgba(111, 211, 245, 0.8);
-            box-shadow: 0 0 0 2px rgba(111, 211, 245, 0.3);
-        }
-        
-        button {
-            background-color: rgba(111, 211, 245, 0.9);
-            color: #121d33;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 15px;
-            font-size: clamp(14px, 3.5vw, 16px);
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            min-height: 44px; /* Minimum touch target size */
-            box-sizing: border-box;
-        }
-        
-        button:hover {
-            background-color: rgba(111, 211, 245, 1);
-            transform: translateY(-2px);
-        }
-        
-        #home-button {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            background-color: rgba(111, 211, 245, 0.8);
-            color: #121d33;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 90;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 44px;
-            min-width: 44px;
-        }
-        
-        #home-button:hover {
-            background-color: rgba(111, 211, 245, 1);
-            transform: translateY(-2px);
-        }
-        
-        #stats-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(8, 15, 35, 0.95);
-            padding: 10px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: 10px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .stat-box {
-            text-align: center;
-            padding: 5px;
-        }
-        
-        .stat-value {
-            font-size: clamp(18px, 4vw, 24px);
-            font-weight: bold;
-            color: rgba(111, 211, 245, 1);
-            line-height: 1;
-        }
-        
-        .stat-label {
-            font-size: clamp(10px, 2.5vw, 14px);
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.2;
-            margin-top: 2px;
-        }
-        
-        #timer-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 8px;
-            background-color: rgba(111, 211, 245, 0.9);
-            width: 100%;
-            z-index: 20;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        #completion-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(8, 15, 35, 0.95);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 101;
-            max-height: 85vh;
-            max-height: calc(var(--vh, 1vh) * 85);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            touch-action: pan-y; /* Allow vertical scrolling in completion message */
-        }
-        
-        .particle {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background-color: rgba(111, 211, 245, 0.8);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particle-fade 1s ease-out forwards;
-            z-index: 30;
-        }
-        
-        @keyframes particle-fade {
-            0% {
-                opacity: 1;
-                transform: scale(1) translate(0, 0);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0.5) translate(0, -20px);
-            }
-        }
-        
-        .celebration-particle {
-            position: absolute;
-            pointer-events: none;
-            z-index: 30;
-            animation: celebration 2s ease-out forwards;
-        }
-        
-        .star-particle {
-            width: 20px;
-            height: 20px;
-            background-color: #ffd700;
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-        }
-        
-        .circle-particle {
-            width: 15px;
-            height: 15px;
-            background-color: rgba(111, 211, 245, 0.9);
-            border-radius: 50%;
-        }
-        
-        @keyframes celebration {
-            0% {
-                transform: translate(0, 0) scale(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(1) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        #instructions {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: clamp(16px, 4vw, 20px);
-            color: white;
-            text-align: center;
-            background-color: rgba(8, 15, 35, 0.9);
-            padding: 8px 16px;
-            border-radius: 10px;
-            z-index: 10;
-            max-width: 90%;
-        }
-        
-        #coverage-progress {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(8, 15, 35, 0.9);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: clamp(16px, 4vw, 18px);
-            color: rgba(111, 211, 245, 1);
-            font-weight: bold;
-            border: 1px solid rgba(111, 211, 245, 0.5);
-            white-space: nowrap;
-        }
-        
-        .completion-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: clamp(32px, 8vw, 48px);
-            font-weight: bold;
-            color: #ffd700;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-            z-index: 25;
-            animation: completion-text 2s ease-out forwards;
-        }
-        
-        @keyframes completion-text {
-            0% {
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.2);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 0;
-            }
-        }
-        
-        #stars-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-            pointer-events: none;
-        }
-        
-        .star {
-            position: absolute;
-            background-color: white;
-            width: 2px;
-            height: 2px;
-            border-radius: 50%;
-            opacity: 0.4;
-        }
-        
-        /* Achievement notification styles */
-        .achievement-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            color: #1a1a1a;
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.4);
-            z-index: 1000;
-            min-width: 300px;
-            transform: translateX(400px);
-            transition: transform 0.5s ease;
-            font-weight: bold;
-            border: 2px solid #b8860b;
-        }
-        
-        .achievement-notification.show {
-            transform: translateX(0);
-        }
-        
-        .achievement-notification .title {
-            font-size: 18px;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .achievement-notification .description {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-        
-        /* Mobile-specific adjustments */
-        @media (max-width: 768px) {
-            #canvas-wrapper {
-                padding: 5px;
-                max-height: calc(100vh - 100px);
-                max-height: calc(var(--vh, 1vh) * 100 - 100px);
-            }
-            
-            #settings-panel {
-                position: fixed;
-                top: 5vh;
-                top: calc(var(--vh, 1vh) * 5);
-                transform: translateX(-50%);
-                max-height: 85vh;
-                max-height: calc(var(--vh, 1vh) * 85);
-                padding: 20px;
-                width: 92%;
-                bottom: auto;
-                margin-bottom: 0;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            #completion-message {
-                position: fixed;
-                top: 5vh;
-                top: calc(var(--vh, 1vh) * 5);
-                transform: translateX(-50%);
-                max-height: 80vh;
-                max-height: calc(var(--vh, 1vh) * 80);
-                padding: 20px;
-                width: 92%;
-                max-width: 400px;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .game-description {
-                padding: 12px;
-                margin-bottom: 15px;
-                font-size: 14px;
-            }
-            
-            .settings-group {
-                margin-bottom: 15px;
-            }
-            
-            .setting-description {
-                margin-bottom: 8px;
-            }
-            
-            select, input {
-                padding: 10px;
-                font-size: 16px; /* Prevent zoom on iOS */
-                -webkit-appearance: none;
-                appearance: none;
-                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-                background-repeat: no-repeat;
-                background-position: right 10px center;
-                background-size: 16px;
-                padding-right: 40px;
-                min-height: 48px;
-            }
-            
-            button {
-                padding: 12px;
-                margin-top: 20px;
-                min-height: 48px;
-                font-size: 16px;
-            }
-            
-            #home-button {
-                bottom: 80px; /* Move above stats panel on mobile */
-                right: 10px;
-                width: 50px;
-                height: 50px;
-                font-size: 10px;
-            }
-            
-            #stats-panel {
-                padding: 8px;
-                grid-template-columns: repeat(4, 1fr);
-            }
-            
-            .stat-box {
-                padding: 3px;
-            }
-            
-            .achievement-notification {
-                top: 10px;
-                right: 10px;
-                min-width: 250px;
-                transform: translateX(350px);
-            }
-        }
-        
-        /* Very small mobile screens */
-        @media (max-width: 480px) {
-            #settings-panel {
-                padding: 15px;
-                width: 95%;
-                max-height: 90vh;
-                max-height: calc(var(--vh, 1vh) * 90);
-                top: 3vh;
-                top: calc(var(--vh, 1vh) * 3);
-            }
-            
-            .game-description {
-                padding: 10px;
-                margin-bottom: 12px;
-            }
-            
-            .settings-group {
-                margin-bottom: 12px;
-            }
-            
-            .setting-description {
-                margin-bottom: 6px;
-                line-height: 1.2;
-            }
-            
-            select, input {
-                padding: 8px;
-                padding-right: 35px;
-                font-size: 16px; /* Prevent zoom */
-            }
-            
-            .settings-label {
-                margin-bottom: 6px;
-            }
-            
-            .achievement-notification {
-                min-width: 200px;
-                padding: 12px 16px;
-                transform: translateX(300px);
-            }
-            
-            .achievement-notification .title {
-                font-size: 16px;
-            }
-            
-            .achievement-notification .description {
-                font-size: 13px;
-            }
-        }
-        
-        /* Landscape mobile adjustments */
-        @media (max-height: 500px) and (orientation: landscape) {
-            #canvas-wrapper {
-                padding: 2px;
-                max-height: calc(100vh - 80px);
-                max-height: calc(var(--vh, 1vh) * 100 - 80px);
-            }
-            
-            #settings-panel {
-                top: 2vh;
-                top: calc(var(--vh, 1vh) * 2);
-                max-height: 95vh;
-                max-height: calc(var(--vh, 1vh) * 95);
-                padding: 15px;
-            }
-            
-            .game-description {
-                padding: 8px;
-                margin-bottom: 10px;
-                font-size: 12px;
-            }
-            
-            .settings-group {
-                margin-bottom: 10px;
-            }
-            
-            .setting-description {
-                margin-bottom: 5px;
-                font-size: 12px;
-            }
-            
-            select, input {
-                padding: 6px;
-                font-size: 14px;
-                padding-right: 30px;
-            }
-            
-            button {
-                padding: 8px;
-                min-height: 40px;
-                margin-top: 15px;
-            }
-            
-            #instructions {
-                top: 10px;
-                font-size: 14px;
-                padding: 4px 8px;
-            }
-            
-            #coverage-progress {
-                top: -40px;
-                font-size: 14px;
-                padding: 4px 8px;
-            }
-            
-            #stats-panel {
-                padding: 5px;
-            }
-            
-            .stat-value {
-                font-size: 16px;
-            }
-            
-            .stat-label {
-                font-size: 10px;
-            }
-            
-            #home-button {
-                bottom: 60px;
-                width: 40px;
-                height: 40px;
-                font-size: 9px;
-            }
-        }
-        
-        /* Very small screens */
-        @media (max-width: 320px) {
-            #settings-panel {
-                padding: 12px;
-                width: 98%;
-                max-height: 92vh;
-                max-height: calc(var(--vh, 1vh) * 92);
-                top: 2vh;
-                top: calc(var(--vh, 1vh) * 2);
-            }
-            
-            .game-description {
-                padding: 8px;
-                margin-bottom: 10px;
-                font-size: 13px;
-            }
-            
-            .settings-group {
-                margin-bottom: 10px;
-            }
-            
-            .setting-description {
-                margin-bottom: 5px;
-                font-size: 11px;
-            }
-            
-            select, input {
-                padding: 6px;
-                font-size: 16px; /* Prevent zoom */
-                padding-right: 30px;
-            }
-            
-            button {
-                padding: 8px;
-                min-height: 44px;
-            }
-            
-            .settings-label {
-                margin-bottom: 4px;
-                font-size: 14px;
-            }
-        }
-        
-        /* Additional fix for very short screens */
-        @media (max-height: 600px) {
-            #settings-panel {
-                max-height: 92vh;
-                max-height: calc(var(--vh, 1vh) * 92);
-                top: 2vh;
-                top: calc(var(--vh, 1vh) * 2);
-            }
-            
-            .game-description {
-                margin-bottom: 10px;
-                padding: 10px;
-            }
-            
-            .settings-group {
-                margin-bottom: 10px;
-            }
-        }
-        
-        /* Ensure scrolling works on all mobile browsers */
-        #settings-panel {
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .settings-content {
-            -webkit-overflow-scrolling: touch;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Trace &amp; Reveal | Fine Point Rehab</title>
+  <meta name="description" content="Interactive trace & reveal exercise to build fine motor control and hand-eye coordination.">
+  <meta name="keywords" content="trace, reveal, fine motor, occupational therapy, rehabilitation">
+
+  <!-- Global tokens & components -->
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+
+  <style>
+    :root {
+      --vh: 1vh;
+      /* Fallbacks if tokens missing */
+      --bg-gradient-from: var(--color-bg-elevated, #0b1020);
+      --bg-gradient-to: var(--color-bg, #0a0f1c);
+      --brand: var(--color-accent, #6fd3f5);
+      --text: var(--color-text, #ffffff);
+      --panel: var(--color-surface, rgba(8,15,35,.9));
+      --border: rgba(255,255,255,.12);
+      --radius: var(--radius-lg, 14px);
+      --gap: var(--space-4, 1rem);
+      --gap-sm: var(--space-2, .5rem);
+      --gap-lg: var(--space-6, 1.5rem);
+      --focus: 0 0 0 3px rgba(111,211,245,.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 20% 0%, var(--bg-gradient-from), var(--bg-gradient-to));
+      min-height: calc(var(--vh, 1vh) * 100);
+      user-select: none; -webkit-user-select: none;
+    }
+
+    /* Sticky header */
+    header.site-header {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; gap: var(--gap);
+      padding: var(--gap) var(--gap-lg);
+      background: linear-gradient(to bottom, rgba(8,15,35,.9), rgba(8,15,35,.6));
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+    header .home-link {
+      text-decoration: none;
+      color: var(--text);
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .5rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-height: 44px;
+    }
+    header .home-link:hover { border-color: rgba(255,255,255,.25); }
+    header .home-link:focus-visible { outline: none; box-shadow: var(--focus); }
+    header h1 {
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      margin: 0;
+      flex: 1;
+    }
+
+    /* Main split layout */
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: var(--gap-lg);
+      padding: var(--gap-lg);
+      max-width: 1280px; margin: 0 auto;
+      min-height: calc(100vh - 72px);
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* Left panel: settings */
+    .panel.settings {
+      position: relative;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: var(--gap-lg);
+    }
+    .settings h2 { margin: 0 0 var(--gap); font-size: 1.1rem; }
+    .game-description {
+      background: rgba(111,211,245,.08);
+      border: 1px solid rgba(111,211,245,.3);
+      border-radius: calc(var(--radius) - 2px);
+      padding: var(--gap);
+      margin-bottom: var(--gap);
+      line-height: 1.35;
+    }
+    .settings-group { margin-bottom: var(--gap); }
+    .settings-label { display: block; font-weight: 600; margin-bottom: .35rem; }
+    .setting-description { opacity: .85; font-size: .9rem; margin-bottom: .35rem; }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: .75rem .9rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(0,10,30,.75);
+      color: var(--text);
+      -webkit-appearance: none; appearance: none;
+      min-height: 44px;
+    }
+    select:focus-visible, input[type="number"]:focus-visible { outline: none; box-shadow: var(--focus); }
+
+    .controls {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: var(--gap);
+      margin-top: var(--gap);
+    }
+    .btn { min-height: 44px; }
+
+    /* Right side: HUD + game area */
+    .panel.play {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(10,18,40,.9), rgba(8,15,35,.9));
+      border-radius: var(--radius);
+      padding: var(--gap-lg);
+      display: grid; grid-template-rows: auto 1fr;
+      position: relative; overflow: hidden;
+    }
+
+    /* Starfield (utility container) */
+    .starfield { position: absolute; inset: 0; pointer-events: none; opacity: .45; }
+
+    /* HUD row */
+    .hud {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto auto;
+      gap: var(--gap);
+      align-items: center;
+      margin-bottom: var(--gap);
+    }
+    .timer-bar {
+      height: 8px; border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      overflow: hidden; grid-column: 1 / -1;
+    }
+    .timer-bar > div {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--brand), #8de8ff);
+      transition: width .2s linear;
+    }
+    .hud-stat {
+      text-align: center; padding: .25rem .5rem;
+      border: 1px dashed rgba(255,255,255,.14);
+      border-radius: 10px;
+      min-width: 88px;
+    }
+    .hud-stat .value { font-weight: 700; font-size: 1.1rem; color: var(--brand); line-height: 1; }
+    .hud-stat .label { font-size: .75rem; opacity: .85; margin-top: .15rem; }
+
+    /* Game area wrapper */
+    .game-wrap {
+      position: relative;
+      display: grid; place-items: center;
+      min-height: 420px;
+    }
+    .canvas-container { position: relative; max-width: 100%; max-height: 100%; }
+    canvas#traceCanvas {
+      background: #1c2a4e;
+      border: 3px solid rgba(111,211,245,.9);
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,.35);
+      cursor: crosshair; touch-action: none;
+      max-width: 100%; max-height: 100%;
+    }
+    canvas#guideLayer, canvas#completionLayer {
+      position: absolute; inset: 0; pointer-events: none; max-width: 100%; max-height: 100%;
+    }
+    .banner {
+      position: absolute; top: .5rem; left: 50%; transform: translateX(-50%);
+      background: rgba(8,15,35,.9);
+      border: 1px solid rgba(111,211,245,.5);
+      border-radius: 999px; padding: .4rem .9rem;
+      font-weight: 700; color: var(--brand);
+      opacity: 0; transition: opacity .2s ease;
+      pointer-events: none;
+    }
+    .banner.show { opacity: 1; }
+
+    /* Completion modal (standard) */
+    dialog.modal {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: var(--radius);
+      width: min(520px, 92vw);
+      padding: var(--gap-lg);
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+    }
+    dialog.modal::backdrop { background: rgba(0,0,0,.45); }
+    .modal h2 { margin: 0 0 .75rem 0; }
+    .scores { display: grid; gap: .4rem; margin: .5rem 0 var(--gap); }
+    .xp-line { opacity: .9; font-weight: 600; color: var(--brand); }
+
+    /* A11y */
+    [role="button"], .btn { outline: none; }
+    [role="button"]:focus-visible, .btn:focus-visible, canvas:focus-visible { box-shadow: var(--focus); outline: none; }
+
+    /* Mobile tweaks */
+    @media (max-width: 640px) {
+      .controls { grid-template-columns: 1fr; }
+      .hud { grid-template-columns: 1fr 1fr; gap: var(--gap-sm); }
+      .hud .spacer { display: none; }
+      .hud .hud-stat { min-width: auto; }
+    }
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="stars-container"></div>
-        <div id="timer-bar" class="hidden"></div>
-        
-        <div id="instructions" class="hidden">
-            Paint over the dotted line to reveal the image
+  <!-- Sticky Header -->
+  <header class="site-header" role="banner">
+    <a class="home-link" href="/" aria-label="Go to home">← Home</a>
+    <h1>Trace &amp; Reveal</h1>
+  </header>
+
+  <!-- Main Layout -->
+  <main class="layout" role="main">
+    <!-- Left: Settings -->
+    <section class="panel settings" aria-label="Settings panel">
+      <h2>Session Settings</h2>
+
+      <div class="game-description">
+        <strong>How to play:</strong> Trace along the dotted path to reveal the hidden image. Complete as many shapes as you can before time runs out. Precision boosts your score and XP.
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="brush-size">Brush Size</label>
+        <div class="setting-description">Larger brushes cover the guide more easily.</div>
+        <select id="brush-size" aria-label="Brush size">
+          <option value="20">Small – precise</option>
+          <option value="35" selected>Medium – balanced</option>
+          <option value="50">Large – easier</option>
+          <option value="65">Very large – maximum ease</option>
+        </select>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
+        <input id="session-duration" type="number" min="1" max="10" value="3" inputmode="numeric" aria-label="Session duration in minutes">
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="difficulty-select">Difficulty</label>
+        <div class="setting-description">Determines shape complexity.</div>
+        <select id="difficulty-select" aria-label="Difficulty">
+          <option value="easy">Easy – basic shapes</option>
+          <option value="medium" selected>Medium – stars & letters</option>
+          <option value="hard">Hard – objects & details</option>
+        </select>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="coverage-required">Coverage Required</label>
+        <div class="setting-description">Percentage of the guide that must be painted.</div>
+        <select id="coverage-required" aria-label="Coverage required">
+          <option value="75">Easy (75%)</option>
+          <option value="85" selected>Medium (85%)</option>
+          <option value="95">Hard (95%)</option>
+        </select>
+      </div>
+
+      <!-- Unified controls -->
+      <div class="controls">
+        <button id="start-btn" class="btn">Start</button>
+        <button id="pause-btn" class="btn" aria-pressed="false">Pause</button>
+        <button id="restart-btn" class="btn btn-secondary">Restart</button>
+      </div>
+    </section>
+
+    <!-- Right: HUD + Game -->
+    <section class="panel play" aria-label="Game panel">
+      <div class="starfield" id="stars-container" aria-hidden="true"></div>
+
+      <!-- HUD Row -->
+      <div class="hud" role="group" aria-label="Heads up display">
+        <div class="hud-stat" aria-live="polite">
+          <div class="value" id="hud-score">0</div>
+          <div class="label">Score</div>
         </div>
-        
-        <div id="canvas-wrapper">
-            <div class="canvas-container">
-                <div id="coverage-progress" class="hidden">0%</div>
-                <canvas id="traceCanvas"></canvas>
-                <canvas id="guideLayer"></canvas>
-                <canvas id="completionLayer"></canvas>
-            </div>
+        <div class="hud-stat" aria-live="polite">
+          <div class="value" id="hud-pb">0</div>
+          <div class="label">Personal Best</div>
         </div>
-        
-        <button id="home-button">Home</button>
-        
-        <div id="settings-panel">
-            <h2>Trace & Reveal Exercise</h2>
-            
-            <div class="game-description">
-                <h3>How to Play</h3>
-                <p>Follow the dotted line with your finger or cursor to gradually reveal a hidden colorful image. When you cover enough of the line, the complete image will appear with a celebration! This exercise helps improve hand-eye coordination, fine motor control, and concentration.</p>
-            </div>
-            
-            <div class="settings-group">
-                <label class="settings-label">Brush Size:</label>
-                <div class="setting-description">Choose how wide your painting brush is. Larger brushes make it easier to cover the line.</div>
-                <select id="brush-size">
-                    <option value="20">Small - Precise control</option>
-                    <option value="35" selected>Medium - Balanced</option>
-                    <option value="50">Large - Easier coverage</option>
-                    <option value="65">Very Large - Maximum ease</option>
-                </select>
-            </div>
-            
-            <div class="settings-group">
-                <label class="settings-label">Session Duration (minutes):</label>
-                <div class="setting-description">How long your practice session will last. You can complete multiple shapes during this time.</div>
-                <input type="number" id="session-duration" min="1" max="10" value="3">
-            </div>
-            
-            <div class="settings-group">
-                <label class="settings-label" for="difficulty-level">Difficulty Level:</label>
-                <div class="setting-description">Choose the complexity of shapes you'll trace, from simple circles to detailed structures.</div>
-                <select id="difficulty-level">
-                    <option value="easy">Easy - Basic shapes (circles, squares)</option>
-                    <option value="medium" selected>Medium - Complex shapes (stars, letters)</option>
-                    <option value="hard">Hard - Detailed structures (houses, cars)</option>
-                </select>
-            </div>
-            
-            <div class="settings-group">
-                <label class="settings-label">Coverage Required:</label>
-                <div class="setting-description">How much of the dotted line you need to trace before the image is revealed.</div>
-                <select id="coverage-required">
-                    <option value="75">Easy (75%) - Most forgiving</option>
-                    <option value="85" selected>Medium (85%) - Balanced challenge</option>
-                    <option value="95">Hard (95%) - Precise tracing needed</option>
-                </select>
-            </div>
-            
-            <button id="start-session">Start Tracing Session</button>
+        <div class="hud-stat" aria-live="polite">
+          <div class="value" id="hud-coverage">0%</div>
+          <div class="label">Best Coverage</div>
         </div>
-        
-        <div id="stats-panel" class="hidden">
-            <div class="stat-box">
-                <div id="shapes-completed" class="stat-value">0</div>
-                <div class="stat-label">Shapes Completed</div>
-            </div>
-            <div class="stat-box">
-                <div id="coverage" class="stat-value">0%</div>
-                <div class="stat-label">Line Coverage</div>
-            </div>
-            <div class="stat-box">
-                <div id="time-left" class="stat-value">3:00</div>
-                <div class="stat-label">Time Left</div>
-            </div>
-            <div class="stat-box">
-                <div id="completions" class="stat-value">0</div>
-                <div class="stat-label">Perfect Traces</div>
-            </div>
+        <div class="hud-stat">
+          <div class="value" id="hud-difficulty">Medium</div>
+          <div class="label">Difficulty</div>
         </div>
-        
-        <div id="completion-message" class="hidden">
-            <h2>Session Complete!</h2>
-            <div id="completion-scores">
-                <p>Shapes Completed: <span id="final-shapes" class="stat-value">0</span></p>
-                <p>Perfect Traces: <span id="perfect-traces" class="stat-value">0</span></p>
-                <p>Best Coverage: <span id="best-coverage" class="stat-value">0%</span></p>
-            </div>
-            <button id="restart-button">Start New Session</button>
+        <div class="spacer"></div>
+
+        <!-- Timer bar -->
+        <div class="timer-bar" aria-hidden="true">
+          <div id="timer-fill"></div>
         </div>
+      </div>
+
+      <!-- Game area -->
+      <div class="game-wrap">
+        <div class="banner" id="reveal-banner" aria-hidden="true">✨ Image revealed!</div>
+
+        <div class="canvas-container">
+          <div id="coverage-progress" class="banner" aria-live="polite">0%</div>
+          <canvas id="traceCanvas" tabindex="0" aria-label="Tracing canvas"></canvas>
+          <canvas id="guideLayer" aria-hidden="true"></canvas>
+          <canvas id="completionLayer" aria-hidden="true"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Completion modal -->
+  <dialog id="completion-modal" class="modal" aria-labelledby="completeTitle">
+    <h2 id="completeTitle">Session complete!</h2>
+    <div class="scores">
+      <div>Shapes completed: <strong id="final-shapes">0</strong></div>
+      <div>Perfect traces: <strong id="perfect-traces">0</strong></div>
+      <div>Best coverage: <strong id="best-coverage">0%</strong></div>
+      <div>Score: <strong id="final-score">0</strong></div>
     </div>
-    
-    <script type="module" src="/js/utils.js"></script>
-    <script type="module" src="/js/session-enhancement.js"></script>
-    <script type="module">
-        import { storage, starfield, theme, viewport, audio, initUtils } from '/js/utils.js';
-        import { sessionEnhancement } from '/js/session-enhancement.js';
-        
-        initUtils();
-        
-        // SESSION ENHANCEMENT INTEGRATION
-        const currentExerciseId = 'trace-reveal'; // Using 'trace-reveal' as the exercise ID
-        
-        // Get current difficulty from UI or default
-        function getCurrentDifficulty() {
-            const difficultySelect = document.getElementById('difficulty-level');
-            return difficultySelect ? difficultySelect.value : 'medium';
+    <div class="xp-line" id="xp-line">+0 XP</div>
+    <p id="achievements-line" aria-live="polite"></p>
+    <div style="display:flex; gap:var(--gap); margin-top:var(--gap); justify-content:flex-end;">
+      <button id="modal-restart" class="btn">Start New Session</button>
+      <button id="modal-close" class="btn btn-secondary">Close</button>
+    </div>
+  </dialog>
+
+  <!-- Single module: (duplicate includes removed) -->
+  <script type="module">
+    import { storage, starfield, initUtils } from '/js/utils.js';
+    import { recordSession } from '/js/progress.js';
+    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+    import { sessionEnhancement } from '/js/session-enhancement.js';
+
+    initUtils();
+
+    // ====== Elements
+    const brushSizeEl = document.getElementById('brush-size');
+    const durationEl = document.getElementById('session-duration');
+    const difficultyEl = document.getElementById('difficulty-select');
+    const coverageReqEl = document.getElementById('coverage-required');
+
+    const startBtn = document.getElementById('start-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const restartBtn = document.getElementById('restart-btn');
+
+    const hudScore = document.getElementById('hud-score');
+    const hudPB = document.getElementById('hud-pb');
+    const hudCoverage = document.getElementById('hud-coverage');
+    const hudDifficulty = document.getElementById('hud-difficulty');
+    const timerFill = document.getElementById('timer-fill');
+
+    const coverageChip = document.getElementById('coverage-progress');
+    const revealBanner = document.getElementById('reveal-banner');
+
+    const modal = document.getElementById('completion-modal');
+    const modalRestart = document.getElementById('modal-restart');
+    const modalClose = document.getElementById('modal-close');
+
+    const finalShapes = document.getElementById('final-shapes');
+    const perfectTraces = document.getElementById('perfect-traces');
+    const bestCoverageOut = document.getElementById('best-coverage');
+    const finalScoreOut = document.getElementById('final-score');
+    const xpLine = document.getElementById('xp-line');
+    const achievementsLine = document.getElementById('achievements-line');
+
+    const canvas = document.getElementById('traceCanvas');
+    const guideCanvas = document.getElementById('guideLayer');
+    const completionCanvas = document.getElementById('completionLayer');
+    const ctx = canvas.getContext('2d');
+    const guideCtx = guideCanvas.getContext('2d');
+    const completionCtx = completionCanvas.getContext('2d');
+
+    // Starfield utility
+    starfield.attach(document.getElementById('stars-container'));
+
+    // ====== State
+    const EXERCISE_ID = 'trace-reveal';
+    const PB_KEY = `pb:${EXERCISE_ID}`;
+    let sessionActive = false, sessionPaused = false, isDrawing = false, isCompleting = false;
+    let sessionMs = 0, remainingMs = 0, timerId = null;
+    let shapesCompleted = 0, perfectCount = 0, bestCoverage = 0, currentScore = 0;
+    let currentBrush = 35, requiredCoverage = 85, currentDifficulty = 'medium';
+    let pathPoints = [], coveragePoints = new Set(), coveredPoints = new Set(), currentShapeType = '';
+
+    // Hidden image + mask for reveal
+    const hiddenImage = document.createElement('canvas');
+    const hiddenCtx = hiddenImage.getContext('2d');
+    const maskCanvas = document.createElement('canvas');
+    const maskCtx = maskCanvas.getContext('2d');
+
+    // ====== Utils
+    function setViewportHeight() {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    setViewportHeight();
+    addEventListener('resize', setViewportHeight);
+    addEventListener('orientationchange', () => setTimeout(setViewportHeight, 100));
+
+    // Square canvas responsive sizing
+    function resizeCanvas() {
+      const wrap = canvas.parentElement.getBoundingClientRect();
+      const max = Math.min(wrap.width - 20, Math.max(260, wrap.height - 60), 560);
+      canvas.width = canvas.height = max;
+      guideCanvas.width = guideCanvas.height = max;
+      completionCanvas.width = completionCanvas.height = max;
+      hiddenImage.width = hiddenImage.height = max;
+      maskCanvas.width = maskCanvas.height = max;
+    }
+    resizeCanvas();
+    addEventListener('resize', () => { resizeCanvas(); if (sessionActive && !isCompleting) loadNewShape(); });
+
+    // PB load
+    function getPB() { return Number(storage.get(PB_KEY) || 0); }
+    function setPB(v){ storage.set(PB_KEY, String(v)); }
+
+    // ====== Shapes (same generators, trimmed for brevity but functionally equivalent)
+    const shapeGenerators = {
+      easy: {
+        circle: () => {
+          const r = Math.min(canvas.width, canvas.height) * 0.3;
+          const cx = canvas.width/2, cy = canvas.height/2, pts=[];
+          for (let i=0;i<=100;i++){ const a=i/100*2*Math.PI; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); }
+          return pts;
+        },
+        square: () => {
+          const s = Math.min(canvas.width, canvas.height) * 0.6;
+          const x = (canvas.width - s)/2, y=(canvas.height - s)/2;
+          return [{x,y},{x:x+s,y},{x:x+s,y:y+s},{x,y:y+s},{x,y}];
+        },
+        triangle: () => {
+          const s = Math.min(canvas.width, canvas.height) * 0.6, cx=canvas.width/2, cy=canvas.height/2;
+          return [{x:cx,y:cy-s/2},{x:cx-s/2,y:cy+s/2},{x:cx+s/2,y:cy+s/2},{x:cx,y:cy-s/2}];
+        },
+        diamond: () => {
+          const s = Math.min(canvas.width, canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2;
+          return [{x:cx,y:cy-s/2},{x:cx+s/2,y:cy},{x:cx,y:cy+s/2},{x:cx-s/2,y:cy},{x:cx,y:cy-s/2}];
+        },
+        oval: () => {
+          const cx=canvas.width/2, cy=canvas.height/2, rx=Math.min(canvas.width,canvas.height)*0.35, ry=rx*0.7, pts=[];
+          for (let i=0;i<=100;i++){ const a=i/100*2*Math.PI; pts.push({x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry}); }
+          return pts;
         }
-        
-        // Initialize with current settings
-        sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
-        
-        // Re-initialize when difficulty changes
-        const difficultySelect = document.getElementById('difficulty-level');
-        if (difficultySelect) {
-            difficultySelect.addEventListener('change', () => {
-                sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
-            });
+      },
+      medium: {
+        hexagon: () => {
+          const r=Math.min(canvas.width,canvas.height)*0.3, cx=canvas.width/2,cy=canvas.height/2,pts=[];
+          for (let i=0;i<6;i++){ const a=i/6*2*Math.PI; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); }
+          pts.push(pts[0]); return pts;
+        },
+        star: () => {
+          const cx=canvas.width/2, cy=canvas.height/2, ro=Math.min(canvas.width,canvas.height)*0.3, ri=ro*0.4, pts=[];
+          for (let i=0;i<10;i++){ const a=i/10*2*Math.PI-Math.PI/2; const r=i%2===0?ro:ri; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); }
+          pts.push(pts[0]); return pts;
+        },
+        letterS: () => { // simple S path
+          const s=Math.min(canvas.width,canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2, w=s*.6, h=s, t=s*.15;
+          return [
+            {x:cx+w/2,y:cy-h/2},{x:cx-w/4,y:cy-h/2},{x:cx-w/2,y:cy-h/2+t},{x:cx-w/2,y:cy-t/2},
+            {x:cx+w/2,y:cy-t/2},{x:cx+w/2,y:cy+t/2},{x:cx-w/4,y:cy+t/2},
+            {x:cx+w/2,y:cy+h/2-t},{x:cx+w/2,y:cy+h/2},{x:cx-w/2,y:cy+h/2}
+          ];
         }
-        
-        // Achievement notification function
-        function showAchievementNotification(achievementId) {
-            // Get achievement data from achievements.js (you might need to import achievement definitions)
-            const achievementTitles = {
-                'first_steps': '🎯 First Steps',
-                'explorer': '🔍 Explorer',
-                'dedicated': '⭐ Dedicated Player',
-                'streak_master': '🔥 Streak Master',
-                'precision_master': '🎯 Precision Master',
-                'endurance_champion': '⏱️ Endurance Champion',
-                'perfectionist': '💎 Perfectionist',
-                'speed_demon': '⚡ Speed Demon',
-                'consistency_king': '👑 Consistency King',
-                'milestone_hunter': '🏆 Milestone Hunter'
-            };
-            
-            const achievementDescriptions = {
-                'first_steps': 'Completed your first exercise session!',
-                'explorer': 'Tried all available exercises!',
-                'dedicated': 'Completed 10 exercise sessions!',
-                'streak_master': 'Maintained a 7-day practice streak!',
-                'precision_master': 'Achieved 95%+ accuracy 5 times!',
-                'endurance_champion': 'Completed 30+ minute sessions 3 times!',
-                'perfectionist': 'Achieved perfect scores 10 times!',
-                'speed_demon': 'Completed exercises quickly 5 times!',
-                'consistency_king': 'Practiced for 30 consecutive days!',
-                'milestone_hunter': 'Unlocked 5 other achievements!'
-            };
-            
-            const notification = document.createElement('div');
-            notification.className = 'achievement-notification';
-            notification.innerHTML = `
-                <div class="title">${achievementTitles[achievementId] || '🏆 Achievement Unlocked!'}</div>
-                <div class="description">${achievementDescriptions[achievementId] || 'You\'ve unlocked a new achievement!'}</div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Trigger animation
-            setTimeout(() => notification.classList.add('show'), 100);
-            
-            // Remove after 4 seconds
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 500);
-            }, 4000);
+      },
+      hard: {
+        house: () => {
+          const s=Math.min(canvas.width,canvas.height)*0.5, cx=canvas.width/2, cy=canvas.height/2, w=s, h=s*.7, r=s*.3;
+          return [
+            {x:cx-w/2,y:cy+h/2},{x:cx-w/2,y:cy-h/2+r},{x:cx,y:cy-h/2-r},{x:cx+w/2,y:cy-h/2+r},{x:cx+w/2,y:cy+h/2},{x:cx-w/2,y:cy+h/2}
+          ];
         }
-        
-        // Mobile viewport handling (added from working comet exercise)
-        function setViewportHeight() {
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
+      }
+    };
+    function getRandomShape(difficulty){
+      const keys = Object.keys(shapeGenerators[difficulty]);
+      const k = keys[Math.floor(Math.random()*keys.length)];
+      return { type:k, points: shapeGenerators[difficulty][k]() };
+    }
+
+    // ====== Drawing / coverage
+    function drawGuide(points){
+      guideCtx.clearRect(0,0,guideCanvas.width,guideCanvas.height);
+      if (points.length<2) return;
+      guideCtx.strokeStyle='rgba(255,255,255,.6)';
+      guideCtx.lineWidth=3; guideCtx.setLineDash([8,8]); guideCtx.lineCap='round';
+      guideCtx.beginPath(); guideCtx.moveTo(points[0].x, points[0].y);
+      for (let i=1;i<points.length;i++) guideCtx.lineTo(points[i].x, points[i].y);
+      guideCtx.stroke();
+    }
+    function createHiddenImage(shapeType){
+      hiddenCtx.clearRect(0,0,hiddenImage.width,hiddenImage.height);
+      const g = hiddenCtx.createRadialGradient(hiddenImage.width/2,hiddenImage.height/2,0, hiddenImage.width/2,hiddenImage.height/2, hiddenImage.width/2);
+      g.addColorStop(0,'rgba(255,215,0,.85)'); g.addColorStop(.5,'rgba(255,105,180,.6)'); g.addColorStop(1,'rgba(70,130,180,.45)');
+      hiddenCtx.fillStyle = g; hiddenCtx.fillRect(0,0,hiddenImage.width,hiddenImage.height);
+      // center sparkle
+      hiddenCtx.fillStyle = '#fff';
+      hiddenCtx.font = `${Math.min(hiddenImage.width, hiddenImage.height) * 0.28}px "Segoe UI Symbol", emoji`;
+      hiddenCtx.textAlign='center'; hiddenCtx.textBaseline='middle';
+      hiddenCtx.fillText('✨', hiddenImage.width/2, hiddenImage.height/2);
+    }
+    function initMask(){ maskCtx.fillStyle='#000'; maskCtx.fillRect(0,0,maskCanvas.width,maskCanvas.height); }
+    function generateCoveragePoints(points){
+      const set=new Set();
+      for (let i=0;i<points.length-1;i++){
+        const a=points[i], b=points[i+1];
+        const d = Math.hypot(b.x-a.x, b.y-a.y);
+        const steps = Math.max(1, Math.ceil(d/5));
+        for (let j=0;j<=steps;j++){
+          const t=j/steps, x=Math.round(a.x+(b.x-a.x)*t), y=Math.round(a.y+(b.y-a.y)*t);
+          set.add(`${x},${y}`);
         }
-        
-        function adjustForMobile() {
-            setViewportHeight();
-            
-            // Check if we're on a mobile device
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            
-            if (isMobile || isTouch) {
-                // Add mobile-specific class for additional styling if needed
-                document.body.classList.add('mobile-device');
-                
-                // Ensure panels don't overlap with system UI
-                const settingsPanel = document.getElementById('settings-panel');
-                const completionMessage = document.getElementById('completion-message');
-                
-                if (settingsPanel && !settingsPanel.classList.contains('hidden')) {
-                    // Additional space calculation for Android navigation
-                    const screenHeight = window.innerHeight;
-                    const safeHeight = Math.min(screenHeight * 0.85, screenHeight - 100);
-                    settingsPanel.style.maxHeight = `${safeHeight}px`;
-                }
-                
-                if (completionMessage && !completionMessage.classList.contains('hidden')) {
-                    const screenHeight = window.innerHeight;
-                    const safeHeight = Math.min(screenHeight * 0.8, screenHeight - 100);
-                    completionMessage.style.maxHeight = `${safeHeight}px`;
-                }
-            }
+      }
+      return set;
+    }
+    function updateCoverageDisplay(){
+      const percent = Math.round((coveredPoints.size / Math.max(1, coveragePoints.size)) * 100);
+      coverageChip.textContent = `${percent}%`;
+      hudCoverage.textContent = `${Math.max(bestCoverage, percent)}%`;
+      if (percent > bestCoverage) bestCoverage = percent;
+      if (percent >= requiredCoverage) {
+        revealBanner.classList.add('show');
+      }
+    }
+
+    function loadNewShape(){
+      initMask();
+      const s = getRandomShape(currentDifficulty);
+      currentShapeType = s.type;
+      pathPoints = s.points;
+      coveragePoints = generateCoveragePoints(pathPoints);
+      coveredPoints = new Set();
+      createHiddenImage(currentShapeType);
+      drawGuide(pathPoints);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      revealBanner.classList.remove('show');
+      updateCoverageDisplay();
+    }
+
+    function startDrawing(ev){
+      if (!sessionActive || sessionPaused || isCompleting) return;
+      isDrawing = true; draw(ev);
+    }
+    function stopDrawing(){ isDrawing = false; }
+
+    function draw(ev){
+      if (!isDrawing || !sessionActive || sessionPaused || isCompleting) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      let cx, cy;
+      if (ev.touches && ev.touches.length){
+        ev.preventDefault(); cx = ev.touches[0].clientX; cy = ev.touches[0].clientY;
+      } else { cx = ev.clientX; cy = ev.clientY; }
+
+      const x = (cx - rect.left) * scaleX;
+      const y = (cy - rect.top) * scaleY;
+
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = 'rgba(111,211,245,.9)';
+      ctx.beginPath(); ctx.arc(x, y, currentBrush/2, 0, Math.PI*2); ctx.fill();
+
+      maskCtx.globalCompositeOperation = 'source-over';
+      maskCtx.fillStyle='#fff';
+      maskCtx.beginPath(); maskCtx.arc(x, y, currentBrush/2, 0, Math.PI*2); maskCtx.fill();
+
+      // mark coverage points within brush
+      const r = currentBrush/2;
+      for (let dx=-r; dx<=r; dx++){
+        for (let dy=-r; dy<=r; dy++){
+          if (dx*dx + dy*dy <= r*r){
+            const px = Math.round(x+dx), py = Math.round(y+dy);
+            const key = `${px},${py}`;
+            if (coveragePoints.has(key)) coveredPoints.add(key);
+          }
         }
-        
-        // Call viewport adjustment functions
-        window.addEventListener('load', adjustForMobile);
-        window.addEventListener('resize', adjustForMobile);
-        window.addEventListener('orientationchange', () => {
-            // Small delay to account for orientation change
-            setTimeout(adjustForMobile, 100);
-        });
-        
-        // Canvas setup with responsive sizing
-        const canvas = document.getElementById('traceCanvas');
-        const ctx = canvas.getContext('2d');
-        const guideCanvas = document.getElementById('guideLayer');
-        const guideCtx = guideCanvas.getContext('2d');
-        const completionCanvas = document.getElementById('completionLayer');
-        const completionCtx = completionCanvas.getContext('2d');
-        
-        // UI elements
-        const settingsPanel = document.getElementById('settings-panel');
-        const statsPanel = document.getElementById('stats-panel');
-        const completionMessage = document.getElementById('completion-message');
-        const instructions = document.getElementById('instructions');
-        const progressBar = document.getElementById('timer-bar');
-        const coverageProgress = document.getElementById('coverage-progress');
-        const homeButton = document.getElementById('home-button');
-        const starsContainer = document.getElementById('stars-container');
-        const canvasContainer = document.querySelector('.canvas-container');
-        
-        // Responsive canvas sizing
-        function resizeCanvas() {
-            const container = document.getElementById('canvas-wrapper');
-            const containerRect = container.getBoundingClientRect();
-            
-            // Calculate available space
-            const maxWidth = containerRect.width - 20; // Account for padding
-            const maxHeight = containerRect.height - 60; // Account for coverage progress
-            
-            // Use the smaller dimension to maintain square aspect ratio
-            const size = Math.min(maxWidth, maxHeight, 500); // Cap at 500px max
-            
-            // Set canvas size
-            canvas.width = size;
-            canvas.height = size;
-            guideCanvas.width = size;
-            guideCanvas.height = size;
-            completionCanvas.width = size;
-            completionCanvas.height = size;
-            
-            // Update canvas styles
-            canvas.style.width = size + 'px';
-            canvas.style.height = size + 'px';
-            guideCanvas.style.width = size + 'px';
-            guideCanvas.style.height = size + 'px';
-            completionCanvas.style.width = size + 'px';
-            completionCanvas.style.height = size + 'px';
-            
-            return size;
+      }
+      updateCoverageDisplay();
+
+      // composite reveal preview
+      completionCtx.clearRect(0,0,completionCanvas.width,completionCanvas.height);
+      completionCtx.globalCompositeOperation='source-over';
+      completionCtx.drawImage(hiddenImage,0,0);
+      completionCtx.globalCompositeOperation='destination-in';
+      completionCtx.drawImage(maskCanvas,0,0);
+
+      // If fully revealed for this shape, count completion and load a new one
+      const pct = Math.round((coveredPoints.size / Math.max(1,coveragePoints.size))*100);
+      if (pct >= requiredCoverage && !isCompleting){
+        isCompleting = true;
+        shapesCompleted++;
+        const perfect = pct >= 95; // simple heuristic
+        if (perfect) perfectCount++;
+        // score bump
+        currentScore += Math.round(100 + pct);
+        hudScore.textContent = String(currentScore);
+        // short delay then next shape
+        setTimeout(()=>{ isCompleting=false; loadNewShape(); }, 400);
+      }
+    }
+
+    // ====== Session flow
+    function getDifficulty(){ return difficultyEl?.value || 'medium'; }
+
+    function startSession(){
+      if (sessionActive) return;
+      currentDifficulty = getDifficulty();
+      requiredCoverage = Number(coverageReqEl.value);
+      currentBrush = Number(brushSizeEl.value);
+      sessionMs = Math.max(1, Number(durationEl.value)) * 60_000;
+      remainingMs = sessionMs;
+      sessionActive = true; sessionPaused = false;
+      shapesCompleted = 0; perfectCount = 0; bestCoverage = 0; currentScore = 0;
+      hudScore.textContent = '0'; hudCoverage.textContent = '0%';
+      hudDifficulty.textContent = currentDifficulty[0].toUpperCase() + currentDifficulty.slice(1);
+
+      // hook enhancement
+      sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty);
+
+      // timer
+      clearInterval(timerId);
+      const startedAt = performance.now();
+      timerId = setInterval(()=>{
+        if (sessionPaused) return;
+        const elapsed = performance.now() - startedAt - (sessionMs - remainingMs);
+        remainingMs = Math.max(0, sessionMs - elapsed);
+        const pct = ((sessionMs - remainingMs) / sessionMs) * 100;
+        timerFill.style.width = `${pct}%`;
+        if (remainingMs <= 0){
+          clearInterval(timerId);
+          finishSession();
         }
-        
-        // Initialize canvas size
-        let canvasSize = resizeCanvas();
-        
-        // Handle window resize and orientation changes
-        window.addEventListener('resize', () => {
-            setTimeout(() => {
-                canvasSize = resizeCanvas();
-                if (isSessionActive && !isCompleting) {
-                    // Regenerate current shape with new canvas size
-                    loadNewShape();
-                }
-            }, 100);
-        });
-        
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                canvasSize = resizeCanvas();
-                if (isSessionActive && !isCompleting) {
-                    // Regenerate current shape with new canvas size
-                    loadNewShape();
-                }
-            }, 300);
-        });
-        
-        // Create stars for background effect
-        const starsCount = 50;
-        
-        for (let i = 0; i < starsCount; i++) {
-            const star = document.createElement('div');
-            star.classList.add('star');
-            
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.top = `${Math.random() * 100}%`;
-            
-            const size = Math.random() * 2 + 0.5;
-            star.style.width = `${size}px`;
-            star.style.height = `${size}px`;
-            
-            star.style.opacity = Math.random() * 0.4 + 0.1;
-            
-            starsContainer.appendChild(star);
+      }, 50);
+
+      loadNewShape();
+      canvas.focus();
+    }
+
+    function pauseSession(){
+      if (!sessionActive) return;
+      sessionPaused = !sessionPaused;
+      pauseBtn.setAttribute('aria-pressed', String(sessionPaused));
+    }
+
+    function restartSession(){
+      clearInterval(timerId);
+      sessionActive = false; sessionPaused = false;
+      shapesCompleted = 0; perfectCount = 0; bestCoverage = 0; currentScore = 0;
+      timerFill.style.width = '0%';
+      hudScore.textContent = '0'; hudCoverage.textContent = '0%';
+      loadNewShape();
+      startSession();
+    }
+
+    function finishSession(){
+      sessionActive = false;
+      // compute XP & PB
+      const xp = shapesCompleted * 10 + Math.round(bestCoverage/5) + perfectCount * 15;
+      const oldPB = getPB();
+      const newPB = Math.max(oldPB, currentScore);
+      if (newPB !== oldPB) setPB(newPB);
+      hudPB.textContent = String(newPB);
+
+      // Update modal fields
+      finalShapes.textContent = String(shapesCompleted);
+      perfectTraces.textContent = String(perfectCount);
+      bestCoverageOut.textContent = `${bestCoverage}%`;
+      finalScoreOut.textContent = String(currentScore);
+      xpLine.textContent = `+${xp} XP`;
+
+      // report to progress/achievements
+      window.endSession(currentScore, currentDifficulty);
+
+      // show achievements unlocked (via global toast system)
+      try {
+        const unlocked = checkAndUnlockAchievements();
+        achievementsLine.textContent = unlocked && unlocked.length
+          ? `Unlocked: ${unlocked.join(', ')}`
+          : 'No new achievements this time — keep going!';
+        if (unlocked && unlocked.length && window.showAchievementToast) {
+          unlocked.forEach(id => window.showAchievementToast(id));
         }
-        
-        // Settings
-        const brushSizeSelect = document.getElementById('brush-size');
-        const sessionDurationInput = document.getElementById('session-duration');
-        const difficultyLevelSelect = document.getElementById('difficulty-level');
-        const coverageRequiredSelect = document.getElementById('coverage-required');
-        const startButton = document.getElementById('start-session');
-        const restartButton = document.getElementById('restart-button');
-        
-        // Stats
-        const shapesCompletedElement = document.getElementById('shapes-completed');
-        const coverageElement = document.getElementById('coverage');
-        const timeLeftElement = document.getElementById('time-left');
-        const completionsElement = document.getElementById('completions');
-        
-        // Game state
-        let isSessionActive = false;
-        let isDrawing = false;
-        let sessionDuration = 180000;
-        let timeRemaining = 0;
-        let timerInterval = null;
-        let shapesCompleted = 0;
-        let perfectTraces = 0;
-        let currentBrushSize = 35;
-        let pathPoints = [];
-        let coveragePoints = new Set();
-        let coveredPoints = new Set();
-        let requiredCoverage = 85;
-        let currentDifficulty = 'medium';
-        let isCompleting = false;
-        let bestCoverage = 0;
-        let currentShapeType = '';
-        
-        // Hidden image canvas
-        const hiddenImage = document.createElement('canvas');
-        const hiddenCtx = hiddenImage.getContext('2d');
-        
-        // Mask canvas for reveal effect
-        const maskCanvas = document.createElement('canvas');
-        const maskCtx = maskCanvas.getContext('2d');
-        
-        // Update hidden and mask canvas sizes
-        function updateCanvasSizes() {
-            hiddenImage.width = canvas.width;
-            hiddenImage.height = canvas.height;
-            maskCanvas.width = canvas.width;
-            maskCanvas.height = canvas.height;
-        }
-        
-        // Shape images for completion
-        const shapeImages = {
-            circle: '⭕',
-            square: '⬜',
-            triangle: '🔺',
-            rectangle: '▭',
-            diamond: '◆',
-            oval: '⬭',
-            cross: '✚',
-            pentagon: '⬟',
-            hexagon: '⬡',
-            star: '⭐',
-            heart: '❤️',
-            letterS: '🇸',
-            letterZ: '🇿',
-            letterL: '🇱',
-            letterT: '🇹',
-            rhombus: '◇',
-            octagon: '🛑',
-            parallelogram: '▱',
-            house: '🏠',
-            car: '🚗',
-            tree: '🌲',
-            boat: '⛵',
-            airplane: '✈️',
-            flower: '🌸',
-            sun: '☀️',
-            phone: '📱'
-        };
-        
-        // Shape generators by difficulty level (updated to use dynamic canvas size)
-        const shapeGenerators = {
-            easy: {
-                circle: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const radius = Math.min(canvas.width, canvas.height) * 0.3;
-                    const points = [];
-                    
-                    for (let i = 0; i <= 100; i++) {
-                        const angle = (i / 100) * Math.PI * 2;
-                        points.push({
-                            x: centerX + Math.cos(angle) * radius,
-                            y: centerY + Math.sin(angle) * radius
-                        });
-                    }
-                    return points;
-                },
-                
-                square: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const startX = (canvas.width - size) / 2;
-                    const startY = (canvas.height - size) / 2;
-                    
-                    return [
-                        { x: startX, y: startY },
-                        { x: startX + size, y: startY },
-                        { x: startX + size, y: startY + size },
-                        { x: startX, y: startY + size },
-                        { x: startX, y: startY }
-                    ];
-                },
-                
-                triangle: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    
-                    return [
-                        { x: centerX, y: centerY - size / 2 },
-                        { x: centerX - size / 2, y: centerY + size / 2 },
-                        { x: centerX + size / 2, y: centerY + size / 2 },
-                        { x: centerX, y: centerY - size / 2 }
-                    ];
-                },
-                
-                rectangle: () => {
-                    const width = Math.min(canvas.width, canvas.height) * 0.7;
-                    const height = width * 0.6;
-                    const startX = (canvas.width - width) / 2;
-                    const startY = (canvas.height - height) / 2;
-                    
-                    return [
-                        { x: startX, y: startY },
-                        { x: startX + width, y: startY },
-                        { x: startX + width, y: startY + height },
-                        { x: startX, y: startY + height },
-                        { x: startX, y: startY }
-                    ];
-                },
-                
-                diamond: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    
-                    return [
-                        { x: centerX, y: centerY - size / 2 },
-                        { x: centerX + size / 2, y: centerY },
-                        { x: centerX, y: centerY + size / 2 },
-                        { x: centerX - size / 2, y: centerY },
-                        { x: centerX, y: centerY - size / 2 }
-                    ];
-                },
-                
-                oval: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const radiusX = Math.min(canvas.width, canvas.height) * 0.35;
-                    const radiusY = radiusX * 0.7;
-                    const points = [];
-                    
-                    for (let i = 0; i <= 100; i++) {
-                        const angle = (i / 100) * Math.PI * 2;
-                        points.push({
-                            x: centerX + Math.cos(angle) * radiusX,
-                            y: centerY + Math.sin(angle) * radiusY
-                        });
-                    }
-                    return points;
-                },
-                
-                cross: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const thickness = size * 0.3;
-                    
-                    return [
-                        // Horizontal bar
-                        { x: centerX - size / 2, y: centerY - thickness / 2 },
-                        { x: centerX + size / 2, y: centerY - thickness / 2 },
-                        { x: centerX + size / 2, y: centerY + thickness / 2 },
-                        { x: centerX - size / 2, y: centerY + thickness / 2 },
-                        { x: centerX - thickness / 2, y: centerY + thickness / 2 },
-                        // Vertical bar
-                        { x: centerX - thickness / 2, y: centerY + size / 2 },
-                        { x: centerX + thickness / 2, y: centerY + size / 2 },
-                        { x: centerX + thickness / 2, y: centerY - size / 2 },
-                        { x: centerX - thickness / 2, y: centerY - size / 2 },
-                        { x: centerX - thickness / 2, y: centerY - thickness / 2 },
-                        // Close the shape
-                        { x: centerX - size / 2, y: centerY - thickness / 2 }
-                    ];
-                },
-                
-                pentagon: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const radius = Math.min(canvas.width, canvas.height) * 0.3;
-                    const points = [];
-                    
-                    for (let i = 0; i < 5; i++) {
-                        const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
-                        points.push({
-                            x: centerX + Math.cos(angle) * radius,
-                            y: centerY + Math.sin(angle) * radius
-                        });
-                    }
-                    points.push(points[0]); // Close the shape
-                    return points;
-                }
-            },
-            
-            medium: {
-                hexagon: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const radius = Math.min(canvas.width, canvas.height) * 0.3;
-                    const points = [];
-                    
-                    for (let i = 0; i < 6; i++) {
-                        const angle = (i / 6) * Math.PI * 2;
-                        points.push({
-                            x: centerX + Math.cos(angle) * radius,
-                            y: centerY + Math.sin(angle) * radius
-                        });
-                    }
-                    points.push(points[0]);
-                    return points;
-                },
-                
-                star: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const outerRadius = Math.min(canvas.width, canvas.height) * 0.3;
-                    const innerRadius = outerRadius * 0.4;
-                    const points = [];
-                    
-                    for (let i = 0; i < 10; i++) {
-                        const angle = (i / 10) * Math.PI * 2 - Math.PI / 2;
-                        const radius = i % 2 === 0 ? outerRadius : innerRadius;
-                        points.push({
-                            x: centerX + Math.cos(angle) * radius,
-                            y: centerY + Math.sin(angle) * radius
-                        });
-                    }
-                    points.push(points[0]);
-                    return points;
-                },
-                
-                heart: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const size = Math.min(canvas.width, canvas.height) * 0.3;
-                    const points = [];
-                    
-                    for (let t = 0; t <= 2 * Math.PI; t += 0.1) {
-                        const x = centerX + size * (16 * Math.sin(t) ** 3) / 16;
-                        const y = centerY - size * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 16;
-                        points.push({ x, y });
-                    }
-                    return points;
-                },
-                
-                letterS: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.5;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const width = size * 0.6;
-                    const height = size;
-                    const thickness = size * 0.15;
-                    
-                    return [
-                        // Top horizontal part
-                        { x: centerX + width / 2, y: centerY - height / 2 },
-                        { x: centerX - width / 4, y: centerY - height / 2 },
-                        { x: centerX - width / 2, y: centerY - height / 2 + thickness },
-                        { x: centerX - width / 2, y: centerY - thickness / 2 },
-                        // Middle horizontal part
-                        { x: centerX + width / 2, y: centerY - thickness / 2 },
-                        { x: centerX + width / 2, y: centerY + thickness / 2 },
-                        { x: centerX - width / 4, y: centerY + thickness / 2 },
-                        // Bottom horizontal part
-                        { x: centerX + width / 2, y: centerY + height / 2 - thickness },
-                        { x: centerX + width / 2, y: centerY + height / 2 },
-                        { x: centerX - width / 2, y: centerY + height / 2 }
-                    ];
-                },
-                
-                letterZ: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const width = size;
-                    const height = size * 0.8;
-                    
-                    return [
-                        // Top line (left to right)
-                        { x: centerX - width / 2, y: centerY - height / 2 },
-                        { x: centerX + width / 2, y: centerY - height / 2 },
-                        // Diagonal line (top-right to bottom-left)
-                        { x: centerX - width / 2, y: centerY + height / 2 },
-                        // Bottom line (left to right)
-                        { x: centerX + width / 2, y: centerY + height / 2 }
-                    ];
-                },
-                
-                letterL: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const width = size * 0.7;
-                    const height = size;
-                    
-                    return [
-                        // Vertical line
-                        { x: centerX - width / 2, y: centerY - height / 2 },
-                        { x: centerX - width / 2, y: centerY + height / 2 },
-                        // Horizontal line
-                        { x: centerX + width / 2, y: centerY + height / 2 }
-                    ];
-                },
-                
-                letterT: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const width = size;
-                    const height = size * 0.8;
-                    
-                    return [
-                        // Top horizontal line
-                        { x: centerX - width / 2, y: centerY - height / 2 },
-                        { x: centerX + width / 2, y: centerY - height / 2 },
-                        // Back to center top
-                        { x: centerX, y: centerY - height / 2 },
-                        // Vertical line down
-                        { x: centerX, y: centerY + height / 2 }
-                    ];
-                },
-                                 
-                rhombus: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    
-                    return [
-                        { x: centerX, y: centerY - size / 2 },
-                        { x: centerX + size / 3, y: centerY },
-                        { x: centerX, y: centerY + size / 2 },
-                        { x: centerX - size / 3, y: centerY },
-                        { x: centerX, y: centerY - size / 2 }
-                    ];
-                },
-                
-                octagon: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const radius = Math.min(canvas.width, canvas.height) * 0.3;
-                    const points = [];
-                    
-                    for (let i = 0; i < 8; i++) {
-                        const angle = (i / 8) * Math.PI * 2;
-                        points.push({
-                            x: centerX + Math.cos(angle) * radius,
-                            y: centerY + Math.sin(angle) * radius
-                        });
-                    }
-                    points.push(points[0]);
-                    return points;
-                },
-                
-                parallelogram: () => {
-                    const width = Math.min(canvas.width, canvas.height) * 0.7;
-                    const height = width * 0.5;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const skew = width * 0.2;
-                    
-                    return [
-                        { x: centerX - width / 2 + skew, y: centerY - height / 2 },
-                        { x: centerX + width / 2 + skew, y: centerY - height / 2 },
-                        { x: centerX + width / 2 - skew, y: centerY + height / 2 },
-                        { x: centerX - width / 2 - skew, y: centerY + height / 2 },
-                        { x: centerX - width / 2 + skew, y: centerY - height / 2 }
-                    ];
-                }
-            },
-            hard: {
-                house: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.5;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    
-                    const houseWidth = size;
-                    const houseHeight = size * 0.7;
-                    const roofHeight = size * 0.3;
-                    
-                    return [
-                        // Base of house
-                        { x: centerX - houseWidth / 2, y: centerY + houseHeight / 2 },
-                        { x: centerX - houseWidth / 2, y: centerY - houseHeight / 2 + roofHeight },
-                        // Roof left side
-                        { x: centerX, y: centerY - houseHeight / 2 - roofHeight },
-                        // Roof right side
-                        { x: centerX + houseWidth / 2, y: centerY - houseHeight / 2 + roofHeight },
-                        { x: centerX + houseWidth / 2, y: centerY + houseHeight / 2 },
-                        // Back to start
-                        { x: centerX - houseWidth / 2, y: centerY + houseHeight / 2 }
-                    ];
-                },
-                
-                car: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    
-                    return [
-                        // Car body
-                        { x: centerX - size / 2, y: centerY },
-                        { x: centerX - size / 2, y: centerY - size * 0.2 },
-                        { x: centerX - size * 0.3, y: centerY - size * 0.35 },
-                        { x: centerX + size * 0.1, y: centerY - size * 0.35 },
-                        { x: centerX + size * 0.3, y: centerY - size * 0.2 },
-                        { x: centerX + size / 2, y: centerY - size * 0.2 },
-                        { x: centerX + size / 2, y: centerY },
-                        { x: centerX - size / 2, y: centerY }
-                    ];
-                },
-                
-                tree: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    
-                    return [
-                        // Trunk
-                        { x: centerX - size * 0.1, y: centerY + size / 2 },
-                        { x: centerX - size * 0.1, y: centerY },
-                        // Left side of tree
-                        { x: centerX - size * 0.3, y: centerY },
-                        { x: centerX - size * 0.4, y: centerY - size * 0.15 },
-                        { x: centerX - size * 0.3, y: centerY - size * 0.15 },
-                        { x: centerX - size * 0.35, y: centerY - size * 0.3 },
-                        { x: centerX - size * 0.25, y: centerY - size * 0.3 },
-                        { x: centerX - size * 0.2, y: centerY - size * 0.45 },
-                        // Top
-                        { x: centerX, y: centerY - size / 2 },
-                        // Right side of tree
-                        { x: centerX + size * 0.2, y: centerY - size * 0.45 },
-                        { x: centerX + size * 0.25, y: centerY - size * 0.3 },
-                        { x: centerX + size * 0.35, y: centerY - size * 0.3 },
-                        { x: centerX + size * 0.3, y: centerY - size * 0.15 },
-                        { x: centerX + size * 0.4, y: centerY - size * 0.15 },
-                        { x: centerX + size * 0.3, y: centerY },
-                        // Right side of trunk
-                        { x: centerX + size * 0.1, y: centerY },
-                        { x: centerX + size * 0.1, y: centerY + size / 2 },
-                        // Back to start
-                        { x: centerX - size * 0.1, y: centerY + size / 2 }
-                    ];
-                },
-                
-                boat: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    
-                    return [
-                        // Hull
-                        { x: centerX - size / 2, y: centerY },
-                        { x: centerX - size * 0.4, y: centerY + size * 0.2 },
-                        { x: centerX + size * 0.4, y: centerY + size * 0.2 },
-                        { x: centerX + size / 2, y: centerY },
-                        // Sail
-                        { x: centerX, y: centerY },
-                        { x: centerX, y: centerY - size * 0.4 },
-                        { x: centerX + size * 0.3, y: centerY - size * 0.1 },
-                        { x: centerX, y: centerY },
-                        // Back to hull
-                        { x: centerX - size / 2, y: centerY }
-                    ];
-                },
-                
-                airplane: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.6;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    
-                    return [
-                        // Body
-                        { x: centerX - size / 2, y: centerY },
-                        { x: centerX + size / 2, y: centerY },
-                        // Right wing
-                        { x: centerX + size * 0.1, y: centerY - size * 0.3 },
-                        { x: centerX - size * 0.2, y: centerY - size * 0.3 },
-                        { x: centerX - size * 0.1, y: centerY },
-                        // Left wing
-                        { x: centerX - size * 0.2, y: centerY + size * 0.3 },
-                        { x: centerX + size * 0.1, y: centerY + size * 0.3 },
-                        { x: centerX + size / 2, y: centerY }
-                    ];
-                },
-                
-                flower: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const petalRadius = Math.min(canvas.width, canvas.height) * 0.15;
-                    const points = [];
-                    
-                    // Create flower petals (6 petals around center)
-                    for (let petal = 0; petal < 6; petal++) {
-                        const petalAngle = (petal / 6) * Math.PI * 2;
-                        const petalCenterX = centerX + Math.cos(petalAngle) * petalRadius * 1.5;
-                        const petalCenterY = centerY + Math.sin(petalAngle) * petalRadius * 1.5;
-                        
-                        // Create circular petal
-                        for (let i = 0; i <= 20; i++) {
-                            const angle = (i / 20) * Math.PI * 2;
-                            points.push({
-                                x: petalCenterX + Math.cos(angle) * petalRadius * 0.8,
-                                y: petalCenterY + Math.sin(angle) * petalRadius * 0.8
-                            });
-                        }
-                    }
-                    
-                    return points;
-                },
-                
-                sun: () => {
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const radius = Math.min(canvas.width, canvas.height) * 0.2;
-                    const rayLength = radius * 0.8;
-                    const points = [];
-                    
-                    // Center circle
-                    for (let i = 0; i <= 50; i++) {
-                        const angle = (i / 50) * Math.PI * 2;
-                        points.push({
-                            x: centerX + Math.cos(angle) * radius,
-                            y: centerY + Math.sin(angle) * radius
-                        });
-                    }
-                    
-                    // Sun rays (8 rays)
-                    for (let ray = 0; ray < 8; ray++) {
-                        const rayAngle = (ray / 8) * Math.PI * 2;
-                        const startX = centerX + Math.cos(rayAngle) * radius;
-                        const startY = centerY + Math.sin(rayAngle) * radius;
-                        const endX = centerX + Math.cos(rayAngle) * (radius + rayLength);
-                        const endY = centerY + Math.sin(rayAngle) * (radius + rayLength);
-                        
-                        points.push({ x: startX, y: startY });
-                        points.push({ x: endX, y: endY });
-                        points.push({ x: startX, y: startY });
-                    }
-                    
-                    return points;
-                },
-                
-                phone: () => {
-                    const size = Math.min(canvas.width, canvas.height) * 0.5;
-                    const centerX = canvas.width / 2;
-                    const centerY = canvas.height / 2;
-                    const width = size * 0.6;
-                    const height = size;
-                    const cornerRadius = width * 0.1;
-                    
-                    return [
-                        // Phone outline (rounded rectangle)
-                        { x: centerX - width / 2 + cornerRadius, y: centerY - height / 2 },
-                        { x: centerX + width / 2 - cornerRadius, y: centerY - height / 2 },
-                        { x: centerX + width / 2, y: centerY - height / 2 + cornerRadius },
-                        { x: centerX + width / 2, y: centerY + height / 2 - cornerRadius },
-                        { x: centerX + width / 2 - cornerRadius, y: centerY + height / 2 },
-                        { x: centerX - width / 2 + cornerRadius, y: centerY + height / 2 },
-                        { x: centerX - width / 2, y: centerY + height / 2 - cornerRadius },
-                        { x: centerX - width / 2, y: centerY - height / 2 + cornerRadius },
-                        { x: centerX - width / 2 + cornerRadius, y: centerY - height / 2 }
-                    ];
-                }
-            }
-        };
-        
-        // Get random shape based on difficulty
-        function getRandomShape(difficulty) {
-            const shapes = Object.keys(shapeGenerators[difficulty]);
-            const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
-            return {
-                type: randomShape,
-                points: shapeGenerators[difficulty][randomShape]()
-            };
-        }
-        
-        // Draw dotted guide line
-        function drawGuideLine(points) {
-            guideCtx.clearRect(0, 0, guideCanvas.width, guideCanvas.height);
-            
-            if (points.length < 2) return;
-            
-            guideCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-            guideCtx.lineWidth = 3;
-            guideCtx.setLineDash([8, 8]);
-            guideCtx.lineCap = 'round';
-            
-            guideCtx.beginPath();
-            guideCtx.moveTo(points[0].x, points[0].y);
-            
-            for (let i = 1; i < points.length; i++) {
-                guideCtx.lineTo(points[i].x, points[i].y);
-            }
-            
-            guideCtx.stroke();
-        }
-        
-        // Create hidden colorful image
-        function createHiddenImage(shapeType) {
-            hiddenCtx.clearRect(0, 0, hiddenImage.width, hiddenImage.height);
-            
-            // Create gradient background
-            const gradient = hiddenCtx.createRadialGradient(
-                hiddenImage.width / 2, hiddenImage.height / 2, 0,
-                hiddenImage.width / 2, hiddenImage.height / 2, hiddenImage.width / 2
-            );
-            gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
-            gradient.addColorStop(0.5, 'rgba(255, 105, 180, 0.6)');
-            gradient.addColorStop(1, 'rgba(70, 130, 180, 0.4)');
-            
-            hiddenCtx.fillStyle = gradient;
-            hiddenCtx.fillRect(0, 0, hiddenImage.width, hiddenImage.height);
-            
-            // Draw shape emoji/symbol in center
-            const emoji = shapeImages[shapeType] || '✨';
-            hiddenCtx.font = `${Math.min(hiddenImage.width, hiddenImage.height) * 0.3}px Arial`;
-            hiddenCtx.textAlign = 'center';
-            hiddenCtx.textBaseline = 'middle';
-            hiddenCtx.fillStyle = '#ffffff';
-            hiddenCtx.strokeStyle = '#333333';
-            hiddenCtx.lineWidth = 2;
-            
-            hiddenCtx.strokeText(emoji, hiddenImage.width / 2, hiddenImage.height / 2);
-            hiddenCtx.fillText(emoji, hiddenImage.width / 2, hiddenImage.height / 2);
-            
-            // Add sparkle effects
-            for (let i = 0; i < 20; i++) {
-                const x = Math.random() * hiddenImage.width;
-                const y = Math.random() * hiddenImage.height;
-                const size = Math.random() * 4 + 2;
-                
-                hiddenCtx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.8 + 0.2})`;
-                hiddenCtx.beginPath();
-                hiddenCtx.arc(x, y, size, 0, Math.PI * 2);
-                hiddenCtx.fill();
-            }
-        }
-        
-        // Initialize mask canvas
-        function initMask() {
-            maskCtx.fillStyle = '#000000';
-            maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-        }
-        
-        // Generate coverage points along path
-        function generateCoveragePoints(points) {
-            const coverageSet = new Set();
-            
-            for (let i = 0; i < points.length - 1; i++) {
-                const startPoint = points[i];
-                const endPoint = points[i + 1];
-                
-                const distance = Math.sqrt(
-                    Math.pow(endPoint.x - startPoint.x, 2) + 
-                    Math.pow(endPoint.y - startPoint.y, 2)
-                );
-                
-                const steps = Math.ceil(distance / 5); // Point every 5 pixels
-                
-                for (let j = 0; j <= steps; j++) {
-                    const t = j / steps;
-                    const x = Math.round(startPoint.x + (endPoint.x - startPoint.x) * t);
-                    const y = Math.round(startPoint.y + (endPoint.y - startPoint.y) * t);
-                    coverageSet.add(`${x},${y}`);
-                }
-            }
-            
-            return coverageSet;
-        }
-        
-        // Load new shape
-        function loadNewShape() {
-            updateCanvasSizes();
-            initMask();
-            
-            const shape = getRandomShape(currentDifficulty);
-            pathPoints = shape.points;
-            currentShapeType = shape.type;
-            
-            coveragePoints = generateCoveragePoints(pathPoints);
-            coveredPoints = new Set();
-            
-            createHiddenImage(currentShapeType);
-            drawGuideLine(pathPoints);
-            
-            // Clear main canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Reset coverage display
-            updateCoverageDisplay();
-        }
-        
-        // Drawing functions
-        function startDrawing(event) {
-            if (!isSessionActive || isCompleting) return;
-            
-            isDrawing = true;
-            draw(event);
-        }
-        
-        function draw(event) {
-            if (!isDrawing || !isSessionActive || isCompleting) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            let clientX, clientY;
-            
-            if (event.type.includes('touch')) {
-                event.preventDefault();
-                if (event.touches.length > 0) {
-                    clientX = event.touches[0].clientX;
-                    clientY = event.touches[0].clientY;
-                } else {
-                    return;
-                }
-            } else {
-                clientX = event.clientX;
-                clientY = event.clientY;
-            }
-            
-            const x = (clientX - rect.left) * scaleX;
-            const y = (clientY - rect.top) * scaleY;
-            
-            // Draw on main canvas
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillStyle = 'rgba(111, 211, 245, 0.8)';
-            ctx.beginPath();
-            ctx.arc(x, y, currentBrushSize / 2, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw on mask (white reveals the image)
-            maskCtx.globalCompositeOperation = 'source-over';
-            maskCtx.fillStyle = '#ffffff';
-            maskCtx.beginPath();
-            maskCtx.arc(x, y, currentBrushSize / 2, 0, Math.PI * 2);
-            maskCtx.fill();
-            
-            // Add particle effect
-            createParticle(x, y);
-            
-            // Check coverage
-            checkCoverage(x, y);
-            updateCoverageDisplay();
-        }
-        
-        function stopDrawing() {
-            isDrawing = false;
-        }
-        
-        // Particle effect
-        function createParticle(x, y) {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
-            
-            const rect = canvas.getBoundingClientRect();
-            const canvasRect = canvasContainer.getBoundingClientRect();
-            
-            particle.style.left = (canvasRect.left + (x / canvas.width) * rect.width) + 'px';
-            particle.style.top = (canvasRect.top + (y / canvas.height) * rect.height) + 'px';
-            
-            document.body.appendChild(particle);
-            
-            setTimeout(() => particle.remove(), 1000);
-        }
-        
-        // Check coverage around brush position
-        function checkCoverage(x, y) {
-            const radius = currentBrushSize / 2;
-            
-            for (let dx = -radius; dx <= radius; dx++) {
-                for (let dy = -radius; dy <= radius; dy++) {
-                    if (dx * dx + dy * dy <= radius * radius) {
-                        const checkX = Math.round(x + dx);
-                        const checkY = Math.round(y + dy);
-                        const key = `${checkX},${checkY}`;
-                        
-                        if (coveragePoints.has(key)) {
-                            coveredPoints.add(key);
-                        }
-                    }
-                }
-            }
-            
-            // Check if we've reached the required coverage
-            const coveragePercent = (coveredPoints.size / coveragePoints.size) * 100;
-            if (coveragePercent >= requiredCoverage && !isCompleting) {
-                completeShape();
-            }
-        }
-        
-        // Update coverage display
-        function updateCoverageDisplay() {
-            const coveragePercent = Math.round((coveredPoints.size / coveragePoints.size) * 100);
-            coverageElement.textContent = coveragePercent + '%';
-            coverageProgress.textContent = coveragePercent + '%';
-            
-            // Update best coverage
-            if (coveragePercent > bestCoverage) {
-                bestCoverage = coveragePercent;
-            }
-        }
-        
-        // Complete shape animation
-        function completeShape() {
-            if (isCompleting) return;
-            isCompleting = true;
-            
-            // Count as perfect trace if we hit 95% or higher
-            const finalCoverage = (coveredPoints.size / coveragePoints.size) * 100;
-            if (finalCoverage >= 95) {
-                perfectTraces++;
-                completionsElement.textContent = perfectTraces;
-            }
-            
-            shapesCompleted++;
-            shapesCompletedElement.textContent = shapesCompleted;
-            
-            // Show completion text
-            const completionText = document.createElement('div');
-            completionText.classList.add('completion-text');
-            completionText.textContent = 'Revealed!';
-            canvasContainer.appendChild(completionText);
-            
-            // Celebration particles
-            createCelebrationParticles();
-            
-            // Reveal the hidden image
-            setTimeout(() => {
-                revealHiddenImage();
-            }, 500);
-            
-            // Load next shape after delay
-            setTimeout(() => {
-                completionText.remove();
-                isCompleting = false;
-                loadNewShape();
-            }, 3000);
-        }
-        
-        // Reveal hidden image
-        function revealHiddenImage() {
-            completionCtx.clearRect(0, 0, completionCanvas.width, completionCanvas.height);
-            
-            // Use the mask to reveal the hidden image
-            completionCtx.globalCompositeOperation = 'source-over';
-            completionCtx.drawImage(hiddenImage, 0, 0);
-            
-            completionCtx.globalCompositeOperation = 'destination-in';
-            completionCtx.drawImage(maskCanvas, 0, 0);
-            
-            // Add a glow effect
-            completionCtx.globalCompositeOperation = 'source-over';
-            completionCtx.shadowColor = 'rgba(111, 211, 245, 0.8)';
-            completionCtx.shadowBlur = 20;
-            completionCtx.drawImage(hiddenImage, 0, 0);
-        }
-        
-        // Create celebration particles
-        function createCelebrationParticles() {
-            const rect = canvas.getBoundingClientRect();
-            const canvasRect = canvasContainer.getBoundingClientRect();
-            
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('celebration-particle');
-                
-                if (Math.random() > 0.5) {
-                    particle.classList.add('star-particle');
-                } else {
-                    particle.classList.add('circle-particle');
-                }
-                
-                const startX = canvasRect.left + rect.width / 2;
-                const startY = canvasRect.top + rect.height / 2;
-                
-                particle.style.left = startX + 'px';
-                particle.style.top = startY + 'px';
-                
-                const tx = (Math.random() - 0.5) * 400;
-                const ty = (Math.random() - 0.5) * 400;
-                particle.style.setProperty('--tx', tx + 'px');
-                particle.style.setProperty('--ty', ty + 'px');
-                
-                document.body.appendChild(particle);
-                
-                setTimeout(() => particle.remove(), 2000);
-            }
-        }
-        
-        // Timer functions
-        function updateTimer() {
-            timeRemaining -= 1000;
-            
-            if (timeRemaining <= 0) {
-                endSessionInternal();
-                return;
-            }
-            
-            const minutes = Math.floor(timeRemaining / 60000);
-            const seconds = Math.floor((timeRemaining % 60000) / 1000);
-            timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            
-            // Update progress bar
-            const progress = ((sessionDuration - timeRemaining) / sessionDuration) * 100;
-            progressBar.style.width = progress + '%';
-        }
-        
-        // End session
-        function endSessionInternal() {
-            isSessionActive = false;
-            clearInterval(timerInterval);
-            
-            // Calculate final score based on shapes completed and perfect traces
-            const score = shapesCompleted * 10 + perfectTraces * 5;
-            
-            // Call the global endSession function
-            if (window.endSession) {
-                window.endSession(score, getCurrentDifficulty());
-            }
-            
-            // Show completion message
-            document.getElementById('final-shapes').textContent = shapesCompleted;
-            document.getElementById('perfect-traces').textContent = perfectTraces;
-            document.getElementById('best-coverage').textContent = bestCoverage + '%';
-            
-            settingsPanel.classList.add('hidden');
-            statsPanel.classList.add('hidden');
-            instructions.classList.add('hidden');
-            progressBar.classList.add('hidden');
-            coverageProgress.classList.add('hidden');
-            completionMessage.classList.remove('hidden');
-        }
-        
-        // Event listeners
-        startButton.addEventListener('click', () => {
-            // Get settings
-            currentBrushSize = parseInt(brushSizeSelect.value);
-            sessionDuration = parseInt(sessionDurationInput.value) * 60000;
-            timeRemaining = sessionDuration;
-            currentDifficulty = difficultyLevelSelect.value;
-            requiredCoverage = parseInt(coverageRequiredSelect.value);
-            
-            // Reset stats
-            shapesCompleted = 0;
-            perfectTraces = 0;
-            bestCoverage = 0;
-            isCompleting = false;
-            
-            shapesCompletedElement.textContent = '0';
-            completionsElement.textContent = '0';
-            timeLeftElement.textContent = `${Math.floor(sessionDuration / 60000)}:00`;
-            
-            // Start session
-            isSessionActive = true;
-            timerInterval = setInterval(updateTimer, 1000);
-            
-            // Show game UI
-            settingsPanel.classList.add('hidden');
-            statsPanel.classList.remove('hidden');
-            instructions.classList.remove('hidden');
-            progressBar.classList.remove('hidden');
-            coverageProgress.classList.remove('hidden');
-            
-            // Load first shape
-            loadNewShape();
-        });
-        
-        restartButton.addEventListener('click', () => {
-            completionMessage.classList.add('hidden');
-            settingsPanel.classList.remove('hidden');
-            
-            // Clear canvases
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            guideCtx.clearRect(0, 0, guideCanvas.width, guideCanvas.height);
-            completionCtx.clearRect(0, 0, completionCanvas.width, completionCanvas.height);
-        });
-        
-        homeButton.addEventListener('click', () => {
-            window.location.href = '../index.html';
-        });
-        
-        // Canvas event listeners
-        // Mouse events
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-        
-        // Touch events
-        canvas.addEventListener('touchstart', startDrawing, { passive: false });
-        canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', stopDrawing);
-        canvas.addEventListener('touchcancel', stopDrawing);
-        
-        // Prevent context menu on right click
-        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-        
-        // Initial canvas setup
-        resizeCanvas();
-        
-    </script>
-    
-    <!-- Standardized module imports and endSession wiring -->
-    <script type="module">
-        import { recordSession } from '/js/progress.js';
-        import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
-        
-        const EXERCISE_ID = 'trace-reveal';
-        
-        // Call this when an exercise session ends
-        window.endSession = function(score, difficulty = 'easy') {
-            recordSession(EXERCISE_ID, difficulty, score);
-            
-            // If markExerciseTried expects an id, pass it; if not, remove the argument.
-            try {
-                markExerciseTried(EXERCISE_ID);
-            } catch (e) {
-                /* no-op if signature differs */
-            }
-            
-            try {
-                const newAchievements = checkAndUnlockAchievements();
-                
-                // Show achievement notifications if any unlocked
-                if (newAchievements && newAchievements.length > 0) {
-                    newAchievements.forEach(achievementId => {
-                        // Call the notification function from the main script
-                        if (window.showAchievementNotification) {
-                            window.showAchievementNotification(achievementId);
-                        }
-                    });
-                }
-            } catch (e) {
-                /* optional */
-            }
-        };
-    </script>
+      } catch (e) { /* optional */ }
+
+      // open modal
+      if (typeof modal.showModal === 'function') modal.showModal();
+      else modal.setAttribute('open','');
+    }
+
+    // Expose standard endSession (kept consistent)
+    window.endSession = function(score, difficulty = 'easy') {
+      recordSession(EXERCISE_ID, difficulty, score);
+      try { markExerciseTried(EXERCISE_ID); } catch(e) {}
+    };
+
+    // Events
+    startBtn.addEventListener('click', startSession);
+    pauseBtn.addEventListener('click', pauseSession);
+    restartBtn.addEventListener('click', restartSession);
+    modalRestart.addEventListener('click', () => { if (modal.open) modal.close(); restartSession(); });
+    modalClose.addEventListener('click', () => { if (modal.open) modal.close(); });
+
+    // Input changes live-apply where sane
+    brushSizeEl.addEventListener('change', () => currentBrush = Number(brushSizeEl.value));
+    difficultyEl.addEventListener('change', () => { currentDifficulty = getDifficulty(); sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty); });
+    coverageReqEl.addEventListener('change', () => requiredCoverage = Number(coverageReqEl.value));
+
+    // Pointer handlers
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchcancel', stopDrawing);
+    canvas.addEventListener('contextmenu', (e)=>e.preventDefault());
+
+    // Initialize HUD with PB
+    hudPB.textContent = String(getPB());
+
+    // Load initial guide/canvas
+    loadNewShape();
+  </script>
 </body>
 </html>

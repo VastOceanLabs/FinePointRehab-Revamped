@@ -1,1416 +1,941 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-RVKCCWBFKE');
+  </script>
 
-  gtag('config', 'G-RVKCCWBFKE');
-</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    
-    <!-- Primary Meta Tags -->
-    <title>Precision Drop | Fine Point Rehab Motor Skills & Coordination Therapy Exercise App</title>
-    <meta name="description" content="Improve fine motor skills, hand-eye coordination, and precision with this customizable stroke therapy and rehabilitation drag & drop exercise app. Track your progress as you complete therapy sessions.">
-    <meta name="author" content="Fine Point Rehab">
-    <meta name="robots" content="index, follow">
-    
-    <!-- Performance optimizations -->
-    <link rel="preconnect" href="https://www.googletagmanager.com">
-    <link rel="preconnect" href="https://www.google-analytics.com">
-    
-    <!-- Canonical URL with .html extension -->
-    <link rel="canonical" href="https://finepointrehab.com/exercises/precision-drop-exercise.html">
-    
-    <!-- Theme color for mobile UI chrome -->
-    <meta name="theme-color" content="#6fd3f5">
-    
-    <!-- Open Graph / Facebook Meta Tags -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://finepointrehab.com/exercises/precision-drop-exercise">
-    <meta property="og:title" content="Precision Drop | Fine Point Rehab Motor Skills & Coordination Therapy Exercise App">
-    <meta property="og:description" content="Improve fine motor skills, hand-eye coordination, and precision with this customizable therapy drag & drop exercise app. Perfect for stroke rehabilitation.">
-    <meta property="og:image" content="https://finepointrehab.com/images/precision-drop-preview.jpg">
-    
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://finepointrehab.com/exercises/precision-drop-exercise">
-    <meta name="twitter:title" content="Precision Drop | Fine Point Rehab Motor Skills & Coordination Therapy Exercise App">
-    <meta name="twitter:description" content="Improve fine motor skills, hand-eye coordination, and precision with this customizable therapy drag & drop exercise app. Perfect for stroke rehabilitation.">
-    <meta name="twitter:image" content="https://finepointrehab.com/images/precision-drop-preview.jpg">
-    
-    <!-- Accessibility Meta Tags -->
-    <meta name="application-name" content="Precision Drop">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Precision Drop">
-    
-    <!-- Structured Data for Rich Results -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Precision Drop",
-      "url": "https://finepointrehab.com/exercises/precision-drop-exercise",
-      "applicationCategory": "HealthApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "Precision Drop is a therapeutic drag & drop exercise application designed to improve motor skills, coordination, and dexterity for rehabilitation patients recovering from stroke or other neurological conditions."
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>Precision Drop | Fine Point Rehab Motor Skills & Coordination Therapy Exercise App</title>
+  <meta name="description" content="Improve fine motor skills, hand-eye coordination, and precision with this customizable stroke therapy and rehabilitation drag & drop exercise app. Track your progress as you complete therapy sessions.">
+  <meta name="author" content="Fine Point Rehab">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://finepointrehab.com/exercises/precision-drop-exercise.html">
+  <meta name="theme-color" content="#0a0f1b">
+
+  <!-- Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://finepointrehab.com/exercises/precision-drop-exercise">
+  <meta property="og:title" content="Precision Drop | Fine Point Rehab Motor Skills & Coordination Therapy Exercise App">
+  <meta property="og:description" content="Improve fine motor skills, hand-eye coordination, and precision with this customizable therapy drag & drop exercise app. Perfect for stroke rehabilitation.">
+  <meta property="og:image" content="https://finepointrehab.com/images/precision-drop-preview.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://finepointrehab.com/exercises/precision-drop-exercise">
+  <meta name="twitter:title" content="Precision Drop | Fine Point Rehab Motor Skills & Coordination Therapy Exercise App">
+  <meta name="twitter:description" content="Improve fine motor skills, hand-eye coordination, and precision with this customizable therapy drag & drop exercise app. Perfect for stroke rehabilitation.">
+  <meta name="twitter:image" content="https://finepointrehab.com/images/precision-drop-preview.jpg">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Precision Drop",
+    "url": "https://finepointrehab.com/exercises/precision-drop-exercise",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "Web",
+    "offers": {"@type": "Offer","price": "0","priceCurrency": "USD"},
+    "description": "Precision Drop is a therapeutic drag & drop exercise application designed to improve motor skills, coordination, and dexterity for rehabilitation patients recovering from stroke or other neurological conditions."
+  }
+  </script>
+
+  <!-- Global tokens + components -->
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+
+  <style>
+    :root{
+      /* fallbacks if tokens.css not loaded */
+      --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px;
+      --radius-xl: 20px;
+      --color-bg: #0a0f1b; --color-bg-2:#1a2332; --color-bg-3:#2a3548;
+      --color-fg:#ffffff; --color-fg-2:#b8c5d6;
+      --brand:#6fd3f5; --brand-2:#4a90e2;
+      --success:#2ecc71; --warn:#f39c12; --danger:#e74c3c;
+      --focus:#a7e3ff;
     }
-    </script>
-    
-    <style>
-        :root {
-            --primary-color: #6fd3f5;
-            --secondary-color: #4a90e2;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --bg-dark: #0a0f1b;
-            --bg-medium: #1a2332;
-            --bg-light: #2a3548;
-            --text-primary: #ffffff;
-            --text-secondary: #b8c5d6;
-        }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-        }
-        
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background: radial-gradient(ellipse at center, var(--bg-medium) 0%, var(--bg-dark) 100%);
-        }
-        
-        #game-area {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 600px;
-            height: 450px;
-            background: linear-gradient(135deg, var(--bg-medium) 0%, var(--bg-light) 100%);
-            border: 2px solid rgba(111, 211, 245, 0.3);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 
-                0 10px 40px rgba(0, 0, 0, 0.4),
-                inset 0 0 20px rgba(111, 211, 245, 0.1);
-            z-index: 10;
-        }
-        
-        #game-area::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(111, 211, 245, 0.05) 0%, transparent 70%);
-            animation: rotateGradient 20s linear infinite;
-            pointer-events: none;
-            z-index: 1;
-        }
-        
-        @keyframes rotateGradient {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .draggable {
-            position: absolute;
-            border-radius: 50%;
-            cursor: grab;
-            touch-action: none;
-            box-shadow: 
-                0 4px 15px rgba(0, 0, 0, 0.3),
-                inset 0 2px 4px rgba(255, 255, 255, 0.5);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: var(--bg-dark);
-            backdrop-filter: blur(10px);
-            animation: floatAnimation 3s ease-in-out infinite;
-        }
-        
-        @keyframes floatAnimation {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        .draggable.dragging {
-            cursor: grabbing;
-            box-shadow: 
-                0 8px 30px rgba(0, 0, 0, 0.4),
-                0 0 40px currentColor;
-            transform: scale(1.15);
-            animation: none;
-            z-index: 30;
-        }
-        
-        .draggable:hover {
-            transform: scale(1.05);
-            box-shadow: 
-                0 6px 20px rgba(0, 0, 0, 0.4),
-                0 0 30px currentColor;
-        }
-        
-        .target {
-            position: absolute;
-            border: 3px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 15;
-            background: radial-gradient(circle at center, transparent 40%, rgba(255, 255, 255, 0.02) 100%);
-        }
-        
-        .target::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 30%;
-            height: 30%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .target.active {
-            animation: targetPulse 1s ease-in-out infinite;
-            box-shadow: 
-                0 0 30px currentColor,
-                inset 0 0 20px rgba(255, 255, 255, 0.1);
-        }
-        
-        .target.active::before {
-            opacity: 1;
-        }
-        
-        @keyframes targetPulse {
-            0%, 100% { 
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% { 
-                transform: scale(1.08);
-                opacity: 0.8;
-            }
-        }
-        
-        .target.success {
-            animation: successBurst 0.6s ease;
-        }
-        
-        @keyframes successBurst {
-            0% { 
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% { 
-                transform: scale(1.3);
-                opacity: 0.6;
-            }
-            100% { 
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 50;
-        }
-        
-        #settings-panel {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, var(--bg-medium) 0%, var(--bg-light) 100%);
-            border-radius: 20px;
-            padding: 30px;
-            padding-bottom: calc(30px + env(safe-area-inset-bottom) + 60px);
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(111, 211, 245, 0.2);
-            z-index: 100;
-            width: 80%;
-            max-width: 500px;
-            max-height: 75vh;
-            overflow-y: auto;
-            backdrop-filter: blur(10px);
-        }
-        
-        #settings-panel h2 {
-            text-align: center;
-            color: var(--text-primary);
-            margin-top: 0;
-            margin-bottom: 25px;
-            font-size: 28px;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .game-description {
-            background: rgba(111, 211, 245, 0.08);
-            border: 1px solid rgba(111, 211, 245, 0.2);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 25px;
-            backdrop-filter: blur(5px);
-        }
-        
-        .game-description p {
-            margin: 0;
-            font-size: 15px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-        }
-        
-        #settings-toggle {
-            position: fixed;
-            bottom: calc(20px + env(safe-area-inset-bottom));
-            right: calc(20px + env(safe-area-inset-right));
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: var(--bg-dark);
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 90;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 
-                0 4px 15px rgba(0, 0, 0, 0.3),
-                0 0 30px rgba(111, 211, 245, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-        
-        #settings-toggle:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 
-                0 6px 20px rgba(0, 0, 0, 0.4),
-                0 0 40px rgba(111, 211, 245, 0.5);
-        }
-        
-        .settings-group {
-            margin-bottom: 22px;
-        }
-        
-        .settings-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--text-primary);
-            font-size: 16px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        }
-        
-        .setting-description {
-            display: block;
-            margin-bottom: 10px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            line-height: 1.5;
-            font-style: italic;
-        }
-        
-        select, input {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(111, 211, 245, 0.2);
-            font-size: 16px;
-            background-color: rgba(0, 10, 30, 0.4);
-            color: var(--text-primary);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-        }
-        
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(111, 211, 245, 0.2);
-            background-color: rgba(0, 10, 30, 0.6);
-        }
-        
-        button {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: var(--bg-dark);
-            border: none;
-            border-radius: 12px;
-            padding: 14px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            width: 100%;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 
-                0 6px 20px rgba(0, 0, 0, 0.4),
-                0 0 30px rgba(111, 211, 245, 0.3);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        #stats-panel {
-            position: absolute;
-            bottom: env(safe-area-inset-bottom);
-            left: env(safe-area-inset-left);
-            right: env(safe-area-inset-right);
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 100%);
-            padding: 18px;
-            display: flex;
-            justify-content: space-around;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        
-        .stat-box {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 26px;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-shadow: 0 0 10px rgba(111, 211, 245, 0.5);
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-        
-        #timer-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 6px;
-            background: linear-gradient(90deg, var(--success-color) 0%, var(--primary-color) 50%, var(--warning-color) 100%);
-            width: 100%;
-            z-index: 20;
-            box-shadow: 0 2px 10px rgba(111, 211, 245, 0.4);
-            transition: width 0.1s linear;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        #completion-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, var(--bg-medium) 0%, var(--bg-light) 100%);
-            padding: 35px;
-            border-radius: 20px;
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(111, 211, 245, 0.2);
-            text-align: center;
-            max-width: 80%;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        
-        #completion-message h2 {
-            color: var(--text-primary);
-            margin-top: 0;
-            font-size: 32px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        #completion-scores {
-            margin: 25px 0;
-            font-size: 18px;
-            line-height: 1.8;
-        }
-        
-        .score-highlight {
-            color: var(--primary-color);
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(111, 211, 245, 0.5);
-        }
-        
-        #stars-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-            pointer-events: none;
-        }
-        
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            animation: twinkle 3s ease-in-out infinite;
-        }
-        
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.2); }
-        }
-        
-        #status-message {
-            position: absolute;
-            top: 15%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            color: var(--text-primary);
-            z-index: 15;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
-        }
-        
-        #progress-display {
-            position: absolute;
-            top: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            color: var(--text-primary);
-            z-index: 15;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 8px 20px;
-            border-radius: 25px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        .drag-trail {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 18;
-            animation: fadeOut 0.8s ease-out forwards;
-        }
-        
-        @keyframes fadeOut {
-            0% { opacity: 0.8; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.5); }
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        
-        @media (max-width: 768px) {
-            .stat-value {
-                font-size: 22px;
-            }
-            
-            .stat-label {
-                font-size: 12px;
-            }
-            
-            #game-area {
-                width: 90%;
-                height: 350px;
-            }
-            
-            #settings-panel {
-                width: 90%;
-                max-width: none;
-                max-height: 70vh;
-                padding: 20px;
-                padding-bottom: calc(20px + env(safe-area-inset-bottom) + 80px);
-            }
-            
-            .game-description {
-                padding: 15px;
-                margin-bottom: 20px;
-            }
-            
-            .game-description p {
-                font-size: 14px;
-            }
-            
-            button {
-                padding: 16px;
-                font-size: 18px;
-                margin-top: 20px;
-            }
-        }
-        
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation: none !important;
-                transition: none !important;
-            }
-        }
-    </style>
+
+    /* Page background + starfield placeholder */
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 50% -20%, #152033 0%, var(--color-bg) 60%, #070a12 100%);
+      color:var(--color-fg);
+      min-height:100vh;
+      overflow:hidden;
+      touch-action: manipulation;
+      -webkit-user-select:none;user-select:none;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    /* Sticky header */
+    header.site-header{
+      position: sticky; top: 0; z-index: 1000;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(10,15,27,0.85), rgba(10,15,27,0.65));
+      border-bottom: 1px solid rgba(111,211,245,0.15);
+      display:flex; align-items:center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+    }
+    header .home-link{ text-decoration:none; }
+    header h1{
+      margin:0; font-size: clamp(20px, 2.2vw, 28px); letter-spacing:.3px;
+    }
+
+    /* App layout: left settings panel, right play area */
+    .app{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap: var(--space-5);
+      height: calc(100vh - 72px);
+      padding: var(--space-5);
+    }
+    @media (max-width: 900px){
+      .app{ grid-template-columns: 1fr; height: auto; min-height: calc(100vh - 72px); }
+    }
+
+    /* Panels use shared .panel styles (from components.css);
+       add a bit of local flavor safely */
+    .panel{
+      background: linear-gradient(135deg, var(--color-bg-2), var(--color-bg-3));
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(111,211,245,.2);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    /* Left: Settings */
+    #settings-panel{
+      display:flex; flex-direction:column; padding: var(--space-5);
+      gap: var(--space-4);
+      overflow:auto;
+    }
+    #settings-panel h2{ margin:0 0 var(--space-2) 0; }
+    .game-description{
+      background: rgba(111,211,245,.08);
+      border:1px solid rgba(111,211,245,.18);
+      border-radius:12px; padding: var(--space-4);
+      color: var(--color-fg-2);
+    }
+    .settings-group{ display:flex; flex-direction:column; gap:6px; }
+    .settings-label{ font-weight:700; }
+    .setting-description{ color:var(--color-fg-2); font-size:.92rem; }
+
+    select,input,button{
+      min-height:44px; /* touch target */
+    }
+    select,input{
+      width:100%; padding:12px 14px; border-radius:12px;
+      border:1px solid rgba(111,211,245,.25);
+      background: rgba(0,10,30,.4); color:var(--color-fg);
+    }
+    select:focus,input:focus,button:focus-visible{
+      outline:2px solid var(--focus); outline-offset:2px;
+      box-shadow: 0 0 0 3px rgba(111,211,245,.2);
+    }
+
+    .controls-row{ display:flex; gap: var(--space-3); }
+    .btn{ cursor:pointer; }
+    .btn.primary{ background: linear-gradient(135deg, var(--brand), var(--brand-2)); color:#061019; }
+    .btn.ghost{ background: transparent; border:1px solid rgba(111,211,245,.3); color:var(--color-fg); }
+
+    /* Right: HUD + Game area */
+    .play-area{ position:relative; display:flex; flex-direction:column; gap: var(--space-4); }
+
+    /* HUD row */
+    .hud{
+      display:grid; gap: var(--space-3);
+      grid-template-columns: 1fr auto auto auto;
+      align-items:center;
+      padding: var(--space-4);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.15));
+      border:1px solid rgba(111,211,245,.18);
+      backdrop-filter: blur(6px);
+    }
+    #timer-bar{
+      grid-column: 1 / -1;
+      height: 8px; width: 100%;
+      background: linear-gradient(90deg, var(--success) 0%, var(--brand) 50%, var(--warn) 100%);
+      border-radius: 6px; box-shadow: 0 2px 10px rgba(111,211,245,.4);
+      transition: width .1s linear;
+    }
+    .hud-metric{ text-align:center; padding: 6px 10px; }
+    .hud-metric .value{ font-weight:800; font-size:1.2rem; color: var(--brand); }
+    .hud-metric .label{ font-size:.8rem; color: var(--color-fg-2); }
+
+    /* Game surface */
+    #game-surface{
+      position:relative; flex:1; min-height: 420px;
+      border-radius: var(--radius-xl);
+      border:2px solid rgba(111,211,245,.3);
+      background: linear-gradient(135deg, var(--color-bg-2), var(--color-bg-3));
+      overflow:hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,.4), inset 0 0 18px rgba(111,211,245,.12);
+    }
+    #stars-container{ position:absolute; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+
+    /* Status badges */
+    #status-message{
+      position:absolute; top:14%; left:50%; transform:translateX(-50%);
+      z-index:3; font-weight:800; text-shadow:0 2px 8px rgba(0,0,0,.5);
+    }
+    #progress-display{
+      position:absolute; top:20px; left:50%; transform:translateX(-50%);
+      z-index:3; background: rgba(0,0,0,.55); padding: 6px 14px; border-radius: 999px;
+      font-weight:700; box-shadow:0 4px 10px rgba(0,0,0,.3);
+    }
+
+    /* Draggables/Targets */
+    .draggable{
+      position:absolute; border-radius:50%; cursor: grab; touch-action: none;
+      display:flex; align-items:center; justify-content:center; font-weight:800;
+      color:#fff; text-shadow: 0 1px 3px rgba(0,0,0,.5);
+      box-shadow: 0 4px 15px rgba(0,0,0,.3);
+      transition: transform .2s ease, box-shadow .2s ease; z-index: 20;
+      animation: float 3s ease-in-out infinite;
+    }
+    .draggable.dragging{ cursor:grabbing; transform: scale(1.12); animation:none; z-index:30; }
+    @keyframes float{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+    .target{
+      position:absolute; border:3px dashed rgba(255,255,255,.3); border-radius:50%;
+      background: radial-gradient(circle at center, transparent 40%, rgba(255,255,255,.03) 100%);
+      transition: transform .2s ease, box-shadow .2s ease; z-index:15;
+    }
+    .target.active{ box-shadow: 0 0 26px currentColor, inset 0 0 16px rgba(255,255,255,.08); transform: scale(1.06); }
+    .target.success{ animation: burst .6s ease; }
+    @keyframes burst{ 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.25);opacity:.7} 100%{transform:scale(1);opacity:1} }
+
+    .drag-trail{
+      position:absolute; width:8px; height:8px;
+      background: radial-gradient(circle, var(--brand) 0%, transparent 70%);
+      border-radius:50%; pointer-events:none; z-index:18;
+      animation: fadeOut .8s ease-out forwards;
+    }
+    @keyframes fadeOut{ 0%{opacity:.8; transform:scale(1)} 100%{opacity:0; transform:scale(.5)} }
+    @keyframes shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+    /* Completion modal */
+    #completion-modal{
+      position: fixed; inset: 0; display:none; place-items:center; z-index:1200;
+      background: rgba(0,0,0,.45);
+    }
+    #completion-card{
+      width:min(680px, 92vw);
+      background: linear-gradient(135deg, var(--color-bg-2), var(--color-bg-3));
+      border:1px solid rgba(111,211,245,.22);
+      border-radius: var(--radius-xl);
+      padding: clamp(16px, 2.8vw, 28px);
+      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+      text-align:center;
+      outline: none;
+    }
+    #stars-row{ display:flex; justify-content:center; gap:12px; margin: 10px 0 16px; }
+    .star-icon{ width:32px; height:32px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.4)); opacity:.35 }
+    .star-icon.filled{ opacity:1 }
+
+    .scores{ display:grid; gap:8px; margin: 10px 0 16px; }
+    .scores .score-highlight{ color: var(--brand); font-weight:800; }
+
+    .sr-only{ position:absolute !important; clip:rect(1px,1px,1px,1px); padding:0; border:0; height:1px; width:1px; overflow:hidden; }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none !important; transition:none !important; }
+    }
+  </style>
 </head>
+
 <body>
-    <noscript>This exercise requires JavaScript to run. Please enable JavaScript in your browser to use the Precision Drop rehabilitation exercise.</noscript>
-    
-    <main id="game-container">
-        <div id="stars-container"></div>
-        <div id="timer-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="Session time remaining"></div>
-        
+  <!-- Header & Navigation -->
+  <header class="site-header" role="banner">
+    <a class="btn ghost home-link" href="/" aria-label="Go to home">← Home</a>
+    <h1>Precision Drop</h1>
+  </header>
+
+  <!-- Shared Layout -->
+  <main class="app" id="app-root">
+    <!-- Left panel: Settings -->
+    <aside id="settings-panel" class="panel" aria-label="Settings">
+      <h2 class="h3">Session Settings</h2>
+
+      <div class="game-description">
+        <p><strong>About this exercise:</strong> Drag each coloured circle to its matching target to build precision and hand-eye coordination. Targets glow when you’re close. Score increases with accuracy and speed.</p>
+      </div>
+
+      <div class="settings-group">
+        <label for="difficulty-select" class="settings-label">Difficulty</label>
+        <span id="difficulty-desc" class="setting-description">Controls target/object size. Start Easy, then progress smaller as precision improves.</span>
+        <select id="difficulty-select" aria-describedby="difficulty-desc">
+          <option value="easy" selected>Easy (large targets)</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard (small targets)</option>
+        </select>
+      </div>
+
+      <div class="settings-group">
+        <label for="num-targets" class="settings-label">Objects per round</label>
+        <span id="num-targets-desc" class="setting-description">Pick how many matches to complete each round.</span>
+        <select id="num-targets" aria-describedby="num-targets-desc">
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+
+      <div class="settings-group">
+        <label for="session-duration" class="settings-label">Session duration (minutes)</label>
+        <span id="session-duration-desc" class="setting-description">1–10 minutes.</span>
+        <input type="number" id="session-duration" min="1" max="10" value="2" aria-describedby="session-duration-desc">
+      </div>
+
+      <div class="settings-group">
+        <label for="show-numbers" class="settings-label">Show numbers</label>
+        <span id="show-numbers-desc" class="setting-description">Add numbers for a light cognitive load.</span>
+        <select id="show-numbers" aria-describedby="show-numbers-desc">
+          <option value="no" selected>No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+
+      <!-- Unified Session Controls -->
+      <div class="controls-row" role="group" aria-label="Session controls">
+        <button id="start-button" class="btn primary" type="button">Start</button>
+        <button id="pause-button" class="btn ghost" type="button" aria-pressed="false">Pause</button>
+        <button id="restart-button" class="btn ghost" type="button">Restart</button>
+      </div>
+    </aside>
+
+    <!-- Right panel: HUD + Game Area -->
+    <section class="play-area" aria-label="Exercise">
+      <div class="hud panel" role="region" aria-label="HUD">
+        <div id="timer-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="Time remaining"></div>
+
+        <div class="hud-metric" aria-live="polite">
+          <div class="value" id="score">0</div>
+          <div class="label">Score</div>
+        </div>
+
+        <div class="hud-metric">
+          <div class="value" id="personal-best">—</div>
+          <div class="label">Personal Best</div>
+        </div>
+
+        <div class="hud-metric">
+          <div class="value" id="hud-difficulty">Easy</div>
+          <div class="label">Difficulty</div>
+        </div>
+      </div>
+
+      <div id="game-surface" class="panel" role="application" aria-describedby="progress-display status-message">
+        <div id="stars-container" aria-hidden="true"></div>
+
         <div id="progress-display" aria-live="polite">Round <span id="round-number">1</span> of <span id="total-rounds">10</span></div>
         <div id="status-message" aria-live="polite">Drag the object to the target</div>
-        
-        <div id="game-area"></div>
-        
-        <button id="settings-toggle" type="button" aria-label="Open settings" aria-pressed="false">⚙️</button>
-        
-        <section id="settings-panel">
-            <h2>Precision Drop Exercise</h2>
-            
-            <div class="game-description">
-                <p><strong>About this exercise:</strong> Drag each colored circle to its matching colored target to improve fine motor skills, hand-eye coordination, and precision. The targets will light up when you get close to help guide you. You earn points for successful drops with bonus points for faster completion.</p>
-            </div>
-            
-            <div class="settings-group">
-                <label for="difficulty" class="settings-label">Difficulty Level:</label>
-                <span class="setting-description" id="difficulty-desc">Controls the size of targets and objects. Start with Easy for larger targets, then progress to smaller ones as your precision improves.</span>
-                <select id="difficulty" aria-describedby="difficulty-desc">
-                    <option value="easy" selected>Easy (Large targets)</option>
-                    <option value="medium">Medium (Medium targets)</option>
-                    <option value="hard">Hard (Small targets)</option>
-                </select>
-            </div>
-            
-            <div class="settings-group">
-                <label for="num-targets" class="settings-label">Number of Objects:</label>
-                <span class="setting-description" id="num-targets-desc">Choose how many objects to match per round. Start with 1 object and increase as your coordination improves.</span>
-                <select id="num-targets" aria-describedby="num-targets-desc">
-                    <option value="1" selected>1 object per round</option>
-                    <option value="2">2 objects per round</option>
-                    <option value="3">3 objects per round</option>
-                </select>
-            </div>
-            
-            <div class="settings-group">
-                <label for="session-duration" class="settings-label">Session Duration:</label>
-                <span class="setting-description" id="session-duration-desc">Set how long you want to practice. Shorter sessions are good for building up endurance gradually. Duration in minutes (1-10)</span>
-                <input type="number" id="session-duration" min="1" max="10" value="2" aria-describedby="session-duration-desc">
-            </div>
-            
-            <div class="settings-group">
-                <label for="show-numbers" class="settings-label">Show Numbers:</label>
-                <span class="setting-description" id="show-numbers-desc">Display numbers on objects and targets for additional cognitive challenge and easier identification.</span>
-                <select id="show-numbers" aria-describedby="show-numbers-desc">
-                    <option value="no" selected>No numbers (color matching only)</option>
-                    <option value="yes">Yes (show numbers)</option>
-                </select>
-            </div>
-            
-            <!-- Session enhancement will add celebration controls here -->
-            
-            <button id="start-session" type="button">Start Session</button>
-        </section>
-        
-        <section id="stats-panel" class="hidden" aria-label="Game statistics">
-            <div class="stat-box">
-                <div id="score" class="stat-value">0</div>
-                <div class="stat-label">Score</div>
-            </div>
-            <div class="stat-box">
-                <div id="successful-drops" class="stat-value">0</div>
-                <div class="stat-label">Successful Drops</div>
-            </div>
-            <div class="stat-box">
-                <div id="time-left" class="stat-value">2:00</div>
-                <div class="stat-label">Time Left</div>
-            </div>
-            <div class="stat-box">
-                <div id="accuracy" class="stat-value">0%</div>
-                <div class="stat-label">Accuracy</div>
-            </div>
-        </section>
-        
-        <section id="completion-message" class="hidden" role="dialog" aria-labelledby="completion-title" aria-modal="true" tabindex="-1">
-            <!-- Session enhancement will add encouragement message here -->
-            
-            <h2 id="completion-title">🎉 Session Complete!</h2>
-            <div id="completion-scores">
-                <p>Final Score: <span id="final-score" class="score-highlight">0</span></p>
-                <p>Successful Drops: <span id="final-drops" class="score-highlight">0</span></p>
-                <p>Accuracy: <span id="final-accuracy" class="score-highlight">0%</span></p>
-                <p>Average Time per Drop: <span id="final-avg-time" class="score-highlight">0.0s</span></p>
-            </div>
-            <button id="restart-button" type="button">Start New Session</button>
-        </section>
-    </main>
-    
-    <!-- Standardized module imports and endSession integration -->
-    <script type="module">
-        import { recordSession } from '/js/progress.js';
-        import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
-        
-        const EXERCISE_ID = 'precision-drop';
-        
-        // Call this when an exercise session ends
-        window.endSession = function(score, difficulty = 'easy') {
-            recordSession(EXERCISE_ID, difficulty, score);
-            try {
-                markExerciseTried(EXERCISE_ID);
-            } catch (e) {
-                /* no-op if signature differs */
-            }
-            try {
-                const newAchievements = checkAndUnlockAchievements();
-                // Show achievement notifications
-                newAchievements.forEach(achievementId => {
-                    showAchievementNotification(achievementId);
-                });
-            } catch (e) {
-                /* optional */
-            }
-        };
-        
-        // Tiny achievement toast fallback
-        function showAchievementNotification(achievementId) {
-            const existing = document.getElementById('achievement-toast');
-            if (existing) existing.remove();
-            const box = document.createElement('div');
-            box.id = 'achievement-toast';
-            box.textContent = `🏆 Achievement unlocked: ${achievementId}`;
-            box.style.cssText = `
-                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                background: rgba(0,0,0,0.85); color: #fff; padding: 10px 16px;
-                border-radius: 12px; font-weight: 700; z-index: 9999; box-shadow: 0 4px 14px rgba(0,0,0,0.4)
-            `;
-            document.body.appendChild(box);
-            setTimeout(() => box.remove(), 3000);
-        }
-    </script>
-    
-    <!-- SESSION ENHANCEMENT INTEGRATION: Inline module only -->
-    <script type="module">
-        import { storage, starfield, theme, viewport, audio, initUtils } from '/js/utils.js';
-        import { sessionEnhancement } from '/js/session-enhancement.js';
-        
-        // Initialize utilities
-        initUtils();
-        
-        // SESSION ENHANCEMENT INTEGRATION: Initialize for this exercise
-        const currentExerciseId = 'precision'; // Precision Drop Exercise ID
-        
-        function getCurrentDifficulty() {
-            const difficultySelect = document.getElementById('difficulty');
-            return difficultySelect ? difficultySelect.value : 'medium';
-        }
-        
-        // Initialize with current settings
-        sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
-        
-        // Re-initialize when difficulty changes
-        const difficultySelect = document.getElementById('difficulty');
-        if (difficultySelect) {
-            difficultySelect.addEventListener('change', () => {
-                sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
-            });
-        }
-        
-        // Game elements
-        const gameContainer = document.getElementById('game-container');
-        const gameArea = document.getElementById('game-area');
-        const timerBar = document.getElementById('timer-bar');
-        const settingsPanel = document.getElementById('settings-panel');
-        const settingsToggle = document.getElementById('settings-toggle');
-        const statsPanel = document.getElementById('stats-panel');
-        const completionMessage = document.getElementById('completion-message');
-        const starsContainer = document.getElementById('stars-container');
-        const statusMessage = document.getElementById('status-message');
-        const progressDisplay = document.getElementById('progress-display');
-        const roundNumber = document.getElementById('round-number');
-        const totalRounds = document.getElementById('total-rounds');
-        
-        // Enhanced color palette with gradients
-        const colorPalette = [
-            { solid: '#e74c3c', gradient: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' },
-            { solid: '#f1c40f', gradient: 'linear-gradient(135deg, #f1c40f 0%, #f39c12 100%)' },
-            { solid: '#2ecc71', gradient: 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)' },
-            { solid: '#9b59b6', gradient: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)' },
-            { solid: '#3498db', gradient: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)' },
-            { solid: '#e67e22', gradient: 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)' },
-            { solid: '#1abc9c', gradient: 'linear-gradient(135deg, #1abc9c 0%, #16a085 100%)' },
-            { solid: '#34495e', gradient: 'linear-gradient(135deg, #34495e 0%, #2c3e50 100%)' }
-        ];
-        
-        // Create animated stars background
-        const starsCount = 60;
-        
-        for (let i = 0; i < starsCount; i++) {
-            const star = document.createElement('div');
-            star.classList.add('star');
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.top = `${Math.random() * 100}%`;
-            const size = Math.random() * 3 + 1;
-            star.style.width = `${size}px`;
-            star.style.height = `${size}px`;
-            star.style.animationDelay = `${Math.random() * 3}s`;
-            star.style.animationDuration = `${3 + Math.random() * 2}s`;
-            starsContainer.appendChild(star);
-        }
-        
-        // Settings elements
-        const numTargetsSelect = document.getElementById('num-targets');
-        const sessionDurationInput = document.getElementById('session-duration');
-        const showNumbersSelect = document.getElementById('show-numbers');
-        const startSessionButton = document.getElementById('start-session');
-        const restartButton = document.getElementById('restart-button');
-        
-        // Stats elements
-        const scoreElement = document.getElementById('score');
-        const successfulDropsElement = document.getElementById('successful-drops');
-        const timeLeftElement = document.getElementById('time-left');
-        const accuracyElement = document.getElementById('accuracy');
-        
-        // Completion elements
-        const finalScoreElement = document.getElementById('final-score');
-        const finalDropsElement = document.getElementById('final-drops');
-        const finalAccuracyElement = document.getElementById('final-accuracy');
-        const finalAvgTimeElement = document.getElementById('final-avg-time');
-        
-        // Game state variables
-        let isSessionActive = false;
-        let sessionDuration = 2 * 60 * 1000;
-        let timeRemaining = 0;
-        let timerInterval = null;
-        let score = 0;
-        let successfulDrops = 0;
-        let totalDrops = 0;
-        let currentRound = 1;
-        let maxRounds = 10;
-        let roundStartTime = 0;
-        let totalDropTime = 0;
-        let activeDroppables = [];
-        let activeTargets = [];
-        let currentDragging = null;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-        let lastTrailTime = 0;
-        let maxParticles = 50; // Performance cap for particles
-        let maxTrails = 20; // Performance cap for drag trails
-        
-        // Difficulty settings
-        const difficulties = {
-            easy: { targetSize: 90, objectSize: 45, points: 100, spacing: 120 },
-            medium: { targetSize: 70, objectSize: 35, points: 200, spacing: 100 },
-            hard: { targetSize: 50, objectSize: 28, points: 300, spacing: 80 }
-        };
-        
-        // Utility functions
-        function showSettings() {
-            const wasHidden = settingsPanel.classList.contains('hidden');
-            settingsPanel.classList.remove('hidden');
-            statsPanel.classList.add('hidden');
-            completionMessage.classList.add('hidden');
-            settingsToggle.setAttribute('aria-pressed', 'true');
-        }
-        
-        function hideSettings() {
-            settingsPanel.classList.add('hidden');
-            settingsToggle.setAttribute('aria-pressed', 'false');
-        }
-        
-        function clearGameElements() {
-            activeDroppables.forEach(d => d.remove());
-            activeTargets.forEach(t => t.remove());
-            activeDroppables = [];
-            activeTargets = [];
-        }
-        
-        function updateStats() {
-            scoreElement.textContent = score;
-            successfulDropsElement.textContent = successfulDrops;
-            accuracyElement.textContent = totalDrops > 0 ? 
-                Math.round(successfulDrops / totalDrops * 100) + '%' : '0%';
-        }
-        
-        function updateTimer() {
-            const minutes = Math.floor(timeRemaining / 60000);
-            const seconds = Math.floor((timeRemaining % 60000) / 1000);
-            timeLeftElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-        
-        function updateProgress() {
-            roundNumber.textContent = currentRound;
-            totalRounds.textContent = maxRounds;
-        }
-        
-        // Collision detection function
-        function checkCollision(x1, y1, size1, x2, y2, size2, spacing) {
-            const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-            return distance < (size1 / 2 + size2 / 2 + spacing);
-        }
-        
-        // Find non-overlapping position
-        function findNonOverlappingPosition(size, existingPositions, gameRect, spacing) {
-            const maxAttempts = 100;
-            const padding = 40;
-            
-            for (let attempt = 0; attempt < maxAttempts; attempt++) {
-                const x = padding + Math.random() * (gameRect.width - size - 2 * padding);
-                const y = padding + Math.random() * (gameRect.height - size - 2 * padding);
-                
-                let collision = false;
-                for (const pos of existingPositions) {
-                    if (checkCollision(x + size/2, y + size/2, size, 
-                                     pos.x + pos.size/2, pos.y + pos.size/2, pos.size, spacing)) {
-                        collision = true;
-                        break;
-                    }
-                }
-                
-                if (!collision) {
-                    return { x, y, size };
-                }
-            }
-            
-            // Fallback: return a position anyway
-            return {
-                x: padding + Math.random() * (gameRect.width - size - 2 * padding),
-                y: padding + Math.random() * (gameRect.height - size - 2 * padding),
-                size
-            };
-        }
-        
-        // Create particle effect with performance cap
-        function createParticles(x, y, color) {
-            const existingParticles = gameArea.querySelectorAll('.particle');
-            if (existingParticles.length > maxParticles) {
-                for (let i = 0; i < Math.min(5, existingParticles.length); i++) {
-                    existingParticles[i].remove();
-                }
-            }
-            
-            const particleCount = 15;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                particle.style.left = `${x}px`;
-                particle.style.top = `${y}px`;
-                particle.style.background = color;
-                
-                const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = 50 + Math.random() * 50;
-                const duration = 0.5 + Math.random() * 0.5;
-                
-                particle.style.animation = `none`;
-                
-                gameArea.appendChild(particle);
-                
-                let startTime = null;
-                function animateParticle(timestamp) {
-                    if (!startTime) startTime = timestamp;
-                    const progress = (timestamp - startTime) / (duration * 1000);
-                    
-                    if (progress < 1) {
-                        const distance = velocity * progress;
-                        const fadeOut = 1 - progress;
-                        
-                        particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(${1 - progress * 0.5})`;
-                        particle.style.opacity = fadeOut;
-                        
-                        requestAnimationFrame(animateParticle);
-                    } else {
-                        particle.remove();
-                    }
-                }
-                
-                requestAnimationFrame(animateParticle);
-            }
-        }
-        
-        // Create drag trail effect with performance cap
-        function createDragTrail(x, y) {
-            const now = Date.now();
-            if (now - lastTrailTime < 50) return;
-            lastTrailTime = now;
-            
-            const existingTrails = gameArea.querySelectorAll('.drag-trail');
-            if (existingTrails.length > maxTrails) {
-                for (let i = 0; i < Math.min(3, existingTrails.length); i++) {
-                    existingTrails[i].remove();
-                }
-            }
-            
-            const trail = document.createElement('div');
-            trail.classList.add('drag-trail');
-            trail.style.left = `${x - 4}px`;
-            trail.style.top = `${y - 4}px`;
-            
-            gameArea.appendChild(trail);
-            
-            setTimeout(() => trail.remove(), 800);
-        }
-        
-        // Start drag function
-        function startDrag(e) {
-            if (!isSessionActive) return;
-            
-            e.preventDefault();
-            currentDragging = e.currentTarget;
-            currentDragging.classList.add('dragging');
-            
-            const rect = currentDragging.getBoundingClientRect();
-            const gameRect = gameArea.getBoundingClientRect();
-            
-            if (e.type === 'mousedown') {
-                dragOffsetX = e.clientX - rect.left;
-                dragOffsetY = e.clientY - rect.top;
-            } else if (e.type === 'touchstart') {
-                dragOffsetX = e.touches[0].clientX - rect.left;
-                dragOffsetY = e.touches[0].clientY - rect.top;
-            }
-            
-            document.addEventListener('mousemove', dragElement);
-            document.addEventListener('mouseup', endDrag);
-            document.addEventListener('touchmove', dragElement, { passive: false });
-            document.addEventListener('touchend', endDrag);
-        }
-        
-        function dragElement(e) {
-            if (!currentDragging) return;
-            
-            e.preventDefault();
-            const gameRect = gameArea.getBoundingClientRect();
-            
-            let clientX, clientY;
-            if (e.type === 'mousemove') {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            } else if (e.type === 'touchmove') {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            }
-            
-            let newX = clientX - gameRect.left - dragOffsetX;
-            let newY = clientY - gameRect.top - dragOffsetY;
-            
-            const elementRect = currentDragging.getBoundingClientRect();
-            const elementSize = elementRect.width;
-            newX = Math.max(0, Math.min(newX, gameRect.width - elementSize));
-            newY = Math.max(0, Math.min(newY, gameRect.height - elementSize));
-            
-            currentDragging.style.left = `${newX}px`;
-            currentDragging.style.top = `${newY}px`;
-            
-            checkProximity();
-        }
-        
-        function endDrag(e) {
-            if (!currentDragging) return;
-            
-            e.preventDefault();
-            
-            document.removeEventListener('mousemove', dragElement);
-            document.removeEventListener('mouseup', endDrag);
-            document.removeEventListener('touchmove', dragElement, { passive: false });
-            document.removeEventListener('touchend', endDrag);
-            
-            checkDrop();
-            
-            currentDragging.classList.remove('dragging');
-            activeTargets.forEach(target => target.classList.remove('active'));
-            currentDragging = null;
-        }
-        
-        function addDragListeners(element) {
-            element.addEventListener('mousedown', startDrag);
-            element.addEventListener('touchstart', startDrag, { passive: false });
-        }
-        
-        function checkProximity() {
-            if (!currentDragging) return;
-            
-            const dragRect = currentDragging.getBoundingClientRect();
-            const gameRect = gameArea.getBoundingClientRect();
-            const dragCenter = {
-                x: dragRect.left + dragRect.width / 2 - gameRect.left,
-                y: dragRect.top + dragRect.height / 2 - gameRect.top
-            };
-            
-            createDragTrail(dragCenter.x, dragCenter.y);
-            
-            activeTargets.forEach(target => target.classList.remove('active'));
-            
-            activeTargets.forEach(target => {
-                const targetRect = target.getBoundingClientRect();
-                const targetCenter = {
-                    x: targetRect.left + targetRect.width / 2,
-                    y: targetRect.top + targetRect.height / 2
-                };
-                
-                const distance = Math.hypot(
-                    dragRect.left + dragRect.width / 2 - targetCenter.x,
-                    dragRect.top + dragRect.height / 2 - targetCenter.y
-                );
-                
-                if (distance < targetRect.width / 2 + dragRect.width / 2 + 20) {
-                    target.classList.add('active');
-                }
-            });
-        }
-        
-        function checkDrop() {
-            if (!currentDragging) return;
-            
-            const dragRect = currentDragging.getBoundingClientRect();
-            const dragCenter = {
-                x: dragRect.left + dragRect.width / 2,
-                y: dragRect.top + dragRect.height / 2
-            };
-            
-            let successfulDrop = false;
-            const difficulty = difficultySelect.value;
-            const settings = difficulties[difficulty];
-            
-            activeTargets.forEach(target => {
-                const targetRect = target.getBoundingClientRect();
-                const targetCenter = {
-                    x: targetRect.left + targetRect.width / 2,
-                    y: targetRect.top + targetRect.height / 2
-                };
-                
-                const distance = Math.hypot(
-                    dragCenter.x - targetCenter.x,
-                    dragCenter.y - targetCenter.y
-                );
-                
-                if (distance < targetRect.width / 3 && 
-                    target.dataset.targetId === currentDragging.dataset.targetId) {
-                    successfulDrop = true;
-                    
-                    const color = currentDragging.dataset.color;
-                    
-                    target.classList.add('success');
-                    
-                    const gameRect = gameArea.getBoundingClientRect();
-                    createParticles(
-                        targetCenter.x - gameRect.left,
-                        targetCenter.y - gameRect.top,
-                        color
-                    );
-                    
-                    setTimeout(() => {
-                        target.classList.remove('success');
-                    }, 600);
-                    
-                    const dropTime = Date.now() - roundStartTime;
-                    totalDropTime += dropTime;
-                    
-                    const timeBonus = Math.max(0, Math.floor((5000 - dropTime) / 100));
-                    const points = settings.points + timeBonus;
-                    score += points;
-                    successfulDrops++;
-                    
-                    currentDragging.remove();
-                    activeDroppables = activeDroppables.filter(d => d !== currentDragging);
-                    
-                    statusMessage.textContent = `Perfect! +${points} points`;
-                    statusMessage.style.color = 'var(--success-color)';
-                    
-                    if (activeDroppables.length === 0) {
-                        setTimeout(() => nextRound(), 1000);
-                    }
-                }
-            });
-            
-            if (!successfulDrop) {
-                currentDragging.style.animation = 'shake 0.3s ease';
-                setTimeout(() => {
-                    if (currentDragging) {
-                        currentDragging.style.animation = 'floatAnimation 3s ease-in-out infinite';
-                    }
-                }, 300);
-                
-                statusMessage.textContent = "Try again - drag to the matching colored target";
-                statusMessage.style.color = 'var(--danger-color)';
-            }
-            
-            totalDrops++;
-            updateStats();
-        }
-        
-        function nextRound() {
-            currentRound++;
-            updateProgress();
-            
-            if (timeRemaining > 0) {
-                const difficulty = difficultySelect.value;
-                const numTargets = parseInt(numTargetsSelect.value);
-                const showNumbers = showNumbersSelect.value === 'yes';
-                
-                createRound(difficulty, numTargets, showNumbers);
-            } else {
-                finishSession();
-            }
-        }
-        
-        // Event listeners with proper state management
-        settingsToggle.addEventListener('click', () => {
-            const isHidden = settingsPanel.classList.contains('hidden');
-            if (isHidden) {
-                showSettings();
-            } else {
-                hideSettings();
-            }
-        });
-        
-        startSessionButton.addEventListener('click', startSession);
-        restartButton.addEventListener('click', () => {
-            completionMessage.classList.add('hidden');
-            showSettings();
-        });
-        
-        // Start new session
-        function startSession() {
-            const difficulty = difficultySelect.value;
-            const numTargets = parseInt(numTargetsSelect.value);
-            
-            const minutes = Math.max(1, Math.min(10, Number.parseInt(sessionDurationInput.value, 10) || 2));
-            sessionDuration = minutes * 60 * 1000;
-            const showNumbers = showNumbersSelect.value === 'yes';
-            
-            score = 0;
-            successfulDrops = 0;
-            totalDrops = 0;
-            timeRemaining = sessionDuration;
-            currentRound = 1;
-            totalDropTime = 0;
-            maxRounds = Math.floor(timeRemaining / 6000);
-            
-            clearGameElements();
-            
-            updateStats();
-            updateTimer();
-            updateProgress();
-            
-            hideSettings();
-            statsPanel.classList.remove('hidden');
-            
-            isSessionActive = true;
-            roundStartTime = Date.now();
-            
-            timerInterval = setInterval(() => {
-                timeRemaining -= 100;
-                
-                const percent = Math.max(0, Math.round((timeRemaining / sessionDuration) * 100));
-                timerBar.style.width = `${percent}%`;
-                timerBar.setAttribute('aria-valuenow', String(percent));
-                
-                updateTimer();
-                
-                if (timeRemaining <= 0) {
-                    finishSession();
-                }
-            }, 100);
-            
-            createRound(difficulty, numTargets, showNumbers);
-        }
-        
-        // Finish session function
-        function finishSession() {
-            clearInterval(timerInterval);
-            isSessionActive = false;
-            
-            clearGameElements();
-            statsPanel.classList.add('hidden');
-            
-            const accuracy = totalDrops > 0 ? Math.round(successfulDrops / totalDrops * 100) : 0;
-            const avgDropTime = successfulDrops > 0 ? (totalDropTime / successfulDrops / 1000).toFixed(2) : 0;
-            
-            // Existing session enhancement path
-            sessionEnhancement.handleSessionComplete({
-                score: score,
-                drops: successfulDrops,
-                accuracy: accuracy,
-                avgDropTime: parseFloat(avgDropTime)
-            });
 
-            // Call the standardized endSession helper
-            const difficulty = difficultySelect ? difficultySelect.value : 'easy';
-            window.endSession(score, difficulty);
-            
-            // UI completion panel
-            finalScoreElement.textContent = score;
-            finalDropsElement.textContent = successfulDrops;
-            finalAccuracyElement.textContent = accuracy + '%';
-            finalAvgTimeElement.textContent = avgDropTime + 's';
-            completionMessage.classList.remove('hidden');
-            completionMessage.focus();
-            
-            timerBar.style.width = '0%';
-            timerBar.setAttribute('aria-valuenow', '0');
+        <div id="game-area" aria-label="Play field" tabindex="0"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Completion Modal -->
+  <section id="completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-title" aria-describedby="completion-desc">
+    <div id="completion-card" tabindex="-1">
+      <h2 id="completion-title">🎉 Session complete!</h2>
+      <p id="completion-desc" class="sr-only">Your session results including score, drops, accuracy, average time, stars and XP.</p>
+
+      <div id="stars-row" aria-label="Star rating">
+        <img class="star-icon" id="star-1" alt="Star 1" src="/images/star.svg">
+        <img class="star-icon" id="star-2" alt="Star 2" src="/images/star.svg">
+        <img class="star-icon" id="star-3" alt="Star 3" src="/images/star.svg">
+      </div>
+
+      <div class="scores">
+        <div>Final Score: <span id="final-score" class="score-highlight">0</span></div>
+        <div>Successful Drops: <span id="final-drops" class="score-highlight">0</span></div>
+        <div>Accuracy: <span id="final-accuracy" class="score-highlight">0%</span></div>
+        <div>Avg Time / Drop: <span id="final-avg-time" class="score-highlight">0.0s</span></div>
+        <div>XP earned: <span id="final-xp" class="score-highlight">+0 XP</span></div>
+      </div>
+
+      <div class="controls-row" style="justify-content:center">
+        <button id="close-completion" class="btn primary" type="button">Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress/Achievements wiring -->
+  <script type="module">
+    import { recordSession } from '/js/progress.js';
+    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+
+    const EXERCISE_ID = 'precision-drop';
+
+    // Standard helper – used consistently
+    window.endSession = function(score, difficulty = 'easy') {
+      recordSession(EXERCISE_ID, difficulty, score);
+      try { markExerciseTried(EXERCISE_ID); } catch(e) {}
+
+      try {
+        const unlocked = checkAndUnlockAchievements();
+        // Use global toast if provided; avoid page-local duplicates
+        if (Array.isArray(unlocked) && unlocked.length && typeof window.showAchievementNotification === 'function') {
+          unlocked.forEach(id => window.showAchievementNotification(id));
         }
-        
-        function createRound(difficulty, numTargets, showNumbers) {
-            clearGameElements();
-            
-            const settings = difficulties[difficulty];
-            const gameRect = gameArea.getBoundingClientRect();
-            const positions = [];
-            
-            // Create targets with non-overlapping positions
-            for (let i = 0; i < numTargets; i++) {
-                const target = document.createElement('div');
-                target.classList.add('target');
-                
-                const colorData = colorPalette[i % colorPalette.length];
-                target.style.borderColor = colorData.solid;
-                target.style.background = `radial-gradient(circle at center, ${colorData.solid}22 0%, transparent 60%)`;
-                
-                target.style.width = `${settings.targetSize}px`;
-                target.style.height = `${settings.targetSize}px`;
-                
-                const position = findNonOverlappingPosition(settings.targetSize, positions, gameRect, settings.spacing);
-                positions.push(position);
-                
-                target.style.left = `${position.x}px`;
-                target.style.top = `${position.y}px`;
-                target.dataset.targetId = i;
-                
-                if (showNumbers) {
-                    const numberLabel = document.createElement('div');
-                    numberLabel.style.cssText = `
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        color: ${colorData.solid};
-                        font-size: 20px;
-                        font-weight: bold;
-                    `;
-                    numberLabel.textContent = i + 1;
-                    target.appendChild(numberLabel);
-                }
-                
-                gameArea.appendChild(target);
-                activeTargets.push(target);
-            }
-            
-            // Create draggable objects
-            for (let i = 0; i < numTargets; i++) {
-                const draggable = document.createElement('div');
-                draggable.classList.add('draggable');
-                draggable.style.width = `${settings.objectSize}px`;
-                draggable.style.height = `${settings.objectSize}px`;
-                
-                const colorData = colorPalette[i % colorPalette.length];
-                draggable.style.background = colorData.gradient;
-                draggable.style.boxShadow = `0 4px 15px ${colorData.solid}66`;
-                
-                if (showNumbers) {
-                    draggable.textContent = i + 1;
-                    draggable.style.fontSize = '16px';
-                    draggable.style.color = 'white';
-                    draggable.style.textShadow = '0 1px 3px rgba(0,0,0,0.5)';
-                }
-                
-                let x, y;
-                const edge = Math.floor(Math.random() * 4);
-                const margin = 30;
-                
-                switch(edge) {
-                    case 0:
-                        x = margin;
-                        y = margin + Math.random() * (gameRect.height - settings.objectSize - 2 * margin);
-                        break;
-                    case 1:
-                        x = gameRect.width - settings.objectSize - margin;
-                        y = margin + Math.random() * (gameRect.height - settings.objectSize - 2 * margin);
-                        break;
-                    case 2:
-                        x = margin + Math.random() * (gameRect.width - settings.objectSize - 2 * margin);
-                        y = margin;
-                        break;
-                    case 3:
-                        x = margin + Math.random() * (gameRect.width - settings.objectSize - 2 * margin);
-                        y = gameRect.height - settings.objectSize - margin;
-                        break;
-                }
-                
-                draggable.style.left = `${x}px`;
-                draggable.style.top = `${y}px`;
-                draggable.dataset.objectId = i;
-                draggable.dataset.targetId = i;
-                draggable.dataset.color = colorData.solid;
-                
-                draggable.style.animationDelay = `${Math.random() * 2}s`;
-                
-                addDragListeners(draggable);
-                
-                gameArea.appendChild(draggable);
-                activeDroppables.push(draggable);
-            }
-            
-            statusMessage.textContent = "Drag objects to their matching colored targets";
-            statusMessage.style.color = 'var(--text-primary)';
-            roundStartTime = Date.now();
+      } catch(e) {}
+    };
+  </script>
+
+  <!-- Exercise logic -->
+  <script type="module">
+    import { storage, starfield, initUtils } from '/js/utils.js';
+    import { sessionEnhancement } from '/js/session-enhancement.js';
+
+    initUtils();
+
+    // DOM
+    const difficultySelect = document.getElementById('difficulty-select');
+    const numTargetsSelect = document.getElementById('num-targets');
+    const sessionDurationInput = document.getElementById('session-duration');
+    const showNumbersSelect = document.getElementById('show-numbers');
+
+    const startBtn = document.getElementById('start-button');
+    const pauseBtn = document.getElementById('pause-button');
+    const restartBtn = document.getElementById('restart-button');
+
+    const timerBar = document.getElementById('timer-bar');
+    const scoreEl = document.getElementById('score');
+    const personalBestEl = document.getElementById('personal-best');
+    const hudDifficultyEl = document.getElementById('hud-difficulty');
+
+    const gameArea = document.getElementById('game-area');
+    const gameSurface = document.getElementById('game-surface');
+    const starsContainer = document.getElementById('stars-container');
+
+    const statusMessage = document.getElementById('status-message');
+    const progressDisplay = document.getElementById('progress-display');
+    const roundNumber = document.getElementById('round-number');
+    const totalRounds = document.getElementById('total-rounds');
+
+    const completionModal = document.getElementById('completion-modal');
+    const completionCard = document.getElementById('completion-card');
+    const closeCompletion = document.getElementById('close-completion');
+
+    const finalScoreEl = document.getElementById('final-score');
+    const finalDropsEl = document.getElementById('final-drops');
+    const finalAccuracyEl = document.getElementById('final-accuracy');
+    const finalAvgTimeEl = document.getElementById('final-avg-time');
+    const finalXpEl = document.getElementById('final-xp');
+    const starEls = [document.getElementById('star-1'), document.getElementById('star-2'), document.getElementById('star-3')];
+
+    // Settings & game state
+    let isSessionActive = false;
+    let isPaused = false;
+    let sessionDuration = 2 * 60 * 1000;
+    let timeRemaining = 0;
+    let timerInterval = null;
+
+    let score = 0;
+    let successfulDrops = 0;
+    let totalDrops = 0;
+    let currentRound = 1;
+    let maxRounds = 10;
+
+    let totalDropTime = 0;
+    let roundStartTime = 0;
+
+    let activeDroppables = [];
+    let activeTargets = [];
+    let currentDragging = null;
+    let dragOffsetX = 0, dragOffsetY = 0;
+    let lastTrailTime = 0;
+
+    // Performance caps
+    const CAPS = { particles: 50, trails: 20 };
+
+    // Difficulty
+    const DIFF = {
+      easy: { targetSize: 90, objectSize: 45, points: 100, spacing: 120 },
+      medium: { targetSize: 70, objectSize: 35, points: 200, spacing: 100 },
+      hard: { targetSize: 50, objectSize: 28, points: 300, spacing: 80 }
+    };
+
+    // Colours
+    const palette = [
+      { solid:'#e74c3c', grad:'linear-gradient(135deg,#e74c3c,#c0392b)' },
+      { solid:'#f1c40f', grad:'linear-gradient(135deg,#f1c40f,#f39c12)' },
+      { solid:'#2ecc71', grad:'linear-gradient(135deg,#2ecc71,#27ae60)' },
+      { solid:'#9b59b6', grad:'linear-gradient(135deg,#9b59b6,#8e44ad)' },
+      { solid:'#3498db', grad:'linear-gradient(135deg,#3498db,#2980b9)' },
+      { solid:'#e67e22', grad:'linear-gradient(135deg,#e67e22,#d35400)' },
+      { solid:'#1abc9c', grad:'linear-gradient(135deg,#1abc9c,#16a085)' },
+      { solid:'#34495e', grad:'linear-gradient(135deg,#34495e,#2c3e50)' }
+    ];
+
+    // Starfield: prefer shared util if available
+    if (starfield && typeof starfield.init === 'function') {
+      try { starfield.init(starsContainer); } catch(_) {}
+    } else {
+      // lightweight fallback stars
+      const count = 60;
+      for (let i=0;i<count;i++){
+        const s=document.createElement('div');
+        s.style.cssText=`position:absolute; background:#fff; border-radius:50%; opacity:.25;`;
+        s.style.left = `${Math.random()*100}%`;
+        s.style.top = `${Math.random()*100}%`;
+        const sz = 1 + Math.random()*2.5;
+        s.style.width = `${sz}px`; s.style.height = `${sz}px`;
+        s.style.animation = `twinkle ${3+Math.random()*2}s ease-in-out ${Math.random()*3}s infinite`;
+        starsContainer.appendChild(s);
+      }
+      const tw = document.createElement('style');
+      tw.textContent = `@keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.8;transform:scale(1.2)}}`;
+      document.head.appendChild(tw);
+    }
+
+    // Session Enhancement (confetti/celebrations etc.)
+    sessionEnhancement.initializeExercise('precision-drop', () => difficultySelect.value);
+    difficultySelect.addEventListener('change', () => {
+      sessionEnhancement.initializeExercise('precision-drop', () => difficultySelect.value);
+      hudDifficultyEl.textContent = labelForDifficulty(difficultySelect.value);
+    });
+
+    // Personal Best (HUD)
+    const PB_KEY = 'pb:precision-drop';
+    function getPB(){ try{ return Number(storage.get(PB_KEY) ?? 0); } catch{ return Number(localStorage.getItem(PB_KEY) || 0); } }
+    function setPB(v){ try{ storage.set(PB_KEY, String(v)); } catch{ localStorage.setItem(PB_KEY, String(v)); } }
+    function refreshPB(){ const pb = getPB(); personalBestEl.textContent = pb > 0 ? pb : '—'; }
+    refreshPB();
+
+    // Controls
+    startBtn.addEventListener('click', () => { if(!isSessionActive){ startSession(); } else if(isPaused){ resume(); } });
+    pauseBtn.addEventListener('click', () => { if(isSessionActive){ togglePause(); } });
+    restartBtn.addEventListener('click', () => { stopSession(); startSession(); });
+    closeCompletion.addEventListener('click', () => { completionModal.style.display='none'; });
+
+    // Keyboard access: nudge focused draggable; Enter to attempt drop
+    gameArea.addEventListener('keydown', (e) => {
+      const focusEl = document.activeElement;
+      if(!focusEl?.classList?.contains('draggable')) return;
+      const step = (e.shiftKey ? 10 : 4);
+      const rect = gameArea.getBoundingClientRect();
+      const r = focusEl.getBoundingClientRect();
+      let x = r.left - rect.left, y = r.top - rect.top;
+      let moved = false;
+      if(e.key === 'ArrowLeft'){ x = Math.max(0, x - step); moved=true; }
+      if(e.key === 'ArrowRight'){ x = Math.min(rect.width - r.width, x + step); moved=true; }
+      if(e.key === 'ArrowUp'){ y = Math.max(0, y - step); moved=true; }
+      if(e.key === 'ArrowDown'){ y = Math.min(rect.height - r.height, y + step); moved=true; }
+      if(moved){ focusEl.style.left = `${x}px`; focusEl.style.top = `${y}px`; e.preventDefault(); checkProximity(); }
+      if(e.key === 'Enter'){ e.preventDefault(); // simulate drop attempt
+        currentDragging = focusEl; checkDrop(); currentDragging=null;
+      }
+    });
+
+    // Timer helpers
+    function setTimer(percent){
+      const clamped = Math.max(0, Math.min(100, percent));
+      timerBar.style.width = clamped + '%';
+      timerBar.setAttribute('aria-valuenow', String(clamped));
+    }
+
+    // Core flow
+    function startSession(){
+      // read settings
+      const minutes = Math.max(1, Math.min(10, Number.parseInt(sessionDurationInput.value, 10) || 2));
+      sessionDuration = minutes * 60 * 1000;
+      timeRemaining = sessionDuration;
+      setTimer(100);
+
+      score = 0; successfulDrops = 0; totalDrops = 0; totalDropTime = 0; currentRound = 1;
+      maxRounds = Math.max(1, Math.floor(timeRemaining / 6000));
+      updateHUD();
+
+      isSessionActive = true; isPaused = false;
+      pauseBtn.setAttribute('aria-pressed','false'); pauseBtn.textContent='Pause';
+
+      clearGameElements();
+      createRound();
+      roundStartTime = Date.now();
+
+      // tick
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if(!isPaused){
+          timeRemaining -= 100;
+          const pct = Math.round((timeRemaining / sessionDuration) * 100);
+          setTimer(pct);
+          if (timeRemaining <= 0){ finishSession(); }
         }
-        
-        // Initialize
-        showSettings();
-    </script>
+      }, 100);
+    }
+
+    function togglePause(){
+      if(!isSessionActive) return;
+      isPaused = !isPaused;
+      pauseBtn.setAttribute('aria-pressed', String(isPaused));
+      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+      statusMessage.textContent = isPaused ? 'Paused' : 'Drag the object to the target';
+    }
+
+    function resume(){
+      if(!isSessionActive || !isPaused) return;
+      isPaused = false;
+      pauseBtn.setAttribute('aria-pressed','false');
+      pauseBtn.textContent = 'Pause';
+      statusMessage.textContent = 'Drag the object to the target';
+    }
+
+    function stopSession(){
+      clearInterval(timerInterval); isSessionActive=false; isPaused=false;
+      setTimer(0);
+      clearGameElements();
+    }
+
+    function finishSession(){
+      clearInterval(timerInterval);
+      isSessionActive = false; isPaused = false;
+
+      clearGameElements();
+
+      const accuracy = totalDrops > 0 ? Math.round((successfulDrops / totalDrops) * 100) : 0;
+      const avgDropTime = successfulDrops > 0 ? (totalDropTime / successfulDrops / 1000).toFixed(2) : '0.00';
+
+      // Session enhancement hook
+      sessionEnhancement.handleSessionComplete({
+        score, drops: successfulDrops, accuracy, avgDropTime: Number(avgDropTime)
+      });
+
+      // Standard progress hook
+      const difficulty = difficultySelect ? difficultySelect.value : 'easy';
+      window.endSession(score, difficulty);
+
+      // PB update
+      if (score > getPB()){ setPB(score); refreshPB(); }
+
+      // Stars + XP
+      const stars = computeStars(accuracy);
+      renderStars(stars);
+      const xp = computeXP(score, accuracy, difficulty);
+      finalXpEl.textContent = `+${xp} XP`;
+
+      // Completion UI
+      finalScoreEl.textContent = String(score);
+      finalDropsEl.textContent = String(successfulDrops);
+      finalAccuracyEl.textContent = `${accuracy}%`;
+      finalAvgTimeEl.textContent = `${avgDropTime}s`;
+
+      completionModal.style.display='grid';
+      requestAnimationFrame(() => completionCard.focus());
+
+      setTimer(0);
+    }
+
+    function computeStars(accuracy){
+      if (accuracy >= 90) return 3;
+      if (accuracy >= 70) return 2;
+      return 1;
+    }
+    function renderStars(n){
+      starEls.forEach((el,idx) => el.classList.toggle('filled', idx < n));
+    }
+    function computeXP(score, accuracy, diff){
+      const base = Math.round(score / 10);
+      const accBonus = Math.round(base * (accuracy/100) * 0.2);
+      const diffMult = (diff === 'hard' ? 1.4 : diff === 'medium' ? 1.2 : 1.0);
+      return Math.max(0, Math.round((base + accBonus) * diffMult));
+    }
+
+    function updateHUD(){
+      scoreEl.textContent = String(score);
+      roundNumber.textContent = String(currentRound);
+      totalRounds.textContent = String(maxRounds);
+      hudDifficultyEl.textContent = labelForDifficulty(difficultySelect.value);
+    }
+    function labelForDifficulty(v){ return v === 'hard' ? 'Hard' : v === 'medium' ? 'Medium' : 'Easy'; }
+
+    // Round & objects
+    function clearGameElements(){
+      activeDroppables.forEach(d => d.remove());
+      activeTargets.forEach(t => t.remove());
+      activeDroppables = []; activeTargets = [];
+    }
+
+    function createRound(){
+      clearGameElements();
+
+      const diff = DIFF[difficultySelect.value] || DIFF.easy;
+      const numTargets = parseInt(numTargetsSelect.value, 10) || 1;
+      const showNumbers = showNumbersSelect.value === 'yes';
+
+      const gameRect = gameArea.getBoundingClientRect();
+      const positions = [];
+
+      // Targets
+      for(let i=0;i<numTargets;i++){
+        const t = document.createElement('div');
+        t.className = 'target'; t.dataset.targetId = String(i);
+        const col = palette[i % palette.length];
+        t.style.borderColor = col.solid;
+        t.style.color = col.solid;
+        t.style.width = `${diff.targetSize}px`; t.style.height = `${diff.targetSize}px`;
+
+        const pos = findOpenPos(diff.targetSize, positions, gameRect, diff.spacing);
+        positions.push(pos);
+        t.style.left = `${pos.x}px`; t.style.top = `${pos.y}px`;
+
+        if (showNumbers){
+          const n = document.createElement('div');
+          n.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:800';
+          n.style.color = col.solid; n.textContent = String(i+1);
+          t.appendChild(n);
+        }
+        gameArea.appendChild(t); activeTargets.push(t);
+      }
+
+      // Draggables
+      for(let i=0;i<numTargets;i++){
+        const d = document.createElement('div');
+        d.className = 'draggable';
+        d.dataset.targetId = String(i);
+        const col = palette[i % palette.length];
+        d.style.width = `${diff.objectSize}px`; d.style.height = `${diff.objectSize}px`;
+        d.style.background = col.grad; d.style.boxShadow = `0 4px 15px ${col.solid}66`;
+        d.style.left = '0px'; d.style.top = '0px';
+        d.style.left = `${randomEdgeX(gameRect, diff.objectSize)}px`;
+        d.style.top = `${randomEdgeY(gameRect, diff.objectSize)}px`;
+        d.setAttribute('tabindex','0'); // focusable for keyboard
+
+        if (showNumbers){ d.textContent = String(i+1); }
+
+        addDragListeners(d);
+        gameArea.appendChild(d); activeDroppables.push(d);
+      }
+
+      statusMessage.textContent = 'Drag objects to their matching targets';
+      roundStartTime = Date.now();
+      updateHUD();
+    }
+
+    function randomEdgeX(rect, size){
+      const m=30;
+      const edge = Math.floor(Math.random()*4);
+      if (edge===0) return m;
+      if (edge===1) return rect.width - size - m;
+      return m + Math.random()*(rect.width - size - 2*m);
+    }
+    function randomEdgeY(rect, size){
+      const m=30;
+      const edge = Math.floor(Math.random()*4);
+      if (edge===2) return m;
+      if (edge===3) return rect.height - size - m;
+      return m + Math.random()*(rect.height - size - 2*m);
+    }
+
+    function findOpenPos(size, taken, rect, spacing){
+      const pad = 40; const max=100;
+      for(let a=0;a<max;a++){
+        const x = pad + Math.random()*(rect.width - size - 2*pad);
+        const y = pad + Math.random()*(rect.height - size - 2*pad);
+        let clash=false;
+        for(const p of taken){
+          if (dist(x+size/2,y+size/2,p.x+p.size/2,p.y+p.size/2) < (size/2 + p.size/2 + spacing)){ clash=true; break; }
+        }
+        if(!clash) return {x,y,size};
+      }
+      return { x: pad + Math.random()*(rect.width - size - 2*pad),
+               y: pad + Math.random()*(rect.height - size - 2*pad), size };
+    }
+    function dist(x1,y1,x2,y2){ return Math.hypot(x2-x1,y2-y1); }
+
+    // Drag logic with full touch+mouse parity
+    function addDragListeners(el){
+      el.addEventListener('mousedown', startDrag);
+      el.addEventListener('touchstart', startDrag, { passive:false });
+    }
+    function startDrag(e){
+      if (!isSessionActive || isPaused) return;
+      e.preventDefault();
+      currentDragging = e.currentTarget;
+      currentDragging.classList.add('dragging');
+
+      const r = currentDragging.getBoundingClientRect();
+      const gr = gameArea.getBoundingClientRect();
+      const p = (e.type==='mousedown') ? e : e.touches[0];
+
+      dragOffsetX = p.clientX - r.left;
+      dragOffsetY = p.clientY - r.top;
+
+      document.addEventListener('mousemove', dragMove);
+      document.addEventListener('mouseup', endDrag);
+      document.addEventListener('touchmove', dragMove, { passive:false });
+      document.addEventListener('touchend', endDrag);
+    }
+    function dragMove(e){
+      if(!currentDragging) return;
+      e.preventDefault();
+      const gr = gameArea.getBoundingClientRect();
+      const p = (e.type==='mousemove') ? e : e.touches[0];
+      let nx = p.clientX - gr.left - dragOffsetX;
+      let ny = p.clientY - gr.top - dragOffsetY;
+
+      const rect = currentDragging.getBoundingClientRect();
+      const size = rect.width;
+      nx = Math.max(0, Math.min(nx, gr.width - size));
+      ny = Math.max(0, Math.min(ny, gr.height - size));
+
+      currentDragging.style.left = `${nx}px`;
+      currentDragging.style.top = `${ny}px`;
+
+      // drag trail
+      createDragTrail(nx + size/2, ny + size/2);
+
+      // proximity glow
+      activeTargets.forEach(t => t.classList.remove('active'));
+      const dcx = nx + size/2, dcy = ny + size/2;
+      activeTargets.forEach(t => {
+        const tr = t.getBoundingClientRect();
+        const tcx = tr.left - gr.left + tr.width/2;
+        const tcy = tr.top - gr.top + tr.height/2;
+        if (Math.hypot(dcx - tcx, dcy - tcy) < tr.width/2 + size/2 + 20){
+          t.classList.add('active');
+        }
+      });
+    }
+    function endDrag(e){
+      if(!currentDragging) return;
+      e.preventDefault();
+
+      document.removeEventListener('mousemove', dragMove);
+      document.removeEventListener('mouseup', endDrag);
+      document.removeEventListener('touchmove', dragMove, { passive:false });
+      document.removeEventListener('touchend', endDrag);
+
+      checkDrop();
+
+      activeTargets.forEach(t => t.classList.remove('active'));
+      currentDragging.classList.remove('dragging');
+      currentDragging = null;
+    }
+
+    function createDragTrail(x, y){
+      const now = Date.now();
+      if (now - lastTrailTime < 50) return;
+      lastTrailTime = now;
+
+      const trails = gameArea.querySelectorAll('.drag-trail');
+      if (trails.length > CAPS.trails){
+        for (let i=0;i<Math.min(3,trails.length);i++) trails[i].remove();
+      }
+      const t = document.createElement('div');
+      t.className = 'drag-trail';
+      t.style.left = `${x-4}px`; t.style.top = `${y-4}px`;
+      gameArea.appendChild(t);
+      setTimeout(() => t.remove(), 800);
+    }
+
+    function checkDrop(){
+      if(!currentDragging) return;
+
+      const gr = gameArea.getBoundingClientRect();
+      const dr = currentDragging.getBoundingClientRect();
+      const dCenter = { x: dr.left - gr.left + dr.width/2, y: dr.top - gr.top + dr.height/2 };
+
+      let matched = false;
+      const diff = DIFF[difficultySelect.value] || DIFF.easy;
+
+      activeTargets.forEach(t => {
+        const tr = t.getBoundingClientRect();
+        const tCenter = { x: tr.left - gr.left + tr.width/2, y: tr.top - gr.top + tr.height/2 };
+        const distance = Math.hypot(dCenter.x - tCenter.x, dCenter.y - tCenter.y);
+
+        if (distance < tr.width/3 && t.dataset.targetId === currentDragging.dataset.targetId){
+          matched = true;
+          t.classList.add('success');
+          setTimeout(()=> t.classList.remove('success'), 600);
+
+          const dropTime = Date.now() - roundStartTime;
+          totalDropTime += dropTime;
+
+          const timeBonus = Math.max(0, Math.floor((5000 - dropTime) / 100));
+          const points = diff.points + timeBonus;
+          score += points; successfulDrops++;
+
+          currentDragging.remove();
+          activeDroppables = activeDroppables.filter(d => d !== currentDragging);
+
+          statusMessage.textContent = `Perfect! +${points}`;
+          statusMessage.style.color = 'var(--success)';
+
+          if (activeDroppables.length === 0){
+            currentRound++; updateHUD();
+            if (timeRemaining > 0){ setTimeout(createRound, 900); }
+            else { finishSession(); }
+          }
+        }
+      });
+
+      if (!matched){
+        currentDragging.style.animation = 'shake .28s ease';
+        setTimeout(()=>{ currentDragging && (currentDragging.style.animation = 'float 3s ease-in-out infinite'); }, 300);
+        statusMessage.textContent = 'Try again—match the colours';
+        statusMessage.style.color = 'var(--danger)';
+      }
+
+      totalDrops++; scoreEl.textContent = String(score);
+    }
+
+    // Particle celebration (lightweight)
+    function createParticles(x, y, color){
+      const existing = gameArea.querySelectorAll('.particle');
+      if (existing.length > CAPS.particles){
+        for (let i=0;i<Math.min(5,existing.length);i++) existing[i].remove();
+      }
+      const count = 14;
+      for (let i=0;i<count;i++){
+        const p = document.createElement('div');
+        p.className='particle';
+        p.style.cssText='position:absolute;width:4px;height:4px;border-radius:50%;pointer-events:none;z-index:50;';
+        p.style.left = `${x}px`; p.style.top = `${y}px`; p.style.background = color;
+        const angle = (Math.PI*2*i)/count;
+        const vel = 50 + Math.random()*50, dur = 0.5 + Math.random()*0.5;
+        let start=null;
+        function step(ts){
+          if(!start) start=ts;
+          const t = (ts-start)/(dur*1000);
+          if (t<1){
+            const d = vel*t, op = 1-t;
+            p.style.transform = `translate(${Math.cos(angle)*d}px, ${Math.sin(angle)*d}px) scale(${1 - t*.5})`;
+            p.style.opacity = op;
+            requestAnimationFrame(step);
+          } else { p.remove(); }
+        }
+        gameArea.appendChild(p);
+        requestAnimationFrame(step);
+      }
+    }
+
+    // Utility
+    function labelSafe(text){ return String(text || ''); }
+
+    // Initial HUD label
+    hudDifficultyEl.textContent = labelForDifficulty(difficultySelect.value);
+
+    // Accessibility: focus trap into modal when open
+    completionModal.addEventListener('keydown', (e) => {
+      if (completionModal.style.display !== 'grid') return;
+      if (e.key === 'Escape'){ completionModal.style.display='none'; }
+      if (e.key === 'Tab'){
+        // simple trap to the button
+        e.preventDefault(); closeCompletion.focus();
+      }
+    });
+  </script>
 </body>
 </html>

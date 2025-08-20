@@ -1,1332 +1,804 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-RVKCCWBFKE', { 'anonymize_ip': true });
+  </script>
 
-  gtag('config', 'G-RVKCCWBFKE', { 'anonymize_ip': true });
-</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    
-    <!-- SEO-optimized title -->
-    <title>Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation</title>
-    
-    <!-- Primary meta tags for SEO -->
-    <meta name="description" content="Rhythm Reach helps improve cognitive function and memory through engaging pattern-matching exercises. Perfect for stroke rehabilitation, memory training, and cognitive therapy at home or in clinical settings.">
-    <meta name="author" content="Fine Point Rehab">
-    
-    <!-- Open Graph / Facebook Meta Tags -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://finepointrehab.com/exercises/rhythm-exercise.html">
-    <meta property="og:title" content="Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation">
-    <meta property="og:description" content="Improve cognitive function and memory with this engaging pattern-matching game designed for stroke rehabilitation and cognitive therapy.">
-    <meta property="og:image" content="https://finepointrehab.com/images/rhythm-reach-preview.jpg">
-    
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation">
-    <meta name="twitter:description" content="Improve cognitive function and memory with this engaging pattern-matching game designed for stroke rehabilitation and cognitive therapy.">
-    <meta name="twitter:image" content="https://finepointrehab.com/images/rhythm-reach-preview.jpg">
-    
-    <!-- Additional SEO meta tags -->
-    <meta name="robots" content="index, follow">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0f1a2e">
-    
-    <!-- Canonical URL to prevent duplicate content issues -->
-    <link rel="canonical" href="https://finepointrehab.com/exercises/rhythm-exercise.html">
-    
-    <!-- Updated CSS structure according to roadmap -->
-    <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/base.css">
-    <link rel="stylesheet" href="../css/components.css">
-    
-    <style>
-        /* Exercise-specific styles that remain inline for now */
-        /* These will eventually be moved to a separate exercise component file */
-        
-        body {
-            overflow: hidden;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
-            background: linear-gradient(135deg, #0f1a2e 0%, #1a2744 50%, #0f1a2e 100%);
-            color: white;
-            min-height: 100vh;
-        }
-        
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-        
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        #game-area {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 320px;
-            height: 320px;
-            background: radial-gradient(circle at center, rgba(31, 48, 85, 0.9), rgba(20, 30, 53, 0.95));
-            border: 3px solid rgba(111, 211, 245, 0.5);
-            border-radius: 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 12px;
-            padding: 15px;
-            box-shadow: 
-                0 0 40px rgba(111, 211, 245, 0.3),
-                inset 0 0 20px rgba(111, 211, 245, 0.1);
-            z-index: 10;
-            animation: gameAreaGlow 3s ease-in-out infinite;
-        }
-        
-        @keyframes gameAreaGlow {
-            0%, 100% { box-shadow: 0 0 40px rgba(111, 211, 245, 0.3), inset 0 0 20px rgba(111, 211, 245, 0.1); }
-            50% { box-shadow: 0 0 60px rgba(111, 211, 245, 0.5), inset 0 0 30px rgba(111, 211, 245, 0.2); }
-        }
-        
-        .pad {
-            background: linear-gradient(145deg, #2a3b6a, #1e2a4f);
-            border: 2px solid rgba(111, 211, 245, 0.2);
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.3);
-            overflow: hidden;
-            box-shadow: 
-                0 4px 15px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-        
-        .pad::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: radial-gradient(circle, rgba(111, 211, 245, 0.8), transparent);
-            transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s;
-            border-radius: 50%;
-        }
-        
-        .pad:hover {
-            transform: translateY(-2px);
-            box-shadow: 
-                0 6px 20px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            border-color: rgba(111, 211, 245, 0.4);
-        }
-        
-        .pad:focus {
-            outline: 3px solid rgba(111, 211, 245, 0.9);
-            outline-offset: 2px;
-        }
-        
-        .pad:active {
-            transform: scale(0.95);
-        }
-        
-        .pad.active {
-            animation: padActivate 0.6s ease;
-            background: linear-gradient(145deg, #6fd3f5, #48c9e8);
-            border-color: rgba(111, 211, 245, 0.8);
-            color: rgba(255, 255, 255, 0.9);
-            box-shadow: 
-                0 0 25px rgba(111, 211, 245, 0.8),
-                inset 0 0 15px rgba(255, 255, 255, 0.3);
-        }
-        
-        .pad.active::before {
-            width: 150%;
-            height: 150%;
-        }
-        
-        @keyframes padActivate {
-            0% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.15) rotate(5deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-        
-        .pad.correct {
-            animation: correctPulse 0.5s ease;
-            background: linear-gradient(145deg, #2ecc71, #27ae60);
-            border-color: #2ecc71;
-            color: white;
-        }
-        
-        .pad.correct::after {
-            content: '✓';
-            position: absolute;
-            font-size: 40px;
-            animation: checkmark 0.5s ease;
-        }
-        
-        @keyframes correctPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); box-shadow: 0 0 30px rgba(46, 204, 113, 0.8); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes checkmark {
-            0% { opacity: 0; transform: scale(0) rotate(-180deg); }
-            50% { opacity: 1; transform: scale(1.2) rotate(0deg); }
-            100% { opacity: 0; transform: scale(0.8) rotate(0deg); }
-        }
-        
-        .pad.incorrect {
-            animation: incorrectShake 0.5s ease;
-            background: linear-gradient(145deg, #e74c3c, #c0392b);
-            border-color: #e74c3c;
-        }
-        
-        .pad.incorrect::after {
-            content: '✗';
-            position: absolute;
-            font-size: 40px;
-            animation: crossmark 0.5s ease;
-        }
-        
-        @keyframes incorrectShake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-            20%, 40%, 60%, 80% { transform: translateX(8px); }
-        }
-        
-        @keyframes crossmark {
-            0% { opacity: 0; transform: scale(0); }
-            50% { opacity: 1; transform: scale(1.2); }
-            100% { opacity: 0; transform: scale(0.8); }
-        }
-        
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            transform: scale(0);
-            animation: rippleEffect 0.6s ease-out;
-            pointer-events: none;
-        }
-        
-        @keyframes rippleEffect {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-        
-        #settings-panel {
-            position: fixed;
-            top: 5vh;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(145deg, rgba(15, 26, 46, 0.98), rgba(8, 15, 35, 0.98));
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 
-                0 15px 40px rgba(0,0,0,0.5), 
-                0 0 0 1px rgba(255,255,255,0.1),
-                inset 0 1px 0 rgba(255,255,255,0.1);
-            z-index: 100;
-            width: 85%;
-            max-width: 450px;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid rgba(111, 211, 245, 0.2);
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            animation: slideIn 0.5s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-        
-        #settings-panel h2 {
-            text-align: center;
-            color: white;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 28px;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .game-description {
-            background: linear-gradient(145deg, rgba(111, 211, 245, 0.15), rgba(111, 211, 245, 0.05));
-            padding: 18px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border-left: 4px solid rgba(111, 211, 245, 0.8);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
-        }
-        
-        .game-description h3 {
-            color: rgba(111, 211, 245, 1);
-            margin-top: 0;
-            margin-bottom: 12px;
-            font-size: 18px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-        
-        .game-description p {
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.5;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        #settings-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: linear-gradient(145deg, #6fd3f5, #48c9e8);
-            color: #0f1a2e;
-            border: none;
-            border-radius: 50%;
-            width: 65px;
-            height: 65px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 90;
-            transition: all 0.3s ease;
-            box-shadow: 
-                0 6px 20px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            animation: buttonPulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes buttonPulse {
-            0%, 100% { box-shadow: 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3); }
-            50% { box-shadow: 0 8px 25px rgba(111, 211, 245, 0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
-        }
-        
-        #settings-toggle:hover {
-            background: linear-gradient(145deg, #7dd8f7, #52ccea);
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 
-                0 8px 25px rgba(0,0,0,0.5),
-                inset 0 1px 0 rgba(255,255,255,0.4);
-        }
-        
-        .settings-group {
-            margin-bottom: 20px;
-            animation: fadeInUp 0.5s ease-out;
-            animation-fill-mode: both;
-        }
-        
-        .settings-group:nth-child(1) { animation-delay: 0.1s; }
-        .settings-group:nth-child(2) { animation-delay: 0.2s; }
-        .settings-group:nth-child(3) { animation-delay: 0.3s; }
-        .settings-group:nth-child(4) { animation-delay: 0.4s; }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .settings-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: rgba(111, 211, 245, 1);
-            font-size: 16px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-        
-        .setting-description {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 10px;
-            line-height: 1.4;
-        }
-        
-        select, input {
-            width: 100%;
-            padding: 14px;
-            border-radius: 10px;
-            border: 2px solid rgba(111, 211, 245, 0.3);
-            font-size: 16px;
-            background: linear-gradient(145deg, rgba(20, 30, 53, 0.9), rgba(15, 26, 46, 0.9));
-            color: white;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        select:focus, input:focus {
-            outline: none;
-            border-color: rgba(111, 211, 245, 0.8);
-            box-shadow: 
-                0 0 0 3px rgba(111, 211, 245, 0.2),
-                inset 0 2px 4px rgba(0,0,0,0.2);
-            background: linear-gradient(145deg, rgba(25, 35, 58, 0.9), rgba(20, 30, 53, 0.9));
-        }
-        
-        button {
-            background: linear-gradient(145deg, #6fd3f5, #48c9e8);
-            color: #0f1a2e;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            margin-bottom: 10px;
-            width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: 
-                0 6px 20px rgba(0,0,0,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.3);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        button:hover {
-            background: linear-gradient(145deg, #7dd8f7, #52ccea);
-            transform: translateY(-2px);
-            box-shadow: 
-                0 8px 25px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.4);
-        }
-        
-        button:active {
-            transform: translateY(0);
-            box-shadow: 
-                0 4px 15px rgba(0,0,0,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.3);
-        }
-        
-        #stats-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(8, 15, 35, 0.95), rgba(8, 15, 35, 0.8));
-            padding: 20px;
-            display: flex;
-            justify-content: space-around;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(111, 211, 245, 0.2);
-        }
-        
-        .stat-box {
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-        
-        .stat-box:hover {
-            transform: translateY(-2px);
-        }
-        
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: rgba(111, 211, 245, 1);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            animation: statPulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes statPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-top: 4px;
-        }
-        
-        #timer-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 8px;
-            background: linear-gradient(90deg, #6fd3f5, #48c9e8);
-            width: 100%;
-            z-index: 20;
-            box-shadow: 0 2px 10px rgba(111, 211, 245, 0.5);
-            transition: width 0.1s linear;
-        }
-        
-        #timer-bar::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 20px;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8));
-            animation: timerGlow 1s ease-in-out infinite;
-        }
-        
-        @keyframes timerGlow {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        #completion-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(145deg, rgba(15, 26, 46, 0.98), rgba(8, 15, 35, 0.98));
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 
-                0 20px 50px rgba(0,0,0,0.6), 
-                0 0 0 1px rgba(255,255,255,0.1),
-                inset 0 1px 0 rgba(255,255,255,0.1);
-            text-align: center;
-            max-width: 80%;
-            border: 1px solid rgba(111, 211, 245, 0.3);
-            z-index: 100;
-            animation: completionBounce 0.6s ease-out;
-        }
-        
-        @keyframes completionBounce {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-        
-        #completion-message h2 {
-            color: rgba(111, 211, 245, 1);
-            margin-top: 0;
-            font-size: 32px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            animation: titleGlow 2s ease-in-out infinite;
-        }
-        
-        @keyframes titleGlow {
-            0%, 100% { text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-            50% { text-shadow: 0 2px 20px rgba(111, 211, 245, 0.8); }
-        }
-        
-        #completion-scores {
-            margin: 25px 0;
-            font-size: 18px;
-        }
-        
-        #completion-scores p {
-            margin: 12px 0;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        
-        .score-highlight {
-            color: rgba(111, 211, 245, 1);
-            font-weight: bold;
-            font-size: 24px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        #stars-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-            pointer-events: none;
-        }
-        
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            animation: twinkle 4s ease-in-out infinite;
-        }
-        
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.2); }
-        }
-        
-        .star.shooting {
-            width: 3px;
-            height: 3px;
-            background: linear-gradient(45deg, white, transparent);
-            animation: shootingStar 3s linear infinite;
-        }
-        
-        @keyframes shootingStar {
-            from {
-                transform: translateX(0) translateY(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(-200px) translateY(200px);
-                opacity: 0;
-            }
-        }
-        
-        #status-message {
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 15;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            animation: statusBounce 0.5s ease;
-        }
-        
-        @keyframes statusBounce {
-            0% { transform: translateX(-50%) translateY(-10px); }
-            50% { transform: translateX(-50%) translateY(5px); }
-            100% { transform: translateX(-50%) translateY(0); }
-        }
-        
-        #sequence-display {
-            position: absolute;
-            top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 28px;
-            font-weight: bold;
-            text-align: center;
-            z-index: 15;
-            color: rgba(111, 211, 245, 1);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        #sequence-display span {
-            display: inline-block;
-            animation: numberPop 0.5s ease;
-        }
-        
-        @keyframes numberPop {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-        
-        /* Particle effects */
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(111, 211, 245, 0.8);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particle 1s ease-out forwards;
-        }
-        
-        @keyframes particle {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--x), var(--y)) scale(0);
-                opacity: 0;
-            }
-        }
-        
-        /* Accessibility: Reduced motion support */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation: none !important;
-                transition: none !important;
-            }
-        }
-        
-        /* Enhanced mobile responsiveness */
-        @media (max-width: 768px) {
-            .stat-value {
-                font-size: 22px;
-            }
-            
-            .stat-label {
-                font-size: 12px;
-            }
-            
-            #game-area {
-                width: 290px;
-                height: 290px;
-                gap: 10px;
-                padding: 12px;
-            }
-            
-            .pad {
-                font-size: 22px;
-            }
-            
-            #settings-panel {
-                width: 95%;
-                max-width: 400px;
-                top: 2vh;
-                max-height: 85vh;
-                padding: 20px 20px 140px 20px;
-            }
-            
-            #settings-toggle {
-                width: 55px;
-                height: 55px;
-                font-size: 12px;
-            }
-            
-            button {
-                position: sticky;
-                bottom: 60px;
-                background: linear-gradient(145deg, #6fd3f5, #48c9e8);
-                backdrop-filter: blur(15px);
-                margin-bottom: 0;
-                box-shadow: 
-                    0 -4px 20px rgba(0,0,0,0.3), 
-                    0 4px 6px rgba(0,0,0,0.2),
-                    inset 0 1px 0 rgba(255,255,255,0.3);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                z-index: 50;
-                min-height: 48px;
-            }
-        }
-        
-        @media (max-height: 600px) {
-            #settings-panel {
-                top: 1vh;
-                max-height: 94vh;
-                padding: 15px 15px 120px 15px;
-            }
-            
-            button {
-                position: sticky;
-                bottom: 50px;
-                min-height: 44px;
-            }
-        }
-        
-        @media (max-width: 768px) and (max-height: 900px) {
-            #settings-panel {
-                padding-bottom: 160px !important;
-                max-height: 82vh !important;
-            }
-            
-            button {
-                bottom: 80px !important;
-            }
-        }
-        
-        @media (max-width: 768px) and (orientation: landscape) {
-            #settings-panel {
-                max-height: 75vh;
-                padding-bottom: 100px;
-            }
-            
-            button {
-                bottom: 40px;
-                font-size: 14px;
-                padding: 8px 12px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <title>Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation</title>
+  <meta name="description" content="Rhythm Reach helps improve cognitive function and memory through engaging pattern-matching exercises. Perfect for stroke rehabilitation, memory training, and cognitive therapy at home or in clinical settings.">
+  <meta name="author" content="Fine Point Rehab">
+
+  <!-- Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://finepointrehab.com/exercises/rhythm-exercise.html">
+  <meta property="og:title" content="Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation">
+  <meta property="og:description" content="Improve cognitive function and memory with this engaging pattern-matching game designed for stroke rehabilitation and cognitive therapy.">
+  <meta property="og:image" content="https://finepointrehab.com/images/rhythm-reach-preview.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation">
+  <meta name="twitter:description" content="Improve cognitive function and memory with this engaging pattern-matching game designed for stroke rehabilitation and cognitive therapy.">
+  <meta name="twitter:image" content="https://finepointrehab.com/images/rhythm-reach-preview.jpg">
+
+  <meta name="robots" content="index, follow">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f1a2e">
+  <link rel="canonical" href="https://finepointrehab.com/exercises/rhythm-exercise.html" />
+
+  <!-- Design System -->
+  <link rel="stylesheet" href="/css/tokens.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+
+  <style>
+    /* Page background + layout */
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--color-bg-950, #0f1a2e) 0%, #1a2744 50%, var(--color-bg-950, #0f1a2e) 100%);
+      color: var(--color-text, #fff);
+      overflow: hidden;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Sticky header */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3, 12px);
+      padding: var(--space-3, 12px) var(--space-4, 16px);
+      background: linear-gradient(180deg, rgba(8,15,35,.85), rgba(8,15,35,.60));
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .app-header .home-link {
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .app-header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: .3px;
+    }
+
+    /* Shared two-panel layout */
+    .app-main {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) 1fr;
+      gap: var(--space-4, 16px);
+      padding: var(--space-4, 16px);
+      height: calc(100vh - 56px);
+    }
+    @media (max-width: 900px) {
+      .app-main {
+        grid-template-columns: 1fr;
+        grid-auto-rows: max-content 1fr;
+        height: auto;
+      }
+    }
+
+    /* Left: Settings panel (uses .panel design system) */
+    .settings.panel {
+      max-height: calc(100vh - 96px);
+      overflow: auto;
+    }
+    .settings .settings-group + .settings-group {
+      margin-top: var(--space-4, 16px);
+    }
+    .settings .settings-label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .settings .setting-description {
+      font-size: .9rem;
+      opacity: .85;
+      margin-bottom: 8px;
+    }
+    .settings select,
+    .settings input[type="range"] {
+      width: 100%;
+    }
+
+    /* Right: HUD row + game area */
+    .stage {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: var(--space-4, 16px);
+      height: 100%;
+    }
+
+    /* Shared starfield utility replaces custom stars */
+    .starfield {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* HUD row: timer + stats + controls */
+    .hud.panel {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-3, 12px);
+      align-items: center;
+    }
+    .hud-left {
+      display: grid;
+      gap: var(--space-2, 8px);
+    }
+    .timer-bar {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.12);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .timer-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6fd3f5, #48c9e8);
+      box-shadow: 0 2px 10px rgba(111,211,245,.5);
+      transition: width .1s linear;
+    }
+    .stats-row {
+      display: flex;
+      gap: var(--space-4, 16px);
+      flex-wrap: wrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat {
+      display: grid;
+      gap: 2px;
+      min-width: 90px;
+    }
+    .stat .label {
+      font-size: .8rem;
+      opacity: .8;
+    }
+    .stat .value {
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #6fd3f5;
+    }
+    .hud-right {
+      display: flex;
+      gap: var(--space-2, 8px);
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    /* Game board */
+    .game-wrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+      z-index: 1;
+    }
+    #game-area {
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle at center, rgba(31, 48, 85, 0.9), rgba(20, 30, 53, 0.95));
+      border: 3px solid rgba(111, 211, 245, 0.5);
+      border-radius: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 12px;
+      padding: 15px;
+      box-shadow:
+        0 0 40px rgba(111, 211, 245, 0.3),
+        inset 0 0 20px rgba(111, 211, 245, 0.1);
+      animation: gameAreaGlow 3s ease-in-out infinite;
+    }
+    @keyframes gameAreaGlow {
+      0%,100% { box-shadow: 0 0 40px rgba(111,211,245,.3), inset 0 0 20px rgba(111,211,245,.1); }
+      50%     { box-shadow: 0 0 60px rgba(111,211,245,.5), inset 0 0 30px rgba(111,211,245,.2); }
+    }
+
+    .pad {
+      background: linear-gradient(145deg, #2a3b6a, #1e2a4f);
+      border: 2px solid rgba(111, 211, 245, 0.2);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      position: relative;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      font-weight: 800;
+      color: rgba(255,255,255,.35);
+      overflow: hidden;
+      box-shadow:
+        0 4px 15px rgba(0,0,0,.3),
+        inset 0 1px 0 rgba(255,255,255,.1);
+    }
+    .pad:hover { transform: translateY(-2px); border-color: rgba(111,211,245,.4); }
+    .pad:focus { outline: 3px solid rgba(111,211,245,.9); outline-offset: 2px; }
+    .pad:active { transform: scale(.96); }
+    .pad.active {
+      background: linear-gradient(145deg, #6fd3f5, #48c9e8);
+      border-color: rgba(111, 211, 245, 0.8);
+      color: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 0 25px rgba(111,211,245,.8), inset 0 0 15px rgba(255,255,255,.3);
+    }
+    .pad.correct { background: linear-gradient(145deg, #2ecc71, #27ae60); border-color:#2ecc71; color:#fff; }
+    .pad.incorrect { background: linear-gradient(145deg, #e74c3c, #c0392b); border-color:#e74c3c; color:#fff; }
+
+    /* Context messages */
+    #status-message, #sequence-display {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 2;
+      text-shadow: 0 2px 4px rgba(0,0,0,.3);
+    }
+    #status-message { top: 18%; font-size: 1.25rem; font-weight: 800; opacity: 0; transition: opacity .25s ease; }
+    #sequence-display { top: 8%; font-weight: 800; color: #6fd3f5; }
+
+    /* Completion modal (uses .panel) */
+    .completion.panel {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,.35);
+      z-index: 3;
+    }
+    .completion-card {
+      width: min(560px, 92vw);
+    }
+    .scores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3, 12px);
+      margin-block: var(--space-3, 12px);
+      text-align: center;
+    }
+    .scores .score {
+      padding: var(--space-3, 12px);
+      border-radius: var(--radius-lg, 12px);
+      background: rgba(255,255,255,.06);
+    }
+    .scores .score .label { font-size: .85rem; opacity: .8; }
+    .scores .score .value { font-weight: 900; font-size: 1.4rem; color: #6fd3f5; }
+
+    .xp-line {
+      margin-top: var(--space-2, 8px);
+      font-weight: 600;
+      opacity: .9;
+    }
+
+    .hidden { display:none !important; }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 768px) {
+      #game-area { width: 290px; height: 290px; gap: 10px; padding: 12px; }
+    }
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <!-- Star field background -->
-        <div id="stars-container"></div>
-        
-        <!-- Timer bar -->
-        <div id="timer-bar"></div>
-        
-        <!-- Game area -->
-        <div id="game-area">
-            <div class="pad" data-pad="1">1</div>
-            <div class="pad" data-pad="2">2</div>
-            <div class="pad" data-pad="3">3</div>
-            <div class="pad" data-pad="4">4</div>
-            <div class="pad" data-pad="5">5</div>
-            <div class="pad" data-pad="6">6</div>
-            <div class="pad" data-pad="7">7</div>
-            <div class="pad" data-pad="8">8</div>
-            <div class="pad" data-pad="9">9</div>
+  <!-- Header & Navigation -->
+  <header class="app-header">
+    <a class="home-link btn btn-ghost" href="/" aria-label="Go to home">← Home</a>
+    <h1>Rhythm Reach</h1>
+  </header>
+
+  <!-- Main two-panel layout -->
+  <main class="app-main" role="main">
+    <!-- Left panel: Settings -->
+    <aside class="settings panel" id="settings-panel" aria-labelledby="settings-title">
+      <h2 id="settings-title">Settings</h2>
+
+      <section class="game-description">
+        <h3>How to Play</h3>
+        <p>Watch the sequence of flashing pads, then repeat it by clicking (or pressing 1–9) in the same order. Each level adds one more step.</p>
+        <p>Great for memory, attention, and processing speed.</p>
+      </section>
+
+      <div class="settings-group">
+        <label class="settings-label" for="difficulty">Difficulty</label>
+        <div class="setting-description">Affects sequence speed and input time limit.</div>
+        <select id="difficulty" aria-label="Difficulty">
+          <option value="easy">Easy — Slower pace</option>
+          <option value="medium" selected>Medium — Balanced</option>
+          <option value="hard">Hard — Fast pace</option>
+        </select>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="sequence-speed">Sequence Speed</label>
+        <div class="setting-description">How fast the pattern is shown (1 slow – 10 fast)</div>
+        <input id="sequence-speed" type="range" min="1" max="10" value="5" aria-valuemin="1" aria-valuemax="10" />
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="starting-length">Starting Sequence Length</label>
+        <div class="setting-description">Steps in the first pattern (2–5)</div>
+        <input id="starting-length" type="range" min="2" max="5" value="3" />
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="max-level">Maximum Level</label>
+        <div class="setting-description">Game ends on reaching this level (5–20)</div>
+        <input id="max-level" type="range" min="5" max="20" value="12" />
+      </div>
+
+      <!-- Session Flow controls (unified) -->
+      <div class="settings-group" aria-label="Game controls">
+        <button id="start-btn" class="btn btn-primary" type="button">Start</button>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="pause-btn" class="btn" type="button" aria-pressed="false">Pause</button>
+          <button id="restart-btn" class="btn" type="button">Restart</button>
         </div>
-        
-        <!-- Status message -->
-        <div id="status-message" aria-live="polite"></div>
-        
-        <!-- Sequence display -->
+        <p class="setting-description" style="margin-top:8px;">Shortcuts: <kbd>S</kbd> Start, <kbd>P</kbd> Pause/Resume, <kbd>R</kbd> Restart, <kbd>1–9</kbd> Pads.</p>
+      </div>
+    </aside>
+
+    <!-- Right panel: HUD + game area -->
+    <section class="stage" aria-label="Game stage">
+      <!-- Starfield background (shared utility) -->
+      <div class="starfield" data-starfield></div>
+
+      <!-- HUD Row -->
+      <div class="hud panel" role="region" aria-label="Game heads-up display">
+        <div class="hud-left">
+          <div class="timer-bar" aria-hidden="true"><div id="timer-fill" class="timer-fill"></div></div>
+          <div class="stats-row">
+            <div class="stat" aria-live="polite">
+              <span class="label">Score</span>
+              <span id="score-display" class="value">0</span>
+            </div>
+            <div class="stat" aria-live="polite">
+              <span class="label">Personal Best</span>
+              <span id="pb-display" class="value">0</span>
+            </div>
+            <div class="stat" aria-live="polite">
+              <span class="label">Difficulty</span>
+              <span id="diff-display" class="value">Medium</span>
+            </div>
+          </div>
+        </div>
+        <div class="hud-right">
+          <!-- Mirror controls in HUD as well -->
+          <button id="hud-start" class="btn btn-primary" type="button" aria-label="Start game">Start</button>
+          <button id="hud-pause" class="btn" type="button" aria-label="Pause or resume">Pause</button>
+          <button id="hud-restart" class="btn" type="button" aria-label="Restart game">Restart</button>
+        </div>
+      </div>
+
+      <!-- Game Area -->
+      <div class="game-wrap panel" role="region" aria-label="Game area">
         <div id="sequence-display" aria-live="polite"></div>
-        
-        <!-- Stats panel -->
-        <div id="stats-panel">
-            <div class="stat-box">
-                <div class="stat-value" id="level-display">1</div>
-                <div class="stat-label">Level</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value" id="score-display">0</div>
-                <div class="stat-label">Score</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value" id="streak-display">0</div>
-                <div class="stat-label">Streak</div>
-            </div>
-        </div>
-        
-        <!-- Completion message -->
-        <div id="completion-message" class="hidden">
-            <h2>Great Work!</h2>
-            <div id="completion-scores">
-                <p>Final Score: <span class="score-highlight" id="final-score">0</span></p>
-                <p>Level Reached: <span class="score-highlight" id="final-level">1</span></p>
-                <p>Best Streak: <span class="score-highlight" id="final-streak">0</span></p>
-            </div>
-            <button onclick="restartGame()">Play Again</button>
-        </div>
-    </div>
-    
-    <!-- Settings panel -->
-    <div id="settings-panel" class="hidden">
-        <h2>Rhythm Reach</h2>
-        
-        <div class="game-description">
-            <h3>How to Play</h3>
-            <p>Watch the sequence of flashing pads, then repeat it by clicking them in the same order. Each level adds one more step to remember!</p>
-            <p>Perfect for improving memory, attention, and cognitive processing speed.</p>
-        </div>
-        
-        <div class="settings-group">
-            <label class="settings-label" for="difficulty">Difficulty Level</label>
-            <div class="setting-description">Choose your challenge level - affects sequence speed and timing</div>
-            <select id="difficulty">
-                <option value="easy">Easy - Slower pace, more time</option>
-                <option value="medium" selected>Medium - Balanced challenge</option>
-                <option value="hard">Hard - Fast pace, quick thinking</option>
-            </select>
-        </div>
-        
-        <div class="settings-group">
-            <label class="settings-label" for="sequence-speed">Sequence Speed</label>
-            <div class="setting-description">How fast the pattern is shown (1-10, where 1 is slowest)</div>
-            <input type="range" id="sequence-speed" min="1" max="10" value="5">
-        </div>
-        
-        <div class="settings-group">
-            <label class="settings-label" for="starting-length">Starting Sequence Length</label>
-            <div class="setting-description">Number of steps in the first pattern (2-5)</div>
-            <input type="range" id="starting-length" min="2" max="5" value="3">
-        </div>
-        
-        <div class="settings-group">
-            <label class="settings-label" for="max-level">Maximum Level</label>
-            <div class="setting-description">Game ends when you reach this level (5-20)</div>
-            <input type="range" id="max-level" min="5" max="20" value="12">
-        </div>
-        
-        <button onclick="startGame()">Start Game</button>
-    </div>
-    
-    <!-- Settings toggle button -->
-    <button id="settings-toggle" onclick="toggleSettings()">
-        Settings
-    </button>
-    
-    <!-- Screen reader announcements -->
-    <div id="sr-announcements" class="visually-hidden" aria-live="assertive"></div>
+        <div id="status-message" aria-live="polite"></div>
 
-    <!-- Standardized Achievement & Progress hook (root-relative imports) -->
-    <script type="module">
-      import { recordSession } from '/js/progress.js';
-      import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+        <div id="game-area" role="grid" aria-label="Rhythm grid">
+          <button class="pad" data-pad="1" role="gridcell" aria-label="Pad 1">1</button>
+          <button class="pad" data-pad="2" role="gridcell" aria-label="Pad 2">2</button>
+          <button class="pad" data-pad="3" role="gridcell" aria-label="Pad 3">3</button>
+          <button class="pad" data-pad="4" role="gridcell" aria-label="Pad 4">4</button>
+          <button class="pad" data-pad="5" role="gridcell" aria-label="Pad 5">5</button>
+          <button class="pad" data-pad="6" role="gridcell" aria-label="Pad 6">6</button>
+          <button class="pad" data-pad="7" role="gridcell" aria-label="Pad 7">7</button>
+          <button class="pad" data-pad="8" role="gridcell" aria-label="Pad 8">8</button>
+          <button class="pad" data-pad="9" role="gridcell" aria-label="Pad 9">9</button>
+        </div>
+      </div>
 
-      const EXERCISE_ID = 'rhythm';
+      <!-- Completion Modal -->
+      <div id="completion-overlay" class="completion panel hidden" role="dialog" aria-modal="true" aria-labelledby="completion-title">
+        <div class="panel completion-card">
+          <h2 id="completion-title">Great Work!</h2>
+          <div class="scores" role="group" aria-label="Session results">
+            <div class="score">
+              <div class="label">Final Score</div>
+              <div id="final-score" class="value">0</div>
+            </div>
+            <div class="score">
+              <div class="label">Level Reached</div>
+              <div id="final-level" class="value">1</div>
+            </div>
+            <div class="score">
+              <div class="label">Best Streak</div>
+              <div id="final-streak" class="value">0</div>
+            </div>
+          </div>
+          <p id="xp-line" class="xp-line">+0 XP earned</p>
+          <div id="achievement-banner" class="hidden" aria-live="polite" style="margin-top:8px;"></div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+            <button id="play-again-btn" class="btn btn-primary" type="button">Play Again</button>
+            <button id="close-modal-btn" class="btn" type="button">Close</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-      // Call this when an exercise session ends
-      window.endSession = function(score, difficulty = 'easy') {
-        recordSession(EXERCISE_ID, difficulty, score);
-        // If markExerciseTried expects an id, pass it; if not, remove the argument.
-        try { markExerciseTried(EXERCISE_ID); } catch (e) { /* no-op if signature differs */ }
-        try { checkAndUnlockAchievements(); } catch (e) { /* optional */ }
+  <!-- Screen reader live region -->
+  <div id="sr-announcements" class="visually-hidden" aria-live="assertive"></div>
+
+  <!-- Progress & Achievements (root-relative) -->
+  <script type="module">
+    import { recordSession } from '/js/progress.js';
+    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+
+    const EXERCISE_ID = 'rhythm';
+
+    // Standard endSession hook (global)
+    window.endSession = function(score, difficulty = 'easy') {
+      recordSession(EXERCISE_ID, difficulty, score);
+      try { markExerciseTried(EXERCISE_ID); } catch (e) {}
+      try { checkAndUnlockAchievements(); } catch (e) {}
+    };
+  </script>
+
+  <script>
+    // ---------- Game State ----------
+    let gameState = {
+      sequence: [],
+      userSequence: [],
+      level: 1,
+      score: 0,
+      streak: 0,
+      maxStreak: 0,
+      isShowingSequence: false,
+      isGameActive: false,
+      isPaused: false,
+      settings: {
+        difficulty: 'medium',
+        sequenceSpeed: 5,
+        startingLength: 3,
+        maxLevel: 12
+      }
+    };
+
+    const difficultySettings = {
+      easy:   { baseSpeed: 1000, speedDecrease: 50,  inputTime: 3000, xp: 5  },
+      medium: { baseSpeed:  800, speedDecrease: 75,  inputTime: 2500, xp: 8  },
+      hard:   { baseSpeed:  600, speedDecrease: 100, inputTime: 2000, xp: 12 }
+    };
+
+    // ---------- DOM ----------
+    const pads = document.querySelectorAll('.pad');
+    const diffSelect = document.getElementById('difficulty');
+    const seqSpeed = document.getElementById('sequence-speed');
+    const startLen = document.getElementById('starting-length');
+    const maxLevel = document.getElementById('max-level');
+
+    const scoreDisplay = document.getElementById('score-display');
+    const pbDisplay = document.getElementById('pb-display');
+    const diffDisplay = document.getElementById('diff-display');
+    const statusMessage = document.getElementById('status-message');
+    const sequenceDisplay = document.getElementById('sequence-display');
+
+    const timerFill = document.getElementById('timer-fill');
+
+    const completionOverlay = document.getElementById('completion-overlay');
+    const finalScore = document.getElementById('final-score');
+    const finalLevel = document.getElementById('final-level');
+    const finalStreak = document.getElementById('final-streak');
+    const xpLine = document.getElementById('xp-line');
+    const achievementBanner = document.getElementById('achievement-banner');
+
+    const startBtn = document.getElementById('start-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const hudStart = document.getElementById('hud-start');
+    const hudPause = document.getElementById('hud-pause');
+    const hudRestart = document.getElementById('hud-restart');
+    const playAgainBtn = document.getElementById('play-again-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+
+    // ---------- Personal Best (local fallback) ----------
+    const PB_KEY = 'pb_rhythm_v1';
+    function getPB() {
+      const v = Number(localStorage.getItem(PB_KEY) || 0);
+      return Number.isFinite(v) ? v : 0;
+    }
+    function setPB(v) {
+      const current = getPB();
+      if (v > current) localStorage.setItem(PB_KEY, String(v));
+    }
+    function updatePBHUD() {
+      pbDisplay.textContent = getPB().toLocaleString();
+    }
+
+    // ---------- Init ----------
+    document.addEventListener('DOMContentLoaded', () => {
+      updatePBHUD();
+      loadSettings();
+      attachEvents();
+      updateHUD();
+    });
+
+    function loadSettings() {
+      gameState.settings = {
+        difficulty: diffSelect.value,
+        sequenceSpeed: parseInt(seqSpeed.value, 10),
+        startingLength: parseInt(startLen.value, 10),
+        maxLevel: parseInt(maxLevel.value, 10)
       };
-    </script>
+      diffDisplay.textContent = capitalize(gameState.settings.difficulty);
+    }
 
-    <script>
-        // Game state
-        let gameState = {
-            sequence: [],
-            userSequence: [],
-            level: 1,
-            score: 0,
-            streak: 0,
-            maxStreak: 0,
-            isShowingSequence: false,
-            isGameActive: false,
-            settings: {
-                difficulty: 'medium',
-                sequenceSpeed: 5,
-                startingLength: 3,
-                maxLevel: 12
-            }
-        };
+    function attachEvents() {
+      // Pads: click & touch
+      pads.forEach(pad => {
+        pad.addEventListener('click', handlePadClick);
+        pad.addEventListener('touchstart', (e) => { e.preventDefault(); handlePadClick({ target: pad }); }, { passive: false });
+      });
 
-        // Game settings based on difficulty
-        const difficultySettings = {
-            easy: { baseSpeed: 1000, speedDecrease: 50, inputTime: 3000 },
-            medium: { baseSpeed: 800, speedDecrease: 75, inputTime: 2500 },
-            hard: { baseSpeed: 600, speedDecrease: 100, inputTime: 2000 }
-        };
-
-        // DOM elements
-        const gameArea = document.getElementById('game-area');
-        const pads = document.querySelectorAll('.pad');
-        const settingsPanel = document.getElementById('settings-panel');
-        const completionMessage = document.getElementById('completion-message');
-        const timerBar = document.getElementById('timer-bar');
-        const starsContainer = document.getElementById('stars-container');
-        
-        // Stats displays
-        const levelDisplay = document.getElementById('level-display');
-        const scoreDisplay = document.getElementById('score-display');
-        const streakDisplay = document.getElementById('streak-display');
-        const statusMessage = document.getElementById('status-message');
-        const sequenceDisplay = document.getElementById('sequence-display');
-
-        // Initialize the game
-        function initGame() {
-            createStarField();
-            loadSettings();
-            attachEventListeners();
-            showSettings();
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key >= '1' && e.key <= '9') {
+          const pad = document.querySelector(`[data-pad="${e.key}"]`);
+          if (pad) handlePadClick({ target: pad });
         }
+        if (e.key === 'S' || e.key === 's') startGame();
+        if (e.key === 'P' || e.key === 'p') togglePause();
+        if (e.key === 'R' || e.key === 'r') restartGame();
+      });
 
-        // Create animated star field background
-        function createStarField() {
-            const numStars = 50;
-            for (let i = 0; i < numStars; i++) {
-                createStar();
-            }
-            
-            // Create shooting stars occasionally
-            setInterval(createShootingStar, 3000);
-        }
+      // Controls (settings panel)
+      startBtn.addEventListener('click', startGame);
+      pauseBtn.addEventListener('click', togglePause);
+      restartBtn.addEventListener('click', restartGame);
 
-        function createStar() {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
-            star.style.width = Math.random() * 3 + 1 + 'px';
-            star.style.height = star.style.width;
-            star.style.animationDelay = Math.random() * 4 + 's';
-            starsContainer.appendChild(star);
-        }
+      // Controls (HUD)
+      hudStart.addEventListener('click', startGame);
+      hudPause.addEventListener('click', togglePause);
+      hudRestart.addEventListener('click', restartGame);
 
-        function createShootingStar() {
-            if (Math.random() < 0.3) {
-                const star = document.createElement('div');
-                star.className = 'star shooting';
-                star.style.left = Math.random() * 50 + 50 + '%';
-                star.style.top = Math.random() * 50 + '%';
-                starsContainer.appendChild(star);
-                
-                setTimeout(() => {
-                    if (star.parentNode) {
-                        star.parentNode.removeChild(star);
-                    }
-                }, 3000);
-            }
-        }
+      // Modal
+      playAgainBtn.addEventListener('click', () => { closeCompletion(); startGame(); });
+      closeModalBtn.addEventListener('click', closeCompletion);
 
-        // Load settings from form
-        function loadSettings() {
-            const difficulty = document.getElementById('difficulty').value;
-            const sequenceSpeed = parseInt(document.getElementById('sequence-speed').value);
-            const startingLength = parseInt(document.getElementById('starting-length').value);
-            const maxLevel = parseInt(document.getElementById('max-level').value);
+      // Settings change
+      [diffSelect, seqSpeed, startLen, maxLevel].forEach(el => el.addEventListener('change', () => {
+        loadSettings();
+        updateHUD();
+      }));
+    }
 
-            gameState.settings = {
-                difficulty,
-                sequenceSpeed,
-                startingLength,
-                maxLevel
-            };
-        }
+    // ---------- Game Flow ----------
+    function startGame() {
+      loadSettings();
+      gameState.sequence = [];
+      gameState.userSequence = [];
+      gameState.level = 1;
+      gameState.score = 0;
+      gameState.streak = 0;
+      gameState.maxStreak = 0;
+      gameState.isShowingSequence = false;
+      gameState.isGameActive = true;
+      gameState.isPaused = false;
 
-        // Attach event listeners
-        function attachEventListeners() {
-            pads.forEach(pad => {
-                pad.addEventListener('click', handlePadClick);
-                pad.addEventListener('touchstart', handleTouchStart, { passive: false });
-            });
+      sequenceDisplay.textContent = '';
+      statusMessage.style.opacity = 0;
 
-            // Keyboard support
-            document.addEventListener('keydown', handleKeyPress);
-        }
+      updateHUD();
+      generateSequence();
+      showSequence();
+      setPausedUI(false);
+    }
 
-        function handleTouchStart(e) {
-            e.preventDefault();
-            if (!gameState.isShowingSequence && gameState.isGameActive) {
-                handlePadClick(e);
-            }
-        }
+    function togglePause() {
+      if (!gameState.isGameActive) return;
+      gameState.isPaused = !gameState.isPaused;
+      setPausedUI(gameState.isPaused);
+      if (!gameState.isPaused && !gameState.isShowingSequence) {
+        startInputTimer(); // resume timer
+        showStatus('Your turn! Click the pads…', 'info');
+      } else {
+        showStatus('Paused', 'info');
+      }
+    }
 
-        function handleKeyPress(e) {
-            if (!gameState.isShowingSequence && gameState.isGameActive) {
-                const keyMap = {
-                    '1': '1', '2': '2', '3': '3',
-                    '4': '4', '5': '5', '6': '6',
-                    '7': '7', '8': '8', '9': '9'
-                };
-                
-                if (keyMap[e.key]) {
-                    const pad = document.querySelector(`[data-pad="${keyMap[e.key]}"]`);
-                    if (pad) {
-                        handlePadClick({ target: pad });
-                    }
-                }
-            }
-        }
+    function setPausedUI(paused) {
+      const pressed = String(paused) === 'true';
+      document.getElementById('pause-btn').setAttribute('aria-pressed', paused ? 'true' : 'false');
+      hudPause.setAttribute('aria-pressed', paused ? 'true' : 'false');
+      pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+      hudPause.textContent = paused ? 'Resume' : 'Pause';
+    }
 
-        // Handle pad clicks
-        function handlePadClick(e) {
-            if (gameState.isShowingSequence || !gameState.isGameActive) return;
+    function restartGame() {
+      completionOverlay.classList.add('hidden');
+      startGame();
+    }
 
-            const padNumber = parseInt(e.target.dataset.pad);
-            const expectedNumber = gameState.sequence[gameState.userSequence.length];
+    function endGame() {
+      gameState.isGameActive = false;
+      finalScore.textContent = gameState.score.toLocaleString();
+      finalLevel.textContent = String(gameState.level);
+      finalStreak.textContent = String(gameState.maxStreak);
 
-            // Visual feedback
-            activatePad(e.target);
-            createRippleEffect(e);
+      // XP line (simple estimate per difficulty + level)
+      const xpPerLevel = difficultySettings[gameState.settings.difficulty].xp;
+      const earned = Math.max(1, Math.round(xpPerLevel * (gameState.level * 0.6)));
+      xpLine.textContent = `+${earned} XP earned`;
 
-            // Add to user sequence
-            gameState.userSequence.push(padNumber);
+      // PB update & banner
+      const prevPB = getPB();
+      if (gameState.score > prevPB) {
+        setPB(gameState.score);
+        updatePBHUD();
+        showAchievementBanner(`New Personal Best! ${gameState.score.toLocaleString()} 🎉`);
+      } else {
+        achievementBanner.classList.add('hidden');
+      }
 
-            // Check if correct
-            if (padNumber === expectedNumber) {
-                showFeedback(e.target, 'correct');
-                
-                // Check if sequence is complete
-                if (gameState.userSequence.length === gameState.sequence.length) {
-                    handleCorrectSequence();
-                }
-            } else {
-                showFeedback(e.target, 'incorrect');
-                handleIncorrectInput();
-            }
+      // Completion modal open
+      completionOverlay.classList.remove('hidden');
 
-            updateDisplay();
-        }
+      // Progress & achievements (global)
+      if (window.endSession) {
+        window.endSession(gameState.score, gameState.settings.difficulty);
+      }
+    }
 
-        // Visual feedback for pad interaction
-        function activatePad(pad) {
-            pad.classList.add('active');
+    function closeCompletion() {
+      completionOverlay.classList.add('hidden');
+    }
+
+    // ---------- Sequence Logic ----------
+    function generateSequence() {
+      const length = gameState.settings.startingLength + gameState.level - 1;
+      gameState.sequence = Array.from({ length }, () => Math.floor(Math.random() * 9) + 1);
+    }
+
+    function showSequence() {
+      gameState.isShowingSequence = true;
+      gameState.userSequence = [];
+
+      const diffCfg = difficultySettings[gameState.settings.difficulty];
+      const baseDelay = diffCfg.baseSpeed - (gameState.level * diffCfg.speedDecrease) - ((gameState.settings.sequenceSpeed - 5) * 20);
+      const delay = Math.max(baseDelay, 200);
+
+      showStatus('Watch the sequence…', 'info');
+      sequenceDisplay.innerHTML = gameState.sequence.map(n => `<span style="display:inline-block; margin:0 2px">${n}</span>`).join(' ');
+
+      setTimeout(() => {
+        sequenceDisplay.textContent = '';
+        playSequence(delay);
+      }, 800);
+    }
+
+    function playSequence(delay) {
+      gameState.sequence.forEach((n, i) => {
+        setTimeout(() => {
+          const pad = document.querySelector(`[data-pad="${n}"]`);
+          flashPad(pad);
+
+          if (i === gameState.sequence.length - 1) {
             setTimeout(() => {
-                pad.classList.remove('active');
-            }, 300);
-        }
+              gameState.isShowingSequence = false;
+              showStatus('Your turn! Click the pads…', 'info');
+              startInputTimer();
+            }, delay);
+          }
+        }, i * delay);
+      });
+    }
 
-        function showFeedback(pad, type) {
-            pad.classList.add(type);
-            setTimeout(() => {
-                pad.classList.remove(type);
-            }, 500);
-        }
+    function handlePadClick(e) {
+      const target = e.target;
+      if (!target?.dataset?.pad) return;
+      if (!gameState.isGameActive || gameState.isShowingSequence || gameState.isPaused) return;
 
-        function createRippleEffect(e) {
-            const ripple = document.createElement('span');
-            ripple.classList.add('ripple');
-            
-            const rect = e.target.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-            
-            ripple.style.width = ripple.style.height = size + 'px';
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            
-            e.target.appendChild(ripple);
-            
+      const padNumber = parseInt(target.dataset.pad, 10);
+      const expected = gameState.sequence[gameState.userSequence.length];
+
+      flashPad(target);
+
+      gameState.userSequence.push(padNumber);
+
+      if (padNumber === expected) {
+        target.classList.add('correct');
+        setTimeout(() => target.classList.remove('correct'), 150);
+
+        if (gameState.userSequence.length === gameState.sequence.length) {
+          // Completed level
+          gameState.streak++;
+          gameState.maxStreak = Math.max(gameState.maxStreak, gameState.streak);
+          gameState.score += Math.max(10, Math.round(gameState.level * 10 * (1 + (gameState.streak - 1) * 0.2)));
+
+          updateHUD();
+          if (gameState.level >= gameState.settings.maxLevel) {
+            setTimeout(endGame, 500);
+          } else {
+            showStatus('Nice! Next level…', 'success');
             setTimeout(() => {
-                ripple.remove();
+              gameState.level++;
+              generateSequence();
+              showSequence();
             }, 600);
+          }
         }
+      } else {
+        // Mistake
+        target.classList.add('incorrect');
+        setTimeout(() => target.classList.remove('incorrect'), 220);
+        gameState.streak = 0;
+        updateHUD();
+        showStatus('Oops! Try this level again…', 'error');
+        setTimeout(() => showSequence(), 600);
+      }
+    }
 
-        // Handle correct sequence completion
-        function handleCorrectSequence() {
-            gameState.streak++;
-            gameState.maxStreak = Math.max(gameState.maxStreak, gameState.streak);
-            gameState.score += gameState.level * 10 * gameState.streak;
-            
-            showStatusMessage('Perfect! Moving to next level...', 'success');
-            
-            // Check if game is complete
-            if (gameState.level >= gameState.settings.maxLevel) {
-                setTimeout(() => endGame(), 1500);
-            } else {
-                setTimeout(() => nextLevel(), 1500);
-            }
+    function flashPad(pad) {
+      pad.classList.add('active');
+      setTimeout(() => pad.classList.remove('active'), 220);
+    }
+
+    // ---------- Timer ----------
+    let inputTimerId = null;
+    function startInputTimer() {
+      clearTimeout(inputTimerId);
+      timerFill.style.transition = 'none';
+      timerFill.style.width = '100%';
+
+      const limit = difficultySettings[gameState.settings.difficulty].inputTime;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          timerFill.style.transition = `width ${limit}ms linear`;
+          timerFill.style.width = '0%';
+        });
+      });
+
+      inputTimerId = setTimeout(() => {
+        if (gameState.isGameActive && !gameState.isShowingSequence && gameState.userSequence.length < gameState.sequence.length) {
+          // Time out counts as mistake
+          gameState.streak = 0;
+          updateHUD();
+          showStatus('Time! Try again…', 'error');
+          setTimeout(() => showSequence(), 500);
         }
+      }, limit);
+    }
 
-        // Handle incorrect input
-        function handleIncorrectInput() {
-            gameState.streak = 0;
-            showStatusMessage('Oops! Try this level again...', 'error');
-            
-            setTimeout(() => {
-                resetLevel();
-            }, 1500);
-        }
+    // ---------- HUD / UI ----------
+    function updateHUD() {
+      scoreDisplay.textContent = gameState.score.toLocaleString();
+      diffDisplay.textContent = capitalize(gameState.settings.difficulty);
+    }
 
-        // Progress to next level
-        function nextLevel() {
-            gameState.level++;
-            gameState.userSequence = [];
-            generateSequence();
-            showSequence();
-        }
+    function showStatus(text, _type = 'info') {
+      statusMessage.textContent = text;
+      statusMessage.style.opacity = 1;
+      clearTimeout(showStatus._t);
+      showStatus._t = setTimeout(() => { statusMessage.style.opacity = 0; }, 1800);
+    }
 
-        // Reset current level
-        function resetLevel() {
-            gameState.userSequence = [];
-            showSequence();
-        }
+    function showAchievementBanner(text) {
+      achievementBanner.textContent = text;
+      achievementBanner.classList.remove('hidden');
+      // Global achievement toast is handled centrally; this inline banner is a one-off per completion.
+    }
 
-        // Generate new sequence
-        function generateSequence() {
-            const sequenceLength = gameState.settings.startingLength + gameState.level - 1;
-            gameState.sequence = [];
-            
-            for (let i = 0; i < sequenceLength; i++) {
-                gameState.sequence.push(Math.floor(Math.random() * 9) + 1);
-            }
-        }
-
-        // Show sequence to player
-        function showSequence() {
-            gameState.isShowingSequence = true;
-            gameState.userSequence = [];
-            
-            const difficulty = difficultySettings[gameState.settings.difficulty];
-            const baseDelay = difficulty.baseSpeed - (gameState.level * difficulty.speedDecrease);
-            const delay = Math.max(baseDelay, 200); // Minimum 200ms
-            
-            showStatusMessage('Watch the sequence...', 'info');
-            
-            // Show sequence numbers
-            document.getElementById('sequence-display').innerHTML = gameState.sequence.map(num => 
-                `<span>${num}</span>`
-            ).join(' ');
-            
-            setTimeout(() => {
-                document.getElementById('sequence-display').innerHTML = '';
-                playSequence(delay);
-            }, 1000);
-        }
-
-        function playSequence(delay) {
-            gameState.sequence.forEach((padNumber, index) => {
-                setTimeout(() => {
-                    const pad = document.querySelector(`[data-pad="${padNumber}"]`);
-                    activatePad(pad);
-                    
-                    // Create particles
-                    createParticles(pad);
-                    
-                    if (index === gameState.sequence.length - 1) {
-                        setTimeout(() => {
-                            gameState.isShowingSequence = false;
-                            showStatusMessage('Your turn! Click the pads...', 'info');
-                            startInputTimer();
-                        }, delay);
-                    }
-                }, index * delay);
-            });
-        }
-
-        // Create particle effects
-        function createParticles(element) {
-            const rect = element.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            for (let i = 0; i < 6; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                const angle = (Math.PI * 2 * i) / 6;
-                const distance = 50 + Math.random() * 30;
-                const x = Math.cos(angle) * distance;
-                const y = Math.sin(angle) * distance;
-                
-                particle.style.left = centerX + 'px';
-                particle.style.top = centerY + 'px';
-                particle.style.setProperty('--x', x + 'px');
-                particle.style.setProperty('--y', y + 'px');
-                
-                document.body.appendChild(particle);
-                
-                setTimeout(() => particle.remove(), 1000);
-            }
-        }
-
-        // Input timer
-        function startInputTimer() {
-            const difficulty = difficultySettings[gameState.settings.difficulty];
-            const timeLimit = difficulty.inputTime;
-            
-            timerBar.style.width = '100%';
-            timerBar.style.transition = `width ${timeLimit}ms linear`;
-            
-            setTimeout(() => {
-                timerBar.style.width = '0%';
-            }, 100);
-            
-            setTimeout(() => {
-                if (gameState.userSequence.length < gameState.sequence.length && gameState.isGameActive) {
-                    handleIncorrectInput();
-                }
-            }, timeLimit);
-        }
-
-        // Show status messages
-        function showStatusMessage(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.className = type;
-            statusMessage.style.opacity = '1';
-            
-            setTimeout(() => {
-                statusMessage.style.opacity = '0';
-            }, 2000);
-        }
-
-        // Update display
-        function updateDisplay() {
-            levelDisplay.textContent = gameState.level;
-            scoreDisplay.textContent = gameState.score.toLocaleString();
-            streakDisplay.textContent = gameState.streak;
-        }
-
-        // Start game
-        function startGame() {
-            loadSettings();
-            hideSettings();
-            
-            // Reset game state
-            gameState = {
-                ...gameState,
-                sequence: [],
-                userSequence: [],
-                level: 1,
-                score: 0,
-                streak: 0,
-                maxStreak: 0,
-                isShowingSequence: false,
-                isGameActive: true
-            };
-            
-            updateDisplay();
-            generateSequence();
-            showSequence();
-        }
-
-        // End game
-        function endGame() {
-            gameState.isGameActive = false;
-            
-            // Update completion message
-            document.getElementById('final-score').textContent = gameState.score.toLocaleString();
-            document.getElementById('final-level').textContent = gameState.level;
-            document.getElementById('final-streak').textContent = gameState.maxStreak;
-            
-            completionMessage.classList.remove('hidden');
-            
-            // Call the achievement & progress hook
-            const difficulty = gameState.settings.difficulty;
-            if (window.endSession) {
-                window.endSession(gameState.score, difficulty);
-            }
-        }
-
-        // Restart game
-        function restartGame() {
-            completionMessage.classList.add('hidden');
-            showSettings();
-        }
-
-        // Settings management
-        function showSettings() {
-            settingsPanel.classList.remove('hidden');
-        }
-
-        function hideSettings() {
-            settingsPanel.classList.add('hidden');
-        }
-
-        function toggleSettings() {
-            if (gameState.isGameActive) {
-                return; // Don't allow settings during active game
-            }
-            
-            if (settingsPanel.classList.contains('hidden')) {
-                showSettings();
-            } else {
-                hideSettings();
-            }
-        }
-
-        // Initialize the game when page loads
-        document.addEventListener('DOMContentLoaded', initGame);
-    </script>
+    // ---------- Utils ----------
+    function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+  </script>
 </body>
 </html>
