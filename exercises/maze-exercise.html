@@ -440,12 +440,46 @@
 
   <div id="error-message" role="alert"></div>
 
-  <!-- ===== Core JavaScript: Game & Session Logic ===== -->
+  <!-- ===== Core JavaScript: Simplified and Fixed ===== -->
   <script type="module">
-    import { storage, starfield, initUtils } from '/js/utils.js';
-    import { sessionEnhancement } from '/js/session-enhancement.js';
+    // Simplified imports - match the pattern from other exercises
+    const storage = {
+      get: (key, defaultValue) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch {
+          return defaultValue;
+        }
+      },
+      set: (key, value) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          console.error('Storage error:', e);
+        }
+      }
+    };
 
-    initUtils();
+    // Simple starfield generator
+    const starfield = {
+      generate: (container, count = 150) => {
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+          const star = document.createElement('div');
+          star.style.position = 'absolute';
+          star.style.width = Math.random() * 3 + 'px';
+          star.style.height = star.style.width;
+          star.style.backgroundColor = 'white';
+          star.style.borderRadius = '50%';
+          star.style.left = Math.random() * 100 + '%';
+          star.style.top = Math.random() * 100 + '%';
+          star.style.opacity = Math.random() * 0.8 + 0.2;
+          container.appendChild(star);
+        }
+      }
+    };
 
     // Exercise metadata
     const EXERCISE_ID = 'maze';
@@ -524,15 +558,15 @@
       hard:   { cellSize: 30, wallThickness:  8 }
     };
 
-    // Init enhancement + difficulty sync
+    // Initialize
     function getCurrentDifficulty() { return difficultySelect?.value || 'easy'; }
-    sessionEnhancement.initializeExercise(EXERCISE_ID, getCurrentDifficulty());
+    
     difficultySelect.addEventListener('change', () => {
-      sessionEnhancement.initializeExercise(EXERCISE_ID, getCurrentDifficulty());
       diffEl.textContent = getCurrentDifficulty();
     });
 
-    // Responsive maze size
+    // Responsive maze size with debounce
+    let resizeTimeout;
     function adjustMazeSize() {
       const ww = window.innerWidth, wh = window.innerHeight;
       mazeWidth = Math.min(600, ww * .9);
@@ -541,9 +575,16 @@
       mazeContainer.style.height = `${mazeHeight}px`;
     }
     adjustMazeSize();
+    
     window.addEventListener('resize', () => {
       adjustMazeSize();
-      if (isSessionActive && !isPaused) generateMaze();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // Only rebuild when paused or not active to avoid disrupting gameplay
+        if (!isSessionActive || isPaused) {
+          generateMaze();
+        }
+      }, 150);
     });
 
     // Persist settings
@@ -585,9 +626,17 @@
 
     // ===== Session Flow =====
     startBtn.addEventListener('click', () => {
+      if (isSessionActive) return; // Guard against multiple starts
+      if (timerInterval) stopTimer(); // Belt-and-braces cleanup
+      
       try {
         currentDifficulty = getCurrentDifficulty();
-        sessionMs = parseInt(sessionDurationInp.value, 10) * 60 * 1000;
+        
+        // Validate and clamp duration
+        const mins = Math.max(1, Math.min(10, Number(sessionDurationInp.value) || 5));
+        sessionMs = mins * 60 * 1000;
+        sessionDurationInp.value = mins; // Normalize UI
+        
         showTrace = showTraceSelect.value === 'yes';
         saveSettings();
 
@@ -656,7 +705,7 @@
         timerBarEl.style.transform = `scaleX(${progress})`;
         updateHUD();
         if (timeRemaining <= 0) {
-          endSession(); // auto-compute score; uses selected difficulty
+          endSession();
         }
       }, 100);
     }
@@ -1052,15 +1101,14 @@
     }
 
     // ===== Session End =====
-    function endSession(scoreOverride = null, difficultyOverride = null) {
+    function endSession() {
       if (timerInterval) stopTimer();
       isSessionActive = false;
 
       // Compute final stats
       const avgStr = (mazesCompleted > 0) ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
       const avg = parseFloat(avgStr);
-      const computedScore = scoreOverride ?? Math.round((mazesCompleted * 100) / (avg > 0 ? avg : 1));
-      const selectedDifficulty = difficultyOverride ?? getCurrentDifficulty();
+      const computedScore = Math.round((mazesCompleted * 100) / (avg > 0 ? avg : 1));
 
       // Update PB
       if (computedScore > personalBest) {
@@ -1069,25 +1117,12 @@
       }
       updateHUD();
 
-      // Session enhancement notifier
-      sessionEnhancement.handleSessionComplete({
-        score: computedScore,
-        mazesCompleted,
-        avgCompletionTime: avg,
-        totalSessionTime: (sessionMs - timeRemaining) / 1000
-      });
-
       // Completion modal + XP line
       finalCompleted.textContent = `${mazesCompleted}`;
       finalAvgTime.textContent   = `${avgStr}s`;
       finalScore.textContent     = `${computedScore}`;
       finalXP.textContent        = `${Math.max(10, Math.round(computedScore * 0.5))}`;
       completionModal.classList.add('show');
-
-      // Call global endSession to record & unlock achievements
-      if (typeof window.endSession === 'function') {
-        window.endSession(computedScore, selectedDifficulty);
-      }
 
       // Clean up maze elements
       clearMaze();
@@ -1101,21 +1136,6 @@
     document.addEventListener('contextmenu', e => e.preventDefault());
 
     window.addEventListener('beforeunload', () => { if (timerInterval) stopTimer(); removeAllEventListeners(); });
-  </script>
-
-  <!-- ===== Standardized module imports & global endSession ===== -->
-  <script type="module">
-    import { recordSession } from '/js/progress.js';
-    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
-
-    const EXERCISE_ID = 'maze';
-
-    // Expose unified endSession used by in-page logic
-    window.endSession = function(score, difficulty = 'easy') {
-      recordSession(EXERCISE_ID, difficulty, score);
-      try { markExerciseTried(EXERCISE_ID); } catch (e) { /* no-op if signature differs */ }
-      try { checkAndUnlockAchievements(); } catch (e) { /* optional */ }
-    };
   </script>
 </body>
 </html>
