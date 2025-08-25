@@ -1,7 +1,7 @@
 /**
  * FinePointRehab Achievement System
  * 
- * Complete achievement tracking and unlocking system with proper ES module exports
+ * Unified achievement tracking with shared IDs and condition-based unlocking
  */
 
 import { storage } from './utils.js';
@@ -45,135 +45,171 @@ function saveUnlocked(set) {
 }
 
 // ============================================================================
-// ACHIEVEMENT DEFINITIONS
+// ACHIEVEMENT DEFINITIONS (CURRENT PROJECT COMPATIBLE)
 // ============================================================================
 
 export const ACHIEVEMENTS = {
-  firstSteps:   { id:'firstSteps',   name:'First Steps',   description:'Complete your first session' },
-  consistent:   { id:'consistent',   name:'Consistent',    description:'Achieve a 7-day streak' },
-  dedicated:    { id:'dedicated',    name:'Dedicated',     description:'Complete 50 total sessions' },
-  personalBest: { id:'personalBest', name:'Personal Best', description:'Beat your previous score' },
-  explorer:     { id:'explorer',     name:'Explorer',      description:'Try all available exercises' }
+  // Keep existing IDs that tests expect
+  firstSteps: { 
+    name: 'First Steps', 
+    description: 'Complete your first session',
+    condition: ({ stats }) => stats.totalSessions >= 1
+  },
+  consistent: { 
+    name: 'Consistent', 
+    description: 'Achieve a 7-day streak',
+    condition: ({ stats }) => stats.streak >= 7
+  },
+  dedicated: { 
+    name: 'Dedicated', 
+    description: 'Complete 50 total sessions',
+    condition: ({ stats }) => stats.totalSessions >= 50
+  },
+  personalBest: { 
+    name: 'Personal Best', 
+    description: 'Beat your previous score',
+    condition: ({ stats }) => stats.newPersonalBest === true
+  },
+  explorer: { 
+    name: 'Explorer', 
+    description: 'Try all available exercises',
+    condition: ({ stats }) => stats.triedCount >= stats.totalExercises && stats.totalExercises > 0
+  },
+  
+  // Future unified achievements (can be added later)
+  perfect_5: { 
+    name: 'Precision', 
+    description: 'Get 5 perfect moves in one session',
+    condition: ({ entry }) => (entry?.perfects ?? 0) >= 5
+  },
+  streak_10: { 
+    name: 'On Fire', 
+    description: 'Get 10 consecutive successes',
+    condition: ({ entry }) => (entry?.streak ?? 0) >= 10
+  },
+  hard_clear: { 
+    name: 'Challenge Accepted', 
+    description: 'Score 1000+ on hard difficulty',
+    condition: ({ entry }) => entry?.difficulty === 'hard' && (entry?.score ?? 0) >= 1000
+  }
 };
 
 // ============================================================================
-// MAIN ACHIEVEMENT CHECKING FUNCTION
+// MAIN ACHIEVEMENT CHECKING FUNCTION - CURRENT PROJECT COMPATIBLE
 // ============================================================================
 
-export function checkAndUnlockAchievements() {
-  const unlocked = getUnlockedSet();
+export function checkAndUnlockAchievements(entry, stats) {
   const newly = [];
-
-  // DEBUG: Log what we're working with
-  console.log('=== ACHIEVEMENT DEBUG ===');
-  console.log('EXERCISES:', EXERCISES);
-  console.log('localStorage keys:', Object.keys(localStorage));
   
-  // Calculate total sessions by summing all exercise sessions
-  let totalSessions = 0;
-  
-  // Handle both array and object formats for EXERCISES
-  const exerciseList = Array.isArray(EXERCISES) ? EXERCISES : Object.values(EXERCISES);
-  console.log('Exercise list:', exerciseList);
-
-  // 🔧 FIX: actually iterate and sum sessions (+ per-exercise debug)
-  for (const exercise of exerciseList) {
-    const sessions = storage.getInt(`exercise:${exercise.id}:sessions`, 0);
-    console.log(`sessions for ${exercise.id}:`, sessions);
-    totalSessions += sessions;
+  // Handle legacy call with no parameters (current project expects this)
+  if (entry === undefined && stats === undefined) {
+    stats = calculateStats();
+    entry = {}; // Empty entry for legacy compatibility
+  } else if (stats === undefined) {
+    stats = calculateStats();
   }
   
-  console.log('Total sessions calculated:', totalSessions);
-  console.log('Unlocked set:', [...unlocked]);
+  // Create context object for conditions
+  const ctx = { 
+    entry: entry || {}, 
+    stats 
+  };
   
-  const streak = storage.getInt('streak', 0);
-  console.log('Streak:', streak);
-
-  // First Steps: any session completed
-  if (totalSessions >= 1 && !unlocked.has('firstSteps')) {
-    console.log('Unlocking firstSteps!');
-    unlocked.add('firstSteps'); 
-    newly.push('firstSteps');
-  } else {
-    console.log('firstSteps conditions: totalSessions>=1?', totalSessions >= 1, 'not already unlocked?', !unlocked.has('firstSteps'));
-  }
+  // Cache unlocked set to avoid repeated reads
+  const unlockedSet = getUnlockedSet();
   
-  // Consistent: 7-day streak
-  if (streak >= 7 && !unlocked.has('consistent')) {
-    console.log('Unlocking consistent!');
-    unlocked.add('consistent'); 
-    newly.push('consistent');
-  }
-  
-  // Dedicated: 50 total sessions
-  if (totalSessions >= 50 && !unlocked.has('dedicated')) {
-    console.log('Unlocking dedicated!');
-    unlocked.add('dedicated'); 
-    newly.push('dedicated');
-  } else {
-    console.log('dedicated conditions: totalSessions>=50?', totalSessions >= 50, 'not already unlocked?', !unlocked.has('dedicated'));
-  }
-
-  // Personal best flag (boolean-safe)
-  const personalBestFlag = getBool('newPersonalBest', false);
-  console.log('Personal best flag:', personalBestFlag);
-  if (personalBestFlag && !unlocked.has('personalBest')) {
-    console.log('Unlocking personalBest!');
-    unlocked.add('personalBest'); 
-    newly.push('personalBest');
-    setBool('newPersonalBest', false); // Clear the flag after unlocking
-  }
-
-  // Explorer: all exercises tried (unique count)
-  const triedList = getJSON('tried', []);
-  console.log('Tried list:', triedList);
-  const triedCount = Array.isArray(triedList) ? new Set(triedList).size : 0;
-  const totalExercises = exerciseList.length;
-  console.log(`Explorer check: tried ${triedCount} out of ${totalExercises} exercises`);
-  
-  if (triedCount >= totalExercises && !unlocked.has('explorer')) {
-    console.log('Unlocking explorer!');
-    unlocked.add('explorer'); 
-    newly.push('explorer');
-  } else {
-    console.log('explorer conditions: triedCount>=totalExercises?', triedCount >= totalExercises, 'not already unlocked?', !unlocked.has('explorer'));
-  }
-
-  console.log('Newly unlocked:', newly);
-  console.log('=== END ACHIEVEMENT DEBUG ===');
-
-  // Save unlocked achievements if any new ones
-  if (newly.length) {
-    saveUnlocked(unlocked);
+  for (const [id, achievement] of Object.entries(ACHIEVEMENTS)) {
+    if (unlockedSet.has(id)) continue; // already unlocked
     
-    // Store unlock timestamps
-    newly.forEach(achievementId => {
-      storage.set(`achievement_${achievementId}_date`, new Date().toISOString());
-    });
-    
-    // Show toast notifications if available
-    if (typeof toast !== 'undefined' && toast?.show) {
-      if (newly.length === 1) {
-        const achievement = ACHIEVEMENTS[newly[0]];
-        toast.show(`🎉 Achievement Unlocked: ${achievement.name}!`, {
-          type: 'achievement',
-          duration: 4000
-        });
-      } else {
-        toast.show(`🎉 ${newly.length} achievements unlocked!`, {
-          type: 'achievement',
-          duration: 4000
-        });
+    try {
+      if (achievement.condition(ctx)) {
+        unlockedSet.add(id);
+        newly.push(id);
+        // Store unlock timestamp
+        storage.set(`achievement_${id}_date`, new Date().toISOString());
       }
+    } catch (error) {
+      console.warn(`Error checking achievement ${id}:`, error);
     }
+  }
+  
+  // Save and notify if any new achievements
+  if (newly.length > 0) {
+    saveUnlocked(unlockedSet);
+    showAchievementNotifications(newly);
   }
 
   return newly;
 }
 
 // ============================================================================
-// UTILITY FUNCTIONS
+// STATS CALCULATION (for legacy compatibility)
 // ============================================================================
+
+function calculateStats() {
+  // Use totalSessions from storage directly (as progress.js does)
+  const totalSessions = storage.getInt ? storage.getInt('totalSessions', 0) : 
+                       parseInt(storage.get('totalSessions') || '0', 10);
+  
+  const streak = storage.getInt ? storage.getInt('streak', 0) : 
+                 parseInt(storage.get('streak') || '0', 10);
+  
+  const triedList = getJSON('tried', []);
+  const triedCount = Array.isArray(triedList) ? new Set(triedList).size : 0;
+  
+  // Calculate total exercises
+  let totalExercises = 0;
+  if (EXERCISES) {
+    const exerciseList = Array.isArray(EXERCISES) ? EXERCISES : Object.values(EXERCISES);
+    totalExercises = exerciseList.length;
+  }
+  
+  const newPersonalBest = getBool('newPersonalBest', false);
+  
+  return {
+    totalSessions,
+    streak,
+    triedCount,
+    totalExercises,
+    newPersonalBest
+  };
+}
+
+// ============================================================================
+// NOTIFICATION HELPERS
+// ============================================================================
+
+function showAchievementNotifications(unlockedIds) {
+  // Clear personal best flag after showing
+  if (unlockedIds.includes('personalBest')) {
+    setBool('newPersonalBest', false);
+  }
+  
+  // Show toast notifications if available
+  if (typeof toast !== 'undefined' && toast?.show) {
+    if (unlockedIds.length === 1) {
+      const achievement = ACHIEVEMENTS[unlockedIds[0]];
+      toast.show(`🎉 Achievement Unlocked: ${achievement.name}!`, {
+        type: 'achievement',
+        duration: 4000
+      });
+    } else {
+      toast.show(`🎉 ${unlockedIds.length} achievements unlocked!`, {
+        type: 'achievement',
+        duration: 4000
+      });
+    }
+  }
+}
+
+// ============================================================================
+// LEGACY COMPATIBILITY FUNCTIONS - CURRENT PROJECT COMPATIBLE
+// ============================================================================
+
+export function checkAchievements() {
+  // Legacy function - just calls main function with no parameters
+  return checkAndUnlockAchievements();
+}
 
 export function getAchievements() { 
   return [...getUnlockedSet()]; 
@@ -188,63 +224,58 @@ export function isAchievementUnlocked(id) {
 }
 
 export function getAchievementProgress() {
-  // Calculate total sessions by summing all exercise sessions
-  let totalSessions = 0;
-  const exerciseList = Array.isArray(EXERCISES) ? EXERCISES : Object.values(EXERCISES);
+  const stats = calculateStats();
+  const progress = {};
   
-  for (const exercise of exerciseList) {
-    const sessions = storage.getInt(`exercise:${exercise.id}:sessions`, 0);
-    totalSessions += sessions;
+  // Current project expects these specific achievement IDs
+  const expectedAchievements = ['firstSteps', 'consistent', 'dedicated', 'personalBest', 'explorer'];
+  
+  for (const id of expectedAchievements) {
+    const achievement = ACHIEVEMENTS[id];
+    if (achievement) {
+      let progressValue = 0;
+      let target = 1;
+      
+      try {
+        if (id === 'firstSteps') {
+          progressValue = Math.min(stats.totalSessions, 1);
+          target = 1;
+        } else if (id === 'consistent') {
+          progressValue = stats.streak;
+          target = 7;
+        } else if (id === 'dedicated') {
+          progressValue = stats.totalSessions;
+          target = 50;
+        } else if (id === 'personalBest') {
+          progressValue = stats.newPersonalBest ? 1 : 0;
+          target = 1;
+        } else if (id === 'explorer') {
+          progressValue = stats.triedCount;
+          target = Math.max(stats.totalExercises, 1); // Avoid division by zero
+        }
+      } catch (error) {
+        console.warn(`Error calculating progress for ${id}:`, error);
+      }
+      
+      progress[id] = {
+        unlocked: isAchievementUnlocked(id),
+        progress: progressValue,
+        target: target,
+        description: achievement.description
+      };
+    }
   }
   
-  const streak = storage.getInt('streak', 0);
-  const triedList = getJSON('tried', []);
-  const triedCount = Array.isArray(triedList) ? new Set(triedList).size : 0;
-  const totalExercises = exerciseList.length;
-
-  return {
-    firstSteps: { 
-      unlocked: isAchievementUnlocked('firstSteps'),
-      progress: Math.min(totalSessions, 1),
-      target: 1,
-      description: 'Complete your first session'
-    },
-    consistent: { 
-      unlocked: isAchievementUnlocked('consistent'),
-      progress: streak,
-      target: 7,
-      description: 'Achieve a 7-day streak'
-    },
-    dedicated: { 
-      unlocked: isAchievementUnlocked('dedicated'),
-      progress: totalSessions,
-      target: 50,
-      description: 'Complete 50 total sessions'
-    },
-    personalBest: { 
-      unlocked: isAchievementUnlocked('personalBest'),
-      progress: getBool('newPersonalBest', false) ? 1 : 0,
-      target: 1,
-      description: 'Beat your previous score'
-    },
-    explorer: { 
-      unlocked: isAchievementUnlocked('explorer'),
-      progress: triedCount,
-      target: totalExercises,
-      description: 'Try all available exercises'
-    }
-  };
+  return progress;
 }
 
-// ============================================================================
-// MARK EXERCISE AS TRIED (for Explorer achievement)
-// ============================================================================
-
 export function markExerciseTried(exerciseId) {
-  const tried = getJSON('tried', []);
+  const triedRaw = getJSON('tried', []);
+  const tried = Array.from(new Set(triedRaw)); // Dedupe existing data
+  
   if (!tried.includes(exerciseId)) {
     tried.push(exerciseId);
-    storage.set('tried', JSON.stringify(tried));
+    storage.set('tried', JSON.stringify(tried)); // Store deduped array
   }
 }
 

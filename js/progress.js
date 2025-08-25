@@ -5,6 +5,7 @@
  * - Correct streak logic with consistent date handling
  * - Proper session recording with total session tracking
  * - Fixed export system using exercise registry
+ * - Enhanced session recording with extras for achievement analysis
  * - All updates flow through single functions for consistency
  */
 
@@ -17,10 +18,34 @@ import { EXERCISES } from './exercises.js';
  * @param {string} exerciseId - Exercise identifier
  * @param {string} difficulty - Difficulty level (optional for some tests)
  * @param {number} score - Session score
- * @returns {Object} Result with isNewBest and totalSessions flags
+ * @param {Object} extras - Optional extra metrics for achievements (accuracy, perfects, streak, etc.)
+ * @returns {Object} Result with isNewBest, totalSessions, and sessionEntry
  */
-export function recordSession(exerciseId, difficulty, score) {
-    // Individual exercise tracking
+export function recordSession(exerciseId, difficulty, score, extras = {}) {
+    // Create session entry with timestamp and extras for achievement analysis
+    // FIX: extras first so core fields always win and can't be overwritten
+    const sessionEntry = {
+        ...extras, // Include accuracy, perfects, streak, moves, found, etc.
+        id: exerciseId,
+        difficulty,
+        score,
+        timestamp: Date.now(),
+        date: new Date().toISOString()
+    };
+    
+    // Store individual session entry for achievement system
+    const sessionHistoryKey = `sessions:${exerciseId}`;
+    const existingHistory = JSON.parse(storage.get(sessionHistoryKey) || '[]');
+    existingHistory.push(sessionEntry);
+    
+    // Keep only recent sessions to prevent storage bloat (last 100 sessions per exercise)
+    if (existingHistory.length > 100) {
+        existingHistory.splice(0, existingHistory.length - 100);
+    }
+    
+    storage.set(sessionHistoryKey, JSON.stringify(existingHistory));
+    
+    // Individual exercise tracking (existing aggregated data)
     const sessionKey = `exercise:${exerciseId}:sessions`;
     const bestKey = `exercise:${exerciseId}:best`;
     
@@ -43,11 +68,36 @@ export function recordSession(exerciseId, difficulty, score) {
     // Update streak when recording session (ensures all updates flow through updateStreak)
     updateStreak();
     
-    // Return object with both flags for flexible test assertions
+    // Return object with session entry for achievement checking
     return {
         isNewBest,
-        totalSessions: newTotalSessions
+        totalSessions: newTotalSessions,
+        sessionEntry // Achievement system can use this to check performance-based achievements
     };
+}
+
+/**
+ * Helper function to get day of week from YYYY-MM-DD string consistently
+ * @param {string} ymd - Date string in YYYY-MM-DD format
+ * @returns {number} Day of week (0=Sunday, 1=Monday, ..., 6=Saturday)
+ */
+function dayOfWeekFromYMD(ymd) {
+    const [y, m, d] = ymd.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0..6
+}
+
+/**
+ * Safe JSON parser that won't throw on corrupt data
+ * @param {string} str - JSON string to parse
+ * @param {*} fallback - Fallback value if parsing fails
+ * @returns {*} Parsed object or fallback
+ */
+function safeParse(str, fallback) {
+    try {
+        return JSON.parse(str || 'null');
+    } catch {
+        return fallback;
+    }
 }
 
 /**
@@ -64,36 +114,37 @@ export function updateStreak(currentDateLike = new Date()) {
         // First session ever
         streak = 1;
     } else {
+        // FIX: Don't update if current date is older than last active date (backwards in time)
         const diff = dayDiff(lastYMD, currentYMD);
+        const safeDiff = Number.isFinite(diff) ? diff : 0; // Handle corrupt lastActiveDate
         
-        if (diff === 0) {
+        if (safeDiff < 0) {
+            // Current date is older than last active date - ignore out-of-order updates
+            return streak;
+        }
+        
+        if (safeDiff === 0) {
             // Same day, keep streak as is
-        } else if (diff === 1) {
+        } else if (safeDiff === 1) {
             // Consecutive day
             streak += 1;
-        } else if (diff >= 2 && diff <= 3) {
-            // FIX #2: Monday amnesty covers Fri→Mon (diff=3), Sat→Mon (diff=2), Sun→Mon (diff=1)
-            const currentDate = new Date(currentYMD + 'T00:00:00Z');
-            const lastDate = new Date(lastYMD + 'T00:00:00Z');
+        } else if (safeDiff >= 2 && safeDiff <= 3) {
+            // FIX: Monday amnesty with consistent timezone handling
+            const isCurrentMonday = dayOfWeekFromYMD(currentYMD) === 1;
+            const lastWeekday = dayOfWeekFromYMD(lastYMD);
             
-            if (currentDate.getUTCDay() === 1) { // Monday
-                const lastWeekday = lastDate.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-                if (lastWeekday === 5 || lastWeekday === 6 || lastWeekday === 0) {
-                    // Monday amnesty applies: Fri/Sat/Sun → Mon
-                    streak += 1;
-                } else {
-                    // Missed days -> reset
-                    streak = 1;
-                }
+            if (isCurrentMonday && (lastWeekday === 5 || lastWeekday === 6 || lastWeekday === 0)) {
+                // Monday amnesty applies: Fri/Sat/Sun → Mon
+                streak += 1;
             } else {
-                // Not Monday, missed days -> reset
+                // Missed days -> reset
                 streak = 1;
             }
-        } else if (diff > 3) {
+        } else if (safeDiff > 3) {
             // Multiple missed days -> reset
             streak = 1;
         } else {
-            // Dates out of order -> keep existing or clamp to 1
+            // Edge case: clamp to 1
             streak = Math.max(1, streak);
         }
     }
@@ -110,10 +161,10 @@ export function updateStreak(currentDateLike = new Date()) {
 export function exportData() {
     const exercises = {};
     
-    // FIX #1: Handle EXERCISES as either array or object
+    // FIX: Guard against malformed registry entries and handle both formats
     const exerciseIds = Array.isArray(EXERCISES)
-        ? EXERCISES.map(e => e.id)
-        : Object.keys(EXERCISES);
+        ? EXERCISES.map(e => e && e.id).filter(Boolean)
+        : Object.keys(EXERCISES || {});
     
     exerciseIds.forEach(id => {
         const sessions = storage.getInt(`exercise:${id}:sessions`, 0);
@@ -132,7 +183,7 @@ export function exportData() {
         exercises,
         totalSessions: storage.getInt('totalSessions', 0),
         streak: storage.getInt('streak', 0),
-        achievements: JSON.parse(storage.get('achievements') || '[]'),
+        achievements: safeParse(storage.get('achievements'), []),
         exportDate: new Date().toISOString(),
         version: 1
     };
@@ -149,22 +200,30 @@ export function importData(data) {
             throw new Error('Invalid import data');
         }
         
-        // Import exercises
-        if (data.exercises) {
-            Object.entries(data.exercises).forEach(([exerciseId, exerciseData]) => {
-                if (exerciseData.sessions) {
-                    storage.set(`exercise:${exerciseId}:sessions`, String(exerciseData.sessions));
+        // FIX: Import exercises with proper handling of both numeric and object best values
+        if (data.exercises && typeof data.exercises === 'object') {
+            for (const [exerciseId, exerciseData] of Object.entries(data.exercises)) {
+                // Handle sessions (including 0 values)
+                if ('sessions' in exerciseData) {
+                    storage.set(`exercise:${exerciseId}:sessions`, String(exerciseData.sessions || 0));
                 }
-                if (exerciseData.best && typeof exerciseData.best === 'object') {
-                    // Handle both old format (number) and new format (object)
-                    const bestScore = typeof exerciseData.best === 'number' 
-                        ? exerciseData.best 
-                        : exerciseData.best.easy || 0;
-                    if (bestScore > 0) {
-                        storage.set(`exercise:${exerciseId}:best`, String(bestScore));
+                
+                // Handle best scores (both number and object formats)
+                if ('best' in exerciseData) {
+                    const bestVal = exerciseData.best;
+                    let bestScore = 0;
+                    
+                    if (typeof bestVal === 'number') {
+                        bestScore = bestVal;
+                    } else if (bestVal && typeof bestVal === 'object') {
+                        // Handle legacy object format - prefer max across difficulties
+                        const nums = Object.values(bestVal).filter(v => typeof v === 'number');
+                        bestScore = nums.length ? Math.max(...nums) : 0;
                     }
+                    
+                    storage.set(`exercise:${exerciseId}:best`, String(bestScore));
                 }
-            });
+            }
         }
         
         // FIX #4: Import logic must handle valid zeros
@@ -192,7 +251,7 @@ export function getStats() {
     return {
         totalSessions: storage.getInt('totalSessions', 0),
         streak: storage.getInt('streak', 0),
-        achievements: JSON.parse(storage.get('achievements') || '[]'),
+        achievements: safeParse(storage.get('achievements'), []),
         lastActiveDate: storage.get('lastActiveDate')
     };
 }
@@ -203,28 +262,30 @@ export function getStats() {
  */
 export function resetProgress() {
     try {
-        // FIX #3: Use consistent storage access, avoid direct localStorage
-        const ls = (typeof window !== 'undefined' && window.localStorage)
-            ? window.localStorage
-            : (typeof global !== 'undefined' && global.localStorage ? global.localStorage : null);
-            
-        if (!ls) {
-            return { success: false, message: 'No storage available' };
-        }
-
-        const PREFIX = 'FPR_v1_'; // Match the prefix used by storage wrapper
-        const keysToRemove = [];
+        // FIX: Use storage API instead of raw localStorage for consistency and test compatibility
+        const exerciseIds = Array.isArray(EXERCISES) 
+            ? EXERCISES.map(e => e && e.id).filter(Boolean)
+            : Object.keys(EXERCISES || {});
         
-        // Collect all keys that should be removed
-        for (let i = 0; i < ls.length; i++) {
-            const key = ls.key(i);
-            if (key && key.startsWith(PREFIX)) {
-                keysToRemove.push(key);
-            }
-        }
+        // Reset global counters
+        storage.set('totalSessions', '0');
+        storage.set('streak', '0');
+        storage.set('lastActiveDate', '');
+        storage.set('achievements', '[]');
         
-        // Remove the keys
-        keysToRemove.forEach(k => ls.removeItem(k));
+        // Reset per-exercise data and session history
+        exerciseIds.forEach(id => {
+            storage.set(`exercise:${id}:sessions`, '0');
+            storage.set(`exercise:${id}:best`, '0');
+            storage.set(`sessions:${id}`, '[]');
+        });
+        
+        // Clear personal best flag
+        if (typeof storage.remove === 'function') {
+            storage.remove('newPersonalBest');
+        } else {
+            storage.set('newPersonalBest', '');
+        }
         
         return { success: true, message: 'All progress data has been reset' };
     } catch (error) {
@@ -248,6 +309,56 @@ export function getPersonalBest(exerciseId) {
  */
 export function getSessionCount(exerciseId) {
     return storage.getInt(`exercise:${exerciseId}:sessions`, 0);
+}
+
+/**
+ * Get session history for a specific exercise
+ * @param {string} exerciseId - Exercise identifier  
+ * @param {number} limit - Maximum number of recent sessions to return (default: 10)
+ * @returns {Array} Array of session entries with extras data
+ */
+export function getSessionHistory(exerciseId, limit = 10) {
+    const sessionHistoryKey = `sessions:${exerciseId}`;
+    const history = JSON.parse(storage.get(sessionHistoryKey) || '[]');
+    
+    // Return most recent sessions first
+    return history.slice(-limit).reverse();
+}
+
+/**
+ * Get all recent session entries across all exercises for achievement analysis
+ * @param {number} limit - Maximum number of recent sessions to return (default: 50)
+ * @returns {Array} Array of session entries sorted by timestamp (newest first)
+ */
+export function getAllRecentSessions(limit = 50) {
+    const allSessions = [];
+    
+    // FIX: Use consistent registry access with guards
+    const exerciseIds = Array.isArray(EXERCISES)
+        ? EXERCISES.map(e => e && e.id).filter(Boolean)
+        : Object.keys(EXERCISES || {});
+    
+    exerciseIds.forEach(id => {
+        const sessionHistoryKey = `sessions:${id}`;
+        const history = safeParse(storage.get(sessionHistoryKey), []);
+        if (Array.isArray(history)) {
+            allSessions.push(...history);
+        }
+    });
+    
+    // Sort by timestamp (newest first) and limit
+    return allSessions
+        .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+        .slice(0, limit);
+}
+
+/**
+ * Clear session history for an exercise (useful for testing/reset)
+ * @param {string} exerciseId - Exercise identifier
+ */
+export function clearSessionHistory(exerciseId) {
+    const sessionHistoryKey = `sessions:${exerciseId}`;
+    storage.set(sessionHistoryKey, JSON.stringify([]));
 }
 
 /**
@@ -284,5 +395,8 @@ export default {
     resetProgress,
     getPersonalBest,
     getSessionCount,
-    checkAndClearPersonalBestFlag
+    checkAndClearPersonalBestFlag,
+    getSessionHistory,
+    getAllRecentSessions,
+    clearSessionHistory
 };

@@ -24,6 +24,13 @@
   --brand-teal: #0891b2;
   --brand-gradient: linear-gradient(135deg, var(--brand-blue, #2563eb) 0%, var(--brand-aqua, #48cae4) 100%);
   
+  /* Exercise-specific tokens (for game UI, different from semantic colors below) */
+  --primary-color: #8ab4f8;
+  --accent-color: #7bdff6;
+  --success-color: #2ecc71;
+  --warning-color: #f1c40f;
+  --error-color: #e74c3c;
+  
   /* Semantic Colors */
   --success: #10b981;
   --success-bg: #ecfdf5;
@@ -41,8 +48,14 @@
   /* Interactive States */
   --hover: #f3f4f6;
   --active: #e5e7eb;
-  --focus: var(--brand-blue, #2563eb);
-  --shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.1); /* For box-shadow focus indicators */
+  --focus: #7aa5ff; /* Updated for exercise compatibility */
+  --shadow-focus: 0 0 0 3px rgba(122, 165, 255, 0.2); /* Updated for better visibility */
+  
+  /* Exercise UI Elements (subtle dark overlay on light backgrounds) */
+  --panel-bg: rgba(0,0,0,0.03);
+  --panel-border: rgba(0,0,0,0.08);
+  --hud-bg: rgba(0,0,0,0.03);
+  --hud-border: rgba(0,0,0,0.08);
   
   /* Borders & Dividers */
   --border: #e5e7eb;
@@ -105,8 +118,8 @@
   --radius: var(--radius-md); /* Alias for most common usage */
   
   /* Touch Targets (44px minimum for accessibility) */
-  --touch-target: 2.75rem; /* 44px */
-  --touch-target-sm: 2.5rem; /* 40px for less critical targets */
+  --touch-target: 44px; /* Updated to match F2 requirements */
+  --touch-target-sm: 2.5rem; /* 40px - below 44px guideline, use sparingly */
   
   /* Z-Index Scale */
   --z-dropdown: 1000;
@@ -121,7 +134,8 @@
   --easing: cubic-bezier(0.4, 0, 0.2, 1);
   --easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   
-  /* Layout Breakpoints (px units for precise media query control) */
+  /* Layout Breakpoints (px units for precise media query control) 
+     Note: CSS custom properties cannot be used directly in @media queries */
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
@@ -131,6 +145,7 @@
 /* =============================================================================
    AUTO DARK MODE (System Preference)
    Automatically switches to dark theme based on user's system preference
+   NOTE: Keep in sync with [data-theme="dark"] below to prevent drift
    ============================================================================= */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
@@ -147,6 +162,13 @@
     --brand-teal: #06b6d4;
     --brand-gradient: linear-gradient(135deg, var(--brand-blue, #3b82f6) 0%, var(--brand-aqua, #48cae4) 100%);
     
+    /* Exercise-specific tokens for dark mode */
+    --primary-color: #8ab4f8;
+    --accent-color: #7bdff6;
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --error-color: #e74c3c;
+    
     --success: #34d399;
     --warning: #fbbf24;
     --error: #f87171;
@@ -154,8 +176,14 @@
     
     --hover: #475569;
     --active: #64748b;
-    --focus: var(--brand-aqua, #48cae4);
-    --shadow-focus: 0 0 0 3px rgba(72, 202, 228, 0.2);
+    --focus: #7aa5ff;
+    --shadow-focus: 0 0 0 3px rgba(122, 165, 255, 0.2);
+    
+    /* Exercise UI Elements for dark mode */
+    --panel-bg: rgba(255,255,255,0.06);
+    --panel-border: rgba(255,255,255,0.08);
+    --hud-bg: rgba(255,255,255,0.06);
+    --hud-border: rgba(255,255,255,0.08);
     
     --border: #475569;
     --border-light: #334155;
@@ -187,6 +215,13 @@
   --brand-teal: #06b6d4;
   --brand-gradient: linear-gradient(135deg, var(--brand-blue, #3b82f6) 0%, var(--brand-aqua, #48cae4) 100%);
   
+  /* Exercise-specific tokens for dark theme */
+  --primary-color: #8ab4f8;
+  --accent-color: #7bdff6;
+  --success-color: #2ecc71;
+  --warning-color: #f1c40f;
+  --error-color: #e74c3c;
+  
   /* Semantic Colors (adjusted for dark theme) */
   --success: #34d399;
   --success-bg: #064e3b;
@@ -204,8 +239,14 @@
   /* Interactive States */
   --hover: #475569;
   --active: #64748b;
-  --focus: var(--brand-aqua, #48cae4);
-  --shadow-focus: 0 0 0 3px rgba(72, 202, 228, 0.2);
+  --focus: #7aa5ff;
+  --shadow-focus: 0 0 0 3px rgba(122, 165, 255, 0.2);
+  
+  /* Exercise UI Elements for dark theme */
+  --panel-bg: rgba(255,255,255,0.06);
+  --panel-border: rgba(255,255,255,0.08);
+  --hud-bg: rgba(255,255,255,0.06);
+  --hud-border: rgba(255,255,255,0.08);
   
   /* Borders & Dividers */
   --border: #475569;
@@ -238,6 +279,13 @@
   --brand-teal: #0f766e;
   --brand-gradient: linear-gradient(135deg, var(--brand-blue, #1d4ed8) 0%, var(--brand-aqua, #0891b2) 100%);
   
+  /* Exercise-specific tokens for high contrast */
+  --primary-color: #1d4ed8;
+  --accent-color: #0891b2;
+  --success-color: #166534;
+  --warning-color: #b45309;
+  --error-color: #b91c1c;
+  
   /* Semantic Colors (high contrast) */
   --success: #166534;
   --success-bg: #f0fdf4;
@@ -255,13 +303,19 @@
   /* Interactive States */
   --hover: #f3f4f6;
   --active: #e5e7eb;
-  --focus: var(--brand-blue, #1d4ed8);
+  --focus: #1d4ed8;
   --shadow-focus: 0 0 0 3px rgba(29, 78, 216, 0.3);
   
-  /* Borders & Dividers (stronger for visibility) */
+  /* Exercise UI Elements for high contrast */
+  --panel-bg: rgba(0,0,0,0.05);
+  --panel-border: #000000;
+  --hud-bg: rgba(0,0,0,0.05);
+  --hud-border: #000000;
+  
+  /* Borders & Dividers (maximum contrast) */
   --border: #000000;
   --border-light: #6b7280;
-  --border-strong: #000000;
+  --border-strong: #000000; /* Same as border for maximum contrast */
   
   /* Shadows (crisp edges for high contrast) */
   --shadow-sm: 0 1px 1px 0 rgb(0 0 0 / 1);
@@ -297,6 +351,12 @@
     --text-secondary: #000000;
     --brand-blue: #000000;
     --brand-aqua: #000000;
+    --brand-gradient: none; /* Remove gradient for clean print */
+    --primary-color: #000000;
+    --accent-color: #000000;
+    --success-color: #000000;
+    --warning-color: #000000;
+    --error-color: #000000;
     --shadow-sm: none;
     --shadow: none;
     --shadow-md: none;

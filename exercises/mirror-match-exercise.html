@@ -5,129 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mirror Match — FinePointRehab</title>
 
+  <!-- Base href for consistent imports -->
+  <base href="/">
+
   <!-- Root-relative CSS per standard -->
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
 
   <style>
-    /* Background & Theme */
-    body {
-      /* dark gradient + shared starfield utility container lives below */
-      background: radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,0.05), transparent 60%),
-                  linear-gradient(180deg, #0e1020, #060710);
-      min-height: 100dvh;
-      color: var(--text-color, #e7e9ee);
-      font-family: var(--font-sans, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial);
-    }
-
-    /* Sticky Header with Home + <h1> */
-    .page-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(6px);
-      background: rgba(12, 14, 28, 0.65);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      padding: var(--space-3, 12px) var(--space-4, 16px);
-    }
-    .page-header .row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3, 12px);
-    }
-    .page-header h1 {
-      font-size: clamp(1.1rem, 1.6vw, 1.5rem);
-      margin: 0;
-      flex: 1;
-    }
-    .timer-bar-container {
-      width: 100%;
-      height: 8px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: var(--space-3, 12px);
-    }
-    .timer-bar {
-      height: 100%;
-      border-radius: 4px;
-      background: linear-gradient(90deg, var(--success-color, #2ecc71), var(--warning-color, #f1c40f), var(--error-color, #e74c3c));
-      transition: width 0.1s linear;
-      width: 100%;
-    }
-
-    /* Shared Layout: two panels */
-    .wrap {
-      display: grid;
-      grid-template-columns: minmax(260px, 360px) 1fr;
-      gap: var(--space-4, 16px);
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: var(--space-5, 20px);
-    }
-
-    /* Panels from components.css; add a bit of spacing */
-    .panel h2 {
-      margin-top: 0;
-    }
-    .settings-group {
-      display: grid;
-      gap: 6px;
-      margin-bottom: var(--space-4, 16px);
-    }
-    .settings-label {
-      font-weight: 600;
-    }
-    .setting-description {
-      font-size: 0.9rem;
-      opacity: 0.8;
-    }
-    #session-controls {
-      display: flex;
-      gap: var(--space-2, 8px);
-      margin-top: var(--space-3, 12px);
-    }
-
-    /* HUD (right column, above game area) */
-    .hud {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: var(--space-3, 12px);
-    }
-    .stat-box {
-      text-align: center;
-      padding: var(--space-3, 12px);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .stat-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-    .stat-label {
-      font-size: 0.85rem;
-      opacity: 0.85;
-      margin-top: 4px;
-    }
-
-    /* Game area */
-    .game-slab {
-      margin-top: var(--space-4, 16px);
-      padding: var(--space-4, 16px);
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
+    /* Mirror Match Specific Styles */
     .mirror-container {
       width: 100%;
       max-width: 900px;
       margin: 0 auto;
       position: relative;
     }
+    
     .mirror-area {
       display: flex;
       border: 2px solid var(--primary-color, #8ab4f8);
@@ -136,13 +30,21 @@
       position: relative;
       margin: 20px 0;
       overflow: hidden;
+      min-height: 420px;
     }
+    
+    .mirror-area.is-paused {
+      filter: grayscale(0.35) brightness(0.9);
+      pointer-events: none;
+    }
+    
     .mirror-side {
       flex: 1;
       position: relative;
       min-height: 420px;
       overflow: hidden;
     }
+    
     .mirror-side.left {
       border-right: 1px solid rgba(255,255,255,0.08);
     }
@@ -157,26 +59,35 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
       z-index: 10;
       outline: none;
+      touch-action: manipulation;
+      min-width: 44px;
+      min-height: 44px;
     }
+    
     .mirror-target:focus-visible {
       box-shadow: 0 0 0 4px rgba(138, 180, 248, 0.6);
     }
-    .mirror-target.pulse { animation: pulse 1.5s infinite; }
+    
+    .mirror-target.pulse { 
+      animation: pulse 1.5s infinite; 
+    }
+    
     .mirror-target.touched {
       background: var(--success-color, #2ecc71);
       transform: translate(-50%, -50%) scale(1.08);
     }
+    
     .mirror-target.completed {
       background: var(--success-color, #2ecc71);
       transform: translate(-50%, -50%) scale(0.9);
       opacity: 0.85;
     }
+    
     .mirror-target.failed {
       background: var(--error-color, #e74c3c);
       animation: shake 0.5s ease-in-out;
     }
 
-    /* “Perfect sync” glow effect */
     .perfect-glow {
       box-shadow:
         0 0 0 10px rgba(123, 223, 246, 0.10),
@@ -191,6 +102,7 @@
       stroke-dasharray: 6, 6;
       opacity: 0.65;
     }
+    
     .mirror-path.completed {
       stroke: var(--success-color, #2ecc71);
       stroke-dasharray: none;
@@ -208,9 +120,12 @@
       pointer-events: none;
       z-index: 1000;
     }
-    .touch-indicator.active { transform: translate(-50%, -50%) scale(1); }
+    
+    .touch-indicator.active { 
+      transform: translate(-50%, -50%) scale(1); 
+    }
 
-    .progress-display, .instructions {
+    .progress-display {
       text-align: center;
       margin: 15px 0;
       padding: 12px 14px;
@@ -220,28 +135,11 @@
       font-size: 1.05rem;
     }
 
-    .feedback-message {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 700;
-      z-index: 100;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    .feedback-message.success { background: var(--success-color, #2ecc71); color: #fff; }
-    .feedback-message.error   { background: var(--error-color,   #e74c3c); color: #fff; }
-
-    .completion-panel h2 { margin-top: 0; }
-    .score-highlight { font-weight: 800; }
-
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
       50%      { opacity: 0.75; transform: translate(-50%, -50%) scale(1.12); }
     }
+    
     @keyframes shake {
       0%,100% { transform: translate(-50%, -50%) translateX(0); }
       25%     { transform: translate(-50%, -50%) translateX(-6px); }
@@ -252,17 +150,21 @@
       .mirror-target.pulse, .mirror-target.failed { animation: none; }
     }
 
-    .hidden { display: none !important; }
+    @media (max-width: 900px) {
+      .mirror-side {
+        min-height: 320px;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Stars background utility -->
   <div id="stars-container" class="stars-background" aria-hidden="true"></div>
 
-  <!-- Header & Navigation -->
+  <!-- Header -->
   <header class="page-header">
     <div class="row">
-      <a href="/" class="btn btn-secondary" aria-label="Return to main menu">← Home</a>
+      <a href="/" class="btn btn-secondary">← Home</a>
       <h1>Mirror Match</h1>
     </div>
     <div class="timer-bar-container" aria-hidden="true">
@@ -270,16 +172,15 @@
     </div>
   </header>
 
-  <!-- Shared Layout: Left = Settings panel, Right = HUD + Game -->
-  <main class="wrap" id="main" tabindex="-1">
-    <!-- Left panel: settings -->
-    <section id="settings-panel" class="panel" aria-labelledby="settings-heading">
-      <h2 id="settings-heading">Therapy Settings</h2>
+  <main class="app-wrap">
+    <!-- Settings -->
+    <section id="settings-panel" class="panel">
+      <h2>Settings</h2>
 
       <div class="settings-group">
-        <label for="difficulty-select" class="settings-label">Difficulty</label>
+        <label for="difficulty" class="settings-label">Difficulty</label>
         <div class="setting-description">Pattern complexity & timing window</div>
-        <select id="difficulty-select">
+        <select id="difficulty">
           <option value="easy">Easy — simple patterns, relaxed timing</option>
           <option value="medium" selected>Medium — moderate complexity</option>
           <option value="hard">Hard — complex patterns, precise timing</option>
@@ -287,9 +188,9 @@
       </div>
 
       <div class="settings-group">
-        <label for="target-size-select" class="settings-label">Target Size</label>
+        <label for="target-size" class="settings-label">Target Size</label>
         <div class="setting-description">Touch target diameter</div>
-        <select id="target-size-select">
+        <select id="target-size">
           <option value="large">Large — easier targeting</option>
           <option value="medium" selected>Medium — standard</option>
           <option value="small">Small — precision</option>
@@ -297,164 +198,157 @@
       </div>
 
       <div class="settings-group">
-        <label for="mirror-mode-select" class="settings-label">Mirror Mode</label>
+        <label for="mirror-mode" class="settings-label">Mirror Mode</label>
         <div class="setting-description">Simultaneous vs sequential touches</div>
-        <select id="mirror-mode-select">
+        <select id="mirror-mode">
           <option value="simultaneous" selected>Simultaneous — touch both at once</option>
           <option value="sequential">Sequential — one after another</option>
         </select>
       </div>
 
       <div class="settings-group">
-        <label for="adaptive-timing-select" class="settings-label">Adaptive Timing</label>
+        <label for="adaptive-timing" class="settings-label">Adaptive Timing</label>
         <div class="setting-description">Auto adjusts sync window by performance</div>
-        <select id="adaptive-timing-select">
+        <select id="adaptive-timing">
           <option value="on" selected>On — adapts to skill</option>
           <option value="off">Off — fixed window</option>
         </select>
       </div>
 
-      <div class="settings-group">
-        <label for="session-duration-input" class="settings-label">Session Duration (minutes)</label>
-        <div class="setting-description">1–10 minutes</div>
-        <input type="number" id="session-duration-input" min="1" max="10" value="3" />
-      </div>
+      <label for="duration">Session Duration (minutes)</label>
+      <input id="duration" type="number" min="1" max="10" value="3" />
 
-      <!-- Unified session controls -->
-      <div id="session-controls" role="group" aria-label="Session controls">
-        <button id="start-session-button" class="btn btn-primary">Start</button>
-        <button id="pause-session-button" class="btn">Pause</button>
-        <button id="restart-session-button" class="btn btn-secondary">Restart</button>
+      <div role="group" aria-label="Session controls">
+        <button id="start" class="btn btn-primary">Start</button>
+        <button id="pause" class="btn">Pause</button>
+        <button id="restart" class="btn btn-secondary">Restart</button>
       </div>
     </section>
 
-    <!-- Right panel: HUD + Game -->
-    <section aria-labelledby="hud-heading">
-      <h2 id="hud-heading" class="sr-only">Session HUD</h2>
-
-      <div id="stats-panel" class="hud panel">
-        <div class="stat-box">
-          <div id="score" class="stat-value">0</div>
-          <div class="stat-label">Score</div>
-        </div>
-        <div class="stat-box">
-          <div id="personal-best" class="stat-value">—</div>
-          <div class="stat-label">Personal Best</div>
-        </div>
-        <div class="stat-box">
-          <div id="sync-rate" class="stat-value">0%</div>
-          <div class="stat-label">Success Rate</div>
-        </div>
-        <div class="stat-box">
-          <div id="time-left" class="stat-value">3:00</div>
-          <div class="stat-label">Time Left</div>
-        </div>
-        <div class="stat-box">
-          <div id="difficulty-badge" class="stat-value">Medium</div>
-          <div class="stat-label">Difficulty</div>
-        </div>
+    <!-- HUD + Game -->
+    <section class="game-container">
+      <!-- Pause overlay outside of paused area -->
+      <div id="pause-overlay" class="pause-overlay hidden" aria-live="polite">
+        <div>Game Paused</div>
       </div>
 
-      <div class="game-slab panel">
+      <div class="hud panel">
+        <div class="stat-box"><div id="score" class="stat-value">0</div><div class="stat-label">Score</div></div>
+        <div class="stat-box"><div id="pb" class="stat-value">—</div><div class="stat-label">Personal Best</div></div>
+        <div class="stat-box"><div id="time-left" class="stat-value">3:00</div><div class="stat-label">Time Left</div></div>
+        <div class="stat-box"><div id="diff" class="stat-value">Medium</div><div class="stat-label">Difficulty</div></div>
+        <div class="stat-box"><div id="sync-rate" class="stat-value">0%</div><div class="stat-label">Success Rate</div></div>
+        <div class="stat-box"><div id="streak" class="stat-value">0</div><div class="stat-label">Streak</div></div>
+      </div>
+
+      <div class="panel">
         <div id="progress-display" class="progress-display hidden" aria-live="polite">
           Pattern <span id="current-pattern">1</span> of <span id="total-patterns">10</span>
         </div>
 
-        <div id="instructions" class="instructions hidden">
-          Touch both circles simultaneously to complete the pattern
-        </div>
+        <p id="instructions" class="instructions" aria-live="polite" aria-atomic="true">
+          Touch both circles simultaneously to complete each target pair.
+        </p>
 
-        <div id="feedback-message" class="feedback-message hidden" role="status" aria-live="polite"></div>
+        <div id="feedback" class="feedback-message hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
-        <div id="game-container" class="mirror-container">
-          <div id="mirror-area" class="mirror-area hidden" aria-label="Mirror touch area">
-            <div class="mirror-side left" id="left-side" aria-label="Left side"></div>
-            <div class="mirror-side right" id="right-side" aria-label="Right side"></div>
+        <div id="game-area" class="game-area" aria-label="Game area" tabindex="0">
+          <!-- Mark interactive elements for selective pause -->
+          <div data-interactive>
+            <div class="mirror-container">
+              <div id="mirror-area" class="mirror-area hidden">
+                <div class="mirror-side left" id="left-side" aria-label="Left side"></div>
+                <div class="mirror-side right" id="right-side" aria-label="Right side"></div>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Completion Modal -->
-        <div id="completion-message" class="completion-panel hidden panel" role="dialog" aria-modal="true" aria-labelledby="complete-title">
-          <h2 id="complete-title">Session Complete!</h2>
-          <div id="completion-scores">
-            <p>Final Score: <span id="final-score" class="score-highlight">0</span></p>
-            <p>Patterns Completed: <span id="final-patterns" class="score-highlight">0</span></p>
-            <p>Synchronization Rate: <span id="final-sync-rate" class="score-highlight">0%</span></p>
-            <p>Average Sync Time: <span id="final-avg-sync" class="score-highlight">0ms</span></p>
-            <p id="xp-line">XP Earned: <span class="score-highlight" id="xp-earned">0</span></p>
-            <p id="pb-line" class="hidden">🎉 New Personal Best!</p>
+        <div id="done" class="completion-panel hidden panel" role="dialog" aria-modal="true" aria-labelledby="done-title" aria-describedby="final-score-summary">
+          <h2 id="done-title">Session Complete!</h2>
+          <p id="final-score-summary">Score: <strong id="final-score">0</strong></p>
+          <p>Patterns Completed: <strong id="final-patterns">0</strong></p>
+          <p>Success Rate: <strong id="final-sync-rate">0%</strong></p>
+          <p>Average Sync Time: <strong id="final-avg-sync">0ms</strong></p>
+          <p>Perfect Syncs: <strong id="final-perfects">0</strong></p>
+          <p>Best Streak: <strong id="final-streak">0</strong></p>
+          <p id="xp-line">XP Earned: <strong id="xp-earned">0</strong></p>
+          <p id="pb-line" class="hidden">🎉 New Personal Best!</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="restart2" class="btn btn-primary">Start New Session</button>
+            <button id="back" class="btn btn-secondary">Back to Settings</button>
           </div>
-          <button id="restart-button" class="btn btn-primary btn-full">Start New Session</button>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Session Enhancement / Utils -->
+  <!-- Complete JavaScript Template -->
   <script type="module">
-    import { storage, starfield, theme, viewport, audio, initUtils } from '/js/utils.js';
-    import { sessionEnhancement } from '/js/session-enhancement.js';
+    import { createSession } from './js/session-core.js';
+    import { trapFocus } from './js/a11y.js';
+    import { storage, starfield, initUtils } from './js/utils.js';
 
     initUtils();
 
-    const currentExerciseId = 'mirror'; // for session-enhancement
-    const starsContainer = document.getElementById('stars-container');
-    starfield.generate(starsContainer, 50);
-
-    const difficultySelect = document.getElementById('difficulty-select');
-    function getCurrentDifficulty() { return difficultySelect?.value || 'medium'; }
-    sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty());
-    difficultySelect?.addEventListener('change', () =>
-      sessionEnhancement.initializeExercise(currentExerciseId, getCurrentDifficulty())
-    );
+    // Constants
+    const EXERCISE_ID = 'mirror-match';
+    const currentExerciseId = 'mirror'; // for backwards compatibility
 
     // Elements
     const timerBar = document.getElementById('timer-bar');
     const settingsPanel = document.getElementById('settings-panel');
-    const statsPanel = document.getElementById('stats-panel');
-    const completionMessage = document.getElementById('completion-message');
+    const gameContainer = document.querySelector('.game-container');
+    const pauseOverlay = document.getElementById('pause-overlay');
     const progressDisplay = document.getElementById('progress-display');
     const instructions = document.getElementById('instructions');
-    const feedbackMessage = document.getElementById('feedback-message');
-    const currentPatternElement = document.getElementById('current-pattern');
-    const totalPatternsElement = document.getElementById('total-patterns');
+    const feedbackMessage = document.getElementById('feedback');
+    const gameArea = document.getElementById('game-area');
+    const completionPanel = document.getElementById('done');
 
-    const gameContainer = document.getElementById('game-container');
+    const difficultySelect = document.getElementById('difficulty');
+    const targetSizeSelect = document.getElementById('target-size');
+    const mirrorModeSelect = document.getElementById('mirror-mode');
+    const adaptiveTimingSelect = document.getElementById('adaptive-timing');
+    const durationInput = document.getElementById('duration');
+
+    const startButton = document.getElementById('start');
+    const pauseButton = document.getElementById('pause');
+    const restartButton = document.getElementById('restart');
+    const restart2Button = document.getElementById('restart2');
+    const backButton = document.getElementById('back');
+
+    const scoreEl = document.getElementById('score');
+    const pbEl = document.getElementById('pb');
+    const timeLeftEl = document.getElementById('time-left');
+    const diffEl = document.getElementById('diff');
+    const syncRateEl = document.getElementById('sync-rate');
+    const streakEl = document.getElementById('streak');
+
+    const currentPatternEl = document.getElementById('current-pattern');
+    const totalPatternsEl = document.getElementById('total-patterns');
     const mirrorArea = document.getElementById('mirror-area');
     const leftSide = document.getElementById('left-side');
     const rightSide = document.getElementById('right-side');
 
-    const targetSizeSelect = document.getElementById('target-size-select');
-    const mirrorModeSelect = document.getElementById('mirror-mode-select');
-    const adaptiveTimingSelect = document.getElementById('adaptive-timing-select');
-    const sessionDurationInput = document.getElementById('session-duration-input');
+    // Completion elements
+    const finalScoreEl = document.getElementById('final-score');
+    const finalPatternsEl = document.getElementById('final-patterns');
+    const finalSyncRateEl = document.getElementById('final-sync-rate');
+    const finalAvgSyncEl = document.getElementById('final-avg-sync');
+    const finalPerfectsEl = document.getElementById('final-perfects');
+    const finalStreakEl = document.getElementById('final-streak');
+    const xpEarnedEl = document.getElementById('xp-earned');
+    const pbLineEl = document.getElementById('pb-line');
 
-    const startSessionButton   = document.getElementById('start-session-button');
-    const pauseSessionButton   = document.getElementById('pause-session-button');
-    const restartSessionButton = document.getElementById('restart-session-button');
-    const restartButton        = document.getElementById('restart-button');
-
-    const scoreElement        = document.getElementById('score');
-    const patternsCompletedElement = document.getElementById('final-patterns'); // used at end
-    const timeLeftElement     = document.getElementById('time-left');
-    const syncRateElement     = document.getElementById('sync-rate');
-    const personalBestEl      = document.getElementById('personal-best');
-    const difficultyBadgeEl   = document.getElementById('difficulty-badge');
-
-    const finalScoreElement   = document.getElementById('final-score');
-    const finalPatternsElement= document.getElementById('final-patterns');
-    const finalSyncRateElement= document.getElementById('final-sync-rate');
-    const finalAvgSyncElement = document.getElementById('final-avg-sync');
-    const xpEarnedEl          = document.getElementById('xp-earned');
-    const pbLine              = document.getElementById('pb-line');
+    // Initialize stars
+    const starsContainer = document.getElementById('stars-container');
+    starfield.generate(starsContainer, 50);
 
     // Game state
+    let session = null;
     let isSessionActive = false;
-    let isPaused = false;
-    let timerInterval = null;
-    let sessionDuration = 3 * 60 * 1000; // ms
-    let timeRemaining = sessionDuration;
-
     let score = 0;
     let patternsCompleted = 0;
     let totalAttempts = 0;
@@ -470,19 +364,14 @@
     let rightTouched = false;
     let leftTouchTime = 0;
     let rightTouchTime = 0;
+    let lastTouchedSide = null;
     let currentTargets = { left: null, right: null };
     let feedbackTimeout = null;
+    let streak = 0;
+    let bestStreak = 0;
+    let perfectCount = 0;
 
-    // Touch indicators (visual parity)
-    const leftTouchIndicator = document.createElement('div');
-    leftTouchIndicator.classList.add('touch-indicator');
-    gameContainer.appendChild(leftTouchIndicator);
-
-    const rightTouchIndicator = document.createElement('div');
-    rightTouchIndicator.classList.add('touch-indicator');
-    gameContainer.appendChild(rightTouchIndicator);
-
-    // Sizes & difficulty
+    // Game configuration
     const targetSizes = { small: 40, medium: 55, large: 70 };
     const difficultySetting = {
       easy:   { pointsPerPattern: 100, patternLength: 3, timeLimit: 60000, baseSync: 750 },
@@ -491,7 +380,242 @@
     };
     const patternTypes = ['random', 'circle', 'square', 'triangle', 'zigzag', 'line', 'spiral'];
 
-    // Layout & accessibility helpers
+    // Touch indicators
+    const leftTouchIndicator = document.createElement('div');
+    leftTouchIndicator.classList.add('touch-indicator');
+    gameArea.appendChild(leftTouchIndicator);
+
+    const rightTouchIndicator = document.createElement('div');
+    rightTouchIndicator.classList.add('touch-indicator');
+    gameArea.appendChild(rightTouchIndicator);
+
+    // Load settings
+    function loadSettings() {
+      difficultySelect.value = storage.get('mirror:difficulty', 'medium');
+      targetSizeSelect.value = storage.get('mirror:targetSize', 'medium');
+      mirrorModeSelect.value = storage.get('mirror:mode', 'simultaneous');
+      adaptiveTimingSelect.value = storage.get('mirror:adaptiveTiming', 'on');
+      durationInput.value = storage.get('mirror:duration', '3');
+      updatePersonalBestHUD();
+      updateDifficultyDisplay();
+    }
+
+    function saveSettings() {
+      storage.set('mirror:difficulty', difficultySelect.value);
+      storage.set('mirror:targetSize', targetSizeSelect.value);
+      storage.set('mirror:mode', mirrorModeSelect.value);
+      storage.set('mirror:adaptiveTiming', adaptiveTimingSelect.value);
+      storage.set('mirror:duration', durationInput.value);
+      updateDifficultyDisplay();
+    }
+
+    function updatePersonalBestHUD() {
+      const pb = storage.get(`${EXERCISE_ID}:best`, 0);
+      pbEl.textContent = pb ? String(pb) : '—';
+    }
+
+    function updateDifficultyDisplay() {
+      const difficulty = difficultySelect.value;
+      diffEl.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    }
+
+    // Event listeners
+    startButton.addEventListener('click', startSession);
+    pauseButton.addEventListener('click', togglePause);
+    restartButton.addEventListener('click', restartSession);
+    restart2Button.addEventListener('click', () => {
+      hideCompletionModal();
+      startSession();
+    });
+    backButton.addEventListener('click', () => {
+      hideCompletionModal();
+      showSettings();
+    });
+
+    ['change', 'input'].forEach(evt => {
+      [difficultySelect, targetSizeSelect, mirrorModeSelect, adaptiveTimingSelect, durationInput].forEach(el => {
+        el.addEventListener(evt, saveSettings);
+      });
+    });
+
+    mirrorModeSelect.addEventListener('change', updateInstructionsText);
+
+    function updateInstructionsText() {
+      const mode = mirrorModeSelect.value;
+      instructions.textContent = (mode === 'simultaneous')
+        ? 'Touch both circles simultaneously to complete each target pair.'
+        : 'Touch the left and right circles one after another to complete each target pair.';
+    }
+
+    // Session management
+    function startSession() {
+      const difficulty = difficultySelect.value;
+      const minutes = Math.max(1, Math.min(10, parseInt(durationInput.value, 10) || 3));
+      const durationMs = minutes * 60 * 1000;
+
+      // Reset game state
+      score = 0;
+      patternsCompleted = 0;
+      totalAttempts = 0;
+      successfulAttempts = 0;
+      syncTimes = [];
+      perfectCount = 0;
+      streak = 0;
+      bestStreak = 0;
+      currentPatternIndex = 0;
+      currentTargetIndex = 0;
+      pattern = [];
+      patterns = [];
+      usedPatternTypes = [];
+      adaptiveSyncWindow = difficultySetting[difficulty].baseSync;
+
+      // Create session
+      session = createSession({
+        durationMs,
+        onTick: updateTimer,
+        onEnd: endSession,
+        onPauseChange: updatePauseState
+      });
+
+      // Setup UI
+      hideSettings();
+      showGame();
+      layoutMirrorArea();
+      generateDiversePatterns(difficulty);
+      updateStats();
+      updateInstructionsText();
+
+      currentPatternEl.textContent = '1';
+      totalPatternsEl.textContent = patterns.length;
+
+      // Start session
+      session.start();
+      isSessionActive = true;
+      startPattern();
+    }
+
+    function togglePause() {
+      if (!session) return;
+      if (session.isPaused()) {
+        session.resume();
+        pauseButton.textContent = 'Pause';
+      } else {
+        session.pause();
+        pauseButton.textContent = 'Resume';
+      }
+    }
+
+    function restartSession() {
+      if (session) {
+        session.end();
+      }
+      startSession();
+    }
+
+    function updatePauseState(paused) {
+      if (paused) {
+        mirrorArea.classList.add('is-paused');
+        pauseOverlay.classList.remove('hidden');
+      } else {
+        mirrorArea.classList.remove('is-paused');
+        pauseOverlay.classList.add('hidden');
+      }
+    }
+
+    function updateTimer(timeMs) {
+      const minutes = Math.floor(timeMs / 60000);
+      const seconds = Math.floor((timeMs % 60000) / 1000);
+      timeLeftEl.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+      
+      // Update timer bar
+      const totalDuration = session ? session.getDuration() : 180000;
+      const progress = Math.max(0, timeMs / totalDuration);
+      timerBar.style.width = `${progress * 100}%`;
+    }
+
+    function endSession() {
+      session = null;
+      isSessionActive = false;
+      hideGame();
+      
+      const avgSyncTime = syncTimes.length ? Math.round(syncTimes.reduce((a,b) => a+b, 0) / syncTimes.length) : 0;
+      const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
+
+      // Check for personal best
+      const previousPB = storage.get(`${EXERCISE_ID}:best`, 0);
+      let isPB = false;
+      if (score > previousPB) {
+        isPB = true;
+        storage.set(`${EXERCISE_ID}:best`, score);
+      }
+
+      // Update completion modal
+      finalScoreEl.textContent = String(score);
+      finalPatternsEl.textContent = String(patternsCompleted);
+      finalSyncRateEl.textContent = `${syncRate}%`;
+      finalAvgSyncEl.textContent = `${avgSyncTime}ms`;
+      finalPerfectsEl.textContent = String(perfectCount);
+      finalStreakEl.textContent = String(bestStreak);
+      xpEarnedEl.textContent = String(score);
+      pbLineEl.classList.toggle('hidden', !isPB);
+
+      showCompletionModal();
+      updatePersonalBestHUD();
+      timerBar.style.width = '0%';
+
+      // Record session for achievements (pass stats to avoid scope issues)
+      if (window.endSession) {
+        const stats = {
+          accuracy: syncRate,
+          perfects: perfectCount,
+          streak: bestStreak,
+          avg: avgSyncTime,
+          duration_s: (session?.getDuration?.() ?? (parseInt(durationInput.value, 10) || 3) * 60000) / 1000
+        };
+        window.endSession({ score, difficulty: difficultySelect.value, ...stats });
+      }
+    }
+
+    // UI state management
+    function showSettings() {
+      settingsPanel.classList.remove('hidden');
+      startButton.focus();
+    }
+
+    function hideSettings() {
+      settingsPanel.classList.add('hidden');
+    }
+
+    function showGame() {
+      progressDisplay.classList.remove('hidden');
+      instructions.classList.remove('hidden');
+      mirrorArea.classList.remove('hidden');
+    }
+
+    function hideGame() {
+      progressDisplay.classList.add('hidden');
+      instructions.classList.add('hidden');
+      mirrorArea.classList.add('hidden');
+    }
+
+    function showCompletionModal() {
+      completionPanel.classList.remove('hidden');
+      const focusTrap = trapFocus(completionPanel);
+      restart2Button.focus();
+      
+      // Store focus trap cleanup
+      completionPanel._focusTrap = focusTrap;
+    }
+
+    function hideCompletionModal() {
+      completionPanel.classList.add('hidden');
+      if (completionPanel._focusTrap) {
+        completionPanel._focusTrap();
+        completionPanel._focusTrap = null;
+      }
+    }
+
+    // Game logic
     function layoutMirrorArea() {
       const areaWidth = Math.min(900, window.innerWidth * 0.9);
       const areaHeight = Math.min(520, window.innerHeight * 0.7);
@@ -503,114 +627,24 @@
       rightSide.style.height = `${areaHeight}px`;
       return { areaWidth, areaHeight };
     }
-    function makeTargetAccessible(el, label) {
-      el.setAttribute('role', 'button');
-      el.setAttribute('tabindex', '0');
-      el.setAttribute('aria-label', label);
-      el.style.minWidth = '44px';
-      el.style.minHeight = '44px';
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        }
-      });
-    }
 
-    // Nav Home (in header uses anchor)
-
-    // Session controls
-    startSessionButton.addEventListener('click', startSession);
-    restartSessionButton.addEventListener('click', () => {
-      // “Restart” behaves like Start with current settings
-      if (isSessionActive) endSession(true);
-      startSession();
-    });
-    pauseSessionButton.addEventListener('click', () => {
-      if (!isSessionActive) return;
-      isPaused = !isPaused;
-      pauseSessionButton.textContent = isPaused ? 'Resume' : 'Pause';
-    });
-    restartButton.addEventListener('click', () => {
-      completionMessage.classList.add('hidden');
-      settingsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    function startSession() {
-      // settings
-      const difficulty = difficultySelect.value;
-      const targetSize = targetSizeSelect.value;
-      const mirrorMode = mirrorModeSelect.value;
-      const adaptiveTiming = adaptiveTimingSelect.value === 'on';
-      const minutes = Math.max(1, Math.min(10, parseInt(sessionDurationInput.value, 10) || 3));
-      sessionDuration = minutes * 60 * 1000;
-
-      // reset state
-      score = 0;
-      patternsCompleted = 0;
-      totalAttempts = 0;
-      successfulAttempts = 0;
-      syncTimes = [];
-      timeRemaining = sessionDuration;
-      currentPatternIndex = 0;
-      pattern = [];
-      patterns = [];
-      usedPatternTypes = [];
-      adaptiveSyncWindow = difficultySetting[difficulty].baseSync;
-      isPaused = false;
-      pauseSessionButton.textContent = 'Pause';
-
-      // UI updates
-      difficultyBadgeEl.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-      updatePersonalBestHUD();
-      const { areaWidth, areaHeight } = layoutMirrorArea();
-      generateDiversePatterns(difficulty, areaWidth / 2, areaHeight);
-      updateStats();
-      updateTimer();
-      currentPatternElement.textContent = '1';
-      totalPatternsElement.textContent = patterns.length;
-
-      instructions.textContent = (mirrorMode === 'simultaneous')
-        ? 'Touch both circles simultaneously to complete the pattern'
-        : 'Touch circles one after another to complete the pattern';
-
-      settingsPanel.classList.add('hidden');
-      statsPanel.classList.remove('hidden');
-      progressDisplay.classList.remove('hidden');
-      instructions.classList.remove('hidden');
-      mirrorArea.classList.remove('hidden');
-
-      isSessionActive = true;
-      startPattern(targetSize);
-
-      // timer tick
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if (isPaused) return;
-        timeRemaining -= 100;
-
-        // Timer bar & readout
-        const progress = Math.max(0, timeRemaining / sessionDuration);
-        timerBar.style.width = `${progress * 100}%`;
-        updateTimer();
-
-        if (timeRemaining <= 0) {
-          endSession();
-        }
-      }, 100);
-    }
-
-    function generateDiversePatterns(difficulty, sideWidth, areaHeight) {
+    function generateDiversePatterns(difficulty) {
       const settings = difficultySetting[difficulty];
       const patternLength = settings.patternLength;
       const numPatterns = 10;
+      const { areaWidth, areaHeight } = layoutMirrorArea();
+      const sideWidth = areaWidth / 2;
 
       for (let p = 0; p < numPatterns; p++) {
         let available = patternTypes.filter(t => !usedPatternTypes.includes(t));
-        if (!available.length) { usedPatternTypes = []; available = [...patternTypes]; }
-        const type = available[Math.floor(Math.random()*available.length)];
+        if (!available.length) { 
+          usedPatternTypes = []; 
+          available = [...patternTypes]; 
+        }
+        const type = available[Math.floor(Math.random() * available.length)];
         usedPatternTypes.push(type);
         if (usedPatternTypes.length > 3) usedPatternTypes.shift();
+        
         const pts = generatePatternByType(type, patternLength, sideWidth, areaHeight);
         patterns.push(pts);
       }
@@ -626,108 +660,145 @@
         case 'circle':
           for (let i = 0; i < length; i++) {
             const a = (i / length) * 2 * Math.PI;
-            points.push({ x: centerX + Math.cos(a)*radius, y: centerY + Math.sin(a)*radius });
-          } break;
+            points.push({ x: centerX + Math.cos(a) * radius, y: centerY + Math.sin(a) * radius });
+          }
+          break;
         case 'square': {
-          const s = radius * 1.5, h = s/2;
+          const s = radius * 1.5, h = s / 2;
           const corners = [
-            {x:centerX-h,y:centerY-h},{x:centerX+h,y:centerY-h},
-            {x:centerX+h,y:centerY+h},{x:centerX-h,y:centerY+h}
+            { x: centerX - h, y: centerY - h }, { x: centerX + h, y: centerY - h },
+            { x: centerX + h, y: centerY + h }, { x: centerX - h, y: centerY + h }
           ];
-          for (let i=0;i<length;i++) points.push(corners[i%4]);
-        } break;
+          for (let i = 0; i < length; i++) points.push(corners[i % 4]);
+          break;
+        }
         case 'triangle': {
           const tri = [];
-          for (let i=0;i<3;i++){
-            const a = (i/3)*2*Math.PI - Math.PI/2;
-            tri.push({x:centerX+Math.cos(a)*radius,y:centerY+Math.sin(a)*radius});
+          for (let i = 0; i < 3; i++) {
+            const a = (i / 3) * 2 * Math.PI - Math.PI / 2;
+            tri.push({ x: centerX + Math.cos(a) * radius, y: centerY + Math.sin(a) * radius });
           }
-          for (let i=0;i<length;i++) points.push(tri[i%3]);
-        } break;
+          for (let i = 0; i < length; i++) points.push(tri[i % 3]);
+          break;
+        }
         case 'zigzag': {
-          const stepY = areaHeight/(length+1);
-          for (let i=0;i<length;i++){
-            const y = stepY + i*stepY;
-            const x = (i%2===0) ? sideWidth*0.25 : sideWidth*0.75;
-            points.push({x,y});
+          const stepY = areaHeight / (length + 1);
+          for (let i = 0; i < length; i++) {
+            const y = stepY + i * stepY;
+            const x = (i % 2 === 0) ? sideWidth * 0.25 : sideWidth * 0.75;
+            points.push({ x, y });
           }
-        } break;
+          break;
+        }
         case 'line': {
-          const sx=sideWidth*0.2, ex=sideWidth*0.8, sy=areaHeight*0.3, ey=areaHeight*0.7;
-          for (let i=0;i<length;i++){
-            const t = i/(length-1);
-            points.push({ x: sx+(ex-sx)*t, y: sy+(ey-sy)*t });
+          const sx = sideWidth * 0.2, ex = sideWidth * 0.8;
+          const sy = areaHeight * 0.3, ey = areaHeight * 0.7;
+          for (let i = 0; i < length; i++) {
+            const t = i / (length - 1);
+            points.push({ x: sx + (ex - sx) * t, y: sy + (ey - sy) * t });
           }
-        } break;
+          break;
+        }
         case 'spiral':
-          for (let i=0;i<length;i++){
-            const a = (i/length)*4*Math.PI;
-            const r = (i/length)*radius;
-            points.push({ x:centerX+Math.cos(a)*r, y:centerY+Math.sin(a)*r });
-          } break;
+          for (let i = 0; i < length; i++) {
+            const a = (i / length) * 4 * Math.PI;
+            const r = (i / length) * radius;
+            points.push({ x: centerX + Math.cos(a) * r, y: centerY + Math.sin(a) * r });
+          }
+          break;
         default: // random
-          for (let i=0;i<length;i++){
-            const x = Math.floor(Math.random()*(sideWidth-100)+50);
-            const y = Math.floor(Math.random()*(areaHeight-100)+50);
-            points.push({x,y});
+          for (let i = 0; i < length; i++) {
+            const x = Math.floor(Math.random() * (sideWidth - 100) + 50);
+            const y = Math.floor(Math.random() * (areaHeight - 100) + 50);
+            points.push({ x, y });
           }
       }
       return points;
     }
 
+    function startPattern() {
+      if (!isSessionActive) return;
+      
+      leftSide.innerHTML = '';
+      rightSide.innerHTML = '';
+      leftTouched = false;
+      rightTouched = false;
+      lastTouchedSide = null;
+
+      pattern = patterns[currentPatternIndex];
+      if (!pattern) {
+        endSession();
+        return;
+      }
+
+      currentPatternEl.textContent = currentPatternIndex + 1;
+      drawPatternPaths();
+      currentTargetIndex = 0;
+      createTargetPair();
+    }
+
     function drawPatternPaths() {
       // Left SVG
       const lsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      lsvg.setAttribute("width","100%"); lsvg.setAttribute("height","100%");
-      lsvg.style.position = "absolute"; lsvg.style.top = "0"; lsvg.style.left = "0"; lsvg.style.pointerEvents="none";
+      lsvg.setAttribute("width", "100%");
+      lsvg.setAttribute("height", "100%");
+      lsvg.style.position = "absolute";
+      lsvg.style.top = "0";
+      lsvg.style.left = "0";
+      lsvg.style.pointerEvents = "none";
 
       const lpath = document.createElementNS("http://www.w3.org/2000/svg", "path");
       lpath.classList.add("mirror-path");
       let d = "";
-      pattern.forEach((pt, i) => { d += (i===0?`M ${pt.x} ${pt.y} `:`L ${pt.x} ${pt.y} `); });
+      pattern.forEach((pt, i) => {
+        d += (i === 0 ? `M ${pt.x} ${pt.y} ` : `L ${pt.x} ${pt.y} `);
+      });
       lpath.setAttribute("d", d);
       lsvg.appendChild(lpath);
       leftSide.appendChild(lsvg);
 
       // Right SVG mirrored
       const rsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      rsvg.setAttribute("width","100%"); rsvg.setAttribute("height","100%");
-      rsvg.style.position = "absolute"; rsvg.style.top = "0"; rsvg.style.left = "0"; rsvg.style.pointerEvents="none";
+      rsvg.setAttribute("width", "100%");
+      rsvg.setAttribute("height", "100%");
+      rsvg.style.position = "absolute";
+      rsvg.style.top = "0";
+      rsvg.style.left = "0";
+      rsvg.style.pointerEvents = "none";
 
       const rpath = document.createElementNS("http://www.w3.org/2000/svg", "path");
       rpath.classList.add("mirror-path");
       d = "";
       pattern.forEach((pt, i) => {
         const mx = leftSide.clientWidth - pt.x;
-        d += (i===0?`M ${mx} ${pt.y} `:`L ${mx} ${pt.y} `);
+        d += (i === 0 ? `M ${mx} ${pt.y} ` : `L ${mx} ${pt.y} `);
       });
       rpath.setAttribute("d", d);
       rsvg.appendChild(rpath);
       rightSide.appendChild(rsvg);
     }
 
-    function createTargetPair(targetSizeOption) {
+    function createTargetPair() {
       const point = pattern[currentTargetIndex];
       if (!point) return;
-      const size = targetSizes[targetSizeOption];
+      
+      const targetSize = targetSizes[targetSizeSelect.value];
 
       const leftTarget = document.createElement("div");
       leftTarget.className = "mirror-target pulse";
-      leftTarget.style.width = `${size}px`;
-      leftTarget.style.height = `${size}px`;
+      leftTarget.style.width = `${targetSize}px`;
+      leftTarget.style.height = `${targetSize}px`;
       leftTarget.style.left = `${point.x}px`;
-      leftTarget.style.top  = `${point.y}px`;
-      leftTarget.dataset.index = currentTargetIndex;
+      leftTarget.style.top = `${point.y}px`;
 
       const rightTarget = document.createElement("div");
       rightTarget.className = "mirror-target pulse";
-      rightTarget.style.width = `${size}px`;
-      rightTarget.style.height = `${size}px`;
+      rightTarget.style.width = `${targetSize}px`;
+      rightTarget.style.height = `${targetSize}px`;
       rightTarget.style.left = `${leftSide.clientWidth - point.x}px`;
-      rightTarget.style.top  = `${point.y}px`;
-      rightTarget.dataset.index = currentTargetIndex;
+      rightTarget.style.top = `${point.y}px`;
 
-      // Touch + mouse parity; passive false to allow preventDefault
+      // Event listeners
       leftTarget.addEventListener("touchstart", handleLeftTouch, { passive: false });
       leftTarget.addEventListener("mousedown", handleLeftTouch);
       rightTarget.addEventListener("touchstart", handleRightTouch, { passive: false });
@@ -736,88 +807,120 @@
       leftTarget.addEventListener("contextmenu", e => e.preventDefault());
       rightTarget.addEventListener("contextmenu", e => e.preventDefault());
 
-      leftSide.appendChild(leftTarget);
-      rightSide.appendChild(rightTarget);
-
+      // Accessibility
       makeTargetAccessible(leftTarget, `Left target ${currentTargetIndex + 1}`);
       makeTargetAccessible(rightTarget, `Right target ${currentTargetIndex + 1}`);
+
+      leftSide.appendChild(leftTarget);
+      rightSide.appendChild(rightTarget);
 
       currentTargets.left = leftTarget;
       currentTargets.right = rightTarget;
     }
 
+    function makeTargetAccessible(el, label) {
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', label);
+      el.style.minWidth = '44px';
+      el.style.minHeight = '44px';
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        }
+      });
+    }
+
     function showTouchIndicator(e, indicator) {
       const rect = e.target.getBoundingClientRect();
-      const x = rect.left + rect.width/2;
-      const y = rect.top  + rect.height/2;
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
       indicator.style.left = `${x}px`;
-      indicator.style.top  = `${y}px`;
+      indicator.style.top = `${y}px`;
       indicator.classList.add('active');
       setTimeout(() => indicator.classList.remove('active'), 250);
     }
 
     function handleLeftTouch(e) {
-      if (!isSessionActive || leftTouched) return;
-      e.preventDefault(); e.stopPropagation();
+      if (!isSessionActive || leftTouched || session?.isPaused()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      
       showTouchIndicator(e, leftTouchIndicator);
-
       leftTouched = true;
       leftTouchTime = Date.now();
+      if (!rightTouched) lastTouchedSide = 'left';
       currentTargets.left.classList.remove("pulse");
       currentTargets.left.classList.add("touched");
-      checkTargetPair(mirrorModeSelect.value);
+      checkTargetPair();
     }
-    function handleRightTouch(e) {
-      if (!isSessionActive || rightTouched) return;
-      e.preventDefault(); e.stopPropagation();
-      showTouchIndicator(e, rightTouchIndicator);
 
+    function handleRightTouch(e) {
+      if (!isSessionActive || rightTouched || session?.isPaused()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      
+      showTouchIndicator(e, rightTouchIndicator);
       rightTouched = true;
       rightTouchTime = Date.now();
+      if (!leftTouched) lastTouchedSide = 'right';
       currentTargets.right.classList.remove("pulse");
       currentTargets.right.classList.add("touched");
-      checkTargetPair(mirrorModeSelect.value);
+      checkTargetPair();
     }
 
-    function checkTargetPair(mode) {
+    function checkTargetPair() {
       if (!leftTouched || !rightTouched) return;
 
       totalAttempts++;
       const timeDiff = Math.abs(leftTouchTime - rightTouchTime);
       const baseWindow = difficultySetting[difficultySelect.value].baseSync;
-      const currentSyncWindow = (adaptiveTimingSelect.value === 'on') ? adaptiveSyncWindow : baseWindow;
-      const isSync = (mode === 'simultaneous') ? (timeDiff < currentSyncWindow) : true;
+      const usingAdaptive = (adaptiveTimingSelect.value === 'on');
+      const currentSyncWindow = usingAdaptive ? adaptiveSyncWindow : baseWindow;
+
+      const mode = mirrorModeSelect.value;
+      const isSimul = (mode === 'simultaneous');
+      
+      let isSync;
+      if (isSimul) {
+        isSync = (timeDiff < currentSyncWindow);
+      } else {
+        // Sequential mode: left then right, within window
+        const orderOK = lastTouchedSide === 'left';
+        const withinWindow = timeDiff < currentSyncWindow;
+        isSync = orderOK && withinWindow;
+      }
 
       if (isSync) {
         successfulAttempts++;
-        syncTimes.push(timeDiff);
+        if (isSimul) {
+          syncTimes.push(timeDiff);
+        }
 
-        // “Perfect sync” glow + toast when extremely tight timing (< 25% of window or < 80ms)
-        const perfectThreshold = Math.min(80, Math.floor(currentSyncWindow * 0.25));
-        if (timeDiff <= perfectThreshold) {
-          currentTargets.left.classList.add("perfect-glow");
-          currentTargets.right.classList.add("perfect-glow");
-          if (window.showNotification) {
-            window.showNotification('Perfect sync!', 'success');
+        // Perfect sync handling (simultaneous only)
+        if (isSimul) {
+          const perfectThreshold = Math.min(80, Math.floor(currentSyncWindow * 0.25));
+          if (timeDiff <= perfectThreshold) {
+            currentTargets.left.classList.add("perfect-glow");
+            currentTargets.right.classList.add("perfect-glow");
+            perfectCount++;
           }
         }
 
-        showFeedback(`Great! Sync time: ${timeDiff}ms`, 'success');
+        // Feedback
+        const feedbackText = isSimul 
+          ? `Great! Sync time: ${timeDiff}ms` 
+          : `Great! Target matched.`;
+        showFeedback(feedbackText, 'success');
 
         currentTargets.left.classList.remove("touched");
         currentTargets.right.classList.remove("touched");
         currentTargets.left.classList.add("completed");
         currentTargets.right.classList.add("completed");
 
-        const leftPaths  = leftSide.querySelectorAll(".mirror-path");
-        const rightPaths = rightSide.querySelectorAll(".mirror-path");
-        if (leftPaths.length && rightPaths.length) {
-          leftPaths[0].classList.add("completed");
-          rightPaths[0].classList.add("completed");
-        }
-
-        // Adaptive tuning
-        if (adaptiveTimingSelect.value === 'on') {
+        // Adaptive tuning (simultaneous only)
+        if (usingAdaptive && isSimul) {
           if (timeDiff < adaptiveSyncWindow * 0.7) {
             adaptiveSyncWindow = Math.max(200, adaptiveSyncWindow - 25);
           } else if (timeDiff > adaptiveSyncWindow * 0.9) {
@@ -825,220 +928,159 @@
           }
         }
 
-        // Next
+        // Streak handling
+        streak += 1;
+        if (streak > bestStreak) bestStreak = streak;
+
+        // Progress to next target or pattern
         currentTargetIndex++;
         if (currentTargetIndex >= pattern.length) {
-          patternsCompleted++;
-          const settings = difficultySetting[difficultySelect.value];
-          let patternScore = settings.pointsPerPattern;
-
-          if (syncTimes.length >= pattern.length) {
-            const recent = syncTimes.slice(-pattern.length);
-            const avg = recent.reduce((a,b)=>a+b,0)/recent.length;
-            if (avg < currentSyncWindow * 0.5) patternScore *= 1.5;
-            else if (avg < currentSyncWindow * 0.75) patternScore *= 1.25;
-          }
-          score += Math.round(patternScore);
-          updateStats();
-
-          currentPatternIndex++;
-          if (currentPatternIndex >= patterns.length) {
-            setTimeout(endSession, 600);
-          } else {
-            setTimeout(() => startPattern(targetSizeSelect.value), 700);
-          }
+          completePattern();
         } else {
-          leftTouched = false; rightTouched = false;
-          setTimeout(() => createTargetPair(targetSizeSelect.value), 350);
+          leftTouched = false;
+          rightTouched = false;
+          lastTouchedSide = null;
+          setTimeout(() => createTargetPair(), 350);
         }
       } else {
-        showFeedback(`Try again! Sync time: ${timeDiff}ms (need < ${currentSyncWindow}ms)`, 'error');
+        // Failure
+        let feedbackText;
+        if (isSimul) {
+          feedbackText = `Try again! Sync time: ${timeDiff}ms (need < ${currentSyncWindow}ms)`;
+        } else {
+          feedbackText = lastTouchedSide !== 'left' 
+            ? `Try again! Touch left first, then right within ${currentSyncWindow}ms`
+            : `Try again! Gap was ${timeDiff}ms (need < ${currentSyncWindow}ms)`;
+        }
+        showFeedback(feedbackText, 'error');
+        
         currentTargets.left.classList.remove("touched");
         currentTargets.right.classList.remove("touched");
         currentTargets.left.classList.add("failed");
         currentTargets.right.classList.add("failed");
+        streak = 0;
+
         setTimeout(() => {
           if (!currentTargets.left || !currentTargets.right) return;
           currentTargets.left.classList.remove("failed");
           currentTargets.right.classList.remove("failed");
           currentTargets.left.classList.add("pulse");
           currentTargets.right.classList.add("pulse");
-          leftTouched = false; rightTouched = false;
+          leftTouched = false;
+          rightTouched = false;
+          lastTouchedSide = null;
         }, 750);
       }
 
       updateStats();
     }
 
-    function showFeedback(msg, type) {
+    function completePattern() {
+      patternsCompleted++;
+      const settings = difficultySetting[difficultySelect.value];
+      let patternScore = settings.pointsPerPattern;
+
+      // Bonus for good performance
+      const mode = mirrorModeSelect.value;
+      if (mode === 'simultaneous' && syncTimes.length >= pattern.length) {
+        const recent = syncTimes.slice(-pattern.length);
+        const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+        const currentSyncWindow = adaptiveTimingSelect.value === 'on' ? adaptiveSyncWindow : settings.baseSync;
+        
+        if (avg < currentSyncWindow * 0.5) patternScore *= 1.5;
+        else if (avg < currentSyncWindow * 0.75) patternScore *= 1.25;
+      }
+      
+      score += Math.round(patternScore);
+
+      // Mark path as completed
+      const leftPaths = leftSide.querySelectorAll(".mirror-path");
+      const rightPaths = rightSide.querySelectorAll(".mirror-path");
+      if (leftPaths.length && rightPaths.length) {
+        leftPaths[0].classList.add("completed");
+        rightPaths[0].classList.add("completed");
+      }
+
+      updateStats();
+
+      currentPatternIndex++;
+      if (currentPatternIndex >= patterns.length) {
+        setTimeout(() => endSession(), 600);
+      } else {
+        setTimeout(() => startPattern(), 700);
+      }
+    }
+
+    function showFeedback(message, type) {
       if (feedbackTimeout) clearTimeout(feedbackTimeout);
-      feedbackMessage.textContent = msg;
+      feedbackMessage.textContent = message;
       feedbackMessage.className = `feedback-message ${type}`;
       feedbackMessage.classList.remove('hidden');
       feedbackTimeout = setTimeout(() => feedbackMessage.classList.add('hidden'), 1800);
     }
 
-    function startPattern(targetSizeOption) {
-      if (!isSessionActive) return;
-      leftSide.innerHTML = '';
-      rightSide.innerHTML = '';
-      leftTouched = false; rightTouched = false;
-
-      pattern = patterns[currentPatternIndex];
-      if (!pattern) { endSession(); return; }
-      currentPatternElement.textContent = currentPatternIndex + 1;
-
-      drawPatternPaths();
-      currentTargetIndex = 0;
-      createTargetPair(targetSizeOption);
-    }
-
     function updateStats() {
-      scoreElement.textContent = String(score);
+      scoreEl.textContent = String(score);
       const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
-      syncRateElement.textContent = `${syncRate}%`;
-      difficultyBadgeEl.textContent = difficultySelect.value.charAt(0).toUpperCase() + difficultySelect.value.slice(1);
+      syncRateEl.textContent = `${syncRate}%`;
+      streakEl.textContent = String(streak);
     }
 
-    function updateTimer() {
-      const m = Math.floor(timeRemaining / 60000);
-      const s = Math.floor((timeRemaining % 60000) / 1000);
-      timeLeftElement.textContent = `${m}:${String(s).padStart(2,'0')}`;
-    }
-
-    function endSession(fromRestart = false) {
-      clearInterval(timerInterval);
-      isSessionActive = false;
-
-      progressDisplay.classList.add('hidden');
-      instructions.classList.add('hidden');
-      feedbackMessage.classList.add('hidden');
-      statsPanel.classList.add('hidden');
-      mirrorArea.classList.add('hidden');
-
-      const avgSyncTime = syncTimes.length ? Math.round(syncTimes.reduce((a,b)=>a+b,0) / syncTimes.length) : 0;
-      const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
-
-      sessionEnhancement.handleSessionComplete({
-        score,
-        patternsCompleted,
-        accuracy: syncRate,
-        avgSyncTime,
-        totalAttempts,
-        successfulAttempts
-      });
-
-      // PB tracking (Gamification)
-      const pbKey = 'mirror-match:best';
-      const previousPB = Number(localStorage.getItem(pbKey) || 0);
-      let isPB = false;
-      if (score > previousPB) {
-        isPB = true;
-        localStorage.setItem(pbKey, String(score));
-        if (window.showNotification) window.showNotification('New Personal Best!', 'achievement');
-      }
-
-      // Completion modal with XP/points line
-      finalScoreElement.textContent = String(score);
-      finalPatternsElement.textContent = String(patternsCompleted);
-      finalSyncRateElement.textContent = `${syncRate}%`;
-      finalAvgSyncElement.textContent = `${avgSyncTime}ms`;
-      xpEarnedEl.textContent = String(score); // simple: XP = score
-      pbLine.classList.toggle('hidden', !isPB);
-
-      completionMessage.classList.remove('hidden');
-      timerBar.style.width = '0%';
-
-      // Record progress & achievements via global endSession
-      const difficulty = getCurrentDifficulty();
-      if (window.endSession) window.endSession(score, difficulty);
-
-      if (!fromRestart) {
-        // ensure settings back visible after closing modal via Restart
-        settingsPanel.classList.remove('hidden');
-      }
-      updatePersonalBestHUD();
-    }
-
-    function updatePersonalBestHUD() {
-      const pbKey = 'mirror-match:best';
-      const pb = Number(localStorage.getItem(pbKey) || 0);
-      personalBestEl.textContent = pb ? String(pb) : '—';
-    }
-
-    // Enhanced mobile gesture handling for simultaneous touch accuracy
-    document.addEventListener('touchstart', (ev) => { if (ev.touches.length > 1) ev.preventDefault(); }, { passive: false });
+    // Enhanced mobile gesture handling
+    document.addEventListener('touchstart', (ev) => { 
+      if (ev.touches.length > 1) ev.preventDefault(); 
+    }, { passive: false });
+    
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (ev) => {
       const now = Date.now();
       if (now - lastTouchEnd <= 300) ev.preventDefault();
       lastTouchEnd = now;
     }, { passive: false });
+    
     document.addEventListener('gesturestart', (ev) => ev.preventDefault());
 
-    // Resize: maintain layout; if active, recompose current pattern accordingly
+    // Resize handling
     window.addEventListener('resize', () => {
       if (!isSessionActive) return;
-      const { areaWidth, areaHeight } = layoutMirrorArea();
+      layoutMirrorArea();
       if (pattern && pattern.length) {
+        // Regenerate pattern for new dimensions
         const type = usedPatternTypes[usedPatternTypes.length - 1] || 'random';
-        const newPattern = generatePatternByType(type, pattern.length, areaWidth/2, areaHeight);
+        const { areaWidth, areaHeight } = layoutMirrorArea();
+        const newPattern = generatePatternByType(type, pattern.length, areaWidth / 2, areaHeight);
         patterns[currentPatternIndex] = newPattern;
         pattern = newPattern;
         leftSide.innerHTML = '';
         rightSide.innerHTML = '';
         drawPatternPaths();
-        if (currentTargetIndex < pattern.length) createTargetPair(targetSizeSelect.value);
+        if (currentTargetIndex < pattern.length) createTargetPair();
       }
     });
 
-    // Save/load user settings
-    document.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('mirrorDifficulty'))       difficultySelect.value = localStorage.getItem('mirrorDifficulty');
-      if (localStorage.getItem('mirrorTargetSize'))       targetSizeSelect.value = localStorage.getItem('mirrorTargetSize');
-      if (localStorage.getItem('mirrorMode'))             mirrorModeSelect.value = localStorage.getItem('mirrorMode');
-      if (localStorage.getItem('mirrorAdaptiveTiming'))   adaptiveTimingSelect.value = localStorage.getItem('mirrorAdaptiveTiming');
-      if (localStorage.getItem('mirrorDuration'))         sessionDurationInput.value = localStorage.getItem('mirrorDuration');
-
-      ['change','input'].forEach(evt => {
-        difficultySelect.addEventListener(evt, saveSettings);
-        targetSizeSelect.addEventListener(evt, saveSettings);
-        mirrorModeSelect.addEventListener(evt, saveSettings);
-        adaptiveTimingSelect.addEventListener(evt, saveSettings);
-        sessionDurationInput.addEventListener(evt, saveSettings);
-      });
-
-      updatePersonalBestHUD();
-      difficultyBadgeEl.textContent = difficultySelect.value.charAt(0).toUpperCase() + difficultySelect.value.slice(1);
-    });
-
-    function saveSettings() {
-      localStorage.setItem('mirrorDifficulty', difficultySelect.value);
-      localStorage.setItem('mirrorTargetSize', targetSizeSelect.value);
-      localStorage.setItem('mirrorMode', mirrorModeSelect.value);
-      localStorage.setItem('mirrorAdaptiveTiming', adaptiveTimingSelect.value);
-      localStorage.setItem('mirrorDuration', sessionDurationInput.value);
-      difficultyBadgeEl.textContent = difficultySelect.value.charAt(0).toUpperCase() + difficultySelect.value.slice(1);
-    }
+    // Initialize
+    loadSettings();
+    updateInstructionsText();
   </script>
 
-  <!-- Standardised module imports & global endSession wiring -->
+  <!-- Achievement integration -->
   <script type="module">
-    import { recordSession } from '/js/progress.js';
-    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+    import { recordSession } from './js/progress.js';
+    import { checkAndUnlockAchievements, markExerciseTried } from './js/achievements.js';
 
     const EXERCISE_ID = 'mirror-match';
 
-    // Consistent global endSession(score, difficulty)
-    window.endSession = function(score, difficulty = 'easy') {
-      recordSession(EXERCISE_ID, difficulty, score);
-      try { markExerciseTried(EXERCISE_ID); } catch {}
-      try {
-        const unlocked = checkAndUnlockAchievements();
-        if (unlocked?.length && window.showNotification) {
-          unlocked.forEach(id => window.showNotification(`Achievement Unlocked: ${id}`, 'achievement'));
-        }
-      } catch {}
+    window.endSession = function({ score, difficulty = 'easy', accuracy = 0, perfects = 0, streak = 0, avg = 0, duration_s = 180 }) {
+      const stats = { accuracy, perfects, streak, avg, duration_s };
+      const entry = { exercise: EXERCISE_ID, difficulty, score, ...stats, ts: Date.now() };
+      
+      recordSession(EXERCISE_ID, difficulty, score, stats);
+      markExerciseTried(EXERCISE_ID);
+      
+      const unlocked = checkAndUnlockAchievements(entry, stats);
+      if (unlocked?.length && window.showNotification) {
+        unlocked.forEach(id => window.showNotification(`Achievement Unlocked: ${id}`, 'achievement'));
+      }
     };
   </script>
 </body>

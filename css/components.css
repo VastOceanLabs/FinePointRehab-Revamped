@@ -24,7 +24,10 @@
   text-decoration: none;
   text-align: center;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--easing);
+  transition: transform var(--duration-fast) var(--easing), 
+              box-shadow var(--duration-fast) var(--easing),
+              background-color var(--duration-fast) var(--easing),
+              border-color var(--duration-fast) var(--easing);
   min-height: var(--touch-target);
   position: relative;
   overflow: hidden;
@@ -130,6 +133,7 @@
 .btn[aria-disabled="true"] {
   opacity: 0.6;
   cursor: not-allowed;
+  pointer-events: none; /* prevent clicks on disabled links */
   transform: none !important;
   box-shadow: none !important;
 }
@@ -151,18 +155,22 @@
 
 /* Loading state */
 .btn-loading {
-  color: transparent !important;
+  pointer-events: none;
+  position: relative;
+}
+
+.btn-loading > * {
+  visibility: hidden; /* hide text/icons, keep color */
 }
 
 .btn-loading::after {
   content: "";
   position: absolute;
-  top: 50%;
-  left: 50%;
+  inset: 50% auto auto 50%;
   width: 16px;
   height: 16px;
   margin: -8px 0 0 -8px;
-  border: 2px solid currentColor;
+  border: 2px solid currentColor; /* now visible */
   border-top-color: transparent;
   border-radius: 50%;
   animation: spin var(--duration-slow) linear infinite;
@@ -182,7 +190,8 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: all var(--duration-fast) var(--easing);
+  transition: transform var(--duration-fast) var(--easing),
+              box-shadow var(--duration-fast) var(--easing);
 }
 
 .card:hover {
@@ -312,6 +321,12 @@
   .progress-bar-animated::after {
     animation: none;
   }
+  
+  /* Disable all animations and transitions for motion-sensitive users */
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 @keyframes progressSlide {
@@ -411,7 +426,8 @@
   cursor: pointer;
   padding: var(--space-1);
   border-radius: var(--radius);
-  transition: all var(--duration-fast) var(--easing);
+  transition: color var(--duration-fast) var(--easing),
+              background-color var(--duration-fast) var(--easing);
   min-width: var(--touch-target);
   min-height: var(--touch-target);
   display: flex;
@@ -659,6 +675,7 @@
   display: flex;
   z-index: var(--z-nav);
   padding: var(--space-2);
+  padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom)); /* avoid iOS home indicator */
 }
 
 .nav-mobile .nav-link {
@@ -813,6 +830,7 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
+  clip: rect(0 0 0 0); /* legacy support */
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
@@ -948,4 +966,92 @@
     break-inside: avoid;
     page-break-inside: avoid;
   }
+}
+
+/* =============================================================================
+   SHARED FOUNDATION COMPONENTS (F3)
+   App wrapper, HUD grids, page headers, timer bars, and pause system
+   ============================================================================= */
+
+/* App wrapper (two columns) */
+.app-wrap {
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) 1fr;
+  gap: var(--space-4, 16px);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-5, 20px);
+}
+
+@media (max-width: 900px) { 
+  .app-wrap { 
+    grid-template-columns: 1fr; 
+  } 
+}
+
+/* HUD grid */
+.hud {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-3, 12px);
+}
+
+/* Sticky page header with timer bar */
+.page-header {
+  position: sticky; 
+  top: 0; 
+  z-index: 100;
+  backdrop-filter: blur(6px);
+  background: var(--surface-blur, rgba(12, 14, 28, 0.65));
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+}
+
+.page-header .row { 
+  display: flex; 
+  align-items: center; 
+  gap: var(--space-3, 12px); 
+}
+
+.page-header h1 { 
+  font-size: clamp(1.1rem, 1.6vw, 1.5rem); 
+  margin: 0; 
+  flex: 1; 
+}
+
+.timer-bar-container { 
+  width: 100%; 
+  height: 8px; 
+  background: rgba(255,255,255,0.08); 
+  border-radius: 4px; 
+  overflow: hidden; 
+  margin-top: var(--space-3, 12px); 
+}
+
+.timer-bar { 
+  height: 100%; 
+  border-radius: 4px; 
+  transition: width .1s linear; 
+}
+
+/* Pause - overlay placed outside paused area to remain clickable */
+.game-container { 
+  position: relative; 
+}
+
+.is-paused [data-interactive] { 
+  pointer-events: none; 
+}
+
+/* Note: Add role="status" aria-live="polite" to HTML element */
+.pause-overlay { 
+  position: absolute; 
+  inset: 0; 
+  display: grid; 
+  place-items: center; 
+  background: rgba(6,7,16,.75); 
+  z-index: 50;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
 }
