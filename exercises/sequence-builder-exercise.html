@@ -23,6 +23,7 @@
 
   <!-- Shared tokens + components -->
   <link rel="stylesheet" href="/css/tokens.css"/>
+  <link rel="stylesheet" href="/css/base.css"/>
   <link rel="stylesheet" href="/css/components.css"/>
 
   <style>
@@ -35,10 +36,10 @@
       --bg-grad: radial-gradient(1200px 800px at 50% -20%, rgba(111,211,245,.12), transparent 60%), linear-gradient(#0a1326, #121d33);
       --card-bg: rgba(8,15,35,.7);
       --card-border: 1px solid rgba(255,255,255,.08);
-      --accent: rgba(111,211,245,1);
+      --accent: var(--brand-aqua, rgba(111,211,245,1));
       --accent-weak: rgba(111,211,245,.6);
-      --ok: rgba(46,204,113,1);
-      --bad: rgba(231,76,60,1);
+      --ok: var(--success, rgba(46,204,113,1));
+      --bad: var(--error, rgba(231,76,60,1));
     }
     body {
       margin: 0;
@@ -92,6 +93,11 @@
       border: var(--card-border);
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    /* Pre-session display layout fix */
+    .layout .pre-session-display { 
+      grid-column: 1 / -1; 
     }
 
     /* Left: Settings panel */
@@ -185,9 +191,17 @@
     .sequence-piece.selected { transform: scale(1.1); box-shadow: 0 0 30px rgba(111,211,245,.9); animation: selectedPulse 1s ease-in-out infinite; }
     @keyframes selectedPulse { 0%,100%{box-shadow:0 0 30px rgba(111,211,245,.9);} 50%{box-shadow:0 0 40px rgba(111,211,245,1);} }
     .sequence-piece.model { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.85), rgba(111,211,245,.7)); cursor: default; transform: none; box-shadow: 0 0 10px rgba(111,211,245,.25); }
-    .sequence-piece.correct { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(46,204,113,.9)); box-shadow: 0 0 15px rgba(46,204,113,.6); animation: correctPulse .5s ease-out; }
+    .sequence-piece.correct { 
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), var(--ok)); 
+      box-shadow: 0 0 15px var(--ok); 
+      animation: correctPulse .5s ease-out; 
+    }
     @keyframes correctPulse { 0%{transform:scale(1);} 50%{transform:scale(1.15);} 100%{transform:scale(1);} }
-    .sequence-piece.incorrect { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(231,76,60,.9)); box-shadow: 0 0 15px rgba(231,76,60,.6); animation: shake .4s ease; }
+    .sequence-piece.incorrect { 
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), var(--bad)); 
+      box-shadow: 0 0 15px var(--bad); 
+      animation: shake .4s ease; 
+    }
     @keyframes shake { 0%{transform:translateX(0);}25%{transform:translateX(-5px);}50%{transform:translateX(5px);}75%{transform:translateX(-5px);}100%{transform:translateX(0);} }
     .sequence-piece.placeholder { background: rgba(255,255,255,.1); box-shadow: none; border: 2px dashed rgba(111,211,245,.5); }
     .sequence-piece.placeholder.next { border-color: rgba(111,211,245,.8); background: rgba(111,211,245,.12); animation: nextPulse 2s ease-in-out infinite; }
@@ -224,6 +238,7 @@
       background: var(--card-bg); border: var(--card-border);
       padding: 22px; border-radius: 16px; width: min(560px, 92vw); text-align: center;
       box-shadow: 0 20px 60px rgba(0,0,0,.55);
+      max-height: 90vh; overflow: auto;
     }
     #completion-card h2 { margin: 0 0 8px; }
     #completion-scores { margin: 14px 0; font-size: 18px; }
@@ -238,6 +253,7 @@
     .hidden { display: none !important; }
 
     @media (max-width: 900px) {
+      body { overflow: auto !important; }
       .layout { grid-template-columns: 1fr; height: auto; min-height: calc(100vh - 68px); }
       #settings-panel { max-height: none; }
     }
@@ -386,10 +402,6 @@
     </div>
   </div>
 
-  <!-- Utils & enhancement -->
-  <script type="module" src="/js/utils.js"></script>
-  <script type="module" src="/js/session-enhancement.js"></script>
-
   <script type="module">
     import { storage, starfield, theme, viewport, audio, initUtils, toast } from '/js/utils.js';
     import { sessionEnhancement } from '/js/session-enhancement.js';
@@ -466,6 +478,7 @@
     sessionEnhancement.initializeExercise(EXERCISE_ID, getCurrentDifficulty());
     difficultySelect?.addEventListener('change', () => {
       setHudDifficulty();
+      document.querySelector('.pre-session-display')?.remove();
       sessionEnhancement.initializeExercise(EXERCISE_ID, getCurrentDifficulty());
     });
 
@@ -505,11 +518,11 @@
         ]
       },
       assembly: {
-        pieces: ['🧱','🔨','🔧','🪚','🔩','⚙️','🧰','🧲','🧪','🔬','📊','🔋','📚','📍','🔒'],
+        pieces: ['🧱','🔨','🔧','🪚','🔩','⚙️','🧰','🧲','🧪','🔬','📊','📋','📚','📝','📑'],
         generators: [
           (steps)=> getRandomSubset(sequenceLibraries.assembly.pieces, steps),
           (steps)=> getRandomSubset(['🧱','🔨','🔧','⚙️','🔩','🧰','🗝️','🚧'], steps),
-          (steps)=> getRandomSubset(['🧪','🔬','⚗️','🧫','📊','📍','💡','📚'], steps)
+          (steps)=> getRandomSubset(['🧪','🔬','⚗️','🧫','📊','📝','💡','📚'], steps)
         ]
       },
       numerical: {
