@@ -1,19 +1,4 @@
 /**
-   * Add encouragement message to completion screen
-   * @param {boolean} isPersonalBest - Whether this was a personal best
-   * @param {boolean} hasMilestone - Whether milestone was reached
-   */
-  addEncouragementMessage(isPersonalBest, hasMilestone) {
-    if (!isBrowser) return;
-    
-    const completionMessage = document.getElementById('completion-message') ||
-                             document.querySelector('.completion-message');
-    
-    if (!completionMessage) return;
-
-    const encouragementDiv = document.createElement('div');
-    encouragementDiv.className = 'encouragement-message';
-    encouragementDiv.setAttribute('role', /**
  * FinePointRehab Session Enhancement System
  * Task 16: Mobile-aware celebrations, achievements, and progress feedback
  * 
@@ -200,7 +185,10 @@ class CelebrationManager {
       Object.entries(CELEBRATION_SOUNDS).forEach(([id, path]) => {
         // Remove extension since audio.create handles it
         const pathWithoutExt = path.replace(/\.(mp3|m4a|ogg)$/, '');
-        audio.create(id, pathWithoutExt);
+        // Guard audio creation
+        if (audio && typeof audio.create === 'function') {
+          audio.create(id, pathWithoutExt);
+        }
       });
       
       this.audioInitialized = true;
@@ -566,15 +554,10 @@ class SessionEnhancementSystem {
     if (!isBrowser || !EXERCISES) return 0;
     
     let total = 0;
-    
-    EXERCISES.forEach(exercise => {
-      // Guard against missing difficulties property
-      const difficulties = exercise.difficulties || ['default'];
-      difficulties.forEach(difficulty => {
-        total += this.personalBest.getSessionCount(exercise.id, difficulty);
-      });
-    });
-    
+    for (const ex of Object.values(EXERCISES)) {
+      const diffs = ex.difficulties || ['default'];
+      diffs.forEach(d => total += this.personalBest.getSessionCount(ex.id, d));
+    }
     return total;
   }
 

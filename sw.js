@@ -20,15 +20,27 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   
+  // Ignore extension schemes (chrome-extension:, moz-extension:, etc.)
+  const url = new URL(req.url);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+  
   // Skip non-GET, opaque, and range requests
   if (req.method !== 'GET' || req.headers.get('range')) return;
   
   // HTML: serve from network with fallback to cache (or navigation fallback)
   if (req.headers.get('accept')?.includes('text/html')) {
     e.respondWith(
-      fetch(req).catch(() => 
-        caches.match(req).then(res => res || caches.match(NAVIGATION_FALLBACK))
-      )
+      (async () => {
+        const preloadResponse = await e.preloadResponse;
+        if (preloadResponse) return preloadResponse;
+        
+        try {
+          return await fetch(req);
+        } catch {
+          const cached = await caches.match(req);
+          return cached || caches.match(NAVIGATION_FALLBACK);
+        }
+      })()
     );
     return;
   }

@@ -575,30 +575,32 @@ export const viewport = {
   isDesktop: () => mm('(min-width: 1025px)')
 };
 
-// Audio utilities (with gesture-aware playback)
+// Audio utilities (with registry and mute functionality)
+const __audioEls = new Map();
 export const audio = {
-  play: (soundId) => {
-    const sound = document.getElementById(soundId);
-    if (sound) {
-      sound.currentTime = 0;
-      sound.play().catch(e => {
-        // Handle common autoplay restrictions gracefully
-        if (e.name === 'NotAllowedError') {
-          if (!isTest) console.log('Audio autoplay blocked - user gesture required');
-          // Could show a toast notification here if needed:
-          // toast.show('Audio requires user interaction', { type: 'warning' });
-        } else {
-          if (!isTest) console.log('Audio play failed:', e);
-        }
-      });
-    }
+  muted: false,
+  create: (id, srcBase) => {
+    if (__audioEls.has(id)) return __audioEls.get(id);
+    const el = document.createElement('audio');
+    el.id = id; el.preload = 'auto';
+    el.src = `${srcBase}.mp3`; el.style.display = 'none';
+    el.muted = audio.muted;
+    document.body.appendChild(el);
+    __audioEls.set(id, el);
+    return el;
   },
-  
-  setVolume: (soundId, volume) => {
-    const sound = document.getElementById(soundId);
-    if (sound) {
-      sound.volume = Math.max(0, Math.min(1, volume));
-    }
+  play: (id) => {
+    const el = __audioEls.get(id) || document.getElementById(id);
+    if (!el) return;
+    el.muted = audio.muted;
+    el.currentTime = 0;
+    el.play().catch(()=>{});
+  },
+  setMuted: (v) => { audio.muted = !!v; __audioEls.forEach(el => el.muted = audio.muted); },
+  toggleMute: () => audio.setMuted(!audio.muted),
+  setVolume: (id, v) => {
+    const el = __audioEls.get(id) || document.getElementById(id);
+    if (el) el.volume = Math.max(0, Math.min(1, v));
   }
 };
 

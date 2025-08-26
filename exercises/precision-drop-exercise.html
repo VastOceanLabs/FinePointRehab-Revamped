@@ -22,12 +22,12 @@
 
   <!-- Social -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://finepointrehab.com/exercises/precision-drop-exercise">
+  <meta property="og:url" content="https://finepointrehab.com/exercises/precision-drop-exercise.html">
   <meta property="og:title" content="Precision Drop | Fine Point Rehab Motor Skills & Coordination Therapy Exercise App">
   <meta property="og:description" content="Improve fine motor skills, hand-eye coordination, and precision with this customizable therapy drag & drop exercise app. Perfect for stroke rehabilitation.">
   <meta property="og:image" content="https://finepointrehab.com/images/precision-drop-preview.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://finepointrehab.com/exercises/precision-drop-exercise">
+  <meta name="twitter:url" content="https://finepointrehab.com/exercises/precision-drop-exercise.html">
   <meta name="twitter:title" content="Precision Drop | Fine Point Rehab Motor Skills & Coordination Therapy Exercise App">
   <meta name="twitter:description" content="Improve fine motor skills, hand-eye coordination, and precision with this customizable therapy drag & drop exercise app. Perfect for stroke rehabilitation.">
   <meta name="twitter:image" content="https://finepointrehab.com/images/precision-drop-preview.jpg">
@@ -75,10 +75,16 @@
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
+    /* Allow scrolling on mobile devices */
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+    }
+
     /* Sticky header */
     header.site-header{
       position: sticky; top: 0; z-index: 1000;
       backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px); /* Safari compatibility */
       background: linear-gradient(180deg, rgba(10,15,27,0.85), rgba(10,15,27,0.65));
       border-bottom: 1px solid rgba(111,211,245,0.15);
       display:flex; align-items:center; gap: var(--space-4);
@@ -158,6 +164,7 @@
       background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.15));
       border:1px solid rgba(111,211,245,.18);
       backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px); /* Safari compatibility */
     }
     #timer-bar{
       grid-column: 1 / -1;
@@ -180,6 +187,13 @@
       box-shadow: 0 10px 40px rgba(0,0,0,.4), inset 0 0 18px rgba(111,211,245,.12);
     }
     #stars-container{ position:absolute; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+
+    /* Game area - critical positioning context for draggables/targets */
+    #game-area {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
 
     /* Status badges */
     #status-message{
@@ -244,6 +258,12 @@
     .scores{ display:grid; gap:8px; margin: 10px 0 16px; }
     .scores .score-highlight{ color: var(--brand); font-weight:800; }
 
+    .completion-message{ 
+      margin: 8px 0; 
+      color: var(--color-fg-2); 
+      font-style: italic; 
+    }
+
     .sr-only{ position:absolute !important; clip:rect(1px,1px,1px,1px); padding:0; border:0; height:1px; width:1px; overflow:hidden; }
 
     @media (prefers-reduced-motion: reduce){
@@ -266,7 +286,7 @@
       <h2 class="h3">Session Settings</h2>
 
       <div class="game-description">
-        <p><strong>About this exercise:</strong> Drag each coloured circle to its matching target to build precision and hand-eye coordination. Targets glow when you’re close. Score increases with accuracy and speed.</p>
+        <p><strong>About this exercise:</strong> Drag each coloured circle to its matching target to build precision and hand-eye coordination. Targets glow when you're close. Score increases with accuracy and speed.</p>
       </div>
 
       <div class="settings-group">
@@ -323,7 +343,7 @@
         </div>
 
         <div class="hud-metric">
-          <div class="value" id="personal-best">—</div>
+          <div class="value" id="personal-best">–</div>
           <div class="label">Personal Best</div>
         </div>
 
@@ -348,6 +368,7 @@
   <section id="completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-title" aria-describedby="completion-desc">
     <div id="completion-card" tabindex="-1">
       <h2 id="completion-title">🎉 Session complete!</h2>
+      <div id="completion-message" class="completion-message"></div>
       <p id="completion-desc" class="sr-only">Your session results including score, drops, accuracy, average time, stars and XP.</p>
 
       <div id="stars-row" aria-label="Star rating">
@@ -452,6 +473,7 @@
 
     let activeDroppables = [];
     let activeTargets = [];
+    let cachedTargets = []; // performance: cache target positions per round
     let currentDragging = null;
     let dragOffsetX = 0, dragOffsetY = 0;
     let lastTrailTime = 0;
@@ -478,9 +500,9 @@
       { solid:'#34495e', grad:'linear-gradient(135deg,#34495e,#2c3e50)' }
     ];
 
-    // Starfield: prefer shared util if available
-    if (starfield && typeof starfield.init === 'function') {
-      try { starfield.init(starsContainer); } catch(_) {}
+    // Starfield: prefer shared util if available, fixed implementation
+    if (starfield && typeof starfield.init === 'function' && document.getElementById('starfield')) {
+      try { starfield.init(); } catch(_) {}
     } else {
       // lightweight fallback stars
       const count = 60;
@@ -499,19 +521,47 @@
       document.head.appendChild(tw);
     }
 
-    // Session Enhancement (confetti/celebrations etc.)
-    sessionEnhancement.initializeExercise('precision-drop', () => difficultySelect.value);
+    // Initialize session enhancement properly
+    function initializeSessionEnhancement() {
+      // Remove any existing pre-session display to prevent duplicates
+      const settingsPanel = document.getElementById('settings-panel');
+      if (settingsPanel) {
+        const oldDisplay = settingsPanel.querySelector('.pre-session-display');
+        if (oldDisplay) oldDisplay.remove();
+      }
+      
+      // Initialize with actual difficulty value, not function
+      sessionEnhancement.initializeExercise('precision-drop', difficultySelect.value);
+    }
+
+    // Session Enhancement initialization
+    initializeSessionEnhancement();
+    
     difficultySelect.addEventListener('change', () => {
-      sessionEnhancement.initializeExercise('precision-drop', () => difficultySelect.value);
+      initializeSessionEnhancement();
       hudDifficultyEl.textContent = labelForDifficulty(difficultySelect.value);
+      updatePersonalBestDisplay();
     });
 
-    // Personal Best (HUD)
-    const PB_KEY = 'pb:precision-drop';
-    function getPB(){ try{ return Number(storage.get(PB_KEY) ?? 0); } catch{ return Number(localStorage.getItem(PB_KEY) || 0); } }
-    function setPB(v){ try{ storage.set(PB_KEY, String(v)); } catch{ localStorage.setItem(PB_KEY, String(v)); } }
-    function refreshPB(){ const pb = getPB(); personalBestEl.textContent = pb > 0 ? pb : '—'; }
-    refreshPB();
+    // Personal Best (HUD) - updated to use session enhancement system
+    function updatePersonalBestDisplay() {
+      try {
+        const currentDifficulty = difficultySelect.value;
+        const difficultyBest = sessionEnhancement.personalBest.getBest('precision-drop', currentDifficulty);
+        personalBestEl.textContent = difficultyBest > 0 ? difficultyBest : '–';
+      } catch(e) {
+        // Fallback to simple storage if session enhancement fails
+        const PB_KEY = 'pb:precision-drop';
+        try{ 
+          const pb = Number(storage.get(PB_KEY) ?? 0);
+          personalBestEl.textContent = pb > 0 ? pb : '–';
+        } catch{ 
+          const pb = Number(localStorage.getItem(PB_KEY) || 0);
+          personalBestEl.textContent = pb > 0 ? pb : '–';
+        }
+      }
+    }
+    updatePersonalBestDisplay();
 
     // Controls
     startBtn.addEventListener('click', () => { if(!isSessionActive){ startSession(); } else if(isPaused){ resume(); } });
@@ -616,8 +666,8 @@
       const difficulty = difficultySelect ? difficultySelect.value : 'easy';
       window.endSession(score, difficulty);
 
-      // PB update
-      if (score > getPB()){ setPB(score); refreshPB(); }
+      // Update personal best display
+      updatePersonalBestDisplay();
 
       // Stars + XP
       const stars = computeStars(accuracy);
@@ -797,16 +847,7 @@
       createDragTrail(nx + size/2, ny + size/2);
 
       // proximity glow
-      activeTargets.forEach(t => t.classList.remove('active'));
-      const dcx = nx + size/2, dcy = ny + size/2;
-      activeTargets.forEach(t => {
-        const tr = t.getBoundingClientRect();
-        const tcx = tr.left - gr.left + tr.width/2;
-        const tcy = tr.top - gr.top + tr.height/2;
-        if (Math.hypot(dcx - tcx, dcy - tcy) < tr.width/2 + size/2 + 20){
-          t.classList.add('active');
-        }
-      });
+      checkProximity();
     }
     function endDrag(e){
       if(!currentDragging) return;
@@ -822,6 +863,26 @@
       activeTargets.forEach(t => t.classList.remove('active'));
       currentDragging.classList.remove('dragging');
       currentDragging = null;
+    }
+
+    function checkProximity(){
+      activeTargets.forEach(t => t.classList.remove('active'));
+      if (!currentDragging) return;
+      
+      const gr = gameArea.getBoundingClientRect();
+      const rect = currentDragging.getBoundingClientRect();
+      const size = rect.width;
+      const dcx = rect.left - gr.left + size/2;
+      const dcy = rect.top - gr.top + size/2;
+      
+      activeTargets.forEach(t => {
+        const tr = t.getBoundingClientRect();
+        const tcx = tr.left - gr.left + tr.width/2;
+        const tcy = tr.top - gr.top + tr.height/2;
+        if (Math.hypot(dcx - tcx, dcy - tcy) < tr.width/2 + size/2 + 20){
+          t.classList.add('active');
+        }
+      });
     }
 
     function createDragTrail(x, y){
@@ -855,7 +916,12 @@
         const tCenter = { x: tr.left - gr.left + tr.width/2, y: tr.top - gr.top + tr.height/2 };
         const distance = Math.hypot(dCenter.x - tCenter.x, dCenter.y - tCenter.y);
 
-        if (distance < tr.width/3 && t.dataset.targetId === currentDragging.dataset.targetId){
+        // More forgiving drop threshold that scales with target/object sizes
+        const radius = tr.width / 2;
+        const objR = dr.width / 2;
+        const threshold = Math.max(18, radius - objR * 0.5); // keeps it fair across sizes
+
+        if (distance < threshold && t.dataset.targetId === currentDragging.dataset.targetId){
           matched = true;
           t.classList.add('success');
           setTimeout(()=> t.classList.remove('success'), 600);
