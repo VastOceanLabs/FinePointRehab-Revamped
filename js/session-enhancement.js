@@ -13,10 +13,17 @@
  */
 
 import { storage, toast, audio } from './utils.js';
-import { EXERCISES } from './exercises.js';
 
-// SSR/DOM safety check
+// SSR/DOM safety check — move this ABOVE any use of isBrowser
 const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+
+// Dynamic import to prevent module loading failures
+let EXERCISES = null;
+if (isBrowser) {
+  import('./exercises.js')
+    .then(m => { EXERCISES = m?.EXERCISES ?? null; })
+    .catch(() => { EXERCISES = null; });
+}
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION
@@ -191,6 +198,14 @@ class CelebrationManager {
         }
       });
       
+      // iOS audio priming for better compatibility
+      if (audio && typeof audio.setMuted === 'function') {
+        const wasMuted = typeof audio.muted === 'boolean' ? audio.muted : true;
+        audio.setMuted(true);
+        Object.keys(CELEBRATION_SOUNDS).forEach(id => { try { audio.play(id); } catch {} });
+        setTimeout(() => audio.setMuted(wasMuted), 0);
+      }
+      
       this.audioInitialized = true;
     };
 
@@ -274,7 +289,7 @@ class CelebrationManager {
     
     const celebration = document.createElement('div');
     celebration.className = 'static-celebration';
-    celebration.innerHTML = '🎉';
+    celebration.textContent = '🎉'; // use textContent, not innerHTML
     celebration.setAttribute('role', 'status');
     celebration.setAttribute('aria-live', 'polite');
     celebration.style.cssText = `
@@ -439,22 +454,30 @@ class SessionEnhancementSystem {
   }
 
   /**
-   * Add pre-session personal best display
+   * Add pre-session personal best display to settings panel
    */
   addPreSessionDisplay() {
     if (!isBrowser) return;
     
     const { id, difficulty } = this.currentExercise;
+    
+    // Target the settings panel specifically
+    const settingsPanel = document.getElementById('settings-panel') ||
+                         document.querySelector('.settings-panel');
+    
+    if (!settingsPanel) return;
+    
+    // Remove any existing pre-session display to prevent duplicates
+    const existingDisplay = settingsPanel.querySelector('.pre-session-display');
+    if (existingDisplay) {
+      existingDisplay.remove();
+    }
+    
+    // Create new display
     const display = this.personalBest.createPreSessionDisplay(id, difficulty);
     
-    // Find a good place to insert it (before game area or in settings)
-    const gameContainer = document.getElementById('game-container') || 
-                         document.querySelector('.game-container') ||
-                         document.querySelector('main');
-    
-    if (gameContainer) {
-      gameContainer.insertBefore(display, gameContainer.firstChild);
-    }
+    // Insert at the top of the settings panel
+    settingsPanel.insertBefore(display, settingsPanel.firstChild);
   }
 
   /**
@@ -462,6 +485,14 @@ class SessionEnhancementSystem {
    */
   addCelebrationControls() {
     if (!isBrowser) return;
+    
+    const settingsPanel = document.getElementById('settings-panel') ||
+                         document.querySelector('.settings-panel');
+    
+    if (!settingsPanel) return;
+
+    // Remove old controls if present to prevent duplicates
+    settingsPanel.querySelector('.celebration-controls')?.remove();
     
     const controlsContainer = document.createElement('div');
     controlsContainer.className = 'celebration-controls';
@@ -501,13 +532,7 @@ class SessionEnhancementSystem {
       this.celebration.toggleConfettiOverride();
     });
 
-    // Insert into settings panel if available
-    const settingsPanel = document.getElementById('settings-panel') ||
-                         document.querySelector('.settings-panel');
-    
-    if (settingsPanel) {
-      settingsPanel.appendChild(controlsContainer);
-    }
+    settingsPanel.appendChild(controlsContainer);
   }
 
   /**
@@ -516,7 +541,7 @@ class SessionEnhancementSystem {
    */
   handleSessionComplete(sessionData) {
     const { id, difficulty } = this.currentExercise;
-    const { score, taps, accuracy, avgResponseTime } = sessionData;
+    const { score, accuracy } = sessionData;
 
     // Update session count
     this.personalBest.incrementSessions(id, difficulty);
@@ -551,12 +576,17 @@ class SessionEnhancementSystem {
    * @returns {number} Total session count
    */
   getTotalSessions() {
-    if (!isBrowser || !EXERCISES) return 0;
+    if (!isBrowser || !EXERCISES) {
+      // Fallback: count just the current exercise/difficulty
+      const { id, difficulty } = this.currentExercise || {};
+      return this.personalBest.getSessionCount(id || 'unknown', difficulty || 'default');
+    }
     
     let total = 0;
-    for (const ex of Object.values(EXERCISES)) {
-      const diffs = ex.difficulties || ['default'];
-      diffs.forEach(d => total += this.personalBest.getSessionCount(ex.id, d));
+    for (const [key, ex] of Object.entries(EXERCISES)) {
+      const eid = ex?.id || key;
+      const diffs = ex?.difficulties || ['default'];
+      diffs.forEach(d => total += this.personalBest.getSessionCount(eid, d));
     }
     return total;
   }
@@ -615,8 +645,8 @@ class SessionEnhancementSystem {
     while (this.notificationQueue.length > 0) {
       const notification = this.notificationQueue.shift();
       
-      // Show toast notification with improved debouncing
-      toast.show(notification.message, {
+      // Show toast notification with improved debouncing (guard against missing toast)
+      toast?.show?.(notification.message, {
         type: notification.type === 'personalBest' ? 'success' : 'info',
         duration: 4000,
         debounceKey: notification.debounceKey || `${notification.type}:${notification.message}`
@@ -640,10 +670,10 @@ class SessionEnhancementSystem {
   addEncouragementMessage(isPersonalBest, hasMilestone) {
     if (!isBrowser) return;
     
-    const completionMessage = document.getElementById('completion-message') ||
-                             document.querySelector('.completion-message');
+    const card = document.getElementById('completion-card') || 
+                document.querySelector('#completion-message .panel');
     
-    if (!completionMessage) return;
+    if (!card) return;
 
     const encouragementDiv = document.createElement('div');
     encouragementDiv.className = 'encouragement-message';
@@ -661,8 +691,8 @@ class SessionEnhancementSystem {
 
     encouragementDiv.innerHTML = `<p class="encouragement-text">${message}</p>`;
     
-    // Insert before existing content
-    completionMessage.insertBefore(encouragementDiv, completionMessage.firstChild);
+    // Insert into the card, not the overlay
+    card.insertBefore(encouragementDiv, card.firstChild);
   }
 
   /**
@@ -699,11 +729,13 @@ function injectStyles() {
   styles.id = 'session-enhancement-styles';
   styles.textContent = `
     .pre-session-display {
-      background: var(--bg-secondary, #f8fafc);
-      border: 1px solid var(--border, #e5e7eb);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
       border-radius: 8px;
       padding: 1rem;
       margin-bottom: 1rem;
+      grid-column: 1 / -1;
+      color: #fff;
     }
 
     .personal-stats {
@@ -720,7 +752,7 @@ function injectStyles() {
     .stat-label {
       display: block;
       font-size: 0.875rem;
-      color: var(--text-secondary, #6b7280);
+      color: rgba(255,255,255,.75);
       margin-bottom: 0.25rem;
     }
 
@@ -728,14 +760,16 @@ function injectStyles() {
       display: block;
       font-size: 1.5rem;
       font-weight: bold;
-      color: var(--brand-blue, #2563eb);
+      color: var(--brand-aqua, #48cae4);
     }
 
     .celebration-controls {
       margin-top: 1rem;
       padding: 1rem;
-      background: var(--bg-secondary, #f8fafc);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
       border-radius: 8px;
+      color: #fff;
     }
 
     .control-group {

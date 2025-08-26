@@ -68,6 +68,9 @@
   <style>
     :root {
       --header-h: 64px;
+      /* Force dark theme token overrides for proper visibility */
+      --text-primary: #f9fafb;
+      --text-secondary: #cbd5e1;
     }
 
     body {
@@ -164,9 +167,11 @@
       display: block;
       font-size: var(--font-size-xs);
       opacity: 0.8;
+      color: var(--text-secondary);
     }
     .hud-stat .value {
       font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
     }
 
     .hud-controls .btn {
@@ -190,6 +195,24 @@
       z-index: 1;
       pointer-events: none;
       overflow: hidden;
+    }
+
+    /* Fallback starfield styles */
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: twinkle 3s ease-in-out infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.2); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .star { animation: none; opacity: 0.4; }
     }
 
     #playable-area {
@@ -294,8 +317,18 @@
 
     /* Forms & buttons */
     .settings-group { margin-bottom: var(--space-4); }
-    .settings-label { display: block; margin-bottom: var(--space-2); font-weight: var(--font-weight-semibold); color: var(--brand-aqua); }
-    .setting-description { font-size: var(--font-size-sm); opacity: 0.85; margin-bottom: var(--space-2); }
+    .settings-label { 
+      display: block; 
+      margin-bottom: var(--space-2); 
+      font-weight: var(--font-weight-semibold); 
+      color: var(--brand-aqua); 
+    }
+    .setting-description { 
+      font-size: var(--font-size-sm); 
+      opacity: 0.85; 
+      margin-bottom: var(--space-2); 
+      color: var(--text-secondary);
+    }
     select, input {
       width: 100%; padding: var(--space-3); border-radius: var(--radius);
       border: 1px solid rgba(255,255,255,0.18);
@@ -321,6 +354,20 @@
   </style>
 </head>
 <body>
+  <!-- Audio elements for feedback -->
+  <audio id="pop" preload="auto">
+    <source src="../audio/pop.mp3" type="audio/mpeg">
+    <source src="../audio/pop.ogg" type="audio/ogg">
+  </audio>
+  <audio id="sessionComplete" preload="auto">
+    <source src="../audio/session-complete.mp3" type="audio/mpeg">
+    <source src="../audio/session-complete.ogg" type="audio/ogg">
+  </audio>
+  <audio id="personalBest" preload="auto">
+    <source src="../audio/personal-best.mp3" type="audio/mpeg">
+    <source src="../audio/personal-best.ogg" type="audio/ogg">
+  </audio>
+
   <!-- Sticky Header & Nav -->
   <header class="site-header" role="banner">
     <a href="/" class="btn btn-ghost" aria-label="Go to Home">← Home</a>
@@ -350,9 +397,9 @@
 
         <div class="settings-group">
           <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
-          <p class="setting-description">Start with 1–2 minutes and increase as you improve.</p>
+          <p class="setting-description">Start with 1—2 minutes and increase as you improve.</p>
           <input id="session-duration" type="number" inputmode="numeric" min="1" max="10" value="2" aria-describedby="session-duration-help">
-          <div id="session-duration-help" class="setting-description">1–10 minutes</div>
+          <div id="session-duration-help" class="setting-description">1—10 minutes</div>
         </div>
 
         <div class="settings-group">
@@ -360,7 +407,7 @@
           <p class="setting-description">Numbers show which finger to use for each bubble.</p>
           <select id="finger-option" name="finger-option">
             <option value="none">No finger guidance — Any finger</option>
-            <option value="all" selected>All fingers (1–5) — Random</option>
+            <option value="all" selected>All fingers (1—5) — Random</option>
             <option value="1">Thumb only (1)</option>
             <option value="2">Index only (2)</option>
             <option value="3">Middle only (3)</option>
@@ -451,11 +498,14 @@
   <!-- Core JavaScript modules -->
   <script type="module">
     // Root-relative imports per global standard
-    import { storage, starfield, initUtils } from '/js/utils.js';
+    import { storage, starfield, initUtils, audio } from '/js/utils.js';
     import { sessionEnhancement } from '/js/session-enhancement.js';
     import { recordSession } from '/js/progress.js';
     import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
 
+    // Force dark theme for proper visibility
+    document.body.classList.add('dark-theme');
+    
     initUtils();
 
     // DOM refs
@@ -518,46 +568,107 @@
       'small': 70
     };
 
-    // Starfield
-    starfield.generate(starsContainer, 60);
+    // Starfield implementation (fix for missing starfield.generate)
+    function createStarfield(container, count = 60) {
+      if (!container) return;
+      
+      // Respect reduced motion preference
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      
+      container.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+      
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        const size = 1 + Math.random() * 2.5;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.opacity = `${0.2 + Math.random() * 0.6}`;
+        
+        if (!reducedMotion) {
+          const duration = 3 + Math.random() * 2;
+          const delay = Math.random() * 3;
+          star.style.animationDelay = `${delay}s`;
+          star.style.animationDuration = `${duration}s`;
+        }
+        
+        fragment.appendChild(star);
+      }
+      
+      container.appendChild(fragment);
+    }
 
-    // Personal best (local)
+    // Initialize starfield
+    createStarfield(starsContainer, 60);
+
+    // Difficulty mapping: bubble sizes to standard difficulty levels
+    function mapToStandardDifficulty(bubbleSize) {
+      switch(bubbleSize) {
+        case 'very-large': return 'easy';
+        case 'large': return 'easy';
+        case 'medium': return 'medium';
+        case 'small': return 'hard';
+        default: return 'medium';
+      }
+    }
+
+    // Personal best (local) - FIXED: use storage.get/set
     function getPB() {
-      return Number(storage.getItem('pb_' + EXERCISE_ID)) || 0;
+      return Number(storage.get('pb_' + EXERCISE_ID, 0));
     }
     function setPB(val) {
       const current = getPB();
-      if (val > current) storage.setItem('pb_' + EXERCISE_ID, String(val));
+      if (val > current) {
+        storage.set('pb_' + EXERCISE_ID, val);
+        pbEl.textContent = String(val);
+        return true; // new PB
+      }
       pbEl.textContent = String(getPB());
+      return false;
     }
     pbEl.textContent = String(getPB());
 
     // Difficulty into session-enhancement (for streaks/targets)
     function currentDifficulty() {
-      return bubbleSizeSelect?.value || 'medium';
+      return mapToStandardDifficulty(bubbleSizeSelect?.value || 'medium');
     }
     sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty());
+    
     bubbleSizeSelect.addEventListener('change', () => {
-      hudDifficultyEl.textContent = currentDifficulty();
-      sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty());
-      storage.setItem('bubbleSettings', {
+      const standardDiff = currentDifficulty();
+      hudDifficultyEl.textContent = standardDiff;
+      sessionEnhancement.initializeExercise(EXERCISE_ID, standardDiff);
+      saveSettings();
+    });
+    hudDifficultyEl.textContent = currentDifficulty();
+
+    // Settings persistence - FIXED: use storage.get/set
+    function saveSettings() {
+      storage.set('bubbleSettings', {
         bubbleSize: bubbleSizeSelect.value,
         sessionDuration: sessionDurationInput.value,
         fingerOption: fingerOptionSelect.value
       });
-    });
-    hudDifficultyEl.textContent = currentDifficulty();
+    }
 
-    // Settings persistence
-    (function loadSettings(){
-      const s = storage.getItem('bubbleSettings');
+    function loadSettings() {
+      const s = storage.get('bubbleSettings');
       if (s) {
         bubbleSizeSelect.value = s.bubbleSize || 'medium';
         sessionDurationInput.value = s.sessionDuration || '2';
         fingerOptionSelect.value = s.fingerOption || 'all';
         hudDifficultyEl.textContent = currentDifficulty();
       }
-    })();
+    }
+    loadSettings();
+
+    // Save settings on change
+    sessionDurationInput.addEventListener('change', saveSettings);
+    fingerOptionSelect.addEventListener('change', saveSettings);
 
     // Controls hookup (both locations)
     [startBtn, hudStart].forEach(b => b.addEventListener('click', startSession));
@@ -573,7 +684,10 @@
       }
     });
     bubble.addEventListener('click', handleBubbleTap);
-    bubble.addEventListener('touchstart', (e) => { e.preventDefault(); handleBubbleTap(); }, {passive:false});
+    bubble.addEventListener('touchstart', (e) => { 
+      e.preventDefault(); 
+      handleBubbleTap(); 
+    }, {passive:false});
 
     // Miss tracking (clicks not on bubble)
     document.getElementById('game-container').addEventListener('pointerdown', (e) => {
@@ -589,11 +703,7 @@
       fingerMode = fingerOptionSelect.value;
 
       // Save settings
-      storage.setItem('bubbleSettings', {
-        bubbleSize: bubbleSizeSelect.value,
-        sessionDuration: sessionDurationInput.value,
-        fingerOption: fingerOptionSelect.value
-      });
+      saveSettings();
 
       // Reset state
       score = 0; taps = 0; misses = 0; totalResponseTime = 0;
@@ -602,7 +712,11 @@
 
       // UI
       enableRunningUI();
-      if (fingerMode !== 'none') fingerGuide.classList.remove('hidden'); else fingerGuide.classList.add('hidden');
+      if (fingerMode !== 'none') {
+        fingerGuide.classList.remove('hidden'); 
+      } else {
+        fingerGuide.classList.add('hidden');
+      }
 
       // Start
       isActive = true;
@@ -613,6 +727,16 @@
 
       clearInterval(timerInterval);
       timerInterval = setInterval(tick, 100);
+
+      // Auto-scroll to game on mobile
+      if (window.innerWidth <= 980) {
+        setTimeout(() => {
+          document.getElementById('game-container').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }, 100);
+      }
     }
 
     function togglePause() {
@@ -649,6 +773,9 @@
       score += points;
       taps++;
 
+      // Audio feedback
+      audio.play('pop');
+
       bubble.classList.add('burst');
       setTimeout(() => {
         bubble.classList.remove('burst');
@@ -668,6 +795,9 @@
       const accuracy = taps > 0 ? Math.round((taps / (taps + misses)) * 100) : 0;
       const avgResponse = taps > 0 ? (totalResponseTime / taps / 1000) : 0;
 
+      // Check for new personal best
+      const isNewPB = setPB(score);
+
       // Notify sessionEnhancement
       sessionEnhancement.handleSessionComplete({
         score,
@@ -676,13 +806,18 @@
         avgResponseTime: Number(avgResponse.toFixed(2))
       });
 
-      // Progress & Achievements
-      const diff = currentDifficulty();
+      // Progress & Achievements - use mapped difficulty
+      const standardDiff = currentDifficulty();
       if (window.endSession) {
-        window.endSession(score, diff);
+        window.endSession(score, standardDiff);
       }
-      // Local PB tracking for HUD
-      setPB(score);
+
+      // Audio feedback
+      if (isNewPB) {
+        audio.play('personalBest');
+      } else {
+        audio.play('sessionComplete');
+      }
 
       // Completion modal
       if (showModal) {
@@ -693,6 +828,16 @@
         // Simple XP calc: 1 XP per 50 points (round down)
         const xp = Math.floor(score / 50);
         xpEarnedEl.textContent = `+${xp}`;
+        
+        // Add new PB indicator
+        if (isNewPB) {
+          const pbIndicator = document.createElement('p');
+          pbIndicator.className = 'xp-line';
+          pbIndicator.style.color = 'var(--brand-aqua)';
+          pbIndicator.textContent = '🎉 New Personal Best!';
+          xpEarnedEl.parentElement.appendChild(pbIndicator);
+        }
+        
         completionModal.classList.add('open');
       }
 
@@ -748,12 +893,22 @@
     function enableRunningUI() {
       [pauseBtn, hudPause, restartBtn, hudRestart].forEach(b => b.disabled = false);
       [startBtn, hudStart].forEach(b => b.disabled = true);
+      
+      // Hide settings panel on mobile during gameplay
+      if (window.innerWidth <= 980) {
+        document.querySelector('.settings-panel').style.display = 'none';
+      }
     }
 
     function disableRunningUI() {
       [pauseBtn, hudPause, restartBtn, hudRestart].forEach(b => b.disabled = true);
       [startBtn, hudStart].forEach(b => b.disabled = false);
       [pauseBtn, hudPause].forEach(b => b.textContent = 'Pause');
+      
+      // Show settings panel again on mobile
+      if (window.innerWidth <= 980) {
+        document.querySelector('.settings-panel').style.display = 'block';
+      }
     }
 
     // Expose standardized global endSession hook (already required globally)

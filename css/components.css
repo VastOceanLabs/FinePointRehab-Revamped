@@ -84,6 +84,21 @@
   filter: brightness(1.1);
 }
 
+/* Danger button - destructive actions */
+.btn-danger {
+  background: var(--error);
+  color: white;
+  border-color: var(--error);
+}
+
+.btn-danger:hover {
+  background: var(--error);
+  border-color: var(--error-border);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  filter: brightness(1.1);
+}
+
 /* Ghost/outline button - subtle actions */
 .btn-ghost {
   background: transparent;
