@@ -43,11 +43,13 @@
         linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
       min-height: 100vh;
       min-height: calc(var(--vh, 1vh) * 100);
-      overflow: hidden;
+      /* Critical fix: allow page to scroll */
+      overflow: auto;
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
       padding-bottom: max(0px, env(safe-area-inset-bottom));
+      overscroll-behavior: contain;
     }
 
     /* Sticky header */
@@ -83,21 +85,21 @@
       letter-spacing: 0.2px;
     }
 
-    /* Shared 2-panel layout */
+    /* Two-panel layout */
     .layout {
       position: relative;
       display: grid;
       grid-template-columns: 360px 1fr;
       gap: var(--space-4, 16px);
-      height: calc(100vh - 56px);
-      height: calc((var(--vh, 1vh) * 100) - 56px);
+      /* Critical fix: don't hard-lock viewport height */
+      height: auto;
+      min-height: calc((var(--vh, 1vh) * 100) - 56px);
       padding: var(--space-4, 16px);
     }
     @media (max-width: 900px) {
       .layout {
-        grid-template-columns: 1fr;
-        grid-auto-rows: max-content 1fr;
-        height: auto;
+        /* Simpler, more robust mobile stack */
+        display: block;
         min-height: calc(var(--vh, 1vh) * 100 - 56px);
       }
     }
@@ -110,11 +112,14 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
     }
 
-    /* Left: Settings */
+    /* Left: Settings (scrollable) */
     #settings-panel {
-      overflow: auto;
+      overflow-y: auto;
       padding: var(--space-5, 20px);
-      max-height: 100%;
+      max-height: calc((var(--vh, 1vh) * 100) - 56px);
+      -webkit-overflow-scrolling: touch;
+      /* keep buttons away from bottom safe area */
+      padding-bottom: calc(var(--space-5, 20px) + env(safe-area-inset-bottom));
     }
     #settings-panel h2 {
       margin: 0 0 var(--space-3, 12px);
@@ -232,7 +237,6 @@
       font-size: 18px; 
       color: rgba(111,211,245,1); 
     }
-    /* Emphasize current score more */
     #score { 
       font-size: 22px; 
       color: rgba(150,220,255,1);
@@ -252,7 +256,7 @@
       position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden;
     }
 
-    /* Comet styles (improved with better focus indicators) */
+    /* Comet styles */
     .comet {
       position: absolute;
       width: 60px; height: 60px;
@@ -268,9 +272,8 @@
       box-shadow: 0 0 0 3px rgba(111,211,245,0.8), 0 0 20px rgba(111,211,245,0.6); 
       transform: scale(1.1);
     }
-    .comet:hover {
-      transform: scale(1.05);
-    }
+    .comet:hover { transform: scale(1.05); }
+
     .comet-core {
       position: relative; width: 100%; height: 100%; border-radius: 50%;
       background:
@@ -331,7 +334,6 @@
       50% { transform: translate(-50%, -80%) scale(1.2); opacity: 1; }
       100% { transform: translate(-50%, -120%) scale(1); opacity: 0; } }
 
-    /* Comet particles with CSS animation */
     .comet-particle {
       position: absolute;
       border-radius: 50%;
@@ -385,19 +387,12 @@
       .stat-value { font-size: 16px; }
       #score { font-size: 18px; }
       .btn { min-height: 44px; font-size: 16px; }
-    }
-
-    /* Better mobile button accessibility */
-    @media (max-width: 640px) {
-      .btn-row {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-      .btn { min-height: 50px; }
+      /* Make action rows single-column for narrow screens */
+      .btn-row { grid-template-columns: 1fr; gap: 8px; }
       header h1 { font-size: clamp(16px, 4vw, 20px); }
     }
 
-    /* Loading state */
+    /* Loading state (kept for future use) */
     .loading-overlay {
       position: absolute;
       inset: 0;
@@ -482,7 +477,6 @@
 
     <!-- Right: HUD + Game -->
     <section class="game-column" aria-label="Game column">
-      <!-- ✅ Container for session enhancement to target -->
       <div class="game-container">
         <!-- HUD -->
         <div class="hud" role="region" aria-label="Session HUD">
@@ -545,9 +539,8 @@
       initUtils();
     } catch (e) {
       console.warn('Utils module not available, using fallbacks');
-      // Minimal fallbacks
       initUtils = () => {};
-      toast = { show: (msg, opts) => console.log('Toast:', msg) };
+      toast = { show: (msg) => console.log('Toast:', msg) };
       audio = { play: () => {}, create: () => {} };
     }
 
@@ -644,7 +637,6 @@
     function initializeAudio() {
       if (audioInitialized) return;
       try {
-        // Create audio elements for game sounds
         const hitSound = document.createElement('audio');
         hitSound.id = 'hit-sound';
         hitSound.src = '/audio/hit.mp3';
@@ -665,14 +657,12 @@
 
     function playSound(id) {
       try {
-        const audio = document.getElementById(id);
-        if (audio) {
-          audio.currentTime = 0;
-          audio.play().catch(() => {}); // Ignore autoplay restrictions
+        const el = document.getElementById(id);
+        if (el) {
+          el.currentTime = 0;
+          el.play().catch(() => {}); // Ignore autoplay restrictions
         }
-      } catch (e) {
-        // Silent fail
-      }
+      } catch {}
     }
 
     // ---- Difficulty mapping ----
@@ -685,32 +675,27 @@
       if (size === 'large' || speed === 'slow') return 'large';
       return 'medium';
     }
-    
     function updateDifficultyDisplay() {
       const diff = currentDifficulty();
       diffEl.textContent = diff[0].toUpperCase() + diff.slice(1);
       return diff;
     }
-    
     updateDifficultyDisplay();
 
-    // ---- Session enhancement hooks (initialize once to avoid duplicates) ----
+    // ---- Session enhancement hooks ----
     try {
       sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty());
-      
-      // Only update difficulty display, don't re-initialize
       cometSizeSelect.addEventListener('change', updateDifficultyDisplay);
       cometSpeedSelect.addEventListener('change', updateDifficultyDisplay);
     } catch (e) {
       console.warn('Session enhancement initialization failed:', e);
     }
 
-    // ---- Starfield (shared util if available; graceful fallback) ----
+    // ---- Starfield (util or fallback) ----
     try {
       if (starfield && typeof starfield.attach === 'function') {
         starfield.attach(starsContainer, { density: 0.6 });
       } else {
-        // Fallback simple stars
         for (let i = 0; i < 80; i++) {
           const star = document.createElement('div');
           star.classList.add('star');
@@ -754,18 +739,10 @@
     // ---- Personal Best (unified tracking) ----
     const PB_KEY = 'pb_comet';
     function getPB(){ 
-      try {
-        return parseInt(localStorage.getItem(PB_KEY) || '0', 10); 
-      } catch {
-        return 0;
-      }
+      try { return parseInt(localStorage.getItem(PB_KEY) || '0', 10); } catch { return 0; }
     }
     function setPB(val){ 
-      try {
-        localStorage.setItem(PB_KEY, String(val)); 
-      } catch {
-        // Silent fail if localStorage unavailable
-      }
+      try { localStorage.setItem(PB_KEY, String(val)); } catch {}
     }
     pbEl.textContent = getPB();
 
@@ -786,23 +763,20 @@
       }
     });
 
-    // ---- Controls (Fixed button logic) ----
+    // ---- Controls ----
     startBtn.addEventListener('click', () => {
-      if (!isActive) startSession(); // Only start new sessions
+      if (!isActive) startSession();
     });
     pauseBtn.addEventListener('click', () => {
       if (isActive && !isPaused) pauseSession();
       else if (isActive && isPaused) resumeSession();
     });
     restartBtn.addEventListener('click', restartSession);
-    
-    // Fixed: Start new session immediately instead of just resetting
     closeCompletionBtn.addEventListener('click', () => {
       completionMessage.classList.add('hidden');
-      // Auto-start new session instead of just resetting
       setTimeout(() => {
         restartSession();
-        setTimeout(startSession, 100); // Small delay to ensure reset is complete
+        setTimeout(startSession, 100);
       }, 100);
     });
 
@@ -817,18 +791,8 @@
 
     // Initialize audio on first user interaction
     let firstInteraction = true;
-    document.addEventListener('pointerdown', () => {
-      if (firstInteraction) {
-        initializeAudio();
-        firstInteraction = false;
-      }
-    });
-    document.addEventListener('touchstart', () => {
-      if (firstInteraction) {
-        initializeAudio();
-        firstInteraction = false;
-      }
-    });
+    document.addEventListener('pointerdown', () => { if (firstInteraction) { initializeAudio(); firstInteraction = false; } });
+    document.addEventListener('touchstart', () => { if (firstInteraction) { initializeAudio(); firstInteraction = false; } });
 
     // ---- Settings persist ----
     function saveSettings() {
@@ -837,9 +801,7 @@
         localStorage.setItem('cometSize', cometSizeSelect.value);
         localStorage.setItem('cometSpeed', cometSpeedSelect.value);
         localStorage.setItem('cometSpawnRate', spawnRateSelect.value);
-      } catch (e) {
-        console.warn('Could not save settings:', e);
-      }
+      } catch (e) { console.warn('Could not save settings:', e); }
     }
     function loadSettings() {
       try {
@@ -848,9 +810,7 @@
         cometSpeedSelect.value = localStorage.getItem('cometSpeed') || 'medium';
         spawnRateSelect.value = localStorage.getItem('cometSpawnRate') || 'fast';
         updateDifficultyDisplay();
-      } catch (e) {
-        console.warn('Could not load settings:', e);
-      }
+      } catch (e) { console.warn('Could not load settings:', e); }
     }
     loadSettings();
 
@@ -862,7 +822,6 @@
 
       // UI state
       isActive = true; isPaused = false;
-      // Keep Start button as "Start" - don't change text
       pauseBtn.textContent = 'Pause'; pauseBtn.disabled = false;
       restartBtn.disabled = false;
       
@@ -870,7 +829,6 @@
       if ('inert' in HTMLElement.prototype) {
         settingsPanel.setAttribute('inert', '');
       } else {
-        // Fallback: disable form elements
         const inputs = settingsPanel.querySelectorAll('input, select, button');
         inputs.forEach(input => {
           input.dataset.wasDisabled = input.disabled;
@@ -886,10 +844,8 @@
       timerInterval = setInterval(onTick, 1000);
       spawnInterval = setInterval(spawnComet, spawnRates[spawnRateSelect.value]);
 
-      // Kick animation loop
       requestAnimationFrame(updateComets);
 
-      // Announce and focus
       gameArea.focus();
       toast.show('Session started! Tap the comets!', { duration: 2000 });
     }
@@ -913,36 +869,25 @@
     }
 
     function restartSession() {
-      // Clear any active comets
-      comets.forEach(c => {
-        if (c._particleInterval) clearInterval(c._particleInterval);
-        c.remove();
-      });
+      comets.forEach(c => { if (c._particleInterval) clearInterval(c._particleInterval); c.remove(); });
       comets = []; focusedIndex = -1;
 
-      // Reset UI/buttons
       isActive = false; isPaused = false;
       startBtn.textContent = 'Start';
       pauseBtn.textContent = 'Pause'; pauseBtn.disabled = true;
       restartBtn.disabled = true;
 
-      // Re-enable settings
       if ('inert' in HTMLElement.prototype) {
         settingsPanel.removeAttribute('inert');
       } else {
-        // Restore form elements
         const inputs = settingsPanel.querySelectorAll('input, select, button');
-        inputs.forEach(input => {
-          input.disabled = input.dataset.wasDisabled === 'true';
-        });
+        inputs.forEach(input => { input.disabled = input.dataset.wasDisabled === 'true'; });
       }
       gameArea.blur();
 
-      // Clean timers
       clearInterval(timerInterval);
       clearInterval(spawnInterval);
 
-      // Reset progress bar
       timeRemaining = 0;
       updateTimerDisplay();
     }
@@ -977,48 +922,29 @@
         tail.appendChild(s);
       }
 
-      const size = cometSizes[cometSizeSelect.value];
+      const size = { small: 40, medium: 60, large: 80 }[cometSizeSelect.value];
       comet.style.width = `${size}px`;
       comet.style.height = `${size}px`;
       core.style.width = comet.style.width;
       core.style.height = comet.style.height;
 
-      // Spawn from edges with better angle distribution
       const edge = Math.floor(Math.random() * 4);
       let x, y, targetX, targetY;
       const margin = size + 20;
+      const width = gameRect.width;
+      const height = gameRect.height;
       
       switch(edge) {
-        case 0: // Top
-          x = margin + Math.random() * (gameRect.width - 2 * margin); 
-          y = -size; 
-          targetX = margin + Math.random() * (gameRect.width - 2 * margin); 
-          targetY = gameRect.height + size; 
-          break;
-        case 1: // Right
-          x = gameRect.width + size; 
-          y = margin + Math.random() * (gameRect.height - 2 * margin); 
-          targetX = -size; 
-          targetY = margin + Math.random() * (gameRect.height - 2 * margin); 
-          break;
-        case 2: // Bottom
-          x = margin + Math.random() * (gameRect.width - 2 * margin); 
-          y = gameRect.height + size; 
-          targetX = margin + Math.random() * (gameRect.width - 2 * margin); 
-          targetY = -size; 
-          break;
-        case 3: // Left
-          x = -size; 
-          y = margin + Math.random() * (gameRect.height - 2 * margin); 
-          targetX = gameRect.width + size; 
-          targetY = margin + Math.random() * (gameRect.height - 2 * margin); 
-          break;
+        case 0: x = margin + Math.random() * (width - 2 * margin); y = -size; targetX = margin + Math.random() * (width - 2 * margin); targetY = height + size; break;
+        case 1: x = width + size; y = margin + Math.random() * (height - 2 * margin); targetX = -size; targetY = margin + Math.random() * (height - 2 * margin); break;
+        case 2: x = margin + Math.random() * (width - 2 * margin); y = height + size; targetX = margin + Math.random() * (width - 2 * margin); targetY = -size; break;
+        default: x = -size; y = margin + Math.random() * (height - 2 * margin); targetX = width + size; targetY = margin + Math.random() * (height - 2 * margin); break;
       }
       
       comet.style.left = `${x}px`;
       comet.style.top = `${y}px`;
 
-      const sp = cometSpeeds[cometSpeedSelect.value];
+      const sp = { slow: { min: 0.5, max: 1.5 }, medium: { min: 1.0, max: 2.5 }, fast: { min: 2.0, max: 3.5 } }[cometSpeedSelect.value];
       const speed = sp.min + Math.random() * (sp.max - sp.min);
       const dx = targetX - x, dy = targetY - y;
       const dist = Math.hypot(dx, dy);
@@ -1029,15 +955,12 @@
       comet.style.transform = `rotate(${angle}deg)`;
       comet.append(core, tail);
 
-      // Enhanced event handling with fallbacks for older browsers
       const handleCometHit = (e) => { 
         e.preventDefault(); 
         e.stopPropagation();
         hitComet(comet); 
       };
-      
       comet.addEventListener('pointerdown', handleCometHit);
-      // Fallback for older browsers
       comet.addEventListener('touchstart', handleCometHit, { passive: false });
       comet.addEventListener('click', handleCometHit);
 
@@ -1048,14 +971,10 @@
       comet.dataset.angle = angle;
       comet.dataset.spawnTime = Date.now();
 
-      // Optimized trailing particles
       const particleInterval = setInterval(() => {
-        if (!comet.isConnected || !isTabVisible) { 
-          clearInterval(particleInterval); 
-          return; 
-        }
+        if (!comet.isConnected || !isTabVisible) { clearInterval(particleInterval); return; }
         createCometParticle(comet);
-      }, 120); // Slightly reduced frequency for performance
+      }, 120);
       comet._particleInterval = particleInterval;
 
       comets.push(comet);
@@ -1068,11 +987,10 @@
       particle.className = 'comet-particle';
       const rect = comet.getBoundingClientRect();
       const size = Math.random() * 4 + 2;
+
+      const gameRectLocal = gameArea.getBoundingClientRect();
       particle.style.width = `${size}px`;
       particle.style.height = `${size}px`;
-      
-      // position at comet center (convert to game coords)
-      const gameRectLocal = gameArea.getBoundingClientRect();
       particle.style.left = `${rect.left - gameRectLocal.left + rect.width / 2}px`;
       particle.style.top  = `${rect.top  - gameRectLocal.top  + rect.height / 2}px`;
 
@@ -1086,7 +1004,6 @@
       particle.style.setProperty('--dy', `${Math.sin(angle * Math.PI / 180) * dist}px`);
 
       gameArea.appendChild(particle);
-      // CSS animation handles the movement, just remove after completion
       setTimeout(() => particle.remove(), 1000);
     }
 
@@ -1096,8 +1013,7 @@
       const responseTime = Date.now() - spawnTime;
       totalResponseTime += responseTime;
 
-      // Score calc with enhanced feedback
-      const sizeValue = cometSizeSelect.value;
+      const sizeValue = document.getElementById('comet-size').value;
       const sizeMult = sizeValue === 'small' ? 1.5 : sizeValue === 'large' ? 0.8 : 1;
       const base = Math.max(50, Math.floor(3000 / responseTime * 100));
       const points = Math.floor(base * sizeMult);
@@ -1105,13 +1021,9 @@
       score += points; taps++;
       scoreEl.textContent = String(score);
 
-      // Play hit sound
       playSound('hit-sound');
-
-      // Burst/explosion (comet explosion animation)
       createBurst(comet, points);
 
-      // Remove comet + cleanup
       if (comet._particleInterval) clearInterval(comet._particleInterval);
       const idx = comets.indexOf(comet);
       if (idx > -1) {
@@ -1128,7 +1040,6 @@
       const cx = rect.left - areaRect.left + rect.width / 2;
       const cy = rect.top  - areaRect.top  + rect.height / 2;
 
-      // rings
       for (let i = 0; i < 3; i++) {
         setTimeout(() => {
           const ring = document.createElement('div');
@@ -1140,7 +1051,6 @@
         }, i * 90);
       }
 
-      // score popup with better visibility
       const popup = document.createElement('div');
       popup.className = 'score-popup';
       popup.textContent = `+${points}`;
@@ -1149,7 +1059,6 @@
       gameArea.appendChild(popup);
       setTimeout(() => popup.remove(), 1000);
 
-      // radial particles (optimized count)
       const count = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 4 : 12;
       for (let i = 0; i < count; i++) {
         const p = document.createElement('div');
@@ -1176,11 +1085,8 @@
         if (isActive && !isPaused) requestAnimationFrame(updateComets);
         return;
       }
-      
       const areaW = gameArea.clientWidth;
       const areaH = gameArea.clientHeight;
-      
-      // Update game area rect if window resized
       gameRect = gameArea.getBoundingClientRect();
       
       comets.forEach((comet, idx) => {
@@ -1208,7 +1114,7 @@
       if (isActive) requestAnimationFrame(updateComets);
     }
 
-    // ---- End session (enhanced) ----
+    // ---- End session ----
     function doEndSession() {
       isActive = false; isPaused = false;
       clearInterval(timerInterval);
@@ -1217,7 +1123,6 @@
       const accuracy = taps + misses > 0 ? Math.round((taps / (taps + misses)) * 100) : 0;
       const avgResponse = taps > 0 ? (totalResponseTime / taps / 1000).toFixed(2) : '0.00';
 
-      // Play completion sound
       playSound('complete-sound');
 
       try {
@@ -1231,7 +1136,6 @@
         console.warn('Session enhancement error:', e);
       }
 
-      // Record & achievements
       const difficulty = currentDifficulty();
       try {
         recordSession(EXERCISE_ID, difficulty, score);
@@ -1247,52 +1151,40 @@
         console.warn('Progress/Achievement integration error:', e);
       }
 
-      // PB update
       if (score > getPB()) {
         setPB(score);
         pbEl.textContent = score;
         toast.show('New Personal Best! 🎉', { duration: 3000 });
       }
 
-      // Completion modal details
       finalScoreEl.textContent = score;
       finalTapsEl.textContent = taps;
       finalAccEl.textContent = `${accuracy}%`;
       finalAvgEl.textContent = `${avgResponse}s`;
 
-      // Simple XP model: 1 XP per 10 pts (floor)
       const xp = Math.max(1, Math.floor(score / 10));
       finalXpEl.textContent = xp;
 
-      // Show modal and focus it
       completionMessage.classList.remove('hidden');
       setTimeout(() => closeCompletionBtn.focus(), 100);
 
-      // Cleanup comets
       comets.forEach(c => { if (c._particleInterval) clearInterval(c._particleInterval); c.remove(); });
       comets = []; focusedIndex = -1;
 
-      // Reset buttons
       pauseBtn.disabled = true;
       startBtn.textContent = 'Start';
       
-      // Re-enable settings
       if ('inert' in HTMLElement.prototype) {
         settingsPanel.removeAttribute('inert');
       } else {
         const inputs = settingsPanel.querySelectorAll('input, select, button');
-        inputs.forEach(input => {
-          input.disabled = input.dataset.wasDisabled === 'true';
-        });
+        inputs.forEach(input => { input.disabled = input.dataset.wasDisabled === 'true'; });
       }
     }
 
-    // Public hook following the spec: window.endSession(score, difficulty)
     window.endSession = function (forcedScore = null, forcedDifficulty = null) {
       if (forcedScore != null) score = Number(forcedScore) || 0;
-      if (forcedDifficulty) {
-        diffEl.textContent = forcedDifficulty[0].toUpperCase() + forcedDifficulty.slice(1);
-      }
+      if (forcedDifficulty) diffEl.textContent = forcedDifficulty[0].toUpperCase() + forcedDifficulty.slice(1);
       doEndSession();
     };
 
@@ -1302,46 +1194,33 @@
     function safeStop() {
       clearInterval(timerInterval);
       clearInterval(spawnInterval);
-      comets.forEach(c => { 
-        if (c._particleInterval) clearInterval(c._particleInterval); 
-        c.remove(); 
-      });
+      comets.forEach(c => { if (c._particleInterval) clearInterval(c._particleInterval); c.remove(); });
       comets = [];
       focusedIndex = -1;
     }
 
     // ---- Window management ----
     window.addEventListener('beforeunload', () => { if (isActive) safeStop(); });
-    window.addEventListener('blur', () => {
-      if (isActive && !isPaused) pauseSession();
-    });
+    window.addEventListener('blur', () => { if (isActive && !isPaused) pauseSession(); });
 
     // ---- Enhanced mobile handling ----
     let touchStartTime = 0;
-    gameArea.addEventListener('touchstart', (e) => {
-      touchStartTime = Date.now();
-    }, { passive: true });
+    gameArea.addEventListener('touchstart', () => { touchStartTime = Date.now(); }, { passive: true });
 
     // Prevent context menu on long press
-    gameArea.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-    });
+    gameArea.addEventListener('contextmenu', (e) => { e.preventDefault(); });
 
     // Handle window resize during gameplay
     window.addEventListener('resize', () => {
-      if (isActive) {
-        gameRect = gameArea.getBoundingClientRect();
-      }
+      if (isActive) gameRect = gameArea.getBoundingClientRect();
     });
 
     // ---- Initialize on load ----
     window.addEventListener('load', () => {
-      // Set initial focus for keyboard users
       startBtn.focus();
-      
-      // Check for saved personal best and update display
+      // Also make sure it's scrolled into view on small screens
+      try { startBtn.scrollIntoView({ block: 'nearest' }); } catch {}
       pbEl.textContent = getPB();
-      
       console.log('Comet Tap Exercise loaded successfully');
     });
   </script>
