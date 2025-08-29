@@ -14,10 +14,10 @@
     gtag('config', 'G-RVKCCWBFKE', { 'anonymize_ip': true });
   </script>
 
-  <!-- Shared styles -->
-  <link rel="stylesheet" href="/css/tokens.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/components.css" />
+  <!-- Shared styles (cache-busted just in case) -->
+  <link rel="stylesheet" href="/css/tokens.css?v=4" />
+  <link rel="stylesheet" href="/css/base.css?v=4" />
+  <link rel="stylesheet" href="/css/components.css?v=4" />
 
   <style>
     :root {
@@ -32,6 +32,9 @@
     }
 
     /* Page background + starfield canvas host */
+    html, body { /* ensure the page itself can scroll when needed */
+      height: auto;
+    }
     body {
       margin: 0;
       color: var(--text);
@@ -43,8 +46,7 @@
         linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
       min-height: 100vh;
       min-height: calc(var(--vh, 1vh) * 100);
-      /* allow page to scroll */
-      overflow: auto;
+      overflow-y: auto; /* allow page to scroll */
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
@@ -196,6 +198,14 @@
     .game-column {
       position: relative;
       overflow: hidden;
+    }
+
+    /* Ensure the game has dependable height */
+    .game-container {
+      position: relative;
+      height: 70dvh;            /* modern viewport unit (ignores URL bar) */
+      height: min(70vh, 70dvh); /* blend for older engines */
+      min-height: 320px;        /* tiny phones / landscape */
     }
 
     /* HUD Row */
@@ -372,7 +382,7 @@
       outline-offset: 2px; 
     }
 
-    /* Mobile tweaks */
+    /* Mobile UI adjustments (typography/buttons) */
     @media (max-width: 900px) {
       .hud { 
         grid-template-columns: 1fr 1fr; 
@@ -391,11 +401,33 @@
       header h1 { font-size: clamp(16px, 4vw, 20px); }
     }
 
-    /* Samsung / mobile hardening: let page scroll, remove clamps */
+    /* --- Mobile scroll emergency override (Samsung/iOS/Chrome) --- */
+    html, body {
+      overflow-y: auto !important;
+    }
     @media (max-width: 900px) {
-      body { overflow-y: auto !important; }
-      .layout { display: block !important; height: auto !important; min-height: auto !important; }
-      #settings-panel { max-height: none !important; overflow-y: visible !important; }
+      .layout { 
+        display: block !important; 
+        height: auto !important; 
+        min-height: auto !important; 
+      }
+      #settings-panel { 
+        max-height: none !important; 
+        overflow-y: visible !important; 
+        padding-bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+      }
+      /* Make the Start/Pause/Restart controls sticky so they can’t hide */
+      .btn-row, #restart-button {
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+        background: rgba(8, 15, 35, 0.95);
+        backdrop-filter: blur(6px);
+        padding-top: 8px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        margin-bottom: 0;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
     }
 
     /* Loading state (kept for future use) */
@@ -534,13 +566,19 @@
 
   <!-- Main module -->
   <script type="module">
+    /* OPTIONAL one-time SW unregister for stubborn caching (remove after one load)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+    }
+    */
+
     /* ROOT-RELATIVE IMPORTS - with graceful fallbacks */
     let storage, starfield, theme, viewport, audio, initUtils, toast;
     let sessionEnhancement, checkAndUnlockAchievements, markExerciseTried, recordSession;
 
     // Load utils with fallback
     try {
-      const utilsModule = await import('/js/utils.js');
+      const utilsModule = await import('/js/utils.js?v=4');
       ({ storage, starfield, theme, viewport, audio, initUtils, toast } = utilsModule);
       initUtils();
     } catch (e) {
@@ -572,7 +610,7 @@
 
     // Load session enhancement with fallback
     try {
-      const enhancementModule = await import('/js/session-enhancement.js');
+      const enhancementModule = await import('/js/session-enhancement.js?v=4');
       sessionEnhancement = enhancementModule.sessionEnhancement;
     } catch (e) {
       console.warn('Session enhancement module not available');
@@ -584,7 +622,7 @@
 
     // Load achievements with fallback
     try {
-      const achievementsModule = await import('/js/achievements.js');
+      const achievementsModule = await import('/js/achievements.js?v=4');
       ({ checkAndUnlockAchievements, markExerciseTried } = achievementsModule);
     } catch (e) {
       console.warn('Achievements module not available');
@@ -594,7 +632,7 @@
 
     // Load progress with fallback
     try {
-      const progressModule = await import('/js/progress.js');
+      const progressModule = await import('/js/progress.js?v=4');
       recordSession = progressModule.recordSession;
     } catch (e) {
       console.warn('Progress module not available');
@@ -961,14 +999,13 @@
       comet.style.transform = `rotate(${angle}deg)`;
       comet.append(core, tail);
 
-      const handleCometHit = (e) => { 
-        e.preventDefault(); 
+      const handleCometHit = (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        hitComet(comet); 
+        hitComet(comet);
       };
-      comet.addEventListener('pointerdown', handleCometHit);
-      comet.addEventListener('touchstart', handleCometHit, { passive: false });
-      comet.addEventListener('click', handleCometHit);
+      /* Use a single pointerup to avoid double-firing on mobile (click/touch) */
+      comet.addEventListener('pointerup', handleCometHit, { passive: false });
 
       gameArea.appendChild(comet);
 
@@ -1227,6 +1264,22 @@
       try { startBtn.scrollIntoView({ block: 'nearest' }); } catch {}
       pbEl.textContent = getPB();
       console.log('Comet Tap Exercise loaded successfully');
+    });
+
+    // --- Safety net: ensure Start is reachable on load & after UI bars settle ---
+    window.addEventListener('load', () => {
+      document.documentElement.style.overflowY = 'auto';
+      document.body.style.overflowY = 'auto';
+      const btn = document.getElementById('start-session');
+      if (!btn) return;
+      requestAnimationFrame(() => {
+        const r = btn.getBoundingClientRect();
+        if (r.bottom > window.innerHeight) btn.scrollIntoView({ block: 'end', behavior: 'auto' });
+      });
+      setTimeout(() => {
+        const r = btn.getBoundingClientRect();
+        if (r.bottom > window.innerHeight) btn.scrollIntoView({ block: 'end', behavior: 'auto' });
+      }, 400);
     });
   </script>
 </body>
