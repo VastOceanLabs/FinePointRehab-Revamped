@@ -4,88 +4,168 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Visual Scanner Exercise | Fine Point Rehab</title>
-  <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(180deg, #0b0f1c, #121d33);
-      color: white;
+      background: var(--bg-gradient, linear-gradient(180deg, #0b0f1c, #121d33));
+      color: var(--text-primary, white);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
+    
     header {
       position: sticky;
       top: 0;
-      background: rgba(8, 15, 35, 0.95);
+      background: var(--header-bg, rgba(8, 15, 35, 0.95));
       padding: 10px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       z-index: 100;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.1));
     }
+    
     header h1 {
       margin: 0;
       font-size: 20px;
+      color: var(--text-primary, white);
     }
+    
     header a {
       text-decoration: none;
-      color: rgba(111, 211, 245, 1);
+      color: var(--brand, rgba(111, 211, 245, 1));
       font-weight: bold;
     }
+    
     main {
       flex: 1;
       display: grid;
       grid-template-columns: 300px 1fr;
+      gap: 0;
       overflow: hidden;
     }
-    #settings-panel {
-      background: rgba(8,15,35,0.95);
-      padding: 20px;
-      border-right: 1px solid rgba(255,255,255,0.1);
-      overflow-y: auto;
+    
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
     }
-    #hud-panel {
-      display: flex;
-      flex-direction: column;
-      position: relative;
+    
+    .hud {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      gap: 15px;
+      background: var(--panel-bg, rgba(8,15,35,0.9));
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.1));
     }
-    #hud-row {
-      display: flex;
-      justify-content: space-around;
-      background: rgba(8,15,35,0.9);
-      padding: 10px;
+    
+    .hud div {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
     }
+    
+    #timer-bar {
+      height: 4px;
+      background: var(--brand, #6fd3f5);
+      transition: width 0.3s ease;
+      width: 100%;
+    }
+    
     #game-area {
       flex: 1;
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 20px;
     }
+    
+    #scan-area {
+      width: 100%;
+      height: 100%;
+      border: 2px dashed var(--border-color, rgba(255,255,255,0.3));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--text-secondary, rgba(255,255,255,0.7));
+      position: relative;
+    }
+    
     #completion-message {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(8,15,35,0.95);
+      background: var(--panel-bg, rgba(8,15,35,0.95));
       padding: 30px;
       border-radius: 15px;
       text-align: center;
       z-index: 200;
       display: none;
+      border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+      min-width: 300px;
     }
+    
     #completion-message.show {
       display: block;
     }
+    
     #reward-badge {
       font-size: 40px;
-      margin-top: 15px;
-      color: gold;
-      text-shadow: 0 0 10px gold;
+      margin: 15px 0;
+      color: var(--accent-gold, gold);
+      text-shadow: 0 0 10px var(--accent-gold, gold);
+    }
+    
+    #target-icon {
+      font-size: 16px;
+      margin-left: 5px;
+    }
+    
+    /* Target object styling */
+    .visual-object {
+      position: absolute;
+      width: 48px; 
+      height: 48px;
+      display: grid; 
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(111,211,245,0.15);
+      border: 2px solid rgba(111,211,245,0.6);
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform 120ms ease;
+    }
+    .visual-object:active { 
+      transform: scale(0.95); 
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+      
+      .hud {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        font-size: 12px;
+      }
+      
+      .controls {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
     }
   </style>
 </head>
@@ -98,8 +178,9 @@
 
   <main>
     <!-- LEFT PANEL: SETTINGS -->
-    <aside id="settings-panel" class="panel">
+    <aside class="panel settings">
       <h2>Settings</h2>
+      
       <div class="settings-group">
         <label for="difficulty">Difficulty:</label>
         <select id="difficulty" class="panel">
@@ -107,31 +188,69 @@
           <option value="medium" selected>Medium</option>
           <option value="hard">Hard</option>
         </select>
+        <p class="setting-description">Adjust the complexity of the scanning task.</p>
       </div>
+
+      <div class="settings-group">
+        <label for="focus-area">Focus Area:</label>
+        <select id="focus-area">
+          <option value="none">None (Full Field)</option>
+          <option value="left">Left</option>
+          <option value="right">Right</option>
+          <option value="top">Top</option>
+          <option value="bottom">Bottom</option>
+        </select>
+        <p class="setting-description">Limit the search to a specific area.</p>
+      </div>
+
+      <div class="settings-group">
+        <label for="object-type">Object Type:</label>
+        <select id="object-type">
+          <option value="shapes">Shapes</option>
+          <option value="letters">Letters</option>
+          <option value="numbers">Numbers</option>
+          <option value="emoji">Emoji</option>
+        </select>
+        <p class="setting-description">Choose what kind of objects to scan for.</p>
+      </div>
+
       <div class="settings-group">
         <label for="session-duration">Session Duration (minutes):</label>
-        <input type="number" id="session-duration" value="3" min="1" max="10">
+        <input type="number" id="session-duration" value="3" min="1" max="10" class="panel">
+        <p class="setting-description">How long each session should last.</p>
       </div>
-      <button id="start-session" class="btn">Start Session</button>
-      <button id="pause-session" class="btn">Pause</button>
-      <button id="restart-session" class="btn">Restart</button>
+
+      <div class="controls">
+        <button id="start-session" class="btn">Start</button>
+        <button id="pause-session" class="btn">Pause</button>
+        <button id="restart-session" class="btn">Restart</button>
+      </div>
     </aside>
 
-    <!-- RIGHT PANEL: HUD + GAME -->
-    <section id="hud-panel">
+    <!-- RIGHT PANEL: GAME -->
+    <section class="panel play">
       <div id="timer-bar"></div>
-      <div id="hud-row">
+      <div class="hud">
         <div>Score: <span id="score">0</span></div>
         <div>PB: <span id="personal-best">0</span></div>
         <div>Difficulty: <span id="hud-difficulty">Medium</span></div>
+        <div>Time: <span id="time-remaining">3:00</span></div>
+        <div>Find: <span id="target-icon">🔍</span></div>
       </div>
+      
       <div id="game-area">
-        <div id="scan-area"></div>
+        <div id="scan-area">
+          <p>Click "Start" to begin your visual scanning session</p>
+        </div>
+        
         <div id="completion-message">
           <h2>Session Complete!</h2>
           <p>Final Score: <span id="final-score">0</span></p>
           <p>Time Taken: <span id="final-time">0s</span></p>
           <p>Success Rate: <span id="final-rate">0%</span></p>
+          <div id="personal-best-message" style="display: none;">
+            <p class="xp-line">New Personal Best! 🎉</p>
+          </div>
           <div id="reward-badge">🏅</div>
           <button id="restart-button" class="btn">Start New Session</button>
         </div>
@@ -144,71 +263,220 @@
     import { recordSession } from '/js/progress.js';
     import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
 
-    const EXERCISE_ID = 'visual-scanner';
+    // Use correct exercise ID from registry
+    const EXERCISE_ID = 'scanner';
+    
     let score = 0;
     let startTime = 0;
+    let sessionTimer = null;
+    let remainingTime = 0;
+    let isPaused = false;
+    let sessionActive = false;
+    let currentTarget = null;
 
+    // DOM elements
     const startBtn = document.getElementById('start-session');
     const pauseBtn = document.getElementById('pause-session');
     const restartBtn = document.getElementById('restart-session');
+    const restartButtonInModal = document.getElementById('restart-button');
+    const difficultySelect = document.getElementById('difficulty');
+    const focusAreaSelect = document.getElementById('focus-area');
+    const objectTypeSelect = document.getElementById('object-type');
+    const sessionDurationInput = document.getElementById('session-duration');
+    
     const hudDiff = document.getElementById('hud-difficulty');
     const scoreEl = document.getElementById('score');
     const pbEl = document.getElementById('personal-best');
+    const timeRemainingEl = document.getElementById('time-remaining');
+    const targetIconEl = document.getElementById('target-icon');
+    const timerBar = document.getElementById('timer-bar');
+    
+    const scanArea = document.getElementById('scan-area');
+    const completion = document.getElementById('completion-message');
     const finalScore = document.getElementById('final-score');
     const finalTime = document.getElementById('final-time');
     const finalRate = document.getElementById('final-rate');
-    const completion = document.getElementById('completion-message');
+    const personalBestMessage = document.getElementById('personal-best-message');
+
+    // Session Enhancement Integration
+    let sessionEnhancement;
+    try {
+      // Try to import session enhancement if available
+      const module = await import('/js/session-enhancement.js');
+      sessionEnhancement = module.default || module.sessionEnhancement;
+    } catch (e) {
+      console.log('Session enhancement not available, using fallback');
+      sessionEnhancement = {
+        initializeExercise: () => {},
+        handleSessionComplete: () => {},
+        personalBest: {
+          getBest: (id, diff) => parseInt(localStorage.getItem(`pb-${id}-${diff}`) || '0'),
+          setBest: (id, diff, score) => localStorage.setItem(`pb-${id}-${diff}`, score)
+        }
+      };
+    }
 
     function getDifficulty() {
-      return document.getElementById('difficulty').value;
+      return difficultySelect.value;
     }
 
-    function startSession() {
-      score = 0;
-      startTime = Date.now();
-      scoreEl.textContent = 0;
-      hudDiff.textContent = getDifficulty();
+    function getSessionDuration() {
+      return parseInt(sessionDurationInput.value) * 60; // Convert to seconds
     }
 
-    function pauseSession() {
-      // placeholder pause logic
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function restartSession() {
-      startSession();
+    function updateTimerDisplay() {
+      const totalDuration = getSessionDuration();
+      const progress = Math.max(0, remainingTime / totalDuration);
+      timerBar.style.width = `${progress * 100}%`;
+      timeRemainingEl.textContent = formatTime(remainingTime);
     }
 
-    function endSession() {
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      finalScore.textContent = score;
-      finalTime.textContent = `${elapsed}s`;
-      finalRate.textContent = "100%"; // placeholder, replace with calc
-      completion.classList.add('show');
-
-      // Record standardized
-      window.endSession(score, getDifficulty());
+    function loadPersonalBest() {
+      const difficulty = getDifficulty();
+      const personalBest = sessionEnhancement.personalBest.getBest(EXERCISE_ID, difficulty);
+      pbEl.textContent = personalBest;
     }
 
-    // Expose standardized endSession
-    window.endSession = function(score, difficulty) {
-      recordSession(EXERCISE_ID, difficulty, score);
-      try { markExerciseTried(EXERCISE_ID); } catch {}
-      try { checkAndUnlockAchievements(); } catch {}
-      // Track PB
-      const prev = parseInt(localStorage.getItem('pb-visual-scanner') || '0');
-      if (score > prev) {
-        localStorage.setItem('pb-visual-scanner', score);
-        pbEl.textContent = score;
-      }
+  <!-- JS: Session + Gamification -->
+  <script type="module">
+    import { recordSession } from '/js/progress.js';
+    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+
+    // Use correct exercise ID from registry
+    const EXERCISE_ID = 'scanner';
+    
+    let score = 0;
+    let startTime = 0;
+    let sessionTimer = null;
+    let remainingTime = 0;
+    let isPaused = false;
+    let sessionActive = false;
+    
+    // Gameplay state
+    let hits = 0;
+    let targetEl = null;
+    let currentTarget = null;
+
+    // DOM elements
+    const startBtn = document.getElementById('start-session');
+    const pauseBtn = document.getElementById('pause-session');
+    const restartBtn = document.getElementById('restart-session');
+    const restartButtonInModal = document.getElementById('restart-button');
+    const difficultySelect = document.getElementById('difficulty');
+    const focusAreaSelect = document.getElementById('focus-area');
+    const objectTypeSelect = document.getElementById('object-type');
+    const sessionDurationInput = document.getElementById('session-duration');
+    
+    const hudDiff = document.getElementById('hud-difficulty');
+    const scoreEl = document.getElementById('score');
+    const pbEl = document.getElementById('personal-best');
+    const timeRemainingEl = document.getElementById('time-remaining');
+    const targetIconEl = document.getElementById('target-icon');
+    const timerBar = document.getElementById('timer-bar');
+    
+    const scanArea = document.getElementById('scan-area');
+    const completion = document.getElementById('completion-message');
+    const finalScore = document.getElementById('final-score');
+    const finalTime = document.getElementById('final-time');
+    const finalRate = document.getElementById('final-rate');
+    const personalBestMessage = document.getElementById('personal-best-message');
+
+    // Target object sets
+    const TARGET_SETS = {
+      shapes: ['🔴','🔵','🟡','🟢','🟣','🟠','⭐','💎'],
+      letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+      numbers: '0123456789'.split(''),
+      emoji: ['😀','😎','🎯','🎨','🎵','🎭','🎊','🎈']
     };
 
-    startBtn.addEventListener('click', startSession);
-    pauseBtn.addEventListener('click', pauseSession);
-    restartBtn.addEventListener('click', restartSession);
-    document.getElementById('restart-button').addEventListener('click', () => {
-      completion.classList.remove('show');
-      startSession();
-    });
+    // Session Enhancement Integration (with fallback)
+    let sessionEnhancement;
+    await (async () => {
+      try {
+        const module = await import('/js/session-enhancement.js');
+        sessionEnhancement = module.default || module.sessionEnhancement;
+      } catch (e) {
+        console.log('Session enhancement not available, using fallback');
+        sessionEnhancement = {
+          initializeExercise: () => {},
+          handleSessionComplete: () => {},
+          personalBest: {
+            getBest: (id, diff) => parseInt(localStorage.getItem(`pb-${id}-${diff}`) || '0'),
+            setBest: (id, diff, score) => localStorage.setItem(`pb-${id}-${diff}`, score)
+          }
+        };
+      }
+    })();
+
+    function getDifficulty() {
+      return difficultySelect.value;
+    }
+
+    function getSessionDuration() {
+      return parseInt(sessionDurationInput.value) * 60; // Convert to seconds
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      const totalDuration = getSessionDuration();
+      const progress = Math.max(0, remainingTime / totalDuration);
+      timerBar.style.width = `${progress * 100}%`;
+      timeRemainingEl.textContent = formatTime(remainingTime);
+    }
+
+    function loadPersonalBest() {
+      const difficulty = getDifficulty();
+      const personalBest = sessionEnhancement.personalBest.getBest(EXERCISE_ID, difficulty);
+      pbEl.textContent = personalBest;
+    }
+
+    function pickTarget() {
+      const list = TARGET_SETS[objectTypeSelect.value] || TARGET_SETS.shapes;
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    // Returns a {x,y,width,height} region inside scanArea honoring focus-area
+    function focusRegion() {
+      const r = scanArea.getBoundingClientRect();
+      const pad = 16;
+      switch (focusAreaSelect.value) {
+        case 'left':   return { x:r.left+pad, y:r.top+pad, width:r.width/2-pad*2, height:r.height-pad*2 };
+        case 'right':  return { x:r.left+r.width/2+pad, y:r.top+pad, width:r.width/2-pad*2, height:r.height-pad*2 };
+        case 'top':    return { x:r.left+pad, y:r.top+pad, width:r.width-pad*2, height:r.height/2-pad*2 };
+        case 'bottom': return { x:r.left+pad, y:r.top+r.height/2+pad, width:r.width-pad*2, height:r.height/2-pad*2 };
+        default:       return { x:r.left+pad, y:r.top+pad, width:r.width-pad*2, height:r.height-pad*2 };
+      }
+    }
+
+    function clearTarget() {
+      if (targetEl?.parentNode) targetEl.parentNode.removeChild(targetEl);
+      targetEl = null;
+    }
+
+    // Spawn one target element at a random spot inside the focus region
+    function spawnTarget() {
+      clearTarget();
+      currentTarget = pickTarget();
+      targetIconEl.textContent = currentTarget;
+
+      const el = document.createElement('div');
+      el.className = 'visual-object';
+      el.textContent = currentTarget;
+
+  </main>
+
+  <!-- JS: Session + Gamification -->
   </script>
 </body>
 </html>

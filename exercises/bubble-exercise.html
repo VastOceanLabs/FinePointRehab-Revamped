@@ -5,7 +5,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag(){dataLayer.push(arguments);} 
     gtag('js', new Date());
     gtag('config', 'G-RVKCCWBFKE');
   </script>
@@ -15,12 +15,12 @@
   <title>Bubble Tap Therapy - Fine Motor Exercise | Fine Point Rehab</title>
 
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Interactive bubble therapy exercise for stroke rehabilitation and fine motor skills. Evidence-based hand-eye coordination game for physical therapy, occupational therapy, and traumatic brain injury recovery. Home exercise program for finger isolation and reaction time training.">
-  <meta name="keywords" content="bubble exercise therapy, stroke hand exercises, fine motor rehabilitation, reaction time training, finger isolation therapy, hand-eye coordination, occupational therapy games, physical therapy exercises, TBI recovery exercises, neurological rehabilitation">
+  <meta name="description" content="Interactive bubble therapy exercise designed by Fine Point Rehab to build fine motor control, reaction time, and finger isolation. Accessible, responsive, and evidence-informed rehabilitation tool.">
+  <meta name="keywords" content="bubble exercise therapy, stroke hand exercises, fine motor rehabilitation, reaction time training, finger isolation therapy, hand-eye coordination, occupational therapy exercises, TBI recovery exercises, neurological rehabilitation">
 
   <!-- Open Graph Tags -->
   <meta property="og:title" content="Bubble Tap Therapy - Fine Motor Exercise for Fine Point Rehab">
-  <meta property="og:description" content="Interactive bubble therapy exercise for stroke rehabilitation and fine motor skills. Evidence-based tool for physical and occupational therapy.">
+  <meta property="og:description" content="Interactive bubble therapy exercise for motor skill development, featuring difficulty levels, personal best tracking, and mobile-friendly controls. Evidence-based tool for physical and occupational therapy.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://finepointrehab.com/exercises/bubble-tap-therapy">
   <meta property="og:image" content="https://finepointrehab.com/images/bubble-therapy-preview.jpg">
@@ -28,42 +28,13 @@
   <!-- Twitter Card Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Bubble Tap Therapy - Fine Motor Exercise | Fine Point Rehab">
-  <meta name="twitter:description" content="Interactive rehabilitation exercise for stroke recovery and fine motor skills">
+  <meta name="twitter:description" content="Interactive rehabilitation exercise for reaction time and finger isolation with personal best tracking.">
   <meta name="twitter:image" content="https://finepointrehab.com/images/bubble-therapy-preview.jpg">
 
-  <!-- Canonical URL -->
-  <link rel="canonical" href="https://finepointrehab.com/exercises/bubble-tap-therapy">
-
-  <!-- Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ExercisePlan",
-    "name": "Bubble Tap Therapy",
-    "description": "Interactive bubble popping exercise for reaction time, finger isolation, and hand-eye coordination.",
-    "activityDuration": "PT2M",
-    "about": [
-      {"@type": "MedicalCondition", "name": "Stroke"},
-      {"@type": "MedicalCondition", "name": "Traumatic Brain Injury"},
-      {"@type": "MedicalCondition", "name": "Fine Motor Impairment"},
-      {"@type": "MedicalCondition", "name": "Upper Limb Dysfunction"}
-    ],
-    "audience": {
-      "@type": "Audience",
-      "audienceType": "Patients"
-    },
-    "provider": {
-      "@type": "Organization",
-      "name": "Fine Point Rehab",
-      "url": "https://finepointrehab.com"
-    }
-  }
-  </script>
-
-  <!-- Design System CSS -->
-  <link rel="stylesheet" href="../css/tokens.css">
-  <link rel="stylesheet" href="../css/base.css">
-  <link rel="stylesheet" href="../css/components.css">
+  <!-- Global tokens & base styles (root-relative) -->
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
 
   <style>
     :root {
@@ -94,30 +65,32 @@
       align-items: center;
       gap: var(--space-4);
       height: var(--header-h);
+      background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.2));
+      backdrop-filter: blur(8px);
       padding: 0 var(--space-4);
-      background: rgba(10,14,26,0.6);
-      backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .site-header h1 {
-      margin: 0;
-      font-size: var(--font-size-xl);
-      color: #fff;
-    }
+    .site-header h1 { font-size: var(--font-size-xl); margin: 0; }
 
-    /* Layout: left settings panel, right game area */
+    /* 2-column layout */
     .layout {
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: minmax(260px, 360px) 1fr;
       gap: var(--space-4);
       padding: var(--space-4);
-      min-height: calc(100vh - var(--header-h));
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
     }
 
+    /* Panels */
     .panel {
-      background: linear-gradient(145deg, rgba(30, 50, 80, 0.95), rgba(20, 35, 60, 0.9));
-      border: 1px solid rgba(111, 211, 245, 0.15);
-      border-radius: var(--radius-xl);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      overflow: hidden;
       box-shadow: var(--shadow-lg);
     }
 
@@ -130,6 +103,8 @@
     .game-panel {
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     /* HUD Row */
@@ -143,171 +118,57 @@
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
 
-    .timer-rail {
-      position: relative;
-      height: 8px;
-      width: 100%;
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-    #timer-bar {
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 100%;
-      background: var(--brand-aqua);
-      transition: width 0.1s linear;
-    }
+    .timer-rail { position: relative; height: 8px; width: 100%; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+    .timer-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: linear-gradient(90deg, var(--brand-aqua), #8ab4f8); transform-origin: left center; }
 
-    .hud-stat {
-      text-align: right;
-      min-width: 110px;
-    }
-    .hud-stat .label {
-      display: block;
-      font-size: var(--font-size-xs);
-      opacity: 0.8;
-      color: var(--text-secondary);
-    }
-    .hud-stat .value {
-      font-weight: var(--font-weight-bold);
-      color: var(--text-primary);
-    }
+    .hud-stat { display: grid; gap: 4px; }
+    .hud-stat .label { color: var(--text-secondary); font-size: var(--font-size-sm); }
+    .hud-stat .value { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
 
-    .hud-controls .btn {
-      margin-left: var(--space-2);
-      min-height: var(--touch-target);
-    }
+    .hud-controls .btn { min-width: 88px; }
 
-    /* Game area */
+    /* Game container */
     #game-container {
       position: relative;
       width: 100%;
-      height: calc(100% - 56px); /* account for HUD */
+      /* height is managed by flex; keep a sensible minimum */
+      min-height: 420px;
+      flex: 1 1 auto;
       background:
         radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.35) 0%, transparent 40%),
         radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.25) 0%, transparent 40%);
     }
 
-    #stars-container {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      overflow: hidden;
-    }
+    #stars-container { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
 
     /* Fallback starfield styles */
-    .star {
+    .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; animation: twinkle 3s ease-in-out infinite; }
+    @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } }
+
+    #playable-area { position: absolute; inset: var(--space-3); z-index: 2; border-radius: 16px; }
+
+    .bubble {
       position: absolute;
-      background: #fff;
+      z-index: 3;
+      width: 80px; height: 80px; /* default, overwritten by JS */
       border-radius: 50%;
-      opacity: 0.3;
-      animation: twinkle 3s ease-in-out infinite;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(146, 197, 255, 0.85) 45%, rgba(52, 86, 169, 0.85) 60%, rgba(18, 28, 66, 0.9) 100%);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 4px 8px rgba(255,255,255,0.35);
+      border: 1px solid rgba(255,255,255,0.35);
+      transition: transform 120ms ease;
     }
-
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.2; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.2); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .star { animation: none; opacity: 0.4; }
-    }
-
-    #playable-area {
-      position: absolute;
-      top: var(--space-3);
-      left: var(--space-3);
-      right: var(--space-3);
-      bottom: var(--space-3);
-      z-index: 2;
-      pointer-events: none; /* bounds only */
-    }
-
-    #bubble {
-      position: absolute;
-      z-index: 5;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #121d33;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--brand-aqua, #48cae4));
-      box-shadow: 0 0 15px rgba(111,211,245,0.4);
-      cursor: pointer;
-      transition: transform 0.1s ease-out;
-      pointer-events: auto;
-      outline: 2px solid transparent;
-    }
-    #bubble:focus-visible {
-      outline: 2px solid #fff;
-      outline-offset: 2px;
-    }
-    #bubble:active {
-      transform: scale(0.92);
-    }
-    .burst { animation: burstAnim 0.3s ease-out forwards; }
-    @keyframes burstAnim {
-      0% { transform: scale(1); opacity: 1; }
-      100% { transform: scale(1.5); opacity: 0; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .burst { animation: none; opacity: 0; transition: opacity 0.1s ease-out; }
-      #bubble { transition: none; }
-    }
+    .bubble:active { transform: scale(0.96); }
 
     /* Finger guide */
-    #finger-guide {
-      position: absolute;
-      left: 50%;
-      bottom: var(--space-4);
-      transform: translateX(-50%);
-      background: rgba(8,15,35,0.85);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: var(--radius);
-      padding: var(--space-2) var(--space-4);
-      box-shadow: var(--shadow);
-      z-index: 4;
-      backdrop-filter: blur(10px);
-      width: min(520px, 92%);
-    }
-    #finger-guide h3 {
-      margin: 0 0 var(--space-2);
-      font-size: var(--font-size-sm);
-      color: var(--brand-aqua);
-      text-align: center;
-    }
-    .finger-legend { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
-    .finger-item { display: flex; align-items: center; gap: var(--space-1); font-size: var(--font-size-sm); }
-    .finger-number {
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--brand-aqua));
-      width: 24px; height: 24px; border-radius: var(--radius-full);
-      display: grid; place-items: center; font-weight: var(--font-weight-bold); color: #121d33;
-    }
+    #finger-guide { position: absolute; left: 12px; right: 12px; bottom: 12px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 12px; z-index: 3; }
+    .finger-legend { display: flex; gap: 10px; align-items: center; }
+    .finger-item { display: flex; gap: 6px; align-items: center; }
+    .finger-number { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.12); display: grid; place-items: center; font-size: 12px; }
 
-    /* Completion modal */
-    .modal {
-      position: absolute;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(6px);
-    }
-    .modal.open { display: flex; }
-    .modal-card {
-      background: linear-gradient(145deg, rgba(30, 50, 80, 0.97), rgba(20, 35, 60, 0.97));
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: var(--radius-xl);
-      padding: var(--space-6);
-      width: min(560px, 92%);
-      color: #fff;
-      box-shadow: var(--shadow-lg);
-    }
+    /* Modal */
+    .modal-overlay { position: absolute; inset: 0; display: none; place-items: center; background: rgba(0,0,0,0.4); z-index: 5; }
+    .modal-overlay.open { display: grid; }
+    .modal-card { background: rgba(10,12,24,0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: var(--space-5); width: min(680px, calc(100% - 24px)); box-shadow: var(--shadow-lg); }
     .modal-card h2 { margin-top: 0; font-size: var(--font-size-2xl); }
     .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin: var(--space-4) 0; }
     .score-highlight { color: var(--brand-aqua); font-weight: var(--font-weight-bold); }
@@ -317,40 +178,40 @@
 
     /* Forms & buttons */
     .settings-group { margin-bottom: var(--space-4); }
-    .settings-label { 
-      display: block; 
-      margin-bottom: var(--space-2); 
-      font-weight: var(--font-weight-semibold); 
-      color: var(--brand-aqua); 
-    }
-    .setting-description { 
-      font-size: var(--font-size-sm); 
-      opacity: 0.85; 
-      margin-bottom: var(--space-2); 
-      color: var(--text-secondary);
-    }
-    select, input {
-      width: 100%; padding: var(--space-3); border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.18);
-      background: linear-gradient(145deg, rgba(20, 30, 53, 0.9), rgba(15, 26, 46, 0.9));
-      color: #fff; font-size: var(--font-size-base);
-    }
-    select:focus-visible, input:focus-visible { outline: 2px solid var(--brand-aqua); outline-offset: 2px; }
+    .settings-label { display: block; margin-bottom: var(--space-2); font-weight: var(--font-weight-semibold); color: var(--brand-aqua); }
+    .setting-description { margin-top: 6px; font-size: var(--font-size-sm); color: var(--text-secondary); }
 
-    .btn-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-    .btn { cursor: pointer; border: none; border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
-    .btn-primary { background: var(--brand-gradient); color: #fff; }
-    .btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.25); }
-    .btn-ghost { background: transparent; color: #fff; }
-    .btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    .btn-row { display: flex; gap: var(--space-2); }
 
-    /* Responsive */
+    .input, select, input[type="number"] { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; color: var(--text-primary); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid transparent; cursor: pointer; font-weight: var(--font-weight-semibold); background: rgba(255,255,255,0.06); color: var(--text-primary); }
+    .btn:hover { filter: brightness(1.05); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary { background: linear-gradient(90deg, var(--brand-aqua), #8ab4f8); color: #00131f; border-color: rgba(255,255,255,0.16); }
+    .btn-outline { background: transparent; border-color: rgba(255,255,255,0.28); }
+    .btn-ghost { background: transparent; border-color: transparent; color: var(--text-primary); }
+
+    /* Responsive HUD: give stats room on small screens */
+    @media (max-width: 600px) {
+      .hud { grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(44px, auto); row-gap: var(--space-2); }
+      .hud-controls { grid-column: 1 / -1; display: flex; gap: var(--space-2); justify-content: flex-end; }
+      .hud-stat .label { font-size: var(--font-size-xs); }
+      .hud-stat .value { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
+    }
+
+    /* One control cluster per viewport */
     @media (max-width: 980px) {
-      .layout { grid-template-columns: 1fr; }
-      .settings-panel { max-height: unset; }
-      .hud { grid-template-columns: 1fr 1fr 1fr auto; }
-      .hud-stat { min-width: unset; }
+      .hud-controls { display: none; }
+      .settings-panel .btn-row { display: flex; gap: var(--space-2); }
     }
+    @media (min-width: 981px) {
+      .hud-controls { display: inline-block; }
+      .settings-panel .btn-row { display: none; }
+    }
+
+    /* Keep finger guide clear of controls */
+    #finger-guide { bottom: calc(var(--space-4) + 8px); z-index: 4; }
   </style>
 </head>
 <body>
@@ -380,39 +241,43 @@
       <h2 id="settings-title" class="sr-only">Settings</h2>
 
       <div class="game-description panel" style="padding: var(--space-4); margin-bottom: var(--space-4);">
-        <p><strong>About this exercise:</strong> Tap the moving bubbles as quickly as you can to improve hand-eye coordination, reaction time, and finger precision.</p>
+        <p><strong>About this exercise:</strong> Tap the moving bubble as quickly and accurately as you can. Adjust the bubble size for difficulty, pick a session duration, and choose which finger(s) you want to practice. Great for hand-eye coordination, reaction time, and finger precision.</p>
       </div>
 
       <div id="settings-panel" aria-live="polite">
         <div class="settings-group">
           <label class="settings-label" for="bubble-size">Bubble Size (difficulty)</label>
-          <p class="setting-description">Larger bubbles are easier; smaller bubbles require precision.</p>
-          <select id="bubble-size" name="bubble-size">
-            <option value="very-large">Very Large — Easiest</option>
-            <option value="large">Large — Easy</option>
-            <option value="medium" selected>Medium — Moderate</option>
-            <option value="small">Small — Precise</option>
+          <p class="setting-description">Larger bubbles are easier; smaller bubbles are harder.</p>
+          <select id="bubble-size" class="input" autocomplete="off">
+            <option value="large">Large (easy)</option>
+            <option value="medium" selected>Medium (normal)</option>
+            <option value="small">Small (hard)</option>
           </select>
         </div>
 
         <div class="settings-group">
           <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
-          <p class="setting-description">Start with 1—2 minutes and increase as you improve.</p>
-          <input id="session-duration" type="number" inputmode="numeric" min="1" max="10" value="2" aria-describedby="session-duration-help">
-          <div id="session-duration-help" class="setting-description">1—10 minutes</div>
+          <input id="session-duration" class="input" type="number" min="1" max="30" step="1" value="2">
         </div>
 
         <div class="settings-group">
-          <label class="settings-label" for="finger-option">Finger Training Mode</label>
-          <p class="setting-description">Numbers show which finger to use for each bubble.</p>
-          <select id="finger-option" name="finger-option">
-            <option value="none">No finger guidance — Any finger</option>
-            <option value="all" selected>All fingers (1—5) — Random</option>
-            <option value="1">Thumb only (1)</option>
-            <option value="2">Index only (2)</option>
-            <option value="3">Middle only (3)</option>
-            <option value="4">Ring only (4)</option>
-            <option value="5">Pinky only (5)</option>
+          <label class="settings-label" for="finger-option">Finger Option</label>
+          <p class="setting-description">Practice specific fingers in sequence or any finger.</p>
+          <select id="finger-option" class="input" autocomplete="off">
+            <option value="any" selected>Any finger</option>
+            <option value="sequence">Thumb → Pinky (1→5)</option>
+            <option value="single">Single finger only</option>
+          </select>
+        </div>
+
+        <div class="settings-group" id="single-finger-select" style="display:none">
+          <label class="settings-label" for="finger-number">Select finger</label>
+          <select id="finger-number" class="input" autocomplete="off">
+            <option value="1">Thumb (1)</option>
+            <option value="2">Index (2)</option>
+            <option value="3">Middle (3)</option>
+            <option value="4">Ring (4)</option>
+            <option value="5">Pinky (5)</option>
           </select>
         </div>
 
@@ -428,10 +293,9 @@
 
     <!-- Right: HUD + Game -->
     <section class="panel game-panel" aria-label="Game area">
-      <!-- HUD Row -->
-      <div class="hud" role="region" aria-label="Session heads-up display">
+      <div class="hud" role="region" aria-label="Game heads-up display">
         <div class="timer-rail" aria-hidden="true">
-          <div id="timer-bar"></div>
+          <div id="timer-bar" class="timer-bar" style="width:100%"></div>
         </div>
 
         <div class="hud-stat" aria-live="polite">
@@ -475,17 +339,20 @@
         </div>
 
         <!-- Completion Modal -->
-        <div id="completion-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="completion-title">
-          <div class="modal-card panel">
-            <h2 id="completion-title">Session Complete!</h2>
+        <div id="completion-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <div class="modal-card">
+            <h2 id="modal-title">Session Complete</h2>
+            <p>Great work! Here are your results:</p>
+
             <div class="modal-row">
-              <div>Final Score: <span id="final-score" class="score-highlight">0</span></div>
-              <div>Bubbles Tapped: <span id="final-taps" class="score-highlight">0</span></div>
-              <div>Avg. Response: <span id="final-avg-time" class="score-highlight">0.0s</span></div>
-              <div>Accuracy: <span id="final-accuracy" class="score-highlight">0%</span></div>
+              <div><strong>Score</strong><div id="final-score" class="score-highlight">0</div></div>
+              <div><strong>Taps</strong><div id="final-taps">0</div></div>
+              <div><strong>Avg Response</strong><div id="final-avg-time">0.00s</div></div>
+              <div><strong>Accuracy</strong><div id="final-accuracy">0%</div></div>
             </div>
-            <p class="xp-line">You earned <span id="xp-earned" class="score-highlight">+0</span> XP. Any unlocked achievements will appear as a toast.</p>
-            <div class="btn-row" style="justify-content:flex-end">
+            <p id="xp-earned" class="xp-line">+0 XP</p>
+
+            <div class="btn-row">
               <button id="modal-restart" class="btn btn-primary" type="button">Start New Session</button>
               <button id="modal-close" class="btn btn-outline" type="button">Close</button>
             </div>
@@ -497,15 +364,43 @@
 
   <!-- Core JavaScript modules -->
   <script type="module">
-    // Root-relative imports per global standard
-    import { storage, starfield, initUtils, audio } from '/js/utils.js';
-    import { sessionEnhancement } from '/js/session-enhancement.js';
-    import { recordSession } from '/js/progress.js';
-    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+    // Guarded dynamic imports with graceful fallbacks
+    const NullEnhancement = { initializeExercise(){}, handleSessionComplete(){} };
+    const NullAudio = { play(){ /* no-op */ } };
+    const storageFallback = {
+      get:(k, def)=>{ try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
+      set:(k,v)=>{ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+    };
+
+    let storage = storageFallback, starfield = null, initUtils = ()=>{}, audio = NullAudio, sessionEnhancement = NullEnhancement;
+    let recordSession = (id, diff, score)=>{}, checkAndUnlockAchievements = ()=>{}, markExerciseTried = ()=>{};
+
+    try {
+      const u = await import('/js/utils.js');
+      storage = u.storage ?? storage;
+      starfield = u.starfield ?? starfield;
+      initUtils = u.initUtils ?? initUtils;
+      audio = u.audio ?? audio;
+    } catch {}
+
+    try {
+      const s = await import('/js/session-enhancement.js');
+      sessionEnhancement = s.sessionEnhancement ?? sessionEnhancement;
+    } catch {}
+
+    try {
+      const p = await import('/js/progress.js');
+      recordSession = p.recordSession ?? recordSession;
+    } catch {}
+
+    try {
+      const a = await import('/js/achievements.js');
+      checkAndUnlockAchievements = a.checkAndUnlockAchievements ?? checkAndUnlockAchievements;
+      markExerciseTried = a.markExerciseTried ?? markExerciseTried;
+    } catch {}
 
     // Force dark theme for proper visibility
     document.body.classList.add('dark-theme');
-    
     initUtils();
 
     // DOM refs
@@ -544,252 +439,122 @@
     const modalRestart = document.getElementById('modal-restart');
     const modalClose = document.getElementById('modal-close');
 
+    // Sound fallbacks: try DOM <audio> first, then utils audio module
+    const domSounds = {
+      pop: document.getElementById('pop'),
+      sessionComplete: document.getElementById('sessionComplete'),
+      personalBest: document.getElementById('personalBest')
+    };
+    function playSound(key) {
+      try { if (domSounds[key]) { domSounds[key].currentTime = 0; domSounds[key].play(); return; } } catch {}
+      try { audio?.play?.(key); } catch {}
+    }
+
     // Game state
-    const EXERCISE_ID = 'bubble';
+    const EXERCISE_ID = 'bubble-tap';
+    const bubbleSizes = { large: 90, medium: 70, small: 50 };
+
     let isActive = false;
     let isPaused = false;
-    let timerInterval = null;
-    let sessionDurationMs = 2 * 60 * 1000;
-    let timeRemaining = sessionDurationMs;
-
-    let bubbleSize = 100; // px
-    let fingerMode = 'all';
-
-    let score = 0;
     let taps = 0;
     let misses = 0;
-    let lastBubbleTime = 0;
+    let score = 0;
+    let lastTapTime = 0;
     let totalResponseTime = 0;
+    let bubbleSize = bubbleSizes.medium;
+    let sessionDurationMs = 2 * 60 * 1000; // default 2 min
+    let timeRemaining = sessionDurationMs;
+    let timerStart = 0;
+    let timerInterval = null;
+    let fingerMode = 'any';
+    let fingerIndex = 1;
 
-    const bubbleSizes = {
-      'very-large': 150,
-      'large': 120,
-      'medium': 100,
-      'small': 70
-    };
-
-    // Starfield implementation (fix for missing starfield.generate)
-    function createStarfield(container, count = 60) {
-      if (!container) return;
-      
-      // Respect reduced motion preference
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      
-      container.innerHTML = '';
-      const fragment = document.createDocumentFragment();
-      
-      for (let i = 0; i < count; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.style.left = `${Math.random() * 100}%`;
-        star.style.top = `${Math.random() * 100}%`;
-        
-        const size = 1 + Math.random() * 2.5;
-        star.style.width = `${size}px`;
-        star.style.height = `${size}px`;
-        star.style.opacity = `${0.2 + Math.random() * 0.6}`;
-        
-        if (!reducedMotion) {
-          const duration = 3 + Math.random() * 2;
-          const delay = Math.random() * 3;
-          star.style.animationDelay = `${delay}s`;
-          star.style.animationDuration = `${duration}s`;
-        }
-        
-        fragment.appendChild(star);
-      }
-      
-      container.appendChild(fragment);
-    }
-
-    // Initialize starfield
-    createStarfield(starsContainer, 60);
-
-    // Difficulty mapping: bubble sizes to standard difficulty levels
-    function mapToStandardDifficulty(bubbleSize) {
-      switch(bubbleSize) {
-        case 'very-large': return 'easy';
-        case 'large': return 'easy';
-        case 'medium': return 'medium';
-        case 'small': return 'hard';
-        default: return 'medium';
-      }
-    }
-
-    // Personal best (local) - FIXED: use storage.get/set
-    function getPB() {
-      return Number(storage.get('pb_' + EXERCISE_ID, 0));
-    }
+    // PB helpers
+    function getPB() { return Number(storage.get('pb_' + EXERCISE_ID, 0)); }
     function setPB(val) {
       const current = getPB();
-      if (val > current) {
-        storage.set('pb_' + EXERCISE_ID, val);
-        pbEl.textContent = String(val);
-        return true; // new PB
-      }
+      if (val > current) { storage.set('pb_' + EXERCISE_ID, val); pbEl.textContent = String(val); return true; }
       pbEl.textContent = String(getPB());
       return false;
     }
     pbEl.textContent = String(getPB());
 
-    // Difficulty into session-enhancement (for streaks/targets)
-    function currentDifficulty() {
-      return mapToStandardDifficulty(bubbleSizeSelect?.value || 'medium');
-    }
-    sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty());
-    
-    bubbleSizeSelect.addEventListener('change', () => {
-      const standardDiff = currentDifficulty();
-      hudDifficultyEl.textContent = standardDiff;
-      sessionEnhancement.initializeExercise(EXERCISE_ID, standardDiff);
-      saveSettings();
-    });
-    hudDifficultyEl.textContent = currentDifficulty();
+    // Difficulty into session-enhancement (for streaks/achievements)
+    function difficultyLabel() { if (bubbleSize >= bubbleSizes.large) return 'easy'; if (bubbleSize <= bubbleSizes.small) return 'hard'; return 'medium'; }
 
-    // Settings persistence - FIXED: use storage.get/set
-    function saveSettings() {
-      storage.set('bubbleSettings', {
-        bubbleSize: bubbleSizeSelect.value,
-        sessionDuration: sessionDurationInput.value,
-        fingerOption: fingerOptionSelect.value
-      });
-    }
+    function updateHUD() { scoreEl.textContent = String(score); hudDifficultyEl.textContent = difficultyLabel(); }
 
-    function loadSettings() {
-      const s = storage.get('bubbleSettings');
-      if (s) {
-        bubbleSizeSelect.value = s.bubbleSize || 'medium';
-        sessionDurationInput.value = s.sessionDuration || '2';
-        fingerOptionSelect.value = s.fingerOption || 'all';
-        hudDifficultyEl.textContent = currentDifficulty();
-      }
-    }
-    loadSettings();
+    // Starfield (fallback if module missing)
+    try { starfield?.(starsContainer); } catch {}
 
-    // Save settings on change
-    sessionDurationInput.addEventListener('change', saveSettings);
-    fingerOptionSelect.addEventListener('change', saveSettings);
+    // Ensure bubble is positioned inside playable area (DOM move)
+    try { playableArea.appendChild(bubble); } catch {}
 
-    // Controls hookup (both locations)
-    [startBtn, hudStart].forEach(b => b.addEventListener('click', startSession));
-    [pauseBtn, hudPause].forEach(b => b.addEventListener('click', togglePause));
-    [restartBtn, hudRestart, modalRestart].forEach(b => b.addEventListener('click', restartSession));
-    modalClose.addEventListener('click', () => completionModal.classList.remove('open'));
+    // Bubble placement constrained to playable area
+    function placeBubble(randomizeFinger = true) {
+      const rect = playableArea.getBoundingClientRect();
+      const x = Math.random() * (rect.width - bubbleSize);
+      const y = Math.random() * (rect.height - bubbleSize);
 
-    // Accessibility: keyboard bubble tap (Space/Enter)
-    bubble.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' || e.code === 'Enter') {
-        e.preventDefault();
-        handleBubbleTap();
-      }
-    });
-    bubble.addEventListener('click', handleBubbleTap);
-    bubble.addEventListener('touchstart', (e) => { 
-      e.preventDefault(); 
-      handleBubbleTap(); 
-    }, {passive:false});
+      bubble.style.width = bubble.style.height = `${bubbleSize}px`;
+      bubble.style.left = `${x}px`;
+      bubble.style.top  = `${y}px`;
 
-    // Miss tracking (clicks not on bubble)
-    document.getElementById('game-container').addEventListener('pointerdown', (e) => {
-      if (!isActive || e.target === bubble) return;
-      misses++;
-    });
-
-    function startSession() {
-      // Read settings
-      bubbleSize = bubbleSizes[bubbleSizeSelect.value];
-      sessionDurationMs = Math.max(1, parseInt(sessionDurationInput.value || '2', 10)) * 60 * 1000;
-      timeRemaining = sessionDurationMs;
-      fingerMode = fingerOptionSelect.value;
-
-      // Save settings
-      saveSettings();
-
-      // Reset state
-      score = 0; taps = 0; misses = 0; totalResponseTime = 0;
-      updateHUD();
-      setBubbleSize();
-
-      // UI
-      enableRunningUI();
-      if (fingerMode !== 'none') {
-        fingerGuide.classList.remove('hidden'); 
+      if (fingerMode === 'sequence' && randomizeFinger) {
+        fingerIndex = ((fingerIndex) % 5) + 1; // cycle 1..5
+        showFingerGuide(fingerIndex);
+      } else if (fingerMode === 'single') {
+        showFingerGuide(Number(document.getElementById('finger-number').value || 1));
       } else {
-        fingerGuide.classList.add('hidden');
+        hideFingerGuide();
       }
 
-      // Start
-      isActive = true;
-      isPaused = false;
-      lastBubbleTime = performance.now();
-      timerBar.style.width = '100%';
+      lastTapTime = performance.now();
+    }
+
+    function showFingerGuide(n) {
+      fingerGuide.classList.remove('hidden');
+      const labels = fingerGuide.querySelectorAll('.finger-item');
+      labels.forEach((el, idx) => { el.style.opacity = (idx + 1) === n ? '1' : '0.5'; });
+    }
+    function hideFingerGuide() { fingerGuide.classList.add('hidden'); }
+
+    function startTimer() {
+      timerStart = performance.now();
+      const endAt = timerStart + timeRemaining;
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        const now = performance.now();
+        timeRemaining = Math.max(0, endAt - now);
+        const pct = (timeRemaining / sessionDurationMs);
+        timerBar.style.transform = `scaleX(${pct})`;
+        if (timeRemaining <= 0) { clearInterval(timerInterval); endSession(); }
+      }, 100);
+    }
+
+    function handleBubbleTap() {
+      if (!isActive || isPaused) return;
+      const now = performance.now();
+      taps++; score++;
+      totalResponseTime += (now - lastTapTime);
+      playSound('pop');
       placeBubble();
-
-      clearInterval(timerInterval);
-      timerInterval = setInterval(tick, 100);
-
-      // Auto-scroll to game on mobile
-      if (window.innerWidth <= 980) {
-        setTimeout(() => {
-          document.getElementById('game-container').scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        }, 100);
-      }
+      updateHUD();
     }
 
     function togglePause() {
       if (!isActive) return;
       isPaused = !isPaused;
-      [pauseBtn, hudPause].forEach(b => b.textContent = isPaused ? 'Resume' : 'Pause');
+      if (isPaused) { clearInterval(timerInterval); timerInterval = null; }
+      else { startTimer(); lastTapTime = performance.now(); }
+      [pauseBtn, hudPause].forEach(b => { b.textContent = isPaused ? 'Resume' : 'Pause'; b.setAttribute('aria-label', isPaused ? 'Resume session' : 'Pause session'); });
     }
 
-    function restartSession() {
-      endSessionInternal({showModal:false});
-      startSession();
-    }
+    function restartSession() { if (!isActive) return; clearInterval(timerInterval); isActive = false; isPaused = false; startSession(); }
 
-    function tick() {
-      if (!isActive || isPaused) return;
-      timeRemaining -= 100;
-      const progress = timeRemaining / sessionDurationMs;
-      timerBar.style.width = Math.max(0, progress * 100) + '%';
-
-      if (timeRemaining <= 0) {
-        endSessionInternal({showModal:true});
-      }
-    }
-
-    function handleBubbleTap() {
-      if (!isActive || isPaused) return;
-
-      const now = performance.now();
-      const responseTime = now - lastBubbleTime;
-      totalResponseTime += responseTime;
-
-      // Points: faster = more, with floor of 10 at slowest (>= 3000ms baseline)
-      const points = Math.max(10, Math.floor(3000 / responseTime * 100));
-      score += points;
-      taps++;
-
-      // Audio feedback
-      audio.play('pop');
-
-      bubble.classList.add('burst');
-      setTimeout(() => {
-        bubble.classList.remove('burst');
-        placeBubble();
-        lastBubbleTime = performance.now();
-      }, 300);
-
-      updateHUD();
-    }
-
-    function endSessionInternal({showModal}) {
+    function endSession() {
       clearInterval(timerInterval);
-      isActive = false;
-      isPaused = false;
+      isActive = false; isPaused = false;
 
       // Stats
       const accuracy = taps > 0 ? Math.round((taps / (taps + misses)) * 100) : 0;
@@ -797,129 +562,114 @@
 
       // Check for new personal best
       const isNewPB = setPB(score);
+      if (isNewPB) {
+        const note = document.createElement('div');
+        note.textContent = '🎉 New Personal Best!';
+        note.className = 'xp-line';
+        note.style.position = 'absolute'; note.style.right = '12px'; note.style.top = '12px';
+        note.style.background = 'rgba(0,0,0,0.35)'; note.style.padding = '6px 10px'; note.style.borderRadius = '8px';
+        document.querySelector('.game-panel')?.appendChild(note);
+        setTimeout(() => note.remove(), 2500);
+        playSound('personalBest');
+      }
 
       // Notify sessionEnhancement
-      sessionEnhancement.handleSessionComplete({
-        score,
-        taps,
-        accuracy,
-        avgResponseTime: Number(avgResponse.toFixed(2))
-      });
+      sessionEnhancement.handleSessionComplete({ score, difficulty: difficultyLabel(), extras: { taps, misses, accuracy, avg: avgResponse } });
+      try { markExerciseTried(EXERCISE_ID); } catch {}
+      try { checkAndUnlockAchievements(); } catch {}
+      try { recordSession(EXERCISE_ID, difficultyLabel(), score, { accuracy, avg: avgResponse, taps }); } catch {}
 
-      // Progress & Achievements - use mapped difficulty
-      const standardDiff = currentDifficulty();
-      if (window.endSession) {
-        window.endSession(score, standardDiff);
-      }
+      // Modal data
+      finalScoreEl.textContent = String(score);
+      finalTapsEl.textContent = String(taps);
+      finalAvgTimeEl.textContent = `${avgResponse.toFixed(2)}s`;
+      finalAccuracyEl.textContent = `${accuracy}%`;
+      xpEarnedEl.textContent = `+${Math.max(5, Math.round(score / 2))} XP`;
 
-      // Audio feedback
-      if (isNewPB) {
-        audio.play('personalBest');
-      } else {
-        audio.play('sessionComplete');
-      }
+      playSound('sessionComplete');
+      completionModal.classList.add('open');
 
-      // Completion modal
-      if (showModal) {
-        finalScoreEl.textContent = String(score);
-        finalTapsEl.textContent = String(taps);
-        finalAvgTimeEl.textContent = avgResponse.toFixed(2) + 's';
-        finalAccuracyEl.textContent = accuracy + '%';
-        // Simple XP calc: 1 XP per 50 points (round down)
-        const xp = Math.floor(score / 50);
-        xpEarnedEl.textContent = `+${xp}`;
-        
-        // Add new PB indicator
-        if (isNewPB) {
-          const pbIndicator = document.createElement('p');
-          pbIndicator.className = 'xp-line';
-          pbIndicator.style.color = 'var(--brand-aqua)';
-          pbIndicator.textContent = '🎉 New Personal Best!';
-          xpEarnedEl.parentElement.appendChild(pbIndicator);
-        }
-        
-        completionModal.classList.add('open');
-      }
-
-      // Reset controls
-      disableRunningUI();
-      bubble.classList.add('hidden');
-      timerBar.style.width = '0%';
-      fingerGuide.classList.add('hidden');
-    }
-
-    function setBubbleSize() {
-      bubble.style.width = bubbleSize + 'px';
-      bubble.style.height = bubbleSize + 'px';
-      bubble.style.fontSize = Math.round(bubbleSize * 0.3) + 'px';
-    }
-
-    function placeBubble() {
-      bubble.classList.remove('hidden');
-
-      const areaRect = playableArea.getBoundingClientRect();
-      const pad = 10;
-      const minX = areaRect.left + pad;
-      const maxX = areaRect.right - pad - bubbleSize;
-      const minY = areaRect.top + pad;
-      const maxY = areaRect.bottom - pad - bubbleSize;
-
-      const x = Math.max(minX, Math.min(maxX, minX + Math.random() * (maxX - minX)));
-      const y = Math.max(minY, Math.min(maxY, minY + Math.random() * (maxY - minY)));
-
-      // Position relative to viewport, convert to container coordinates
-      const containerRect = document.getElementById('game-container').getBoundingClientRect();
-      bubble.style.left = (x - containerRect.left) + 'px';
-      bubble.style.top  = (y - containerRect.top) + 'px';
-
-      // Finger number
-      if (fingerMode !== 'none') {
-        let fingerNumber = fingerMode === 'all' ? (Math.floor(Math.random() * 5) + 1) : parseInt(fingerMode, 10);
-        bubble.textContent = String(fingerNumber);
-        bubble.setAttribute('aria-label', `Tap bubble with finger ${fingerNumber}`);
-      } else {
-        bubble.textContent = '';
-        bubble.setAttribute('aria-label', 'Tap bubble');
-      }
-      bubble.focus({preventScroll:true});
-    }
-
-    function updateHUD() {
-      scoreEl.textContent = String(score);
-      pbEl.textContent = String(getPB());
-      hudDifficultyEl.textContent = currentDifficulty();
-    }
-
-    function enableRunningUI() {
-      [pauseBtn, hudPause, restartBtn, hudRestart].forEach(b => b.disabled = false);
-      [startBtn, hudStart].forEach(b => b.disabled = true);
-      
-      // Hide settings panel on mobile during gameplay
-      if (window.innerWidth <= 980) {
-        document.querySelector('.settings-panel').style.display = 'none';
-      }
-    }
-
-    function disableRunningUI() {
-      [pauseBtn, hudPause, restartBtn, hudRestart].forEach(b => b.disabled = true);
+      // Reset buttons
+      [pauseBtn, hudPause].forEach(b => b.disabled = true);
+      [restartBtn, hudRestart].forEach(b => b.disabled = false);
       [startBtn, hudStart].forEach(b => b.disabled = false);
-      [pauseBtn, hudPause].forEach(b => b.textContent = 'Pause');
-      
-      // Show settings panel again on mobile
-      if (window.innerWidth <= 980) {
-        document.querySelector('.settings-panel').style.display = 'block';
-      }
     }
+
+    function startSession() {
+      // Close any open completion modal
+      completionModal.classList.remove('open');
+
+      // Read settings
+      bubbleSize = bubbleSizes[bubbleSizeSelect.value];
+      sessionDurationMs = Math.max(1, parseInt(sessionDurationInput.value || '2', 10)) * 60 * 1000;
+      timeRemaining = sessionDurationMs;
+      fingerMode = fingerOptionSelect.value;
+
+      // Reset state
+      isActive = true; isPaused = false;
+      taps = 0; misses = 0; score = 0; totalResponseTime = 0; fingerIndex = 1;
+
+      hideFingerGuide();
+      updateHUD();
+
+      // Buttons
+      [startBtn, hudStart].forEach(b => b.disabled = true);
+      [pauseBtn, hudPause].forEach(b => { b.disabled = false; b.textContent = 'Pause'; b.setAttribute('aria-label','Pause session'); });
+      [restartBtn, hudRestart].forEach(b => b.disabled = true);
+
+      // Bubble + timer
+      placeBubble(false);
+      startTimer();
+    }
+
+    // Event bindings
+    [startBtn, hudStart, modalRestart].forEach(b => b.addEventListener('click', startSession));
+    [pauseBtn, hudPause].forEach(b => b.addEventListener('click', togglePause));
+    [restartBtn, hudRestart].forEach(b => b.addEventListener('click', restartSession));
+    modalClose.addEventListener('click', () => completionModal.classList.remove('open'));
+
+    // Close modal on Escape for convenience
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && completionModal.classList.contains('open')) {
+        completionModal.classList.remove('open');
+      }
+    });
+
+    // Accessibility: keyboard bubble tap (Space/Enter), Escape for pause
+    bubble.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); handleBubbleTap(); }
+      else if (e.code === 'Escape') { e.preventDefault(); togglePause(); }
+    });
+    bubble.addEventListener('click', handleBubbleTap);
+    bubble.addEventListener('touchstart', (e) => { e.preventDefault(); handleBubbleTap(); }, {passive:false});
+
+    // Miss tracking with safer semantics for touch: count on pointerup if the press didn't start on the bubble
+    let downOnBubble = false;
+    bubble.addEventListener('pointerdown', () => { downOnBubble = true; });
+    bubble.addEventListener('pointerup',   () => { downOnBubble = false; });
+    document.getElementById('game-container').addEventListener('pointerup', (e) => {
+      if (!isActive) return;
+      if (e.target === bubble || downOnBubble) return;
+      misses++;
+      downOnBubble = false;
+    });
+
+    // Re-place bubble on resize to keep it inside bounds
+    window.addEventListener('resize', () => { if (isActive && !isPaused) placeBubble(false); });
 
     // Expose standardized global endSession hook (already required globally)
-    // Keep for safety if not defined elsewhere (no duplicate toasts here).
     if (!window.endSession) {
       window.endSession = function(score, difficulty = 'easy') {
-        recordSession(EXERCISE_ID, difficulty, score);
+        try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
         try { markExerciseTried(EXERCISE_ID); } catch {}
         try { checkAndUnlockAchievements(); } catch {}
       };
     }
+
+    // Update finger controls visibility
+    fingerOptionSelect.addEventListener('change', () => {
+      document.getElementById('single-finger-select').style.display = fingerOptionSelect.value === 'single' ? '' : 'none';
+    });
   </script>
 </body>
 </html>
