@@ -6,52 +6,55 @@
   <meta name="description" content="Comet Tap: dynamic tracking and reaction exercise for fine motor control and visual attention." />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Site styles (keep your existing paths) -->
+  <!-- Keep your existing global styles -->
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
 
   <style>
-    /* --- Critical mobile fixes --- */
+    /* =============================================================================
+       BULLETPROOF MOBILE SCROLLING FIX (Samsung/Chrome friendly)
+       - Unlock root scroll (no overflow/height locks on html/body)
+       - Avoid 100vh traps on scroll container
+       - Flexible layout; mobile stacks cleanly
+       ============================================================================= */
 
-    /* 1) Never lock html/body height; allow vertical scrolling */
+    /* --- Global scroll safety --- */
     html, body {
-      height: auto;
-      min-height: 0;
-      overflow-y: auto !important;
+      height: auto;                   /* No hard height locks */
+      min-height: 0;                  /* Prevent pinned content */
+      overflow-y: auto;               /* Allow vertical scroll */
+      overflow-x: hidden;             /* Block horizontal scroll only */
       -webkit-text-size-adjust: 100%;
-      background: var(--bg-primary, #fff);
-      color: var(--text-primary, #111827);
+      background: var(--bg-primary, #0b0f1a);
+      color: var(--text-primary, #e5e7eb);
     }
 
-    /* 2) Page shell uses content-height, not 100vh (avoid Android URL bar issues).
-          dvh adjusts to visible viewport when supported. */
-    .page {
-      min-height: 100%;
-      min-height: 100dvh; /* safe on modern mobile */
-      display: flex;
-      flex-direction: column;
+    /* Body visual styles (do NOT add 100vh here) */
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.35) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.28) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.5) 0%, transparent 70%),
+        linear-gradient(180deg, var(--bg-1, #0b0f1a) 0%, var(--bg-2, #0f1423) 50%, var(--bg-3, #0b0f1a) 100%);
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
     }
 
-    /* 3) Main content scrolls naturally; no inner scroll containers required */
-    main {
-      flex: 1 1 auto;
-      width: 100%;
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 16px 16px 96px; /* bottom space so content never hides behind sticky controls */
-    }
-
-    header {
+    header.site {
       position: sticky;
       top: 0;
       z-index: 10;
       backdrop-filter: saturate(120%) blur(6px);
-      background: color-mix(in oklab, var(--bg-primary, #fff), transparent 20%);
-      border-bottom: 1px solid var(--bg-tertiary, #e5e7eb);
+      background: color-mix(in oklab, var(--bg-1, #0b0f1a), transparent 10%);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .header-inner {
-      max-width: 960px;
+    .site-inner {
+      max-width: 1200px;
       margin: 0 auto;
       padding: 12px 16px;
       display: flex;
@@ -61,43 +64,44 @@
     .back {
       text-decoration: none;
       font-weight: 600;
-      border: 1px solid var(--bg-tertiary, #e5e7eb);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 999px;
       padding: 6px 10px;
+      color: inherit;
     }
-    h1 {
-      font-size: clamp(1.125rem, 1rem + 1vw, 1.75rem);
-      margin: 0;
-    }
+    h1 { margin: 0; font-size: clamp(1.125rem, 1rem + 1vw, 1.75rem); }
 
-    .section {
-      margin: 20px 0;
-    }
-    .muted {
-      color: var(--text-secondary, #6b7280);
-      line-height: 1.5;
-    }
-
-    /* Settings groups */
-    .settings-grid {
+    /* ---- Main layout (desktop: settings + game) */
+    .layout {
+      position: relative;
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
+      grid-template-columns: 360px 1fr;
+      gap: var(--space-4, 16px);
+      min-height: 100%;               /* Percent, not vh */
+      height: auto;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-4, 16px);
     }
-    @media (min-width: 640px) {
-      .settings-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-    fieldset {
-      border: 1px solid var(--bg-tertiary, #e5e7eb);
-      border-radius: 12px;
+
+    /* Panels */
+    .panel {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      background: color-mix(in oklab, var(--bg-1, #0b0f1a), white 2%);
       padding: 12px;
     }
-    legend {
-      font-weight: 700;
-      padding: 0 6px;
+
+    /* Settings panel */
+    #settings-panel .group { margin-bottom: 12px; }
+    #settings-panel .group:last-child { margin-bottom: 0; }
+    fieldset {
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 0;
     }
+    legend { font-weight: 700; padding: 0 6px; }
     .options {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -105,106 +109,103 @@
     }
     .options-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .chip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 10px;
-      border: 1px solid var(--bg-tertiary, #e5e7eb);
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 40px; padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,0.14);
       border-radius: 10px;
-      background: var(--bg-secondary, #f8fafc);
-      user-select: none;
-      cursor: pointer;
-      text-align: center;
-      min-height: 40px; /* ≥44px touch target incl. borders/padding */
+      background: rgba(255,255,255,0.04);
+      cursor: pointer; user-select: none; text-align: center;
     }
     .chip input { display: none; }
     .chip[data-selected="true"] {
-      border-color: var(--brand-blue, #2563eb);
-      outline: 2px solid color-mix(in oklab, var(--brand-blue, #2563eb), transparent 70%);
-      background: color-mix(in oklab, var(--brand-blue, #2563eb), white 85%);
+      border-color: var(--brand-blue, #48a0ff);
+      outline: 2px solid color-mix(in oklab, var(--brand-blue, #48a0ff), transparent 70%);
+      background: color-mix(in oklab, var(--brand-blue, #48a0ff), black 90%);
       font-weight: 600;
     }
+    .hint { color: #97a2b3; font-size: .95rem; margin-top: 6px; }
 
-    .hint {
-      font-size: 0.95rem;
-      color: var(--text-secondary, #6b7280);
-      margin-top: 6px;
-    }
-
-    /* Sticky controls bar — Start/Pause/Restart always reachable */
-    .controls {
-      position: sticky;
-      bottom: 0;
-      z-index: 20;
-      border-top: 1px solid var(--bg-tertiary, #e5e7eb);
-      background: color-mix(in oklab, var(--bg-primary, #fff), transparent 10%);
-      backdrop-filter: saturate(120%) blur(6px);
-    }
-    .controls-inner {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 10px 16px;
-      display: grid;
-      grid-template-columns: 1fr auto auto auto;
-      gap: 10px;
-      align-items: center;
-    }
-    .btn {
-      appearance: none;
-      border: none;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-weight: 700;
-      cursor: pointer;
-      min-height: 44px; /* touch */
-    }
-    .btn-primary  { background: var(--brand-gradient, linear-gradient(135deg, #2563eb 0%, #48cae4 100%)); color: white; }
-    .btn-secondary{ background: var(--bg-tertiary, #e5e7eb); }
-    .stat { text-align: right; font-variant-numeric: tabular-nums; }
-
-    /* Simple HUD */
+    /* Game column */
+    .game-column { display: flex; flex-direction: column; gap: 12px; }
     .hud {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      margin-top: 12px;
       font-variant-numeric: tabular-nums;
     }
     .hud .card {
-      border: 1px solid var(--bg-tertiary, #e5e7eb);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 12px;
       padding: 12px;
-      background: var(--bg-secondary, #f8fafc);
+      background: rgba(255,255,255,0.04);
       text-align: center;
     }
-    .hud .label { color: var(--text-secondary, #6b7280); font-size: 0.9rem; }
+    .hud .label { color: #97a2b3; font-size: 0.9rem; }
     .hud .value { font-weight: 800; font-size: 1.25rem; }
 
-    /* Results panel */
-    dialog#results {
-      width: min(680px, 92vw);
-      border: 1px solid var(--bg-tertiary, #e5e7eb);
-      border-radius: 16px;
-      padding: 16px;
-    }
-    dialog::backdrop { background: rgba(0,0,0,0.25); }
-
-    /* Canvas/play area (placeholder — your JS will manage this) */
     .play-area {
-      margin-top: 12px;
       border: 2px dashed color-mix(in oklab, var(--brand-aqua, #48cae4), transparent 60%);
       border-radius: 14px;
       aspect-ratio: 16 / 9;
-      display: grid;
-      place-items: center;
-      user-select: none;
-      touch-action: manipulation;
+      display: grid; place-items: center;
+      user-select: none; touch-action: manipulation;
       background:
         radial-gradient(1200px 400px at 10% 10%, color-mix(in oklab, #48cae4, transparent 92%), transparent),
         radial-gradient(1200px 400px at 90% 0%, color-mix(in oklab, #2563eb, transparent 92%), transparent);
     }
 
-    /* Accessibility helpers */
+    /* Optional sticky controls (always reachable) */
+    .controls-bar {
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+      backdrop-filter: saturate(120%) blur(6px);
+      background: color-mix(in oklab, var(--bg-1, #0b0f1a), transparent 10%);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: var(--space-3, 12px);
+    }
+    .controls-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 10px; align-items: center;
+    }
+    .btn {
+      appearance: none; border: none;
+      border-radius: 12px; padding: 12px 16px;
+      font-weight: 700; cursor: pointer; min-height: 44px;
+      color: #0b0f1a;
+    }
+    .btn-primary  { background: linear-gradient(135deg, #2563eb 0%, #48cae4 100%); color: #fff; }
+    .btn-secondary{ background: rgba(255,255,255,0.14); color: #fff; }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+        grid-auto-rows: max-content 1fr;
+        height: auto;               /* Let content dictate height */
+        min-height: auto;           /* No vh math on mobile */
+        padding-bottom: var(--space-6, 24px);
+      }
+
+      #settings-panel {
+        max-height: none;           /* Remove height clamps */
+        margin-bottom: var(--space-4, 16px);
+      }
+
+      .game-column { gap: 10px; }
+      .game-column { min-height: 400px; }
+
+      .btn { min-height: 48px; }    /* Touch target improvements */
+      select, input[type="number"] {
+        min-height: 44px;
+        font-size: 16px;            /* Prevent mobile zoom on focus */
+      }
+    }
+
+    /* Accessibility helper */
     .sr-only {
       position: absolute !important;
       height: 1px; width: 1px; overflow: hidden;
@@ -213,73 +214,67 @@
     }
   </style>
 </head>
+
 <body>
   <a class="sr-only" href="#controls">Skip to Start controls</a>
 
-  <div class="page">
-    <header>
-      <div class="header-inner">
-        <a class="back" href="/">← Home</a>
-        <h1>Comet Tap</h1>
+  <header class="site">
+    <div class="site-inner">
+      <a class="back" href="/">← Home</a>
+      <h1>Comet Tap</h1>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Left: Settings / instructions -->
+    <aside id="settings-panel" class="panel" aria-labelledby="settings-title">
+      <h2 id="settings-title">Settings</h2>
+
+      <div class="group">
+        <fieldset>
+          <legend>Session Duration (minutes)</legend>
+          <input id="duration" type="range" min="0.5" max="2" step="0.5" value="1" aria-label="Session duration in minutes" />
+          <div class="hint">Start with 0.5–2 minutes and increase as you improve.</div>
+        </fieldset>
       </div>
-    </header>
 
-    <main>
-      <!-- How to play -->
-      <section class="section" aria-labelledby="howto-title">
-        <h2 id="howto-title">How to Play</h2>
-        <p class="muted">
-          Glowing comets streak across the screen. Tap a comet before it leaves to score points.
-          Smaller &amp; faster = harder (and more points). Tip: quick taps boost your multiplier.
-        </p>
-      </section>
+      <div class="group">
+        <fieldset>
+          <legend>Comet Size</legend>
+          <div class="options">
+            <label class="chip"><input type="radio" name="size" value="large" checked> Large</label>
+            <label class="chip"><input type="radio" name="size" value="medium"> Medium</label>
+            <label class="chip"><input type="radio" name="size" value="small"> Small</label>
+          </div>
+        </fieldset>
+      </div>
 
-      <!-- Settings -->
-      <section class="section" aria-labelledby="settings-title">
-        <h2 id="settings-title">Settings</h2>
+      <div class="group">
+        <fieldset>
+          <legend>Comet Speed</legend>
+          <div class="options">
+            <label class="chip"><input type="radio" name="speed" value="slow" checked> Slow</label>
+            <label class="chip"><input type="radio" name="speed" value="medium"> Medium</label>
+            <label class="chip"><input type="radio" name="speed" value="fast"> Fast</label>
+          </div>
+        </fieldset>
+      </div>
 
-        <div class="settings-grid">
-          <!-- Duration -->
-          <fieldset>
-            <legend>Session Duration (minutes)</legend>
-            <input id="duration" type="range" min="0.5" max="2" step="0.5" value="1" aria-label="Session duration in minutes" />
-            <div class="hint">Start with 0.5–2 minutes and increase as you improve.</div>
-          </fieldset>
+      <div class="group">
+        <fieldset>
+          <legend>Spawn Rate</legend>
+          <div class="options options-4">
+            <label class="chip"><input type="radio" name="spawn" value="slow" checked> Slow</label>
+            <label class="chip"><input type="radio" name="spawn" value="med"> Medium</label>
+            <label class="chip"><input type="radio" name="spawn" value="fast"> Fast</label>
+            <label class="chip"><input type="radio" name="spawn" value="vfast"> Very Fast</label>
+          </div>
+        </fieldset>
+      </div>
+    </aside>
 
-          <!-- Size -->
-          <fieldset>
-            <legend>Comet Size</legend>
-            <div class="options">
-              <label class="chip"><input type="radio" name="size" value="large" checked> Large</label>
-              <label class="chip"><input type="radio" name="size" value="medium"> Medium</label>
-              <label class="chip"><input type="radio" name="size" value="small"> Small</label>
-            </div>
-          </fieldset>
-
-          <!-- Speed -->
-          <fieldset>
-            <legend>Comet Speed</legend>
-            <div class="options">
-              <label class="chip"><input type="radio" name="speed" value="slow" checked> Slow</label>
-              <label class="chip"><input type="radio" name="speed" value="medium"> Medium</label>
-              <label class="chip"><input type="radio" name="speed" value="fast"> Fast</label>
-            </div>
-          </fieldset>
-
-          <!-- Spawn Rate -->
-          <fieldset>
-            <legend>Spawn Rate</legend>
-            <div class="options options-4">
-              <label class="chip"><input type="radio" name="spawn" value="slow" checked> Slow</label>
-              <label class="chip"><input type="radio" name="spawn" value="med"> Medium</label>
-              <label class="chip"><input type="radio" name="spawn" value="fast"> Fast</label>
-              <label class="chip"><input type="radio" name="spawn" value="vfast"> Very Fast</label>
-            </div>
-          </fieldset>
-        </div>
-      </section>
-
-      <!-- HUD -->
+    <!-- Right: HUD + Game area -->
+    <section class="game-column">
       <section class="hud" aria-label="Session stats">
         <div class="card">
           <div class="label">Score</div>
@@ -295,82 +290,71 @@
         </div>
       </section>
 
-      <!-- Play Area (your canvas/DOM comets render here) -->
-      <section class="section">
-        <div id="play-area" class="play-area" aria-label="Comet play area">
-          <span class="muted">Tap “Start” to begin</span>
+      <section aria-label="How to Play" class="panel">
+        <h2>How to Play</h2>
+        <p class="hint">Glowing comets streak across the screen. Tap a comet before it leaves to score points.
+          Smaller &amp; faster = harder (and more points). Quick taps boost your multiplier.</p>
+      </section>
+
+      <section aria-label="Comet play area">
+        <div id="play-area" class="play-area">
+          <span class="hint">Tap “Start” to begin</span>
         </div>
       </section>
-    </main>
+    </section>
+  </main>
 
-    <!-- Sticky controls: always reachable on mobile -->
-    <div id="controls" class="controls" role="region" aria-label="Session controls">
-      <div class="controls-inner">
-        <div class="muted">Ready?</div>
-        <button id="startBtn" class="btn btn-primary" type="button">Start</button>
-        <button id="pauseBtn" class="btn btn-secondary" type="button">Pause</button>
-        <button id="restartBtn" class="btn btn-secondary" type="button">Restart</button>
-      </div>
+  <!-- Optional sticky controls so Start is always reachable -->
+  <div id="controls" class="controls-bar" role="region" aria-label="Session controls">
+    <div class="controls-inner">
+      <div class="hint">Ready?</div>
+      <button id="startBtn" class="btn btn-primary" type="button">Start</button>
+      <button id="pauseBtn" class="btn btn-secondary" type="button">Pause</button>
+      <button id="restartBtn" class="btn btn-secondary" type="button">Restart</button>
     </div>
-
-    <!-- Results -->
-    <dialog id="results" aria-labelledby="results-title" aria-modal="true">
-      <h2 id="results-title">Session Complete!</h2>
-      <p><strong>Final Score:</strong> <span id="finalScore">0</span></p>
-      <p><strong>Comets Tapped:</strong> <span id="taps">0</span></p>
-      <p><strong>Accuracy:</strong> <span id="acc">0%</span></p>
-      <p><strong>Average Response Time:</strong> <span id="avg">0.0s</span></p>
-      <p><strong>XP Earned:</strong> <span id="xp">0</span></p>
-      <p id="achievements" class="muted">Achievements unlocked!</p>
-      <form method="dialog">
-        <button class="btn btn-primary">Start New Session</button>
-      </form>
-    </dialog>
   </div>
 
-  <!-- Minimal glue JS:
-       - make chips toggle a selected state for visual feedback
-       - wire up results dialog open/close placeholders
-       - your existing game logic can hook the same IDs -->
+  <!-- Results dialog (hook up from your game logic) -->
+  <dialog id="results" aria-labelledby="results-title" aria-modal="true">
+    <h2 id="results-title">Session Complete!</h2>
+    <p><strong>Final Score:</strong> <span id="finalScore">0</span></p>
+    <p><strong>Comets Tapped:</strong> <span id="taps">0</span></p>
+    <p><strong>Accuracy:</strong> <span id="acc">0%</span></p>
+    <p><strong>Average Response Time:</strong> <span id="avg">0.0s</span></p>
+    <p><strong>XP Earned:</strong> <span id="xp">0</span></p>
+    <p id="achievements" class="hint">Achievements unlocked!</p>
+    <form method="dialog">
+      <button class="btn btn-primary">Start New Session</button>
+    </form>
+  </dialog>
+
   <script>
     // Chip visual selection
     document.querySelectorAll('fieldset .chip input').forEach((input) => {
-      const label = input.closest('.chip');
       const name = input.name;
-      function refresh() {
+      const refresh = () => {
         document.querySelectorAll(`input[name="${name}"]`).forEach((inp) => {
-          const lab = inp.closest('.chip');
-          lab?.setAttribute('data-selected', inp.checked ? 'true' : 'false');
+          inp.closest('.chip')?.setAttribute('data-selected', inp.checked ? 'true' : 'false');
         });
-      }
+      };
       input.addEventListener('change', refresh);
       refresh();
     });
 
-    // Results dialog helpers (stub — integrate with your session logic)
-    const results = document.getElementById('results');
-    function openResults() { results?.showModal?.(); }
-    function closeResults() { results?.close?.(); }
-
-    // Example: ensure focus stays visible when keyboard opens on Android
+    // Hook these IDs in your existing game module
     document.getElementById('startBtn')?.addEventListener('click', () => {
-      // Hook into your actual start routine here
-      // closeResults();
       // startSession();
-    });
-    document.getElementById('restartBtn')?.addEventListener('click', () => {
-      // restartSession();
     });
     document.getElementById('pauseBtn')?.addEventListener('click', () => {
       // togglePause();
     });
-
-    // Avoid iOS/Android rubber-band scroll capturing by nested scroll areas:
-    // keep scrolling on body. No overflow:hidden anywhere.
+    document.getElementById('restartBtn')?.addEventListener('click', () => {
+      // restartSession();
+    });
   </script>
 
-  <!-- Your existing per-exercise logic can still be loaded AFTER this file if needed:
-       <script type="module" src="/exercises/comet-exercise.js"></script>
-  -->
+  <!-- If you have a module for this exercise, keep it after the markup -->
+  <!-- <script type="module" src="/exercises/comet-exercise.js"></script> -->
+  <!-- Re-add analytics here if desired -->
 </body>
 </html>
