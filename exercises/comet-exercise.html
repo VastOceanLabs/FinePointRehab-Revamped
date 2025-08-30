@@ -6,50 +6,50 @@
   <meta name="description" content="Comet Tap: dynamic tracking and reaction exercise for fine motor control and visual attention." />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Global styles (keep your paths) -->
+  <!-- Global styles -->
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
 
-  <!-- ********** MOBILE SCROLL HOTFIX (wins against any old rules) ********** -->
-  <style data-mobile-scroll-hotfix>
+  <style>
+    /* =========================================================================
+       MOBILE-SAFE LAYOUT (final)
+       - Allow root scroll (no overflow/height locks on html/body)
+       - Avoid 100vh on scroll container
+       - Flexible grid; sticky controls always reachable
+       ========================================================================= */
+
+    /* Root scroll safety (kept minimal but defensive) */
     html, body {
-      height: auto !important;
-      min-height: 0 !important;
-      overflow-y: auto !important;    /* allow vertical scroll */
-      overflow-x: hidden !important;  /* block horizontal only */
-      -webkit-text-size-adjust: 100% !important;
-      background: var(--bg-primary, #0b0f1a) !important;
-      color: var(--text-primary, #e5e7eb) !important;
+      height: auto;
+      min-height: 0;
+      overflow-y: auto;           /* allow vertical scroll */
+      overflow-x: hidden;         /* block horizontal jiggle */
+      -webkit-text-size-adjust: 100%;
+      background: var(--bg-primary, #0b0f1a);
+      color: var(--text-primary, #e5e7eb);
     }
 
-    /* Body visuals (no 100vh here) */
+    /* Body visuals (no vh/min-vh here) */
     body {
-      margin: 0 !important;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji" !important;
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
       background:
         radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.35) 0%, transparent 40%),
         radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.28) 0%, transparent 40%),
         radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.5) 0%, transparent 70%),
-        linear-gradient(180deg, var(--bg-1, #0b0f1a) 0%, var(--bg-2, #0f1423) 50%, var(--bg-3, #0b0f1a) 100%) !important;
-      touch-action: manipulation !important;
-      user-select: none !important;
-      -webkit-user-select: none !important;
-      padding-bottom: max(0px, env(safe-area-inset-bottom)) !important;
-    }
-
-    /* Neutralize any wrapper locks that might trap scroll */
-    .page, .layout, main, #app, .app, .container {
-      height: auto !important;
-      min-height: 0 !important;
-      overflow: visible !important;
+        linear-gradient(180deg, var(--bg-1, #0b0f1a) 0%, var(--bg-2, #0f1423) 50%, var(--bg-3, #0b0f1a) 100%);
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
     }
 
     /* Site header */
     header.site {
-      position: sticky !important;
-      top: 0 !important;
-      z-index: 10 !important;
+      position: sticky;
+      top: 0;
+      z-index: 10;
       backdrop-filter: saturate(120%) blur(6px);
       background: color-mix(in oklab, var(--bg-1, #0b0f1a), transparent 10%);
       border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -72,13 +72,13 @@
     }
     h1 { margin: 0; font-size: clamp(1.125rem, 1rem + 1vw, 1.75rem); }
 
-    /* Main layout (desktop: settings + game) — flexible, NOT vh-locked */
+    /* Main layout (desktop: settings + game) — flexible, not vh-locked */
     .layout {
       position: relative;
       display: grid;
       grid-template-columns: 360px 1fr;
       gap: var(--space-4, 16px);
-      min-height: 100%;        /* percent, not vh */
+      min-height: 100%;            /* percent, not vh */
       height: auto;
       max-width: 1200px;
       margin: 0 auto;
@@ -157,9 +157,9 @@
 
     /* Sticky controls (always reachable) */
     .controls-bar {
-      position: sticky !important;
-      bottom: 0 !important;
-      z-index: 100 !important;
+      position: sticky;
+      bottom: 0;
+      z-index: 100;
       backdrop-filter: saturate(120%) blur(6px);
       background: color-mix(in oklab, var(--bg-1, #0b0f1a), transparent 10%);
       border-top: 1px solid rgba(255,255,255,0.1);
@@ -176,13 +176,12 @@
       appearance: none; border: none;
       border-radius: 12px; padding: 12px 16px;
       font-weight: 700; cursor: pointer; min-height: 44px;
-      color: #0b0f1a;
     }
     .btn-primary  { background: linear-gradient(135deg, #2563eb 0%, #48cae4 100%); color: #fff; }
     .btn-secondary{ background: rgba(255,255,255,0.14); color: #fff; }
 
-    /* Give content breathing room so sticky bar never overlaps */
-    main, .layout, .page { padding-bottom: 96px !important; }
+    /* Keep content clear of the sticky bar on small screens */
+    main, .layout, .page { padding-bottom: 96px; }
 
     /* Mobile stacking + touch targets */
     @media (max-width: 900px) {
@@ -204,7 +203,7 @@
       .btn { min-height: 48px; }     /* touch target improvements */
       select, input[type="number"] {
         min-height: 44px;
-        font-size: 16px;             /* prevent iOS zoom on focus */
+        font-size: 16px;             /* prevent mobile zoom on focus */
       }
     }
 
@@ -358,6 +357,6 @@
 
   <!-- If you have a module for this exercise, keep it after the markup -->
   <!-- <script type="module" src="/exercises/comet-exercise.js"></script> -->
-  <!-- Re-add analytics here if desired -->
+  <!-- Re-add analytics here if needed -->
 </body>
 </html>
