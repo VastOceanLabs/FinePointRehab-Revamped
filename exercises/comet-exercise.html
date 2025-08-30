@@ -13,198 +13,178 @@
 
   <style>
     /* =========================================================================
-       MOBILE-SAFE LAYOUT (final)
-       - Allow root scroll (no overflow/height locks on html/body)
-       - Avoid 100vh on scroll container
-       - Flexible grid; sticky controls always reachable
+       MOBILE-SAFE LAYOUT + HIGH-VIS CONTROLS (final)
        ========================================================================= */
 
-    /* Root scroll safety (kept minimal but defensive) */
+    /* Root scroll safety */
     html, body {
       height: auto;
       min-height: 0;
-      overflow-y: auto;           /* allow vertical scroll */
-      overflow-x: hidden;         /* block horizontal jiggle */
+      overflow-y: auto;
+      overflow-x: hidden;
       -webkit-text-size-adjust: 100%;
-      background: var(--bg-primary, #0b0f1a);
-      color: var(--text-primary, #e5e7eb);
+      background: #0b1020;
+      color: #eef2ff;
     }
 
-    /* Body visuals (no vh/min-vh here) */
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
       background:
-        radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.35) 0%, transparent 40%),
-        radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.28) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.5) 0%, transparent 70%),
-        linear-gradient(180deg, var(--bg-1, #0b0f1a) 0%, var(--bg-2, #0f1423) 50%, var(--bg-3, #0b0f1a) 100%);
+        radial-gradient(1000px 500px at 10% 20%, rgba(80,140,255,.18), transparent 60%),
+        radial-gradient(1000px 500px at 90% 0%, rgba(72,202,228,.14), transparent 60%),
+        linear-gradient(180deg, #0b1020 0%, #0d1426 50%, #0b1020 100%);
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
       padding-bottom: max(0px, env(safe-area-inset-bottom));
     }
 
-    /* Site header */
+    /* Header */
     header.site {
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      position: sticky; top: 0; z-index: 10;
       backdrop-filter: saturate(120%) blur(6px);
-      background: color-mix(in oklab, var(--bg-1, #0b0f1a), transparent 10%);
+      background: rgba(11,16,32,.6);
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
     .site-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      max-width: 1200px; margin: 0 auto; padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
     }
     .back {
-      text-decoration: none;
-      font-weight: 600;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 999px;
-      padding: 6px 10px;
-      color: inherit;
+      text-decoration: none; font-weight: 700;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px; padding: 6px 10px; color: #e6edff;
     }
-    h1 { margin: 0; font-size: clamp(1.125rem, 1rem + 1vw, 1.75rem); }
+    h1 { margin: 0; font-size: clamp(1.125rem, 1rem + 1vw, 1.75rem); letter-spacing:.2px; }
 
-    /* Main layout (desktop: settings + game) — flexible, not vh-locked */
+    /* Layout */
     .layout {
       position: relative;
       display: grid;
       grid-template-columns: 360px 1fr;
-      gap: var(--space-4, 16px);
-      min-height: 100%;            /* percent, not vh */
+      gap: 16px;
+      min-height: 100%;
       height: auto;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: var(--space-4, 16px);
+      max-width: 1200px; margin: 0 auto; padding: 16px;
     }
 
     /* Panels */
     .panel {
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 14px;
-      background: color-mix(in oklab, var(--bg-1, #0b0f1a), white 2%);
-      padding: 12px;
+      background: rgba(255,255,255,0.035);
+      padding: 14px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.25);
     }
 
-    /* Settings panel */
+    /* Settings – higher contrast chips & labels */
+    #settings-panel h2 { margin: 0 0 8px; font-size: 1.1rem; letter-spacing:.2px; }
     #settings-panel .group { margin-bottom: 12px; }
-    #settings-panel .group:last-child { margin-bottom: 0; }
     fieldset {
-      border: 1px solid rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.18);
       border-radius: 12px;
       padding: 12px;
       margin: 0;
     }
-    legend { font-weight: 700; padding: 0 6px; }
+    legend { font-weight: 800; padding: 0 6px; color:#e9efff; letter-spacing:.2px; }
     .options {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px; margin-top: 8px;
     }
     .options-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .chip {
       display: inline-flex; align-items: center; justify-content: center;
-      min-height: 40px; padding: 8px 10px;
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 10px;
-      background: rgba(255,255,255,0.04);
+      min-height: 44px; padding: 10px 12px;
+      border: 1px solid rgba(118,169,250,0.55);
+      border-radius: 12px;
+      background: rgba(16,28,58,0.7);
+      color: #e6edff;
+      font-weight: 700; letter-spacing:.2px;
       cursor: pointer; user-select: none; text-align: center;
+      box-shadow: inset 0 0 0 1px rgba(36,92,255,.2);
+      transition: transform .06s ease, background .12s ease, box-shadow .12s ease;
     }
+    .chip:active { transform: translateY(1px) scale(.99); }
     .chip input { display: none; }
     .chip[data-selected="true"] {
-      border-color: var(--brand-blue, #48a0ff);
-      outline: 2px solid color-mix(in oklab, var(--brand-blue, #48a0ff), transparent 70%);
-      background: color-mix(in oklab, var(--brand-blue, #48a0ff), black 90%);
-      font-weight: 600;
+      border-color: #60a5fa;
+      background: linear-gradient(180deg, rgba(37,99,235,0.45), rgba(72,202,228,0.25));
+      box-shadow: 0 0 0 2px rgba(96,165,250,.25), 0 6px 20px rgba(37,99,235,.25) inset;
     }
-    .hint { color: #97a2b3; font-size: .95rem; margin-top: 6px; }
+    .hint { color: #a7b6d9; font-size: .95rem; margin-top: 6px; }
 
-    /* Game column */
+    /* Game column + HUD */
     .game-column { display: flex; flex-direction: column; gap: 12px; }
     .hud {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      font-variant-numeric: tabular-nums;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; font-variant-numeric: tabular-nums;
     }
     .hud .card {
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      padding: 12px;
-      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px; padding: 12px;
+      background: rgba(255,255,255,0.05);
       text-align: center;
+      box-shadow: 0 6px 22px rgba(0,0,0,.25);
     }
-    .hud .label { color: #97a2b3; font-size: 0.9rem; }
-    .hud .value { font-weight: 800; font-size: 1.25rem; }
+    .hud .label { color: #b3c2e6; font-size: .9rem; letter-spacing:.25px; }
+    .hud .value { font-weight: 900; font-size: 1.3rem; letter-spacing:.4px; }
 
     .play-area {
-      border: 2px dashed color-mix(in oklab, var(--brand-aqua, #48cae4), transparent 60%);
+      border: 2px dashed rgba(99, 179, 237, .45);
       border-radius: 14px;
       aspect-ratio: 16 / 9;
       display: grid; place-items: center;
       user-select: none; touch-action: manipulation;
+      position: relative; overflow: hidden; /* for fallback comets */
       background:
-        radial-gradient(1200px 400px at 10% 10%, color-mix(in oklab, #48cae4, transparent 92%), transparent),
-        radial-gradient(1200px 400px at 90% 0%, color-mix(in oklab, #2563eb, transparent 92%), transparent);
+        radial-gradient(800px 300px at 12% 10%, rgba(72,202,228,.12), transparent),
+        radial-gradient(800px 300px at 90% 0%, rgba(37,99,235,.12), transparent);
     }
+    .play-area .placeholder { color: #9db0db; }
 
-    /* Sticky controls (always reachable) */
+    /* Sticky controls – brighter + tactile */
     .controls-bar {
-      position: sticky;
-      bottom: 0;
-      z-index: 100;
-      backdrop-filter: saturate(120%) blur(6px);
-      background: color-mix(in oklab, var(--bg-1, #0b0f1a), transparent 10%);
-      border-top: 1px solid rgba(255,255,255,0.1);
-      padding: var(--space-3, 12px);
+      position: sticky; bottom: 0; z-index: 100;
+      backdrop-filter: saturate(130%) blur(6px);
+      background: rgba(11,16,32,.75);
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding: 12px;
+      box-shadow: 0 -8px 24px rgba(0,0,0,.35);
     }
     .controls-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr auto auto auto;
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr auto auto auto;
       gap: 10px; align-items: center;
     }
     .btn {
       appearance: none; border: none;
-      border-radius: 12px; padding: 12px 16px;
-      font-weight: 700; cursor: pointer; min-height: 44px;
+      border-radius: 14px; padding: 12px 18px;
+      font-weight: 900; letter-spacing:.3px;
+      cursor: pointer; min-height: 48px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.3);
+      transition: transform .06s ease, filter .12s ease;
     }
-    .btn-primary  { background: linear-gradient(135deg, #2563eb 0%, #48cae4 100%); color: #fff; }
-    .btn-secondary{ background: rgba(255,255,255,0.14); color: #fff; }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn:focus-visible { outline: 3px solid rgba(96,165,250,.6); outline-offset: 2px; }
 
-    /* Keep content clear of the sticky bar on small screens */
+    .btn-primary  { background: linear-gradient(135deg, #2563eb, #48cae4); color: #fff; }
+    .btn-secondary{ background: linear-gradient(135deg, #374151, #4b5563); color: #f8fafc; }
+
     main, .layout, .page { padding-bottom: 96px; }
 
-    /* Mobile stacking + touch targets */
+    /* Mobile */
     @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
         grid-auto-rows: max-content 1fr;
-        height: auto;                /* let content dictate height */
-        min-height: auto;            /* no vh math on mobile */
-        padding-bottom: var(--space-6, 24px);
+        height: auto; min-height: auto;
+        padding-bottom: 24px;
       }
-
-      #settings-panel {
-        max-height: none;            /* remove height clamps */
-        margin-bottom: var(--space-4, 16px);
-      }
-
+      #settings-panel { max-height: none; margin-bottom: 16px; }
       .game-column { gap: 10px; min-height: 400px; }
-
-      .btn { min-height: 48px; }     /* touch target improvements */
-      select, input[type="number"] {
-        min-height: 44px;
-        font-size: 16px;             /* prevent mobile zoom on focus */
-      }
+      .btn { min-height: 50px; font-size: 1rem; }
+      select, input[type="number"] { min-height: 44px; font-size: 16px; }
     }
 
     /* Accessibility helper */
@@ -228,7 +208,7 @@
   </header>
 
   <main class="layout">
-    <!-- Left: Settings / instructions -->
+    <!-- Settings / instructions -->
     <aside id="settings-panel" class="panel" aria-labelledby="settings-title">
       <h2 id="settings-title">Settings</h2>
 
@@ -236,7 +216,7 @@
         <fieldset>
           <legend>Session Duration (minutes)</legend>
           <input id="duration" type="range" min="0.5" max="2" step="0.5" value="1" aria-label="Session duration in minutes" />
-          <div class="hint">Start with 0.5–2 minutes and increase as you improve.</div>
+          <div class="hint">Try 1 minute to start; adjust as you improve.</div>
         </fieldset>
       </div>
 
@@ -275,7 +255,7 @@
       </div>
     </aside>
 
-    <!-- Right: HUD + Game area -->
+    <!-- HUD + Play area -->
     <section class="game-column">
       <section class="hud" aria-label="Session stats">
         <div class="card">
@@ -294,29 +274,28 @@
 
       <section aria-label="How to Play" class="panel">
         <h2>How to Play</h2>
-        <p class="hint">Glowing comets streak across the screen. Tap a comet before it leaves to score points.
-          Smaller &amp; faster = harder (and more points). Quick taps boost your multiplier.</p>
+        <p class="hint">Tap a comet before it exits the play area to score points. Smaller &amp; faster = harder (and more points).</p>
       </section>
 
       <section aria-label="Comet play area">
         <div id="play-area" class="play-area">
-          <span class="hint">Tap “Start” to begin</span>
+          <span class="placeholder">Tap “Start” to begin</span>
         </div>
       </section>
     </section>
   </main>
 
-  <!-- Sticky controls: always reachable -->
+  <!-- Sticky controls -->
   <div id="controls" class="controls-bar" role="region" aria-label="Session controls">
     <div class="controls-inner">
-      <div class="hint">Ready?</div>
+      <div class="hint" id="status">Ready</div>
       <button id="startBtn" class="btn btn-primary" type="button">Start</button>
       <button id="pauseBtn" class="btn btn-secondary" type="button">Pause</button>
       <button id="restartBtn" class="btn btn-secondary" type="button">Restart</button>
     </div>
   </div>
 
-  <!-- Results dialog (hook up from your game logic) -->
+  <!-- Results dialog -->
   <dialog id="results" aria-labelledby="results-title" aria-modal="true">
     <h2 id="results-title">Session Complete!</h2>
     <p><strong>Final Score:</strong> <span id="finalScore">0</span></p>
@@ -330,12 +309,22 @@
     </form>
   </dialog>
 
+  <!-- Your module (if present) can still attach here -->
+  <!-- <script type="module" src="/exercises/comet-exercise.js"></script> -->
+
   <script>
+    // ---- UI wiring (works with or without your module present) ----
+    const $ = (sel) => document.querySelector(sel);
+    const playArea = $('#play-area');
+    const statusEl = $('#status');
+    const scoreEl  = $('#score');
+    const results  = $('#results');
+
     // Chip visual selection
     document.querySelectorAll('fieldset .chip input').forEach((input) => {
       const name = input.name;
       const refresh = () => {
-        document.querySelectorAll(`input[name="${name}"]`).forEach((inp) => {
+        document.querySelectorAll(\`input[name="\${name}"]\`).forEach((inp) => {
           inp.closest('.chip')?.setAttribute('data-selected', inp.checked ? 'true' : 'false');
         });
       };
@@ -343,20 +332,138 @@
       refresh();
     });
 
-    // Hook these IDs in your existing game module
-    document.getElementById('startBtn')?.addEventListener('click', () => {
-      // startSession();
+    // Expose a hook your module can optionally implement:
+    // window.CometExercise = { startSession(), togglePause(), restartSession() }
+    const hooks = {
+      start:  () => window.CometExercise?.startSession?.(),
+      pause:  () => window.CometExercise?.togglePause?.(),
+      restart:() => window.CometExercise?.restartSession?.()
+    };
+
+    // ---------- Fallback mini-loop (only if your module isn't present) ----------
+    let fallback = {
+      running: false,
+      paused: false,
+      score: 0,
+      comets: new Set(),
+      timerId: null,
+      spawnId: null,
+      endAt: 0
+    };
+
+    function spawnComet() {
+      const c = document.createElement('div');
+      c.className = 'comet';
+      const size = (document.querySelector('input[name="size"]:checked')?.value || 'large');
+      const speed = (document.querySelector('input[name="speed"]:checked')?.value || 'slow');
+      const spawn = (document.querySelector('input[name="spawn"]:checked')?.value || 'slow');
+      const scale = size === 'small' ? 0.6 : size === 'medium' ? 0.85 : 1.1;
+      const dur = speed === 'fast' ? 1200 : speed === 'medium' ? 1800 : 2400;
+
+      const y = Math.random() * 80 + 10;   // 10%..90%
+      c.style.position = 'absolute';
+      c.style.top = y + '%';
+      c.style.left = '-80px';
+      c.style.width = 36 * scale + 'px';
+      c.style.height = 36 * scale + 'px';
+      c.style.borderRadius = '999px';
+      c.style.background = 'radial-gradient(circle at 30% 30%, #fff 0%, #9bd0ff 30%, rgba(80,140,255,.2) 70%)';
+      c.style.boxShadow = '0 0 18px rgba(98,170,255,.65), 0 0 40px rgba(72,202,228,.35)';
+      c.style.transition = \`transform \${dur}ms linear\`;
+      c.style.transform = 'translateX(0)';
+
+      // Click/tap to score
+      c.addEventListener('pointerdown', (e) => {
+        if (!fallback.running || fallback.paused) return;
+        fallback.score += (size === 'small' ? 3 : size === 'medium' ? 2 : 1) * (speed === 'fast' ? 3 : speed === 'medium' ? 2 : 1);
+        scoreEl.textContent = String(fallback.score);
+        c.remove();
+        fallback.comets.delete(c);
+        e.stopPropagation();
+      }, { passive: true });
+
+      playArea.appendChild(c);
+      fallback.comets.add(c);
+      // animate across
+      requestAnimationFrame(() => { c.style.transform = 'translateX(calc(100% + 160px))'; });
+      // remove when offscreen
+      setTimeout(() => { c.remove(); fallback.comets.delete(c); }, dur + 100);
+      
+      // spawn cadence
+      const gap = spawn === 'vfast' ? 300 : spawn === 'fast' ? 550 : spawn === 'med' ? 800 : 1100;
+      if (!fallback.paused && fallback.running) {
+        clearTimeout(fallback.spawnId);
+        fallback.spawnId = setTimeout(spawnComet, gap);
+      }
+    }
+
+    function fallbackStart() {
+      fallback.running = true; fallback.paused = false; fallback.score = 0;
+      scoreEl.textContent = '0';
+      statusEl.textContent = 'Running';
+      playArea.querySelector('.placeholder')?.remove();
+
+      // end time by duration
+      const minutes = parseFloat($('#duration')?.value || '1');
+      fallback.endAt = performance.now() + minutes * 60_000;
+
+      // spawn first comet
+      clearTimeout(fallback.spawnId); spawnComet();
+
+      // tick timer
+      clearInterval(fallback.timerId);
+      fallback.timerId = setInterval(() => {
+        if (!fallback.running || fallback.paused) return;
+        if (performance.now() >= fallback.endAt) {
+          fallbackStop(true);
+        }
+      }, 200);
+    }
+
+    function fallbackPauseToggle() {
+      if (!fallback.running) return;
+      fallback.paused = !fallback.paused;
+      statusEl.textContent = fallback.paused ? 'Paused' : 'Running';
+    }
+
+    function fallbackRestart() {
+      fallbackStop(false);
+      fallbackStart();
+    }
+
+    function fallbackStop(showDialog) {
+      fallback.running = false; fallback.paused = false;
+      clearInterval(fallback.timerId); clearTimeout(fallback.spawnId);
+      // clear comets
+      fallback.comets.forEach(c => c.remove()); fallback.comets.clear();
+      statusEl.textContent = 'Ready';
+      if (showDialog && results?.showModal) {
+        $('#finalScore').textContent = String(fallback.score);
+        results.showModal();
+      }
+    }
+
+    // Button wiring that prefers your module; falls back if absent
+    $('#startBtn')?.addEventListener('click', () => {
+      if (hooks.start()) { statusEl.textContent = 'Running'; return; }
+      fallbackStart();
     });
-    document.getElementById('pauseBtn')?.addEventListener('click', () => {
-      // togglePause();
+    $('#pauseBtn')?.addEventListener('click', () => {
+      if (hooks.pause()) { statusEl.textContent = (statusEl.textContent === 'Paused' ? 'Running' : 'Paused'); return; }
+      fallbackPauseToggle();
     });
-    document.getElementById('restartBtn')?.addEventListener('click', () => {
-      // restartSession();
+    $('#restartBtn')?.addEventListener('click', () => {
+      if (hooks.restart()) { statusEl.textContent = 'Running'; return; }
+      fallbackRestart();
+    });
+
+    // Close results starts a new session (optional)
+    results?.addEventListener('close', () => {
+      statusEl.textContent = 'Ready';
     });
   </script>
 
-  <!-- If you have a module for this exercise, keep it after the markup -->
+  <!-- If you have a module for this exercise, load it AFTER this file so hooks exist -->
   <!-- <script type="module" src="/exercises/comet-exercise.js"></script> -->
-  <!-- Re-add analytics here if needed -->
 </body>
 </html>
