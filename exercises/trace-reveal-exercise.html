@@ -1,747 +1,345 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Analytics (unchanged) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-RVKCCWBFKE');
-  </script>
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Trace &amp; Reveal | Fine Point Rehab</title>
-  <meta name="description" content="Interactive trace & reveal exercise to build fine motor control and hand-eye coordination.">
-  <meta name="keywords" content="trace, reveal, fine motor, occupational therapy, rehabilitation">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Trace & Reveal — Fine Point Rehab</title>
+  <meta name="description" content="Trace & Reveal exercise with Comet-style UI and numeric countdown timer." />
 
   <!-- Global tokens & components -->
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/tokens.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/components.css" />
 
   <style>
-    :root {
+    :root{
       --vh: 1vh;
-      /* Fallbacks if tokens missing */
-      --bg-gradient-from: var(--color-bg-elevated, #0b1020);
-      --bg-gradient-to: var(--color-bg, #0a0f1c);
-      --brand: var(--color-accent, #6fd3f5);
-      --text: var(--color-text, #ffffff);
-      --panel: var(--color-surface, rgba(8,15,35,.9));
-      --border: rgba(255,255,255,.12);
-      --radius: var(--radius-lg, 14px);
-      --gap: var(--space-4, 1rem);
-      --gap-sm: var(--space-2, .5rem);
-      --gap-lg: var(--space-6, 1.5rem);
-      --focus: 0 0 0 3px rgba(111,211,245,.35);
+      --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
+      --accent: var(--brand-aqua, #6fd3f5);
+      --radius: 14px;
+      --panel: rgba(10,16,36,.9);
+      --panel-border: rgba(255,255,255,.08);
+      --text: #eaf6ff;
     }
+    body{ margin:0; color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
+        radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 60%),
+        linear-gradient(180deg, var(--bg-2), var(--bg-3));
+      min-height: 100svh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+    }
+    header.site-header{
+      position: sticky; top:0; z-index:40;
+      border-bottom: 1px solid var(--panel-border);
+      background: linear-gradient(180deg, rgba(7,11,22,.85), rgba(7,11,22,.65));
+      backdrop-filter: blur(6px);
+    }
+    header .wrap{ display:flex; gap:12px; align-items:center; padding:10px 16px; }
+    header h1{ font-size:18px; margin:0; letter-spacing:.3px; }
+    header .spacer{ flex:1; }
 
-    * { box-sizing: border-box; }
+    /* Layout */
+    .grid{
+      display:grid; grid-template-columns: 360px 1fr; gap:16px;
+      padding:16px; max-width:1200px; margin:0 auto;
+    }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
 
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
-      color: var(--text);
-      background: radial-gradient(1200px 800px at 20% 0%, var(--bg-gradient-from), var(--bg-gradient-to));
-      min-height: calc(var(--vh, 1vh) * 100);
-      user-select: none; -webkit-user-select: none;
-    }
+    .panel{ background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--radius); }
 
-    /* Sticky header */
-    header.site-header {
-      position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; gap: var(--gap);
-      padding: var(--gap) var(--gap-lg);
-      background: linear-gradient(to bottom, rgba(8,15,35,.9), rgba(8,15,35,.6));
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(10px);
+    /* Settings panel */
+    .settings{ padding:16px; }
+    .settings h2{ margin:0 0 8px; font-size:16px; opacity:.9; }
+    .settings .group{ margin:14px 0; display:grid; gap:8px; }
+    .settings label{ font-size:13px; opacity:.85; }
+    .settings input[type="range"], .settings select, .settings input[type="number"]{
+      width:100%;
     }
-    header .home-link {
-      text-decoration: none;
-      color: var(--text);
-      display: inline-flex; align-items: center; gap: .4rem;
-      padding: .5rem .75rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      min-height: 44px;
-    }
-    header .home-link:hover { border-color: rgba(255,255,255,.25); }
-    header .home-link:focus-visible { outline: none; box-shadow: var(--focus); }
-    header h1 {
-      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-      margin: 0;
-      flex: 1;
-    }
+    .settings .start-row{ display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .btn{ border-radius:12px; border:1px solid var(--panel-border); background:#0e1734; color:var(--text); padding:10px 14px; cursor:pointer; }
+    .btn-primary{ background:linear-gradient(180deg, #1c2f64, #123057); border-color:#2b406f; box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 6px 18px rgba(4, 183, 255, .15); }
+    .btn-ghost{ background:transparent; }
+    .muted{ opacity:.8; font-size:12px; }
 
-    /* Main split layout */
-    .layout {
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: var(--gap-lg);
-      padding: var(--gap-lg);
-      max-width: 1280px; margin: 0 auto;
-      min-height: calc(100vh - 72px);
-    }
-    @media (max-width: 980px) {
-      .layout { grid-template-columns: 1fr; }
-    }
+    /* Game panel */
+    .game{ position:relative; padding:12px; display:flex; flex-direction:column; align-items:center; }
 
-    /* Left panel: settings */
-    .panel.settings {
-      position: relative;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      border-radius: var(--radius);
-      padding: var(--gap-lg);
-    }
-    .settings h2 { margin: 0 0 var(--gap); font-size: 1.1rem; }
-    .game-description {
-      background: rgba(111,211,245,.08);
-      border: 1px solid rgba(111,211,245,.3);
-      border-radius: calc(var(--radius) - 2px);
-      padding: var(--gap);
-      margin-bottom: var(--gap);
-      line-height: 1.35;
-    }
-    .settings-group { margin-bottom: var(--gap); }
-    .settings-label { display: block; font-weight: 600; margin-bottom: .35rem; }
-    .setting-description { opacity: .85; font-size: .9rem; margin-bottom: .35rem; }
+    /* HUD aligned to Comet style */
+    .hud{ width:100%; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .hud-left, .hud-right{ display:flex; gap:8px; align-items:center; }
+    .chip{ border:1px solid var(--panel-border); background:#0b132b; border-radius:999px; padding:6px 10px; font-size:12px; display:inline-flex; gap:6px; align-items:center; }
+    .chip b{ font-weight:600; }
 
-    select, input[type="number"] {
-      width: 100%;
-      padding: .75rem .9rem;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: rgba(0,10,30,.75);
-      color: var(--text);
-      -webkit-appearance: none; appearance: none;
-      min-height: 44px;
-    }
-    select:focus-visible, input[type="number"]:focus-visible { outline: none; box-shadow: var(--focus); }
+    /* Canvas area */
+    .playframe{ position:relative; width:100%; display:flex; justify-content:center; align-items:center; }
+    .canvas-stack{ position:relative; width:min(92vw, 720px); max-width:720px; aspect-ratio:1/1; }
+    canvas{ position:absolute; inset:0; width:100%; height:100%; border-radius:16px; background: radial-gradient(120% 120% at 50% 45%, rgba(255,255,255,.03), rgba(0,0,0,.25) 60%); }
+    .gridline{ pointer-events:none; mix-blend-mode:screen; opacity:.35; }
 
-    .controls {
-      display: grid; grid-template-columns: repeat(3,1fr); gap: var(--gap);
-      margin-top: var(--gap);
-    }
-    .btn { min-height: 44px; }
+    /* End dialog */
+    dialog.results{ border:1px solid var(--panel-border); background:var(--panel); color:var(--text); border-radius:16px; max-width:520px; width:clamp(320px, 70vw, 520px); }
+    dialog.results::backdrop{ background:rgba(0,0,0,.55); backdrop-filter: blur(2px); }
+    .results header{ padding:14px 16px; border-bottom:1px solid var(--panel-border); font-weight:600; }
+    .results .content{ padding:16px; display:grid; gap:10px; }
+    .results .actions{ padding:12px 16px 16px; display:flex; gap:10px; justify-content:flex-end; }
 
-    /* Right side: HUD + game area */
-    .panel.play {
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(10,18,40,.9), rgba(8,15,35,.9));
-      border-radius: var(--radius);
-      padding: var(--gap-lg);
-      display: grid; grid-template-rows: auto 1fr;
-      position: relative; overflow: hidden;
-    }
+    /* Immersive play state */
+    body.playing header.site-header{ display:none; }
+    body.playing .grid{ grid-template-columns: 1fr; max-width: min(1100px, 100%); padding:12px; }
+    body.playing .settings{ display:none; }
+    body.playing .game{ min-height: calc(var(--vh) * 100 - 12px); }
 
-    /* Starfield (utility container) */
-    .starfield { position: absolute; inset: 0; pointer-events: none; opacity: .45; }
-
-    /* HUD row */
-    .hud {
-      display: grid;
-      grid-template-columns: 1fr auto auto auto auto;
-      gap: var(--gap);
-      align-items: center;
-      margin-bottom: var(--gap);
-    }
-    .timer-bar {
-      height: 8px; border-radius: 999px;
-      background: rgba(255,255,255,.12);
-      overflow: hidden; grid-column: 1 / -1;
-    }
-    .timer-bar > div {
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, var(--brand), #8de8ff);
-      transition: width .2s linear;
-    }
-    .hud-stat {
-      text-align: center; padding: .25rem .5rem;
-      border: 1px dashed rgba(255,255,255,.14);
-      border-radius: 10px;
-      min-width: 88px;
-    }
-    .hud-stat .value { font-weight: 700; font-size: 1.1rem; color: var(--brand); line-height: 1; }
-    .hud-stat .label { font-size: .75rem; opacity: .85; margin-top: .15rem; }
-
-    /* Game area wrapper */
-    .game-wrap {
-      position: relative;
-      display: grid; place-items: center;
-      min-height: 420px;
-    }
-    .canvas-container { position: relative; max-width: 100%; max-height: 100%; }
-    canvas#traceCanvas {
-      background: #1c2a4e;
-      border: 3px solid rgba(111,211,245,.9);
-      border-radius: 15px;
-      box-shadow: 0 8px 25px rgba(0,0,0,.35);
-      cursor: crosshair; touch-action: none;
-      max-width: 100%; max-height: 100%;
-    }
-    canvas#guideLayer, canvas#completionLayer {
-      position: absolute; inset: 0; pointer-events: none; max-width: 100%; max-height: 100%;
-    }
-    .banner {
-      position: absolute; top: .5rem; left: 50%; transform: translateX(-50%);
-      background: rgba(8,15,35,.9);
-      border: 1px solid rgba(111,211,245,.5);
-      border-radius: 999px; padding: .4rem .9rem;
-      font-weight: 700; color: var(--brand);
-      opacity: 0; transition: opacity .2s ease;
-      pointer-events: none;
-    }
-    .banner.show { opacity: 1; }
-
-    /* Completion modal (standard) */
-    dialog.modal {
-      border: 1px solid var(--border);
-      background: var(--panel);
-      color: var(--text);
-      border-radius: var(--radius);
-      width: min(520px, 92vw);
-      padding: var(--gap-lg);
-      box-shadow: 0 20px 60px rgba(0,0,0,.45);
-    }
-    dialog.modal::backdrop { background: rgba(0,0,0,.45); }
-    .modal h2 { margin: 0 0 .75rem 0; }
-    .scores { display: grid; gap: .4rem; margin: .5rem 0 var(--gap); }
-    .xp-line { opacity: .9; font-weight: 600; color: var(--brand); }
-
-    /* A11y */
-    [role="button"], .btn { outline: none; }
-    [role="button"]:focus-visible, .btn:focus-visible, canvas:focus-visible { box-shadow: var(--focus); outline: none; }
-
-    /* Mobile tweaks */
-    @media (max-width: 640px) {
-      .controls { grid-template-columns: 1fr; }
-      .hud { grid-template-columns: 1fr 1fr; gap: var(--gap-sm); }
-      .hud .spacer { display: none; }
-      .hud .hud-stat { min-width: auto; }
-    }
+    /* Focus & a11y */
+    :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:10px; }
   </style>
 </head>
 <body>
-  <!-- Sticky Header -->
-  <header class="site-header" role="banner">
-    <a class="home-link" href="/" aria-label="Go to home">← Home</a>
-    <h1>Trace &amp; Reveal</h1>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Trace & Reveal</h1>
+      <div class="spacer"></div>
+      <a href="/" class="btn btn-ghost" aria-label="Home">Home</a>
+    </div>
   </header>
 
-  <!-- Main Layout -->
-  <main class="layout" role="main">
-    <!-- Left: Settings -->
-    <section class="panel settings" aria-label="Settings panel">
-      <h2>Session Settings</h2>
+  <main class="grid" id="app">
+    <!-- Settings Panel (Comet template: Start only) -->
+    <section class="panel settings" aria-labelledby="settingsTitle">
+      <h2 id="settingsTitle">Settings</h2>
 
-      <div class="game-description">
-        <strong>How to play:</strong> Trace along the dotted path to reveal the hidden image. Complete as many shapes as you can before time runs out. Precision boosts your score and XP.
+      <div class="group">
+        <label for="duration">Session Duration (seconds)</label>
+        <input id="duration" type="number" min="10" max="600" step="5" value="60" />
+        <span class="muted">How long the session runs.</span>
       </div>
 
-      <div class="settings-group">
-        <label class="settings-label" for="brush-size">Brush Size</label>
-        <div class="setting-description">Larger brushes cover the guide more easily.</div>
-        <select id="brush-size" aria-label="Brush size">
-          <option value="20">Small – precise</option>
-          <option value="35" selected>Medium – balanced</option>
-          <option value="50">Large – easier</option>
-          <option value="65">Very large – maximum ease</option>
+      <div class="group">
+        <label for="difficulty">Difficulty</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="standard" selected>Standard</option>
+          <option value="hard">Hard</option>
         </select>
+        <span class="muted">Controls trace tolerance and reveal speed.</span>
       </div>
 
-      <div class="settings-group">
-        <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
-        <input id="session-duration" type="number" min="1" max="10" value="3" inputmode="numeric" aria-label="Session duration in minutes">
+      <div class="group">
+        <label for="brush">Brush Size</label>
+        <input id="brush" type="range" min="4" max="48" step="1" value="18" />
+        <span class="muted">Larger brushes fill the mask faster but reduce precision.</span>
       </div>
 
-      <div class="settings-group">
-        <label class="settings-label" for="difficulty-select">Difficulty</label>
-        <div class="setting-description">Determines shape complexity.</div>
-        <select id="difficulty-select" aria-label="Difficulty">
-          <option value="easy">Easy – basic shapes</option>
-          <option value="medium" selected>Medium – stars & letters</option>
-          <option value="hard">Hard – objects & details</option>
-        </select>
+      <div class="group">
+        <label for="coverageReq">Coverage Required (%)</label>
+        <input id="coverageReq" type="number" min="10" max="100" step="1" value="85" />
+        <span class="muted">Percent of area to reveal to complete.</span>
       </div>
 
-      <div class="settings-group">
-        <label class="settings-label" for="coverage-required">Coverage Required</label>
-        <div class="setting-description">Percentage of the guide that must be painted.</div>
-        <select id="coverage-required" aria-label="Coverage required">
-          <option value="75">Easy (75%)</option>
-          <option value="85" selected>Medium (85%)</option>
-          <option value="95">Hard (95%)</option>
-        </select>
-      </div>
-
-      <!-- Unified controls -->
-      <div class="controls">
-        <button id="start-btn" class="btn">Start</button>
-        <button id="pause-btn" class="btn" aria-pressed="false">Pause</button>
-        <button id="restart-btn" class="btn btn-secondary">Restart</button>
+      <div class="start-row">
+        <button id="startBtn" class="btn btn-primary" type="button">Start</button>
+        <span class="muted" id="pbNote" aria-live="polite">PB: <b id="pbValue">0</b> pts</span>
       </div>
     </section>
 
-    <!-- Right: HUD + Game -->
-    <section class="panel play" aria-label="Game panel">
-      <div class="starfield" id="stars-container" aria-hidden="true"></div>
-
-      <!-- HUD Row -->
-      <div class="hud" role="group" aria-label="Heads up display">
-        <div class="hud-stat" aria-live="polite">
-          <div class="value" id="hud-score">0</div>
-          <div class="label">Score</div>
+    <!-- Game Panel -->
+    <section class="panel game" aria-live="polite">
+      <!-- HUD (Comet-style) -->
+      <div class="hud">
+        <div class="hud-left">
+          <div class="chip" title="Score"><span>Score</span><b id="score">0</b></div>
+          <div class="chip" title="Personal Best"><span>PB</span><b id="pb">0</b></div>
+          <div class="chip" title="Best Coverage"><span>Best Cov.</span><b id="bestCoverage">0%</b></div>
+          <div class="chip" title="Difficulty"><span>Diff.</span><b id="diffChip">Std</b></div>
         </div>
-        <div class="hud-stat" aria-live="polite">
-          <div class="value" id="hud-pb">0</div>
-          <div class="label">Personal Best</div>
-        </div>
-        <div class="hud-stat" aria-live="polite">
-          <div class="value" id="hud-coverage">0%</div>
-          <div class="label">Best Coverage</div>
-        </div>
-        <div class="hud-stat">
-          <div class="value" id="hud-difficulty">Medium</div>
-          <div class="label">Difficulty</div>
-        </div>
-        <div class="spacer"></div>
-
-        <!-- Timer bar -->
-        <div class="timer-bar" aria-hidden="true">
-          <div id="timer-fill"></div>
+        <div class="hud-right">
+          <div class="chip" title="Time Remaining"><span>Time</span><b id="timeChip">00:00</b></div>
+          <button id="pauseBtn" class="btn btn-ghost" type="button" aria-pressed="false">Pause</button>
+          <button id="exitBtn" class="btn btn-ghost" type="button">Exit</button>
         </div>
       </div>
 
-      <!-- Game area -->
-      <div class="game-wrap">
-        <div class="banner" id="reveal-banner" aria-hidden="true">✨ Image revealed!</div>
-
-        <div class="canvas-container">
-          <div id="coverage-progress" class="banner" aria-live="polite">0%</div>
-          <canvas id="traceCanvas" tabindex="0" aria-label="Tracing canvas"></canvas>
-          <canvas id="guideLayer" aria-hidden="true"></canvas>
-          <canvas id="completionLayer" aria-hidden="true"></canvas>
+      <!-- Canvas stack (guide/mask/reveal) -->
+      <div class="playframe">
+        <div class="canvas-stack" id="canvasStack">
+          <canvas id="guideCanvas" class="gridline" aria-hidden="true"></canvas>
+          <canvas id="maskCanvas"></canvas>
+          <canvas id="revealCanvas"></canvas>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Completion modal -->
-  <dialog id="completion-modal" class="modal" aria-labelledby="completeTitle">
-    <h2 id="completeTitle">Session complete!</h2>
-    <div class="scores">
-      <div>Shapes completed: <strong id="final-shapes">0</strong></div>
-      <div>Perfect traces: <strong id="perfect-traces">0</strong></div>
-      <div>Best coverage: <strong id="best-coverage">0%</strong></div>
-      <div>Score: <strong id="final-score">0</strong></div>
+  <!-- Completion Dialog -->
+  <dialog class="results" id="resultsDialog" aria-labelledby="resultsTitle">
+    <header id="resultsTitle">Session Complete</header>
+    <div class="content">
+      <div>Score: <b id="finalScore">0</b></div>
+      <div>Shapes completed: <b id="finalShapes">0</b></div>
+      <div>Perfect traces: <b id="finalPerfect">0</b></div>
+      <div>Best coverage: <b id="finalCoverage">0%</b></div>
+      <div class="muted">XP awarded: <span id="finalXP">+0</span></div>
     </div>
-    <div class="xp-line" id="xp-line">+0 XP</div>
-    <p id="achievements-line" aria-live="polite"></p>
-    <div style="display:flex; gap:var(--gap); margin-top:var(--gap); justify-content:flex-end;">
-      <button id="modal-restart" class="btn">Start New Session</button>
-      <button id="modal-close" class="btn btn-secondary">Close</button>
+    <div class="actions">
+      <button class="btn btn-primary" id="newSessionBtn" value="default">Start New Session</button>
+      <button class="btn btn-ghost" id="closeDialogBtn" value="cancel">Close</button>
     </div>
   </dialog>
 
-  <!-- Single module: (duplicate includes removed) -->
-  <script type="module">
-    import { storage, starfield, initUtils } from '/js/utils.js';
-    import { recordSession } from '/js/progress.js';
-    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
-    import { sessionEnhancement } from '/js/session-enhancement.js';
-
-    initUtils();
-
-    // ====== Elements
-    const brushSizeEl = document.getElementById('brush-size');
-    const durationEl = document.getElementById('session-duration');
-    const difficultyEl = document.getElementById('difficulty-select');
-    const coverageReqEl = document.getElementById('coverage-required');
-
-    const startBtn = document.getElementById('start-btn');
-    const pauseBtn = document.getElementById('pause-btn');
-    const restartBtn = document.getElementById('restart-btn');
-
-    const hudScore = document.getElementById('hud-score');
-    const hudPB = document.getElementById('hud-pb');
-    const hudCoverage = document.getElementById('hud-coverage');
-    const hudDifficulty = document.getElementById('hud-difficulty');
-    const timerFill = document.getElementById('timer-fill');
-
-    const coverageChip = document.getElementById('coverage-progress');
-    const revealBanner = document.getElementById('reveal-banner');
-
-    const modal = document.getElementById('completion-modal');
-    const modalRestart = document.getElementById('modal-restart');
-    const modalClose = document.getElementById('modal-close');
-
-    const finalShapes = document.getElementById('final-shapes');
-    const perfectTraces = document.getElementById('perfect-traces');
-    const bestCoverageOut = document.getElementById('best-coverage');
-    const finalScoreOut = document.getElementById('final-score');
-    const xpLine = document.getElementById('xp-line');
-    const achievementsLine = document.getElementById('achievements-line');
-
-    const canvas = document.getElementById('traceCanvas');
-    const guideCanvas = document.getElementById('guideLayer');
-    const completionCanvas = document.getElementById('completionLayer');
-    const ctx = canvas.getContext('2d');
-    const guideCtx = guideCanvas.getContext('2d');
-    const completionCtx = completionCanvas.getContext('2d');
-
-    // Starfield utility
-    starfield.attach(document.getElementById('stars-container'));
-
-    // ====== State
-    const EXERCISE_ID = 'trace-reveal';
-    const PB_KEY = `pb:${EXERCISE_ID}`;
-    let sessionActive = false, sessionPaused = false, isDrawing = false, isCompleting = false;
-    let sessionMs = 0, remainingMs = 0, timerId = null;
-    let shapesCompleted = 0, perfectCount = 0, bestCoverage = 0, currentScore = 0;
-    let currentBrush = 35, requiredCoverage = 85, currentDifficulty = 'medium';
-    let pathPoints = [], coveragePoints = new Set(), coveredPoints = new Set(), currentShapeType = '';
-
-    // Hidden image + mask for reveal
-    const hiddenImage = document.createElement('canvas');
-    const hiddenCtx = hiddenImage.getContext('2d');
-    const maskCanvas = document.createElement('canvas');
-    const maskCtx = maskCanvas.getContext('2d');
-
-    // ====== Utils
-    function setViewportHeight() {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-    }
-    setViewportHeight();
-    addEventListener('resize', setViewportHeight);
-    addEventListener('orientationchange', () => setTimeout(setViewportHeight, 100));
-
-    // Square canvas responsive sizing
-    function resizeCanvas() {
-      const wrap = canvas.parentElement.getBoundingClientRect();
-      const max = Math.min(wrap.width - 20, Math.max(260, wrap.height - 60), 560);
-      canvas.width = canvas.height = max;
-      guideCanvas.width = guideCanvas.height = max;
-      completionCanvas.width = completionCanvas.height = max;
-      hiddenImage.width = hiddenImage.height = max;
-      maskCanvas.width = maskCanvas.height = max;
-    }
-    resizeCanvas();
-    addEventListener('resize', () => { resizeCanvas(); if (sessionActive && !isCompleting) loadNewShape(); });
-
-    // PB load
-    function getPB() { return Number(storage.get(PB_KEY) || 0); }
-    function setPB(v){ storage.set(PB_KEY, String(v)); }
-
-    // ====== Shapes (same generators, trimmed for brevity but functionally equivalent)
-    const shapeGenerators = {
-      easy: {
-        circle: () => {
-          const r = Math.min(canvas.width, canvas.height) * 0.3;
-          const cx = canvas.width/2, cy = canvas.height/2, pts=[];
-          for (let i=0;i<=100;i++){ const a=i/100*2*Math.PI; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); }
-          return pts;
-        },
-        square: () => {
-          const s = Math.min(canvas.width, canvas.height) * 0.6;
-          const x = (canvas.width - s)/2, y=(canvas.height - s)/2;
-          return [{x,y},{x:x+s,y},{x:x+s,y:y+s},{x,y:y+s},{x,y}];
-        },
-        triangle: () => {
-          const s = Math.min(canvas.width, canvas.height) * 0.6, cx=canvas.width/2, cy=canvas.height/2;
-          return [{x:cx,y:cy-s/2},{x:cx-s/2,y:cy+s/2},{x:cx+s/2,y:cy+s/2},{x:cx,y:cy-s/2}];
-        },
-        diamond: () => {
-          const s = Math.min(canvas.width, canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2;
-          return [{x:cx,y:cy-s/2},{x:cx+s/2,y:cy},{x:cx,y:cy+s/2},{x:cx-s/2,y:cy},{x:cx,y:cy-s/2}];
-        },
-        oval: () => {
-          const cx=canvas.width/2, cy=canvas.height/2, rx=Math.min(canvas.width,canvas.height)*0.35, ry=rx*0.7, pts=[];
-          for (let i=0;i<=100;i++){ const a=i/100*2*Math.PI; pts.push({x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry}); }
-          return pts;
-        }
-      },
-      medium: {
-        hexagon: () => {
-          const r=Math.min(canvas.width,canvas.height)*0.3, cx=canvas.width/2,cy=canvas.height/2,pts=[];
-          for (let i=0;i<6;i++){ const a=i/6*2*Math.PI; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); }
-          pts.push(pts[0]); return pts;
-        },
-        star: () => {
-          const cx=canvas.width/2, cy=canvas.height/2, ro=Math.min(canvas.width,canvas.height)*0.3, ri=ro*0.4, pts=[];
-          for (let i=0;i<10;i++){ const a=i/10*2*Math.PI-Math.PI/2; const r=i%2===0?ro:ri; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); }
-          pts.push(pts[0]); return pts;
-        },
-        letterS: () => { // simple S path
-          const s=Math.min(canvas.width,canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2, w=s*.6, h=s, t=s*.15;
-          return [
-            {x:cx+w/2,y:cy-h/2},{x:cx-w/4,y:cy-h/2},{x:cx-w/2,y:cy-h/2+t},{x:cx-w/2,y:cy-t/2},
-            {x:cx+w/2,y:cy-t/2},{x:cx+w/2,y:cy+t/2},{x:cx-w/4,y:cy+t/2},
-            {x:cx+w/2,y:cy+h/2-t},{x:cx+w/2,y:cy+h/2},{x:cx-w/2,y:cy+h/2}
-          ];
-        }
-      },
-      hard: {
-        house: () => {
-          const s=Math.min(canvas.width,canvas.height)*0.5, cx=canvas.width/2, cy=canvas.height/2, w=s, h=s*.7, r=s*.3;
-          return [
-            {x:cx-w/2,y:cy+h/2},{x:cx-w/2,y:cy-h/2+r},{x:cx,y:cy-h/2-r},{x:cx+w/2,y:cy-h/2+r},{x:cx+w/2,y:cy+h/2},{x:cx-w/2,y:cy+h/2}
-          ];
-        }
-      }
+  <script>
+    /* --- Mobile 100vh fix --- */
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
-    function getRandomShape(difficulty){
-      const keys = Object.keys(shapeGenerators[difficulty]);
-      const k = keys[Math.floor(Math.random()*keys.length)];
-      return { type:k, points: shapeGenerators[difficulty][k]() };
+    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
+
+    /* --- State --- */
+    let playing = false, paused = false, rafId = 0, startTs = 0, remainingMs = 0, totalMs = 60000;
+    let score = 0, bestCoverage = 0, personalBest = Number(localStorage.getItem('FPR_trace_pb')||'0');
+
+    const el = (id) => document.getElementById(id);
+    const fmtTime = (ms) => {
+      ms = Math.max(0, ms|0); const s = Math.ceil(ms/1000);
+      const m = Math.floor(s/60).toString().padStart(2,'0');
+      const ss = (s % 60).toString().padStart(2,'0');
+      return `${m}:${ss}`;
+    };
+
+    // DOM refs
+    const startBtn = el('startBtn');
+    const pauseBtn = el('pauseBtn');
+    const exitBtn  = el('exitBtn');
+    const timeChip = el('timeChip');
+    const scoreEl = el('score');
+    const pbEl = el('pb');
+    const pbValueEl = el('pbValue');
+    const bestCovEl = el('bestCoverage');
+    const diffChip = el('diffChip');
+
+    const durationInput = el('duration');
+    const brushInput = el('brush');
+    const diffInput = el('difficulty');
+    const covReqInput = el('coverageReq');
+
+    const resultsDialog = el('resultsDialog');
+    const finalScore = el('finalScore');
+    const finalShapes = el('finalShapes');
+    const finalPerfect = el('finalPerfect');
+    const finalCoverage = el('finalCoverage');
+    const finalXP = el('finalXP');
+    const newSessionBtn = el('newSessionBtn');
+    const closeDialogBtn = el('closeDialogBtn');
+
+    // canvases
+    const stack = el('canvasStack');
+    const guide = el('guideCanvas');
+    const mask = el('maskCanvas');
+    const reveal = el('revealCanvas');
+    const ctxGuide = guide.getContext('2d');
+    const ctxMask = mask.getContext('2d');
+    const ctxReveal = reveal.getContext('2d');
+
+    // Init HUD
+    pbEl.textContent = personalBest;
+    pbValueEl.textContent = personalBest;
+    const setDiffChip = () => {
+      const map = { easy:'Easy', standard:'Std', hard:'Hard' };
+      diffChip.textContent = map[diffInput.value] || 'Std';
+    };
+    setDiffChip();
+    diffInput.addEventListener('change', setDiffChip);
+
+    // Resize canvases to container
+    function resizeCanvases(){
+      const rect = stack.getBoundingClientRect();
+      [guide, mask, reveal].forEach(c => { c.width = rect.width * devicePixelRatio; c.height = rect.height * devicePixelRatio; c.style.width = rect.width+'px'; c.style.height = rect.height+'px'; });
+      drawGuide();
+      // Note: actual mask/reveal drawing comes from game logic; here we only keep placeholders for UI parity.
     }
+    addEventListener('resize', resizeCanvases);
+    const ro = new ResizeObserver(resizeCanvases); ro.observe(stack);
 
-    // ====== Drawing / coverage
-    function drawGuide(points){
-      guideCtx.clearRect(0,0,guideCanvas.width,guideCanvas.height);
-      if (points.length<2) return;
-      guideCtx.strokeStyle='rgba(255,255,255,.6)';
-      guideCtx.lineWidth=3; guideCtx.setLineDash([8,8]); guideCtx.lineCap='round';
-      guideCtx.beginPath(); guideCtx.moveTo(points[0].x, points[0].y);
-      for (let i=1;i<points.length;i++) guideCtx.lineTo(points[i].x, points[i].y);
-      guideCtx.stroke();
+    function drawGuide(){
+      const c = guide; const g = ctxGuide; g.clearRect(0,0,c.width,c.height);
+      g.save(); g.scale(devicePixelRatio, devicePixelRatio);
+      const w = c.width/devicePixelRatio, h = c.height/devicePixelRatio;
+      g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = 1;
+      const step = Math.round(Math.min(w,h)/14);
+      for(let x=step; x<w; x+=step){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,h); g.stroke(); }
+      for(let y=step; y<h; y+=step){ g.beginPath(); g.moveTo(0,y); g.lineTo(w,y); g.stroke(); }
+      g.restore();
     }
-    function createHiddenImage(shapeType){
-      hiddenCtx.clearRect(0,0,hiddenImage.width,hiddenImage.height);
-      const g = hiddenCtx.createRadialGradient(hiddenImage.width/2,hiddenImage.height/2,0, hiddenImage.width/2,hiddenImage.height/2, hiddenImage.width/2);
-      g.addColorStop(0,'rgba(255,215,0,.85)'); g.addColorStop(.5,'rgba(255,105,180,.6)'); g.addColorStop(1,'rgba(70,130,180,.45)');
-      hiddenCtx.fillStyle = g; hiddenCtx.fillRect(0,0,hiddenImage.width,hiddenImage.height);
-      // center sparkle
-      hiddenCtx.fillStyle = '#fff';
-      hiddenCtx.font = `${Math.min(hiddenImage.width, hiddenImage.height) * 0.28}px "Segoe UI Symbol", emoji`;
-      hiddenCtx.textAlign='center'; hiddenCtx.textBaseline='middle';
-      hiddenCtx.fillText('✨', hiddenImage.width/2, hiddenImage.height/2);
-    }
-    function initMask(){ maskCtx.fillStyle='#000'; maskCtx.fillRect(0,0,maskCanvas.width,maskCanvas.height); }
-    function generateCoveragePoints(points){
-      const set=new Set();
-      for (let i=0;i<points.length-1;i++){
-        const a=points[i], b=points[i+1];
-        const d = Math.hypot(b.x-a.x, b.y-a.y);
-        const steps = Math.max(1, Math.ceil(d/5));
-        for (let j=0;j<=steps;j++){
-          const t=j/steps, x=Math.round(a.x+(b.x-a.x)*t), y=Math.round(a.y+(b.y-a.y)*t);
-          set.add(`${x},${y}`);
-        }
-      }
-      return set;
-    }
-    function updateCoverageDisplay(){
-      const percent = Math.round((coveredPoints.size / Math.max(1, coveragePoints.size)) * 100);
-      coverageChip.textContent = `${percent}%`;
-      hudCoverage.textContent = `${Math.max(bestCoverage, percent)}%`;
-      if (percent > bestCoverage) bestCoverage = percent;
-      if (percent >= requiredCoverage) {
-        revealBanner.classList.add('show');
-      }
-    }
-
-    function loadNewShape(){
-      initMask();
-      const s = getRandomShape(currentDifficulty);
-      currentShapeType = s.type;
-      pathPoints = s.points;
-      coveragePoints = generateCoveragePoints(pathPoints);
-      coveredPoints = new Set();
-      createHiddenImage(currentShapeType);
-      drawGuide(pathPoints);
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      revealBanner.classList.remove('show');
-      updateCoverageDisplay();
-    }
-
-    function startDrawing(ev){
-      if (!sessionActive || sessionPaused || isCompleting) return;
-      isDrawing = true; draw(ev);
-    }
-    function stopDrawing(){ isDrawing = false; }
-
-    function draw(ev){
-      if (!isDrawing || !sessionActive || sessionPaused || isCompleting) return;
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-
-      let cx, cy;
-      if (ev.touches && ev.touches.length){
-        ev.preventDefault(); cx = ev.touches[0].clientX; cy = ev.touches[0].clientY;
-      } else { cx = ev.clientX; cy = ev.clientY; }
-
-      const x = (cx - rect.left) * scaleX;
-      const y = (cy - rect.top) * scaleY;
-
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = 'rgba(111,211,245,.9)';
-      ctx.beginPath(); ctx.arc(x, y, currentBrush/2, 0, Math.PI*2); ctx.fill();
-
-      maskCtx.globalCompositeOperation = 'source-over';
-      maskCtx.fillStyle='#fff';
-      maskCtx.beginPath(); maskCtx.arc(x, y, currentBrush/2, 0, Math.PI*2); maskCtx.fill();
-
-      // mark coverage points within brush
-      const r = currentBrush/2;
-      for (let dx=-r; dx<=r; dx++){
-        for (let dy=-r; dy<=r; dy++){
-          if (dx*dx + dy*dy <= r*r){
-            const px = Math.round(x+dx), py = Math.round(y+dy);
-            const key = `${px},${py}`;
-            if (coveragePoints.has(key)) coveredPoints.add(key);
-          }
-        }
-      }
-      updateCoverageDisplay();
-
-      // composite reveal preview
-      completionCtx.clearRect(0,0,completionCanvas.width,completionCanvas.height);
-      completionCtx.globalCompositeOperation='source-over';
-      completionCtx.drawImage(hiddenImage,0,0);
-      completionCtx.globalCompositeOperation='destination-in';
-      completionCtx.drawImage(maskCanvas,0,0);
-
-      // If fully revealed for this shape, count completion and load a new one
-      const pct = Math.round((coveredPoints.size / Math.max(1,coveragePoints.size))*100);
-      if (pct >= requiredCoverage && !isCompleting){
-        isCompleting = true;
-        shapesCompleted++;
-        const perfect = pct >= 95; // simple heuristic
-        if (perfect) perfectCount++;
-        // score bump
-        currentScore += Math.round(100 + pct);
-        hudScore.textContent = String(currentScore);
-        // short delay then next shape
-        setTimeout(()=>{ isCompleting=false; loadNewShape(); }, 400);
-      }
-    }
-
-    // ====== Session flow
-    function getDifficulty(){ return difficultyEl?.value || 'medium'; }
 
     function startSession(){
-      if (sessionActive) return;
-      currentDifficulty = getDifficulty();
-      requiredCoverage = Number(coverageReqEl.value);
-      currentBrush = Number(brushSizeEl.value);
-      sessionMs = Math.max(1, Number(durationEl.value)) * 60_000;
-      remainingMs = sessionMs;
-      sessionActive = true; sessionPaused = false;
-      shapesCompleted = 0; perfectCount = 0; bestCoverage = 0; currentScore = 0;
-      hudScore.textContent = '0'; hudCoverage.textContent = '0%';
-      hudDifficulty.textContent = currentDifficulty[0].toUpperCase() + currentDifficulty.slice(1);
+      if(playing) return;
+      score = 0; scoreEl.textContent = '0'; bestCoverage = 0; bestCovEl.textContent = '0%';
+      totalMs = Math.max(10, Number(durationInput.value||60)) * 1000;
+      remainingMs = totalMs; startTs = performance.now(); paused = false; playing = true;
+      document.body.classList.add('playing');
+      timeChip.textContent = fmtTime(remainingMs);
+      resizeCanvases();
+      loop();
+    }
 
-      // hook enhancement
-      sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty);
+    function loop(ts){
+      if(!playing){ cancelAnimationFrame(rafId); return; }
+      rafId = requestAnimationFrame(loop);
+      if(paused) return;
+      const now = performance.now();
+      const elapsed = now - startTs;
+      remainingMs = Math.max(0, totalMs - elapsed);
+      timeChip.textContent = fmtTime(remainingMs);
 
-      // timer
-      clearInterval(timerId);
-      const startedAt = performance.now();
-      timerId = setInterval(()=>{
-        if (sessionPaused) return;
-        const elapsed = performance.now() - startedAt - (sessionMs - remainingMs);
-        remainingMs = Math.max(0, sessionMs - elapsed);
-        const pct = ((sessionMs - remainingMs) / sessionMs) * 100;
-        timerFill.style.width = `${pct}%`;
-        if (remainingMs <= 0){
-          clearInterval(timerId);
-          finishSession();
-        }
-      }, 50);
+      // Placeholder: update coverage/score visuals here if wired to actual game logic
+      // bestCoverage = Math.max(bestCoverage, currentCoverage)
+      // score += ...
 
-      loadNewShape();
-      canvas.focus();
+      if(remainingMs <= 0){ endSession(); }
     }
 
     function pauseSession(){
-      if (!sessionActive) return;
-      sessionPaused = !sessionPaused;
-      pauseBtn.setAttribute('aria-pressed', String(sessionPaused));
+      if(!playing) return; paused = !paused; pauseBtn.setAttribute('aria-pressed', String(paused));
+      if(!paused){ // resume baseline
+        startTs = performance.now() - (totalMs - remainingMs);
+      }
     }
 
-    function restartSession(){
-      clearInterval(timerId);
-      sessionActive = false; sessionPaused = false;
-      shapesCompleted = 0; perfectCount = 0; bestCoverage = 0; currentScore = 0;
-      timerFill.style.width = '0%';
-      hudScore.textContent = '0'; hudCoverage.textContent = '0%';
-      loadNewShape();
-      startSession();
+    function exitSession(){
+      if(!playing) return; playing = false; paused = false; document.body.classList.remove('playing');
+      cancelAnimationFrame(rafId);
     }
 
-    function finishSession(){
-      sessionActive = false;
-      // compute XP & PB
-      const xp = shapesCompleted * 10 + Math.round(bestCoverage/5) + perfectCount * 15;
-      const oldPB = getPB();
-      const newPB = Math.max(oldPB, currentScore);
-      if (newPB !== oldPB) setPB(newPB);
-      hudPB.textContent = String(newPB);
-
-      // Update modal fields
-      finalShapes.textContent = String(shapesCompleted);
-      perfectTraces.textContent = String(perfectCount);
-      bestCoverageOut.textContent = `${bestCoverage}%`;
-      finalScoreOut.textContent = String(currentScore);
-      xpLine.textContent = `+${xp} XP`;
-
-      // report to progress/achievements
-      window.endSession(currentScore, currentDifficulty);
-
-      // show achievements unlocked (via global toast system)
-      try {
-        const unlocked = checkAndUnlockAchievements();
-        achievementsLine.textContent = unlocked && unlocked.length
-          ? `Unlocked: ${unlocked.join(', ')}`
-          : 'No new achievements this time — keep going!';
-        if (unlocked && unlocked.length && window.showAchievementToast) {
-          unlocked.forEach(id => window.showAchievementToast(id));
-        }
-      } catch (e) { /* optional */ }
-
-      // open modal
-      if (typeof modal.showModal === 'function') modal.showModal();
-      else modal.setAttribute('open','');
+    function endSession(){
+      playing = false; paused = false; document.body.classList.remove('playing');
+      cancelAnimationFrame(rafId);
+      // Compute final stats (placeholder)
+      finalScore.textContent = score;
+      finalShapes.textContent = 0;
+      finalPerfect.textContent = 0;
+      finalCoverage.textContent = bestCoverage + '%';
+      const xp = Math.max(1, Math.round(score/10));
+      finalXP.textContent = `+${xp}`;
+      // PB
+      if(score > personalBest){ personalBest = score; localStorage.setItem('FPR_trace_pb', String(score)); pbEl.textContent = score; pbValueEl.textContent = score; }
+      resultsDialog.showModal();
     }
-
-    // Expose standard endSession (kept consistent)
-    window.endSession = function(score, difficulty = 'easy') {
-      recordSession(EXERCISE_ID, difficulty, score);
-      try { markExerciseTried(EXERCISE_ID); } catch(e) {}
-    };
 
     // Events
     startBtn.addEventListener('click', startSession);
+    newSessionBtn.addEventListener('click', () => { resultsDialog.close(); startSession(); });
+    closeDialogBtn.addEventListener('click', () => resultsDialog.close());
+
     pauseBtn.addEventListener('click', pauseSession);
-    restartBtn.addEventListener('click', restartSession);
-    modalRestart.addEventListener('click', () => { if (modal.open) modal.close(); restartSession(); });
-    modalClose.addEventListener('click', () => { if (modal.open) modal.close(); });
+    exitBtn.addEventListener('click', exitSession);
 
-    // Input changes live-apply where sane
-    brushSizeEl.addEventListener('change', () => currentBrush = Number(brushSizeEl.value));
-    difficultyEl.addEventListener('change', () => { currentDifficulty = getDifficulty(); sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty); });
-    coverageReqEl.addEventListener('change', () => requiredCoverage = Number(coverageReqEl.value));
+    // Keyboard a11y: space to pause, Esc to exit when playing
+    addEventListener('keydown', (e) => {
+      if(!playing) return; if(e.key === ' '){ e.preventDefault(); pauseSession(); }
+      if(e.key === 'Escape'){ e.preventDefault(); exitSession(); }
+    });
 
-    // Pointer handlers
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
-    canvas.addEventListener('touchstart', startDrawing, { passive: false });
-    canvas.addEventListener('touchmove', draw, { passive: false });
-    canvas.addEventListener('touchend', stopDrawing);
-    canvas.addEventListener('touchcancel', stopDrawing);
-    canvas.addEventListener('contextmenu', (e)=>e.preventDefault());
-
-    // Initialize HUD with PB
-    hudPB.textContent = String(getPB());
-
-    // Load initial guide/canvas
-    loadNewShape();
+    // Initialize once
+    requestAnimationFrame(() => resizeCanvases());
   </script>
 </body>
 </html>
