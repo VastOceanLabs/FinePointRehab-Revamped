@@ -19,8 +19,7 @@
     --panel-border: rgba(255,255,255,.08);
     --text: #eaf6ff;
   }
-  body{
-    margin:0; color:var(--text);
+  body{ margin:0; color:var(--text);
     background:
       radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
       radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 55%),
@@ -42,26 +41,24 @@
     border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:8px 12px; }
   header h1{ margin:0; font-size: clamp(18px,3vw,24px); }
 
-  .layout{
-    display:grid; grid-template-columns: 1fr; gap:16px;
-    padding:16px; height: auto;
-  }
-
-  .panel{
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    border-radius: var(--radius);
-    box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05);
-  }
+  .layout{ display:grid; grid-template-columns: 1fr; gap:16px; padding:16px; height:auto; }
+  .panel{ background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
+          box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05); }
 
   /* Settings */
   #settings { padding:18px; overflow:auto; position:relative; z-index: 5; max-width: 720px; margin: 0 auto; }
   #settings h2{ margin:0 0 10px; font-size:20px; text-align:center; }
-  .desc{
-    margin-bottom:12px; background: rgba(111,211,245,.08);
-    border-left: 4px solid rgba(111,211,245,.7);
-    padding:10px; border-radius:8px; font-size:14px; line-height:1.5;
-  }
+  .desc{ margin-bottom:12px; background: rgba(111,211,245,.08);
+         border-left: 4px solid rgba(111,211,245,.7); padding:10px; border-radius:8px; font-size:14px; line-height:1.5; }
+
+  /* NEW: compact stats row (shows PB on settings) */
+  .stats-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
+  .metric{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center;
+           text-align:center; padding:8px 12px; border:1px solid rgba(255,255,255,.12); border-radius:12px;
+           background: rgba(255,255,255,.05); min-width:110px; }
+  .v{ font-weight:900; font-size:18px; color:#bfe6ff; text-shadow: 0 0 6px rgba(150,220,255,.5); line-height:1.1; }
+  .t{ font-size:11px; opacity:.9; margin-top:3px; }
+
   .group{ margin-bottom:12px; }
   .label{ display:block; margin-bottom:6px; font-weight:700; letter-spacing:.2px; }
   select, input[type="number"]{
@@ -85,40 +82,20 @@
   .right{ display:none; position:relative; }
   body.playing .right{ display:block; }
 
-  .frame{
-    position:relative; border-radius: var(--radius); overflow:hidden;
-    border:1px solid var(--panel-border); box-shadow: inset 0 0 40px rgba(0,0,0,.35);
-    background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%);
-  }
+  .frame{ position:relative; border-radius: var(--radius); overflow:hidden;
+          border:1px solid var(--panel-border); box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+          background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%); }
   canvas#stage{ display:block; width:100%; height:62vh; max-height:760px; background: transparent; }
   @media (max-width:900px){ canvas#stage{ height:58vh; } }
 
-  /* HUD strip across top (compact & wrap-friendly) */
-  .hud{
-    display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px 10px; margin-bottom:10px;
-    background: rgba(8,14,36,.85);
-    border: 1px solid var(--panel-border);
-    border-radius: var(--radius); box-shadow: 0 6px 16px rgba(0,0,0,.35);
-    position:relative; z-index:4;
-  }
-
-  .metric{
-    flex:0 0 auto;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; padding:6px 10px;
-    border:1px solid rgba(255,255,255,.12); border-radius:12px;
-    background: rgba(255,255,255,.05);
-  }
-  .v{ font-weight:900; font-size:18px; color:#bfe6ff; text-shadow: 0 0 6px rgba(150,220,255,.5); line-height:1.1; }
+  /* HUD (compact & wrap-friendly) */
+  .hud{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px 10px; margin-bottom:10px;
+        background: rgba(8,14,36,.85); border: 1px solid var(--panel-border); border-radius: var(--radius);
+        box-shadow: 0 6px 16px rgba(0,0,0,.35); position:relative; z-index:4; }
   #score.v{ font-size:20px; color:#d7f2ff; text-shadow: 0 0 8px rgba(160,220,255,.7); }
-  .t{ font-size:11px; opacity:.9; margin-top:3px; }
-
   .actions{ flex:0 0 auto; display:flex; gap:8px; margin-left:auto; }
-  .btn-ghost{
-    min-height:34px; padding:6px 10px; font-weight:800;
-    border:1px solid rgba(255,255,255,.22); border-radius:999px; background: rgba(255,255,255,.06);
-    color:var(--text); cursor:pointer; white-space:nowrap;
-  }
+  .btn-ghost{ min-height:34px; padding:6px 10px; font-weight:800; border:1px solid rgba(255,255,255,.22);
+              border-radius:999px; background: rgba(255,255,255,.06); color:var(--text); cursor:pointer; white-space:nowrap; }
   .btn-ghost:hover{ background: rgba(255,255,255,.12); }
 
   /* Immersive */
@@ -128,11 +105,8 @@
   body.playing .frame{ border:none; border-radius:0; height: calc(var(--vh) * 100); box-shadow: none; background: transparent; }
   body.playing canvas#stage{ width:100vw; height: calc(var(--vh) * 100); max-height:none; }
   body.playing .hud{
-    position:absolute;
-    top: calc(env(safe-area-inset-top, 0px) + 10px);
-    left: 10px; right: 10px; margin:0;
-    background: linear-gradient(180deg, rgba(6,10,24,.65), rgba(6,10,24,.35));
-    border: 1px solid rgba(255,255,255,.12);
+    position:absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 10px; right: 10px; margin:0;
+    background: linear-gradient(180deg, rgba(6,10,24,.65), rgba(6,10,24,.35)); border: 1px solid rgba(255,255,255,.12);
   }
 
   /* Completion modal */
@@ -156,6 +130,14 @@
     <aside id="settings" class="panel" aria-label="Settings">
       <h2>Settings</h2>
       <div class="desc"><strong>How to play:</strong> tap a glowing comet before it escapes. Smaller &amp; faster = harder (more points).</div>
+
+      <!-- NEW: Stats (shows PB on settings) -->
+      <div class="stats-row" role="region" aria-label="Player stats">
+        <div class="metric" aria-live="polite">
+          <div id="pbSettings" class="v">0</div>
+          <div class="t">Personal Best</div>
+        </div>
+      </div>
 
       <div class="group">
         <label class="label" for="dur">Session Duration (minutes)</label>
@@ -239,7 +221,7 @@
   [startBtn, pauseBtn, restartBtn, doneBtn, pauseHudBtn, exitHudBtn].forEach(b=>b && b.setAttribute('type','button'));
 
   const durIn = $('#dur'), sizeSel = $('#size'), spdSel = $('#spd'), spawnSel = $('#spawn');
-  const scoreEl = $('#score'), pbEl = $('#pb'), timeEl = $('#time');
+  const scoreEl = $('#score'), pbEl = $('#pb'), timeEl = $('#time'), pbSettingsEl = $('#pbSettings');
   const doneModal = $('#done'), fScore = $('#fScore'), fTaps = $('#fTaps'), fAcc = $('#fAcc'), fAvg = $('#fAvg');
   const canvas = $('#stage'); const ctx = canvas.getContext('2d'); const hud = document.querySelector('.hud');
 
@@ -247,18 +229,13 @@
   let DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
   const playArea = { x0:0, y0:0, w:0, h:0 };
 
-  function setVH(){
-    document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px');
-  }
+  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
 
   function refreshGeometry(){
     const W = canvas.width / DPR, H = canvas.height / DPR;
     const hudRect = hud ? hud.getBoundingClientRect() : { height: 60 };
     const reservedTop = document.body.classList.contains('playing') ? Math.max(56, Math.ceil(hudRect.height)+12) : 0;
-    playArea.x0 = 0;
-    playArea.y0 = reservedTop;
-    playArea.w = W;
-    playArea.h = Math.max(140, H - playArea.y0);
+    playArea.x0 = 0; playArea.y0 = reservedTop; playArea.w = W; playArea.h = Math.max(140, H - playArea.y0);
   }
 
   function fit(){
@@ -304,7 +281,7 @@
         s.x -= L.speed * dt * 0.06;
         if (s.x < -4) s.x = canvas.width/DPR + 4, s.y = playArea.y0 + Math.random()*playArea.h;
         s.tw += dt*0.002;
-        const o = 0.6 + Math.sin(s.tw)*0.4;
+        const o = 0.65 + Math.sin(s.tw)*0.35;
         ctx.fillStyle = `rgba(255,255,255,${o})`;
         ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
       });
@@ -315,7 +292,7 @@
   // ===== Game State =====
   const sizeMap = { small: 16, medium: 22, large: 28 };
   const speedMap = { slow: 90, medium: 150, fast: 240 };
-  const spawnMap = { slow: 2000, medium: 1500, fast: 1000, vfast: 500 };
+  const spawnMap = { slow: 2000, medium: 1500, fast: 1000, vfast: 500 }; // ref only
 
   let running=false, paused=false;
   let durationMs=120000, timeLeft=0, lastTick=0, lastSpawn=0;
@@ -326,7 +303,13 @@
   const PB_KEY='comet:best';
   const getPB=()=>parseInt(localStorage.getItem(PB_KEY)||'0',10);
   const setPB=(v)=>localStorage.setItem(PB_KEY,String(v));
-  pbEl.textContent = getPB();
+  // sync PB in both locations (settings + HUD)
+  function refreshPB(){
+    const pbv = getPB();
+    if (pbEl) pbEl.textContent = pbv;
+    if (pbSettingsEl) pbSettingsEl.textContent = pbv;
+  }
+  refreshPB();
 
   // ===== Spawning: edge → opposite edge =====
   function spawnOppositeEdge(){
@@ -374,9 +357,10 @@
     comets.forEach(c=>{
       c.x += c.vx*c.spd*px;
       c.y += c.vy*c.spd*px;
-      c.trail.push({ x:c.x - c.vx*6, y:c.y - c.vy*6, life: 1, hue:c.hue });
-      if (c.trail.length>24) c.trail.shift();
-      c.trail.forEach(t=>t.life -= 0.035*px*60);
+      // trail: keep more points for a clearer tail
+      c.trail.push({ x:c.x - c.vx*8, y:c.y - c.vy*8, life: 1, hue:c.hue });
+      if (c.trail.length>28) c.trail.shift();
+      c.trail.forEach(t=>t.life -= 0.025*px*60); // slower fade for more visible tail
     });
     const margin = 60;
     const before = comets.length;
@@ -398,6 +382,22 @@
     particles = particles.filter(p=>p.life>0);
     popups.forEach(s=>{ s.y -= 24*px; s.life -= 1*px; });
     popups = popups.filter(s=>s.life>0);
+  }
+
+  // NEW: draw popups (+points)
+  function drawPopups(){
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 18px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+    popups.forEach(s=>{
+      const a = Math.max(0, Math.min(1, s.life));
+      ctx.fillStyle = `rgba(255,255,255,${0.9*a})`;
+      ctx.shadowColor = 'rgba(160,220,255,0.85)';
+      ctx.shadowBlur = 14;
+      ctx.fillText(s.text, s.x, s.y);
+    });
+    ctx.restore();
   }
 
   // ===== Input =====
@@ -452,15 +452,8 @@
       else if (document.webkitFullscreenElement) await document.webkitExitFullscreen();
     }catch{}
   }
-  function toImmersive(){
-    document.body.classList.add('playing');
-    window.scrollTo({ top: 0 });
-    enterFullscreen();
-  }
-  function fromImmersive(){
-    document.body.classList.remove('playing');
-    exitFullscreen();
-  }
+  function toImmersive(){ document.body.classList.add('playing'); window.scrollTo({ top: 0 }); enterFullscreen(); }
+  function fromImmersive(){ document.body.classList.remove('playing'); exitFullscreen(); }
 
   // ===== Lifecycle =====
   function startSession(){
@@ -501,10 +494,47 @@
     running=false; paused=false;
     const acc = taps+misses>0 ? Math.round((taps/(taps+misses))*100) : 0;
     const avg = taps>0 ? (totalRT/taps/1000).toFixed(2) : '0.00';
-    if (score>getPB()){ setPB(score); pbEl.textContent=score; }
+    if (score>getPB()){ setPB(score); refreshPB(); }
     fScore.textContent=score; fTaps.textContent=taps; fAcc.textContent=acc+'%'; fAvg.textContent=avg;
     doneModal.classList.remove('hidden');
     pauseBtn.disabled=true;
+  }
+
+  // ===== Render =====
+  function drawComet(c){
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+
+    // brighter, longer trail
+    c.trail.forEach((t,i)=>{
+      const alpha = Math.max(0, Math.min(1, t.life)) * (0.35 + 0.65 * (i/28));
+      const grad = ctx.createLinearGradient(c.x, c.y, t.x, t.y);
+      grad.addColorStop(0, `hsla(${c.hue},95%,70%,${alpha})`);
+      grad.addColorStop(1, `hsla(${c.hue+40},95%,55%,0)`);
+      ctx.strokeStyle = grad; ctx.lineWidth = Math.max(1, c.r*0.9*(i/28));
+      ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(t.x, t.y); ctx.stroke();
+    });
+
+    // outer glow
+    const g1 = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r*2.4);
+    g1.addColorStop(0, `hsla(${c.hue},95%,85%,.9)`); g1.addColorStop(1, `hsla(${c.hue},95%,50%,0)`);
+    ctx.fillStyle=g1; ctx.beginPath(); ctx.arc(c.x,c.y,c.r*2.4,0,Math.PI*2); ctx.fill();
+
+    // core
+    const g2 = ctx.createRadialGradient(c.x- c.r*0.4, c.y- c.r*0.4, 0, c.x, c.y, c.r);
+    g2.addColorStop(0, '#fff'); g2.addColorStop(0.35, `hsla(${c.hue},95%,78%,1)`); g2.addColorStop(0.9, `hsla(${c.hue},95%,45%,.9)`); g2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawParticles(){
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    particles.forEach(p=>{
+      const a = Math.max(0, Math.min(1, p.life));
+      ctx.fillStyle = `hsla(${p.hue},95%,70%,${0.8*a})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
   }
 
   // ===== Main loop =====
@@ -525,40 +555,12 @@
     updateComets(dt);
     updateParticles(dt);
 
+    // draw
     ctx.clearRect(0,0,canvas.width/DPR,canvas.height/DPR);
-
-    let ox=0, oy=0;
-    if (shakeT>0){
-      shakeT -= dt;
-      const p = clamp(shakeT/120, 0, 1);
-      ox = Math.sin(ts*0.9)*2*p; oy = Math.cos(ts*1.1)*2*p;
-      ctx.save(); ctx.translate(ox, oy);
-    }
-
     drawStars(dt);
-    ctx.save(); comets.forEach(drawComet); ctx.restore();
+    comets.forEach(drawComet);
     drawParticles();
-
-    if (shakeT>0){ ctx.restore(); }
-  }
-
-  function drawComet(c){
-    ctx.save(); ctx.globalCompositeOperation='lighter';
-    c.trail.forEach((t,i)=>{
-      const alpha = clamp(t.life,0,1) * (i/24);
-      const grad = ctx.createLinearGradient(c.x, c.y, t.x, t.y);
-      grad.addColorStop(0, `hsla(${c.hue},95%,65%,${alpha*0.85})`);
-      grad.addColorStop(1, `hsla(${c.hue+40},95%,55%,0)`);
-      ctx.strokeStyle = grad; ctx.lineWidth = Math.max(1, c.r*0.9*(i/24));
-      ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(t.x, t.y); ctx.stroke();
-    });
-    const g1 = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r*2.2);
-    g1.addColorStop(0, `hsla(${c.hue},95%,80%,.85)`); g1.addColorStop(1, `hsla(${c.hue},95%,50%,0)`);
-    ctx.fillStyle=g1; ctx.beginPath(); ctx.arc(c.x,c.y,c.r*2.2,0,Math.PI*2); ctx.fill();
-    const g2 = ctx.createRadialGradient(c.x- c.r*0.4, c.y- c.r*0.4, 0, c.x, c.y, c.r);
-    g2.addColorStop(0, '#fff'); g2.addColorStop(0.35, `hsla(${c.hue},95%,75%,1)`); g2.addColorStop(0.9, `hsla(${c.hue},95%,45%,.85)`); g2.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill();
-    ctx.restore();
+    drawPopups();
   }
 
   // ===== Wire controls =====
