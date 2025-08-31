@@ -200,8 +200,9 @@
           <p>Comets Tapped: <span id="fTaps" class="hi">0</span></p>
           <p>Accuracy: <span id="fAcc" class="hi">0%</span></p>
           <p>Average Response Time: <span id="fAvg" class="hi">0.00s</span></p>
-          <div class="btn-row" style="grid-template-columns:1fr;">
+          <div class="btn-row" style="grid-template-columns:1fr 1fr;">
             <button id="doneBtn" class="btn btn-primary" type="button">Start New Session</button>
+            <button id="homeBtn" class="btn" type="button">Home</button>
           </div>
         </div>
       </div>
@@ -216,9 +217,9 @@
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const now = ()=>performance.now();
 
-  const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn');
+  const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn'), homeBtn = $('#homeBtn');
   const pauseHudBtn = $('#pauseHud'), exitHudBtn = $('#exitHud');
-  [startBtn, pauseBtn, restartBtn, doneBtn, pauseHudBtn, exitHudBtn].forEach(b=>b && b.setAttribute('type','button'));
+  [startBtn, pauseBtn, restartBtn, doneBtn, homeBtn, pauseHudBtn, exitHudBtn].forEach(b=>b && b.setAttribute('type','button'));
 
   const durIn = $('#dur'), sizeSel = $('#size'), spdSel = $('#spd'), spawnSel = $('#spawn');
   const scoreEl = $('#score'), pbEl = $('#pb'), timeEl = $('#time'), pbSettingsEl = $('#pbSettings');
@@ -372,11 +373,11 @@
     for (let i=0;i<24;i++){
       particles.push({ x, y, vx: rnd(-2.4,2.4), vy: rnd(-2.4,2.4), life: 1, r: rnd(1,2.6), hue: hue + rnd(-10,10) });
     }
-    addPopup(x, y, '+!');
+    // removed text-only popup here to avoid extra symbols; particles only
     shakeT = 120;
   }
 
-  // NEW: smarter popup creation (stagger near-collocated popups)
+  // smarter popup creation (stagger near-collocated popups)
   function addPopup(x, y, text){
     const nearby = popups.filter(p => p.life > 0.45 && Math.hypot(p.x - x, p.y - y) < 64).length;
     const offsetY = -nearby * 18;
@@ -465,7 +466,7 @@
         const speedB = spdSel.value==='fast'?1.6 : spdSel.value==='medium'?1.2 : 1.0;
         const pts = Math.floor(10 * sizeB * speedB * clamp(3000/rt, 0.8, 6));
         score += pts; scoreEl.textContent = String(score);
-        addPopup(c.x, c.y, '+'+pts);
+        addPopup(c.x, c.y, String(pts)); // number only (no + or !)
         burst(c.x,c.y,c.hue);
         break;
       }
@@ -612,6 +613,7 @@
   pauseBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
   restartBtn.addEventListener('click', restartSession);
   doneBtn?.addEventListener('click', ()=>{ doneModal.classList.add('hidden'); restartSession(); setTimeout(startSession, 120); });
+  homeBtn?.addEventListener('click', ()=>{ window.location.href = '/'; });
   pauseHudBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
   exitHudBtn.addEventListener('click', ()=>{ if (running){ endSession(); } restartSession(); });
 })();
