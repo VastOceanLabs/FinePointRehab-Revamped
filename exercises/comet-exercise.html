@@ -1,688 +1,575 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Comet Tap — Fine Point Rehab</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Comet Tap — Fine Point Rehab</title>
 
-  <!-- Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'G-RVKCCWBFKE', { 'anonymize_ip': true });
-  </script>
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/components.css">
 
-  <!-- Shared styles -->
-  <link rel="stylesheet" href="/css/tokens.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/components.css" />
+<style>
+  :root{
+    --vh: 1vh;
+    --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
+    --accent: var(--brand-aqua, #6fd3f5);
+    --radius: 14px;
+    --panel: rgba(10,16,36,.9);
+    --panel-border: rgba(255,255,255,.08);
+    --text: #eaf6ff;
+  }
+  /* Cosmic background with nebula */
+  body{
+    margin:0; color:var(--text);
+    background:
+      radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
+      radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 55%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+    min-height: calc(var(--vh) * 100);
+    touch-action: manipulation;
+  }
+  header.app{
+    position: sticky; top:0; z-index: 50;
+    padding:12px 16px; display:flex; gap:12px; align-items:center;
+    background: linear-gradient(180deg, rgba(8,12,26,.9), rgba(8,12,26,.55));
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    backdrop-filter: blur(6px);
+  }
+  header .home {
+    text-decoration:none; color:var(--text); font-weight:700;
+    border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:8px 12px;
+  }
+  header h1{ margin:0; font-size: clamp(18px,3vw,24px); }
 
-  <style>
-    :root{
-      --vh: 1vh;
-      --bg-1: #0a0e1a;
-      --bg-2: #1a1f3a;
-      --bg-3: #0f1524;
-      --accent: var(--brand-aqua, #6fd3f5);
-      --panel-bg: rgba(8,15,35,0.95);
-      --panel-border: rgba(255,255,255,0.1);
-      --text: var(--color-text, #fff);
-      --radius: var(--radius-lg, 14px);
-    }
+  .layout{
+    display:grid; grid-template-columns: 360px 1fr; gap:16px;
+    padding:16px; height: calc((var(--vh) * 100) - 56px);
+  }
+  @media (max-width: 900px){
+    .layout{ grid-template-columns: 1fr; height:auto; }
+  }
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05);
+  }
+  /* Left — Settings */
+  #settings { padding:18px; overflow:auto; position:relative; z-index: 5; }
+  #settings h2{ margin:0 0 10px; font-size:20px; text-align:center; }
+  .desc{
+    margin-bottom:12px;
+    background: rgba(111,211,245,.08);
+    border-left: 4px solid rgba(111,211,245,.7);
+    padding:10px; border-radius:8px; font-size:14px; line-height:1.5;
+  }
+  .group{ margin-bottom:12px; }
+  .label{ display:block; margin-bottom:6px; font-weight:700; letter-spacing:.2px; }
+  select, input[type="number"]{
+    width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+    background: rgba(5,10,26,.8); color:var(--text); font-size:16px;
+  }
+  select:focus, input[type="number"]:focus{
+    outline:none; border-color: rgba(111,211,245,.9); box-shadow: 0 0 0 2px rgba(111,211,245,.25);
+  }
+  .btn-row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px; }
+  .btn{
+    min-height:46px; border:1px solid rgba(111,211,245,.35); background: rgba(111,211,245,.12);
+    color:var(--text); border-radius:10px; font-weight:800; letter-spacing:.2px; cursor:pointer; transition:.2s;
+  }
+  .btn:hover:not(:disabled){ background: rgba(111,211,245,.22); transform: translateY(-1px); }
+  .btn:disabled{ opacity:.55; cursor:not-allowed; }
+  .btn-primary{ background: rgba(111,211,245,.95); color:#07101e; border-color: rgba(111,211,245,1); }
+  .btn-primary:hover:not(:disabled){ background: rgba(111,211,245,1); box-shadow: 0 6px 18px rgba(111,211,245,.45); }
 
-    /* Cosmic background */
-    body{
-      margin:0; color:var(--text);
-      background:
-        radial-gradient(ellipse at 20% 30%, rgba(40,20,80,.35) 0%, transparent 40%),
-        radial-gradient(ellipse at 80% 70%, rgba(20,40,80,.28) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 50%, rgba(10,20,40,.5) 0%, transparent 70%),
-        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
-      min-height: 100vh;
-      min-height: calc(var(--vh, 1vh) * 100);
-      touch-action: manipulation;
-      -webkit-user-select: none; user-select: none;
-      padding-bottom: max(0px, env(safe-area-inset-bottom));
-      /* allow layout to scroll on small screens so Start is always reachable */
-      overflow-y: auto;
-    }
+  /* Right — HUD + Canvas */
+  .right{ position:relative; }
+  .hud{
+    display:grid; grid-template-columns: 1fr auto auto auto; gap:12px; align-items:center;
+    padding:10px 12px; margin-bottom:12px;
+    background: rgba(8,14,36,.85);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius); box-shadow: 0 6px 16px rgba(0,0,0,.35);
+    position:relative; z-index:4; pointer-events:auto;
+  }
+  .timer{ position:relative; height:10px; background: rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
+  #timerBar{ position:absolute; inset:0 auto 0 0; width:100%;
+    background: linear-gradient(90deg, rgba(111,211,245,.95), rgba(150,180,255,.95), rgba(200,150,255,.95));
+    box-shadow: 0 2px 10px rgba(111,211,245,.5);
+    transition: width .25s ease;
+  }
+  .hudItem{ text-align:right; min-width:120px; }
+  .v{ font-weight:900; font-size:20px; color:#bfe6ff; text-shadow: 0 0 8px rgba(150,220,255,.5); }
+  #score{ font-size:22px; color:#d7f2ff; text-shadow: 0 0 10px rgba(160,220,255,.7); }
+  .t{ font-size:12px; opacity:.8; }
+  /* Canvas frame */
+  .frame{
+    position:relative; border-radius: var(--radius); overflow:hidden;
+    border:1px solid var(--panel-border); box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+    background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%);
+  }
+  canvas#stage{ display:block; width:100%; height:62vh; max-height:760px; background: transparent; }
+  @media (max-width:900px){ canvas#stage{ height:58vh; } }
 
-    /* Sticky header */
-    header.app-header{
-      position: sticky; top:0; z-index: 100;
-      display:flex; align-items:center; gap:12px;
-      padding:12px 16px;
-      background: linear-gradient(180deg, rgba(10,14,26,.85), rgba(10,14,26,.55));
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    header .home-link{
-      text-decoration:none; font-weight:600; color:var(--text);
-      border:1px solid rgba(255,255,255,.15);
-      border-radius:999px; padding:8px 12px; display:inline-flex; gap:6px;
-      transition: transform .15s ease, border-color .15s ease;
-    }
-    header .home-link:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.25); }
-    header h1{ margin:0; font-size: clamp(20px, 3vw, 26px); letter-spacing:.2px; }
+  /* Completion modal */
+  #done{ position:absolute; inset:0; display:grid; place-items:center; background: rgba(0,0,0,.65);
+         backdrop-filter: blur(4px); z-index:10; }
+  #doneCard{ max-width:min(520px, 92vw); max-height:80vh; overflow:auto; padding:22px; }
+  #done h2{ margin-top:0; color:var(--accent); }
+  .hi{ color:#9ee7ff; font-weight:900; }
+  .hidden{ display:none !important; }
 
-    /* 2-panel layout */
-    .layout{
-      position: relative;
-      display: grid; grid-template-columns: 360px 1fr; gap:16px;
-      height: calc((var(--vh, 1vh) * 100) - 56px);
-      padding:16px;
-    }
-    @media (max-width: 900px){
-      .layout{ grid-template-columns: 1fr; grid-auto-rows: max-content 1fr; height:auto; min-height: calc(var(--vh, 1vh) * 100 - 56px); }
-    }
-
-    /* Panels */
-    .panel{
-      background-color: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
-    }
-
-    /* Left: Settings (kept ABOVE game for clickability) */
-    #settings-panel{
-      overflow:auto; padding:20px; max-height:100%; position:relative; z-index: 5;
-      /* Make sure nothing overlays these controls */
-      pointer-events: auto;
-    }
-    #settings-panel h2{ margin:0 0 12px; font-size:20px; text-align:center; }
-
-    .game-description{
-      background: rgba(111,211,245,.1);
-      border-left: 4px solid rgba(111,211,245,.8);
-      padding:12px; border-radius:8px; margin-bottom:16px; color: rgba(255,255,255,.92); font-size:14px; line-height:1.5;
-    }
-    .game-description h3{ margin:0 0 6px; color:var(--accent); font-size:16px; }
-
-    .settings-group{ margin-bottom:14px; }
-    .settings-label{ display:block; margin-bottom:6px; font-weight:600; }
-
-    select, input[type="number"]{
-      width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,.2);
-      background: rgba(0,10,30,.8); color:var(--text); font-size:16px; box-sizing:border-box;
-    }
-    select:focus, input[type="number"]:focus{
-      outline:none; border-color: rgba(111,211,245,.9); box-shadow: 0 0 0 2px rgba(111,211,245,.3);
-    }
-
-    .btn-row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px; }
-    .btn{
-      min-height:48px; border:1px solid rgba(111,211,245,.3); background: rgba(111,211,245,.1);
-      color:var(--text); border-radius:10px; font-weight:700; letter-spacing:.2px; cursor:pointer; transition:.2s ease;
-    }
-    .btn:hover:not(:disabled){ background: rgba(111,211,245,.2); border-color: rgba(111,211,245,.5); transform: translateY(-1px); }
-    .btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
-    .btn-primary{ background: rgba(111,211,245,.95); color:#0a0e1a; border-color: rgba(111,211,245,1); }
-    .btn-primary:hover:not(:disabled){ background: rgba(111,211,245,1); box-shadow: 0 4px 12px rgba(111,211,245,.4); }
-
-    /* Right: game column */
-    .game-column{ position:relative; overflow:hidden; }
-    .hud{
-      display:grid; grid-template-columns: 1fr auto auto auto; align-items:center; gap:12px;
-      padding:10px 12px; background: rgba(8,15,35,.8);
-      border:1px solid var(--panel-border); border-radius: var(--radius); margin-bottom:12px;
-      box-shadow: 0 6px 16px rgba(0,0,0,.35);
-      position:relative; z-index: 4; /* above stars/game area */
-      pointer-events: auto;
-    }
-    .timer-wrap{ position:relative; height:10px; background: rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
-    #timer-bar{ position:absolute; inset:0 auto 0 0; width:100%;
-      background: linear-gradient(90deg, rgba(111,211,245,.95), rgba(150,180,255,.95), rgba(200,150,255,.95));
-      box-shadow: 0 2px 10px rgba(111,211,245,.5); transition: width .3s ease;
-    }
-    .hud-item{ text-align:right; min-width:120px; }
-    .stat-value{ font-weight:800; font-size:18px; color: rgba(111,211,245,1); }
-    #score{ font-size:22px; color: rgba(150,220,255,1); text-shadow: 0 0 8px rgba(150,220,255,.5); }
-    .stat-label{ font-size:12px; opacity:.8; }
-
-    /* Game area (DOM sprites) */
-    #game-area{
-      position:absolute; inset:0; border-radius: var(--radius); overflow:hidden; outline:none; z-index: 1;
-      /* ensures clicks/taps go through only to comets, not behind panels */
-      pointer-events: auto;
-    }
-    #stars-container{ position:absolute; inset:0; z-index: 0; pointer-events:none; overflow:hidden; }
-
-    .comet{
-      position:absolute; width:60px; height:60px; z-index: 5;
-      display:flex; align-items:center; justify-content:center; border-radius:50%;
-      cursor:pointer; outline:none; transition: transform .1s ease;
-    }
-    .comet:focus{ box-shadow: 0 0 0 3px rgba(111,211,245,.8), 0 0 20px rgba(111,211,245,.6); transform: scale(1.1); }
-    .comet:hover{ transform: scale(1.05); }
-
-    .comet-core{
-      position:relative; width:100%; height:100%; border-radius:50%;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,1) 0%, rgba(150,220,255,.9) 15%, rgba(100,180,255,.8) 30%, rgba(50,120,200,.7) 50%, rgba(20,60,150,.5) 70%, transparent 100%),
-        radial-gradient(circle at 70% 70%, rgba(255,200,150,.4) 0%, transparent 50%);
-      box-shadow:
-        0 0 30px rgba(150,220,255,1),
-        0 0 60px rgba(100,180,255,.8),
-        0 0 90px rgba(50,120,200,.6),
-        inset 0 0 20px rgba(255,255,255,.8),
-        inset -5px -5px 15px rgba(100,180,255,.5),
-        0 2px 8px rgba(0,0,0,.3);
-      animation: cometPulse 2s ease-in-out infinite, cometRotate 4s linear infinite;
-    }
-    @keyframes cometRotate{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
-    @keyframes cometPulse{ 0%,100%{ transform: scale(1); filter: brightness(1);} 50%{ transform: scale(1.15); filter: brightness(1.3);} }
-
-    .comet-tail{ position:absolute; pointer-events:none; width:200px; height:40px; top:50%; right:100%; transform: translateY(-50%); z-index:4; }
-    .comet-tail-stream{
-      position:absolute; width:100%; height:8px; top:50%; transform: translateY(-50%);
-      background: linear-gradient(to right, transparent 0%, rgba(111,211,245,.1) 20%, rgba(150,180,255,.3) 40%, rgba(180,150,255,.5) 60%, rgba(200,120,255,.7) 80%, rgba(220,100,255,.9) 100%);
-      filter: blur(2px); border-radius:4px;
-    }
-    .comet-tail-stream:nth-child(2){ top:45%; opacity:.7; filter: blur(4px); height:12px; }
-    .comet-tail-stream:nth-child(3){ top:55%; opacity:.5; filter: blur(6px); height:16px; }
-
-    .star{ position:absolute; background:#fff; border-radius:50%; animation: starTwinkle 3s ease-in-out infinite; }
-    @keyframes starTwinkle{ 0%,100%{ opacity:var(--opacity); transform: scale(1);} 50%{ opacity: calc(var(--opacity)*1.5); transform: scale(1.2);} }
-
-    .impact-ring{
-      position:absolute; border:2px solid rgba(150,220,255,.8); border-radius:50%; width:20px; height:20px;
-      transform: translate(-50%,-50%); animation: ringExpand .8s ease-out forwards; pointer-events:none; z-index:8;
-    }
-    @keyframes ringExpand{ 0%{ width:20px; height:20px; opacity:1; border-width:3px;} 100%{ width:150px; height:150px; opacity:0; border-width:1px;} }
-
-    .score-popup{
-      position:absolute; font-size:24px; font-weight:800; color:#6cffbd;
-      text-shadow: 0 0 10px rgba(108,255,189,.8), 0 2px 4px rgba(0,0,0,.8);
-      transform: translate(-50%,-50%); animation: scoreFloat 1s ease-out forwards; pointer-events:none; z-index:9;
-    }
-    @keyframes scoreFloat{ 0%{ transform: translate(-50%,-50%) scale(.5); opacity:0;} 50%{ transform: translate(-50%,-80%) scale(1.2); opacity:1;} 100%{ transform: translate(-50%,-120%) scale(1); opacity:0;} }
-
-    /* Completion modal */
-    #completion-message{ position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; background: rgba(0,0,0,.7); backdrop-filter: blur(4px); z-index: 10; }
-    #completion-card{ pointer-events:auto; max-width:min(520px, 90vw); max-height:min(85vh, 720px); overflow:auto; padding:24px; }
-    #completion-card h2{ margin-top:0; color:var(--accent); }
-    .score-highlight{ color: rgba(111,211,245,1); font-weight:800; }
-    .hidden{ display:none !important; }
-
-    :focus-visible{ outline: 3px solid rgba(111,211,245,.85); outline-offset:2px; }
-
-    /* Mobile */
-    @media (max-width:900px){
-      .hud{ grid-template-columns: 1fr 1fr; grid-auto-rows:auto; gap:8px; padding:8px 10px; }
-      .hud .hud-item{ text-align:left; min-width:auto; }
-      .stat-value{ font-size:16px; } #score{ font-size:18px; }
-      .btn{ min-height:44px; font-size:16px; }
-      header h1{ font-size: clamp(16px, 4vw, 20px); }
-      /* ensure layout content can scroll under header on short viewports */
-      .layout{ padding-bottom: 16px; }
-    }
-  </style>
+  :focus-visible{ outline: 3px solid rgba(111,211,245,.85); outline-offset:2px; }
+</style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="app-header" role="banner" aria-label="Exercise header">
-    <a class="home-link" href="/" aria-label="Go to Home"><span aria-hidden="true">←</span> Home</a>
+  <header class="app">
+    <a class="home" href="/" aria-label="Back to Home">← Home</a>
     <h1>Comet Tap</h1>
   </header>
 
-  <main class="layout" role="main">
-    <!-- Settings (left) -->
-    <aside id="settings-panel" class="panel" aria-label="Settings panel">
+  <main class="layout">
+    <!-- SETTINGS -->
+    <aside id="settings" class="panel" aria-label="Settings">
       <h2>Settings</h2>
-
-      <div class="game-description">
-        <h3>How to Play</h3>
-        <p>Glowing comets streak across the screen. Tap or click a comet before it leaves to score points. Smaller &amp; faster = harder (and more points).</p>
-        <p><strong>Tip:</strong> Aim for quick taps to boost your score multiplier.</p>
+      <div class="desc">
+        <strong>How to play:</strong> tap a glowing comet before it escapes. Smaller &amp; faster = harder (more points).
       </div>
 
-      <div class="settings-group">
-        <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
-        <input type="number" id="session-duration" min="0.5" max="10" value="2" step="0.5" inputmode="decimal" aria-describedby="session-duration-help" />
-        <div id="session-duration-help" class="setting-description">Start with 0.5–2 minutes and increase as you improve.</div>
+      <div class="group">
+        <label class="label" for="dur">Session Duration (minutes)</label>
+        <input id="dur" type="number" min="0.5" step="0.5" max="10" value="2" inputmode="decimal" />
       </div>
-
-      <div class="settings-group">
-        <label class="settings-label" for="comet-size">Comet Size</label>
-        <select id="comet-size">
+      <div class="group">
+        <label class="label" for="size">Comet Size</label>
+        <select id="size">
           <option value="large">Large (Easier)</option>
           <option value="medium" selected>Medium (Balanced)</option>
           <option value="small">Small (Challenging)</option>
         </select>
       </div>
-
-      <div class="settings-group">
-        <label class="settings-label" for="comet-speed">Comet Speed</label>
-        <select id="comet-speed">
+      <div class="group">
+        <label class="label" for="spd">Comet Speed</label>
+        <select id="spd">
           <option value="slow">Slow (Beginner)</option>
           <option value="medium" selected>Medium (Intermediate)</option>
           <option value="fast">Fast (Advanced)</option>
         </select>
       </div>
-
-      <div class="settings-group">
-        <label class="settings-label" for="spawn-rate">Spawn Rate</label>
-        <select id="spawn-rate">
-          <option value="slow">Slow (2s apart)</option>
-          <option value="medium">Medium (1.5s apart)</option>
-          <option value="fast" selected>Fast (1s apart)</option>
-          <option value="very-fast">Very Fast (0.5s apart)</option>
+      <div class="group">
+        <label class="label" for="spawn">Spawn Rate</label>
+        <select id="spawn">
+          <option value="slow">Slow (2s)</option>
+          <option value="medium">Medium (1.5s)</option>
+          <option value="fast" selected>Fast (1s)</option>
+          <option value="vfast">Very Fast (0.5s)</option>
         </select>
       </div>
 
       <div class="btn-row">
-        <button id="start-session" class="btn btn-primary" type="button" aria-label="Start session">Start</button>
-        <button id="pause-session" class="btn" type="button" aria-label="Pause session" disabled>Pause</button>
+        <button id="start" class="btn btn-primary" type="button">Start</button>
+        <button id="pause" class="btn" type="button" disabled>Pause</button>
       </div>
-      <button id="restart-button" class="btn" type="button" aria-label="Restart session" disabled>Restart</button>
+      <button id="restart" class="btn" type="button" disabled>Restart</button>
     </aside>
 
-    <!-- Game (right) -->
-    <section class="game-column" aria-label="Game column">
-      <div class="game-container">
-        <!-- HUD -->
-        <div class="hud" role="region" aria-label="Session HUD">
-          <div class="timer-wrap" aria-hidden="true"><div id="timer-bar"></div></div>
-          <div class="hud-item" aria-live="polite"><div class="stat-value" id="score">0</div><div class="stat-label">Score</div></div>
-          <div class="hud-item" aria-live="polite"><div class="stat-value" id="personal-best">0</div><div class="stat-label">Personal Best</div></div>
-          <div class="hud-item" aria-live="polite"><div class="stat-value" id="difficulty-display">Medium</div><div class="stat-label">Difficulty</div></div>
-        </div>
+    <!-- GAME -->
+    <section class="right" aria-label="Game area">
+      <div class="hud">
+        <div class="timer" aria-hidden="true"><div id="timerBar"></div></div>
+        <div class="hudItem" aria-live="polite"><div id="score" class="v">0</div><div class="t">Score</div></div>
+        <div class="hudItem" aria-live="polite"><div id="pb" class="v">0</div><div class="t">Personal Best</div></div>
+        <div class="hudItem" aria-live="polite"><div id="diff" class="v">Medium</div><div class="t">Difficulty</div></div>
+      </div>
 
-        <!-- Game area + stars -->
-        <div id="game-area" tabindex="0" role="application" aria-label="Comet game area">
-          <div id="stars-container" aria-hidden="true"></div>
-        </div>
+      <div class="frame panel">
+        <canvas id="stage" width="1280" height="720" aria-label="Game stage"></canvas>
+      </div>
 
-        <!-- Completion -->
-        <div id="completion-message" class="hidden" role="dialog" aria-labelledby="cm-title" aria-modal="true">
-          <div id="completion-card" class="panel">
-            <h2 id="cm-title">Session Complete!</h2>
-            <div id="completion-scores">
-              <p>Final Score: <span id="final-score" class="score-highlight">0</span></p>
-              <p>Comets Tapped: <span id="final-taps" class="score-highlight">0</span></p>
-              <p>Accuracy: <span id="final-accuracy" class="score-highlight">0%</span></p>
-              <p>Average Response Time: <span id="final-avg-time" class="score-highlight">0.00s</span></p>
-              <p>XP Earned: <span id="final-xp" class="score-highlight">0</span></p>
-              <p id="achievement-line" class="hidden">Achievements unlocked! 🎉</p>
-            </div>
-            <div class="btn-row" style="grid-template-columns:1fr;">
-              <button id="close-completion" class="btn btn-primary" type="button" aria-label="Start new session immediately">Start New Session</button>
-            </div>
+      <!-- Completion -->
+      <div id="done" class="hidden" role="dialog" aria-modal="true" aria-labelledby="doneT">
+        <div id="doneCard" class="panel">
+          <h2 id="doneT">Session Complete!</h2>
+          <p>Final Score: <span id="fScore" class="hi">0</span></p>
+          <p>Comets Tapped: <span id="fTaps" class="hi">0</span></p>
+          <p>Accuracy: <span id="fAcc" class="hi">0%</span></p>
+          <p>Average Response Time: <span id="fAvg" class="hi">0.00s</span></p>
+          <div class="btn-row" style="grid-template-columns:1fr;">
+            <button id="doneBtn" class="btn btn-primary" type="button">Start New Session</button>
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Main module (with graceful fallbacks; no broken clicks; solid lifecycle) -->
-  <script type="module">
-    /* Root-relative imports with fallbacks */
-    let storage, starfield, theme, viewport, audio, initUtils, toast;
-    let sessionEnhancement, checkAndUnlockAchievements, markExerciseTried, recordSession;
+<script>
+(function(){
+  // ===== Helpers & DOM =====
+  const $ = (s, r=document)=>r.querySelector(s);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+  const rnd = (a,b)=>Math.random()*(b-a)+a;
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const now = ()=>performance.now();
 
-    // utils
-    try {
-      const utils = await import('/js/utils.js');
-      ({ storage, starfield, theme, viewport, audio, initUtils, toast } = utils);
-      initUtils?.();
-    } catch {
-      toast = { show: (m)=>console.log('[toast]', m) };
-      audio = { play: ()=>{}, create: ()=>{} };
+  const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn');
+  [startBtn, pauseBtn, restartBtn, doneBtn].forEach(b=>b.setAttribute('type','button'));
+  const durIn = $('#dur'), sizeSel = $('#size'), spdSel = $('#spd'), spawnSel = $('#spawn');
+  const scoreEl = $('#score'), pbEl = $('#pb'), diffEl = $('#diff'), timerBar = $('#timerBar');
+  const doneModal = $('#done'), fScore = $('#fScore'), fTaps = $('#fTaps'), fAcc = $('#fAcc'), fAvg = $('#fAvg');
+  const settings = $('#settings');
+  const canvas = $('#stage'); const ctx = canvas.getContext('2d');
+
+  // keep controls on top & interactive
+  settings.style.pointerEvents = 'auto';
+
+  // ===== HiDPI Canvas =====
+  let DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+  function fit(){
+    const r = canvas.getBoundingClientRect();
+    const w = Math.max(640, Math.floor(r.width * DPR));
+    const h = Math.max(360, Math.floor(r.height * DPR));
+    canvas.width = w; canvas.height = h;
+    ctx.setTransform(DPR,0,0,DPR,0,0); // draw in CSS px
+  }
+  fit();
+  window.addEventListener('resize', fit, {passive:true});
+
+  // ===== Starfield (parallax) =====
+  const layers = [
+    { count: 80, speed: .02, stars: [], alpha:.45 },
+    { count: 50, speed: .06, stars: [], alpha:.75 },
+    { count: 25, speed: .12, stars: [], alpha:1.0 }
+  ];
+  function initStars(){
+    layers.forEach((L,i)=>{
+      L.stars = Array.from({length:L.count}, () => ({
+        x: Math.random()*canvas.width/DPR,
+        y: Math.random()*canvas.height/DPR,
+        r: Math.random()*(i+1)*.8 + .5,
+        tw: Math.random()*2*Math.PI
+      }));
+    });
+  }
+  initStars();
+
+  function drawStars(dt){
+    layers.forEach(L=>{
+      ctx.save();
+      ctx.globalAlpha = L.alpha;
+      L.stars.forEach(s=>{
+        s.x -= L.speed * dt * 0.06;
+        if (s.x < -4) s.x = canvas.width/DPR + 4, s.y = Math.random()*canvas.height/DPR;
+        s.tw += dt*0.002;
+        const o = 0.6 + Math.sin(s.tw)*0.4;
+        ctx.fillStyle = `rgba(255,255,255,${o})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+      });
+      ctx.restore();
+    });
+  }
+
+  // ===== Game State =====
+  const sizeMap = { small: 10, medium: 16, large: 22 };         // comet head radius (CSS px)
+  const speedMap = { slow: 140, medium: 220, fast: 320 };        // px/s baseline
+  const spawnMap = { slow: 2000, medium: 1500, fast: 1000, vfast: 500 };
+
+  let running=false, paused=false;
+  let durationMs=120000, timeLeft=0, lastTick=0, lastSpawn=0;
+  let score=0, taps=0, misses=0, totalRT=0;
+  let comets=[], particles=[], popups=[];
+  let shakeT=0, hueBase=rnd(160,220);
+
+  const PB_KEY='comet:best';
+  const getPB=()=>parseInt(localStorage.getItem(PB_KEY)||'0',10);
+  const setPB=(v)=>localStorage.setItem(PB_KEY,String(v));
+  pbEl.textContent = getPB();
+
+  // Difficulty label
+  function updateDiff(){
+    const s=sizeSel.value, v=spdSel.value, sp=spawnSel.value;
+    let lvl = 0;
+    if (s==='small') lvl+=2; else if (s==='medium') lvl+=1;
+    if (v==='fast') lvl+=2; else if (v==='medium') lvl+=1;
+    if (sp==='vfast') lvl+=2; else if (sp==='fast') lvl+=1;
+    diffEl.textContent = lvl>=5 ? 'Hard' : (lvl>=3 ? 'Medium' : 'Easy');
+  }
+  sizeSel.addEventListener('change', updateDiff);
+  spdSel.addEventListener('change', updateDiff);
+  spawnSel.addEventListener('change', updateDiff);
+  updateDiff();
+
+  // ===== Comet Model =====
+  function spawnComet(){
+    const r = sizeMap[sizeSel.value];
+    const spd = speedMap[spdSel.value]*(.85 + Math.random()*.4);
+    const edge = Math.floor(Math.random()*4);
+    const pad = r + 8;
+    let x,y,vx,vy;
+
+    if (edge===0){ x = rnd(pad, canvas.width/DPR-pad); y = -pad; vx=rnd(-1,1); vy=1; }
+    else if (edge===1){ x = canvas.width/DPR+pad; y = rnd(pad, canvas.height/DPR-pad); vx=-1; vy=rnd(-1,1); }
+    else if (edge===2){ x = rnd(pad, canvas.width/DPR-pad); y = canvas.height/DPR+pad; vx=rnd(-1,1); vy=-1; }
+    else { x = -pad; y = rnd(pad, canvas.height/DPR-pad); vx=1; vy=rnd(-1,1); }
+
+    const len = Math.hypot(vx,vy)||1; vx/=len; vy/=len;
+    const hue = (hueBase + Math.random()*60) % 360;
+
+    comets.push({ x, y, vx, vy, r, spd, hue, born: now(), trail: [] });
+  }
+
+  function updateComets(dt){
+    const W=canvas.width/DPR, H=canvas.height/DPR;
+    comets.forEach(c=>{
+      const px = dt/1000;
+      c.x += c.vx*c.spd*px;
+      c.y += c.vy*c.spd*px;
+      // trail
+      c.trail.push({ x:c.x - c.vx*6, y:c.y - c.vy*6, life: 1, hue:c.hue });
+      if (c.trail.length>24) c.trail.shift();
+      c.trail.forEach(t=>t.life -= 0.035*px*60);
+    });
+    // cull offscreen
+    const before = comets.length;
+    comets = comets.filter(c => c.x>-60 && c.x<W+60 && c.y>-60 && c.y<H+60);
+    misses += Math.max(0, before - comets.length);
+  }
+
+  // ===== Particles & Popups =====
+  function burst(x,y,hue){
+    for (let i=0;i<24;i++){
+      particles.push({
+        x, y,
+        vx: rnd(-2.4,2.4), vy: rnd(-2.4,2.4),
+        life: 1,
+        r: rnd(1,2.6),
+        hue: hue + rnd(-10,10)
+      });
+    }
+    popups.push({ x, y, life:1, text:'+!' });
+    shakeT = 120;
+  }
+  function updateParticles(dt){
+    const px = dt/1000;
+    particles.forEach(p=>{
+      p.x += p.vx*60*px; p.y += p.vy*60*px;
+      p.vy += 0.2; // gravity
+      p.life -= 1.6*px;
+    });
+    particles = particles.filter(p=>p.life>0);
+    popups.forEach(s=>{
+      s.y -= 24*px; s.life -= 1*px;
+    });
+    popups = popups.filter(s=>s.life>0);
+  }
+
+  // ===== Rendering =====
+  function clearBG(){
+    // very subtle vignette; real background is body gradient
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0,0,canvas.width/DPR,canvas.height/DPR);
+    ctx.restore();
+  }
+
+  function drawComet(c){
+    // tail (multi-layer, additive)
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    c.trail.forEach((t,i)=>{
+      const alpha = clamp(t.life,0,1) * (i/24);
+      const grad = ctx.createLinearGradient(c.x, c.y, t.x, t.y);
+      grad.addColorStop(0, `hsla(${c.hue},95%,65%,${alpha*0.85})`);
+      grad.addColorStop(1, `hsla(${c.hue+40},95%,55%,0)`);
+      ctx.strokeStyle = grad; ctx.lineWidth = Math.max(1, c.r*0.9*(i/24));
+      ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(t.x, t.y); ctx.stroke();
+    });
+
+    // glow
+    const g1 = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r*2.2);
+    g1.addColorStop(0, `hsla(${c.hue},95%,80%,.85)`);
+    g1.addColorStop(1, `hsla(${c.hue},95%,50%,0)`);
+    ctx.fillStyle = g1; ctx.beginPath(); ctx.arc(c.x, c.y, c.r*2.2, 0, Math.PI*2); ctx.fill();
+
+    // core
+    const g2 = ctx.createRadialGradient(c.x- c.r*0.4, c.y- c.r*0.4, 0, c.x, c.y, c.r);
+    g2.addColorStop(0, '#fff');
+    g2.addColorStop(0.35, `hsla(${c.hue},95%,75%,1)`);
+    g2.addColorStop(0.9, `hsla(${c.hue},95%,45%,.85)`);
+    g2.addColorStop(1, 'rgba(0,0,0,.0)');
+    ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawParticles(){
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    particles.forEach(p=>{
+      ctx.fillStyle = `hsla(${p.hue},95%,70%,${p.life})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
+
+    // popups
+    popups.forEach(s=>{
+      ctx.save();
+      ctx.globalAlpha = s.life;
+      ctx.font = '900 22px system-ui, Segoe UI, Roboto';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowBlur = 16; ctx.shadowColor = 'rgba(160,255,200,.85)';
+      ctx.fillStyle = '#a8ffd5';
+      ctx.fillText(s.text, s.x, s.y);
+      ctx.restore();
+    });
+  }
+
+  // ===== Input =====
+  function getPos(e){
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches?e.touches[0].clientX:e.clientX) - rect.left;
+    const y = (e.touches?e.touches[0].clientY:e.clientY) - rect.top;
+    return { x, y };
+  }
+  function onTap(e){
+    if (!running || paused) return;
+    const {x,y} = getPos(e);
+    let hit=-1;
+    for (let i=0;i<comets.length;i++){
+      const c = comets[i];
+      if (Math.hypot(c.x-x, c.y-y) <= c.r*1.15){ hit=i; break; }
+    }
+    if (hit>-1){
+      e.preventDefault();
+      const c = comets.splice(hit,1)[0];
+      taps++;
+      const rt = now() - c.born; totalRT += rt;
+      const sizeB = sizeSel.value==='small'?1.6 : sizeSel.value==='medium'?1.2 : 1.0;
+      const speedB = spdSel.value==='fast'?1.6 : spdSel.value==='medium'?1.2 : 1.0;
+      const pts = Math.floor(10 * sizeB * speedB * clamp(3000/rt, 0.8, 6));
+      score += pts; scoreEl.textContent = String(score);
+      popups.push({ x:c.x, y:c.y, life:1, text: '+'+pts });
+      burst(c.x,c.y,c.hue);
+    }
+  }
+  canvas.addEventListener('click', onTap);
+  canvas.addEventListener('touchstart', onTap, {passive:false});
+
+  // ===== Session lifecycle =====
+  function setTimerBar(){
+    const p = durationMs ? Math.max(0, timeLeft/durationMs) : 0;
+    timerBar.style.width = (p*100)+'%';
+  }
+  function startSession(){
+    durationMs = parseFloat(durIn.value||'2')*60*1000;
+    timeLeft = durationMs; setTimerBar();
+    running=true; paused=false; score=0; taps=0; misses=0; totalRT=0;
+    scoreEl.textContent='0'; lastTick = now(); lastSpawn = 0; hueBase = rnd(160,220);
+    comets.length = 0; particles.length=0; popups.length=0;
+    pauseBtn.disabled=false; restartBtn.disabled=false; pauseBtn.textContent='Pause';
+    // lock settings while running
+    if ('inert' in HTMLElement.prototype) settings.setAttribute('inert','');
+    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.dataset.wasDisabled=i.disabled; i.disabled=true; });
+    loopId = requestAnimationFrame(loop);
+  }
+  function pauseSession(){
+    if (!running||paused) return;
+    paused=true; pauseBtn.textContent='Resume';
+  }
+  function resumeSession(){
+    if (!running||!paused) return;
+    paused=false; pauseBtn.textContent='Pause'; lastTick = now(); loopId = requestAnimationFrame(loop);
+  }
+  function restartSession(){
+    running=false; paused=false;
+    pauseBtn.textContent='Pause'; pauseBtn.disabled=true; restartBtn.disabled=true;
+    doneModal.classList.add('hidden');
+    // unlock settings
+    if ('inert' in HTMLElement.prototype) settings.removeAttribute('inert');
+    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.disabled = i.dataset.wasDisabled==='true'; });
+    comets.length=0; particles.length=0; popups.length=0; timeLeft=0; setTimerBar(); scoreEl.textContent='0';
+  }
+  function endSession(){
+    running=false; paused=false;
+    const acc = taps+misses>0 ? Math.round((taps/(taps+misses))*100) : 0;
+    const avg = taps>0 ? (totalRT/taps/1000).toFixed(2) : '0.00';
+    if (score>getPB()){ setPB(score); pbEl.textContent=score; }
+    fScore.textContent=score; fTaps.textContent=taps; fAcc.textContent=acc+'%'; fAvg.textContent=avg;
+    doneModal.classList.remove('hidden');
+    pauseBtn.disabled=true;
+    if ('inert' in HTMLElement.prototype) settings.removeAttribute('inert');
+    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.disabled = i.dataset.wasDisabled==='true'; });
+  }
+
+  // ===== Main Loop =====
+  let loopId = 0;
+  function loop(ts){
+    if (!running) return;
+    loopId = requestAnimationFrame(loop);
+    const dt = ts - lastTick; lastTick = ts;
+    if (paused) return;
+
+    timeLeft -= dt; if (timeLeft<=0){ setTimerBar(); endSession(); return; }
+    setTimerBar();
+
+    // spawn
+    const sInt = spawnMap[spawnSel.value];
+    if (ts - lastSpawn >= sInt){ spawnComet(); lastSpawn = ts; }
+
+    // update
+    updateComets(dt);
+    updateParticles(dt);
+
+    // render
+    clearBG();
+
+    // camera shake
+    let ox=0, oy=0;
+    if (shakeT>0){
+      shakeT -= dt;
+      const p = clamp(shakeT/120, 0, 1);
+      ox = Math.sin(ts*0.9)*2*p; oy = Math.cos(ts*1.1)*2*p;
+      ctx.save(); ctx.translate(ox, oy);
     }
 
-    // audio.create polyfill
-    if (!audio || typeof audio.create !== 'function'){
-      audio = audio || {};
-      audio.create = (id, pathNoExt) => {
-        let el = document.getElementById(id);
-        if (!el){
-          el = document.createElement('audio'); el.id = id; el.preload = 'auto';
-          const src = document.createElement('source'); src.src = `${pathNoExt}.mp3`; src.type='audio/mpeg';
-          el.appendChild(src); document.body.appendChild(el);
-        }
-      };
-    }
+    drawStars(dt);
 
-    // enhancements
-    try { sessionEnhancement = (await import('/js/session-enhancement.js')).sessionEnhancement; }
-    catch { sessionEnhancement = { initializeExercise: ()=>{}, handleSessionComplete: ()=>{} }; }
+    // Add subtle additive bloom layer behind everything
+    ctx.save();
+    comets.forEach(drawComet);
+    ctx.restore();
 
-    // achievements
-    try { ({ checkAndUnlockAchievements, markExerciseTried } = await import('/js/achievements.js')); }
-    catch { checkAndUnlockAchievements = ()=>[]; markExerciseTried = ()=>{}; }
+    drawParticles();
 
-    // progress
-    try { recordSession = (await import('/js/progress.js')).recordSession; }
-    catch { recordSession = ()=>{}; }
+    if (shakeT>0){ ctx.restore(); }
+  }
 
-    /* Viewport units */
-    function setVH(){ const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', `${vh}px`); }
-    window.addEventListener('load', setVH); window.addEventListener('resize', setVH); window.addEventListener('orientationchange', ()=>setTimeout(setVH,100));
+  // ===== Wire controls =====
+  startBtn.addEventListener('click', ()=>{ if (!running) startSession(); });
+  pauseBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
+  restartBtn.addEventListener('click', restartSession);
+  doneBtn.addEventListener('click', ()=>{ doneModal.classList.add('hidden'); restartSession(); setTimeout(startSession, 120); });
 
-    /* Exercise ID */
-    const EXERCISE_ID = 'comet';
-
-    /* DOM refs */
-    const gameArea = document.getElementById('game-area');
-    const starsContainer = document.getElementById('stars-container');
-    const settingsPanel = document.getElementById('settings-panel');
-
-    const startBtn = document.getElementById('start-session');
-    const pauseBtn = document.getElementById('pause-session');
-    const restartBtn = document.getElementById('restart-button');
-    const closeCompletionBtn = document.getElementById('close-completion');
-
-    const scoreEl = document.getElementById('score');
-    const pbEl = document.getElementById('personal-best');
-    const diffEl = document.getElementById('difficulty-display');
-    const timerBar = document.getElementById('timer-bar');
-
-    const sessionDurationInput = document.getElementById('session-duration');
-    const cometSizeSelect      = document.getElementById('comet-size');
-    const cometSpeedSelect     = document.getElementById('comet-speed');
-    const spawnRateSelect      = document.getElementById('spawn-rate');
-
-    const completionMessage = document.getElementById('completion-message');
-    const finalScoreEl = document.getElementById('final-score');
-    const finalTapsEl = document.getElementById('final-taps');
-    const finalAccEl = document.getElementById('final-accuracy');
-    const finalAvgEl = document.getElementById('final-avg-time');
-    const finalXpEl  = document.getElementById('final-xp');
-    const achievementLine = document.getElementById('achievement-line');
-
-    // Always force buttons to be buttons (prevents accidental submits)
-    [startBtn, pauseBtn, restartBtn, closeCompletionBtn].forEach(b => b?.setAttribute('type','button'));
-
-    /* Difficulty label */
-    function currentDifficulty(){
-      const size = cometSizeSelect.value, speed = cometSpeedSelect.value;
-      if (size==='small' || speed==='fast') return 'small';
-      if (size==='large' || speed==='slow') return 'large';
-      return 'medium';
-    }
-    function updateDifficultyDisplay(){
-      const d = currentDifficulty(); diffEl.textContent = d[0].toUpperCase() + d.slice(1); return d;
-    }
-    cometSizeSelect.addEventListener('change', updateDifficultyDisplay);
-    cometSpeedSelect.addEventListener('change', updateDifficultyDisplay);
-    updateDifficultyDisplay();
-
-    /* Session enhancement hook (safe) */
-    try { sessionEnhancement.initializeExercise(EXERCISE_ID, currentDifficulty()); } catch {}
-
-    /* Starfield (fallback) */
+  // ===== Persistence for user convenience =====
+  (function loadSave(){
     try{
-      if (starfield?.attach) starfield.attach(starsContainer, { density: .6 });
-      else {
-        for (let i=0;i<80;i++){
-          const s=document.createElement('div'); s.className='star';
-          const size = Math.random()*3 + .5;
-          s.style.width = size+'px'; s.style.height=size+'px';
-          s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
-          s.style.setProperty('--opacity', Math.random()*.6 + .2);
-          s.style.animationDelay = Math.random()*3+'s';
-          starsContainer.appendChild(s);
-        }
-      }
+      const ld = localStorage.getItem('comet:dur'); if (ld) durIn.value = ld;
+      const ls = localStorage.getItem('comet:size'); if (ls) sizeSel.value = ls;
+      const lv = localStorage.getItem('comet:spd'); if (lv) spdSel.value = lv;
+      const lsp= localStorage.getItem('comet:spawn'); if (lsp) spawnSel.value = lsp;
+      updateDiff();
+      [durIn,sizeSel,spdSel,spawnSel].forEach(el=>el.addEventListener('change', ()=>{
+        localStorage.setItem('comet:dur', durIn.value);
+        localStorage.setItem('comet:size', sizeSel.value);
+        localStorage.setItem('comet:spd', spdSel.value);
+        localStorage.setItem('comet:spawn', spawnSel.value);
+      }));
     }catch{}
+  })();
 
-    /* State */
-    let isActive=false, isPaused=false;
-    let durationMs=2*60*1000, timeRemaining=0;
-    let timerInterval=null, spawnInterval=null;
-    let score=0, taps=0, misses=0, totalResponseTime=0;
-    let comets=[]; let gameRect=null; let focusedIndex=-1;
-    let isTabVisible=true; document.addEventListener('visibilitychange', ()=>{ isTabVisible=!document.hidden; });
-    const cometSizes = { small:40, medium:60, large:80 };
-    const cometSpeeds = { slow:{min:.5,max:1.5}, medium:{min:1.0,max:2.5}, fast:{min:2.0,max:3.5} };
-    const spawnRates = { 'very-fast':500, fast:1000, medium:1500, slow:2000 };
+  // ===== Viewport unit fix for mobile =====
+  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+  window.addEventListener('load', setVH); window.addEventListener('resize', setVH);
 
-    /* PB */
-    const PB_KEY='pb_comet';
-    const getPB=()=>{ try{ return parseInt(localStorage.getItem(PB_KEY)||'0',10);}catch{return 0;} };
-    const setPB=(v)=>{ try{ localStorage.setItem(PB_KEY,String(v)); }catch{} };
-    pbEl.textContent = getPB();
-
-    /* Keyboard a11y */
-    document.addEventListener('keydown', (e)=>{
-      if (!isActive || comets.length===0) return;
-      if (e.key==='Tab'){ e.preventDefault(); focusedIndex=(focusedIndex+1)%comets.length; comets[focusedIndex].focus(); }
-      else if (e.key===' ' || e.key==='Enter'){ e.preventDefault(); if (focusedIndex>=0) hitComet(comets[focusedIndex]); }
-      else if (e.key==='Escape'){ e.preventDefault(); isPaused ? resumeSession() : pauseSession(); }
-    });
-
-    /* Controls */
-    startBtn.addEventListener('click', ()=>{ if (!isActive) startSession(); });
-    pauseBtn.addEventListener('click', ()=>{ if (isActive && !isPaused) pauseSession(); else if (isActive && isPaused) resumeSession(); });
-    restartBtn.addEventListener('click', restartSession);
-    closeCompletionBtn.addEventListener('click', ()=>{
-      completionMessage.classList.add('hidden');
-      restartSession(); setTimeout(startSession, 120);
-    });
-
-    // prevent accidental zoom double-tap
-    document.addEventListener('touchstart', (e)=>{ if (e.touches.length>1) e.preventDefault(); }, {passive:false});
-
-    /* Persist settings */
-    function saveSettings(){
-      try{
-        localStorage.setItem('cometSessionDuration', sessionDurationInput.value);
-        localStorage.setItem('cometSize', cometSizeSelect.value);
-        localStorage.setItem('cometSpeed', cometSpeedSelect.value);
-        localStorage.setItem('cometSpawnRate', spawnRateSelect.value);
-      }catch{}
-    }
-    function loadSettings(){
-      try{
-        sessionDurationInput.value = localStorage.getItem('cometSessionDuration') || 2;
-        cometSizeSelect.value      = localStorage.getItem('cometSize')  || 'medium';
-        cometSpeedSelect.value     = localStorage.getItem('cometSpeed') || 'medium';
-        spawnRateSelect.value      = localStorage.getItem('cometSpawnRate') || 'fast';
-        updateDifficultyDisplay();
-      }catch{}
-    }
-    loadSettings();
-
-    /* Session lifecycle */
-    function startSession(){
-      durationMs = parseFloat(sessionDurationInput.value) * 60 * 1000;
-      timeRemaining = durationMs; saveSettings();
-
-      isActive=true; isPaused=false;
-      pauseBtn.disabled=false; restartBtn.disabled=false; pauseBtn.textContent='Pause';
-
-      // prefer inert; fallback to disable inputs
-      if ('inert' in HTMLElement.prototype) settingsPanel.setAttribute('inert','');
-      else settingsPanel.querySelectorAll('input,select,button').forEach(i=>{ i.dataset.wasDisabled=i.disabled; i.disabled=true; });
-
-      score=0; taps=0; misses=0; totalResponseTime=0; focusedIndex=-1;
-      scoreEl.textContent='0'; gameRect = gameArea.getBoundingClientRect();
-
-      updateTimerDisplay();
-      timerInterval = setInterval(onTick, 1000);
-      spawnInterval = setInterval(spawnComet, spawnRates[spawnRateSelect.value]);
-
-      requestAnimationFrame(updateComets);
-      gameArea.focus();
-      toast?.show?.('Session started! Tap the comets!', {duration:2000});
-    }
-    function pauseSession(){
-      if (!isActive || isPaused) return;
-      isPaused=true; clearInterval(timerInterval); clearInterval(spawnInterval);
-      pauseBtn.textContent='Resume'; toast?.show?.('Paused',{duration:1200});
-    }
-    function resumeSession(){
-      if (!isActive || !isPaused) return;
-      isPaused=false; timerInterval=setInterval(onTick,1000);
-      spawnInterval=setInterval(spawnComet, spawnRates[spawnRateSelect.value]);
-      pauseBtn.textContent='Pause'; toast?.show?.('Resumed',{duration:1200});
-    }
-    function restartSession(){
-      comets.forEach(c=>{ if (c._particleInterval) clearInterval(c._particleInterval); c.remove(); });
-      comets=[]; focusedIndex=-1; isActive=false; isPaused=false;
-      pauseBtn.textContent='Pause'; pauseBtn.disabled=true; restartBtn.disabled=true;
-      if ('inert' in HTMLElement.prototype) settingsPanel.removeAttribute('inert');
-      else settingsPanel.querySelectorAll('input,select,button').forEach(i=>{ i.disabled = i.dataset.wasDisabled==='true'; });
-      clearInterval(timerInterval); clearInterval(spawnInterval);
-      timeRemaining=0; updateTimerDisplay();
-    }
-    function onTick(){
-      if (!isActive || isPaused) return;
-      timeRemaining -= 1000; if (timeRemaining<=0){ endSession(); return; }
-      updateTimerDisplay();
-    }
-    function updateTimerDisplay(){
-      const p = durationMs ? Math.max(0, timeRemaining/durationMs) : 0;
-      timerBar.style.width = (p*100)+'%';
-    }
-
-    /* Game */
-    function spawnComet(){
-      if (!isActive || isPaused || !gameRect) return;
-
-      const comet=document.createElement('div'); comet.className='comet'; comet.tabIndex=0;
-      const core=document.createElement('div'); core.className='comet-core';
-      const tail=document.createElement('div'); tail.className='comet-tail';
-      for (let i=0;i<3;i++){ const s=document.createElement('div'); s.className='comet-tail-stream'; tail.appendChild(s); }
-
-      const size = cometSizes[cometSizeSelect.value];
-      comet.style.width = size+'px'; comet.style.height = size+'px';
-      core.style.width = comet.style.width; core.style.height = comet.style.height;
-
-      // spawn from edges
-      const edge = Math.floor(Math.random()*4);
-      let x,y,targetX,targetY; const margin=size+20; const W=gameArea.clientWidth, H=gameArea.clientHeight;
-      switch(edge){
-        case 0: x=margin+Math.random()*(W-2*margin); y=-size; targetX=margin+Math.random()*(W-2*margin); targetY=H+size; break; // top→bottom
-        case 1: x=W+size; y=margin+Math.random()*(H-2*margin); targetX=-size; targetY=margin+Math.random()*(H-2*margin); break; // right→left
-        case 2: x=margin+Math.random()*(W-2*margin); y=H+size; targetX=margin+Math.random()*(W-2*margin); targetY=-size; break; // bottom→top
-        default: x=-size; y=margin+Math.random()*(H-2*margin); targetX=W+size; targetY=margin+Math.random()*(H-2*margin); // left→right
-      }
-      comet.style.left = x+'px'; comet.style.top = y+'px';
-
-      const sp = ({slow:{min:.5,max:1.5}, medium:{min:1.0,max:2.5}, fast:{min:2.0,max:3.5}})[cometSpeedSelect.value];
-      const speed = sp.min + Math.random()*(sp.max-sp.min);
-      const dx=targetX-x, dy=targetY-y, dist=Math.hypot(dx,dy);
-      const velX = (dx/dist)*speed, velY=(dy/dist)*speed;
-      const angle = Math.atan2(velY,velX)*180/Math.PI;
-      comet.style.transform = `rotate(${angle}deg)`;
-
-      comet.append(core, tail);
-
-      const handleHit = (e)=>{ e.preventDefault(); e.stopPropagation(); hitComet(comet); };
-      comet.addEventListener('pointerdown', handleHit);
-      comet.addEventListener('touchstart', handleHit, {passive:false});
-      comet.addEventListener('click', handleHit);
-
-      gameArea.appendChild(comet);
-      comet.dataset.velX=velX; comet.dataset.velY=velY; comet.dataset.angle=angle; comet.dataset.spawnTime=Date.now();
-
-      const particleInterval=setInterval(()=>{ if(!comet.isConnected || !isTabVisible){ clearInterval(particleInterval); return; } createCometTrailParticle(comet); },120);
-      comet._particleInterval = particleInterval;
-      comets.push(comet);
-    }
-
-    function createCometTrailParticle(comet){
-      if (!isTabVisible || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const particle=document.createElement('div'); particle.className='star';
-      const rect=comet.getBoundingClientRect(); const areaRect=gameArea.getBoundingClientRect();
-      const size=Math.random()*3+1; particle.style.width=size+'px'; particle.style.height=size+'px';
-      particle.style.left = (rect.left-areaRect.left + rect.width/2)+'px';
-      particle.style.top  = (rect.top -areaRect.top  + rect.height/2)+'px';
-      particle.style.position='absolute'; particle.style.borderRadius='50%';
-      particle.style.opacity = .7; particle.style.filter='blur(1px)';
-      gameArea.appendChild(particle); setTimeout(()=>particle.remove(), 600);
-    }
-
-    function hitComet(comet){
-      if (!isActive || isPaused) return;
-      const spawnTime = parseInt(comet.dataset.spawnTime,10); const rt = Date.now() - spawnTime; totalResponseTime += rt;
-
-      const sizeValue=cometSizeSelect.value; const sizeMult = sizeValue==='small'?1.5 : sizeValue==='large'?0.8 : 1;
-      const base = Math.max(50, Math.floor(3000/rt*100));
-      const points = Math.floor(base * sizeMult);
-
-      score += points; taps++; scoreEl.textContent = String(score);
-      createBurst(comet, points);
-
-      if (comet._particleInterval) clearInterval(comet._particleInterval);
-      const idx=comets.indexOf(comet); if (idx>-1){ comets.splice(idx,1); if (focusedIndex>=idx && focusedIndex>0) focusedIndex--; else if (focusedIndex>=comets.length) focusedIndex=comets.length-1; }
-      comet.remove();
-    }
-
-    function createBurst(comet, points){
-      const aRect=gameArea.getBoundingClientRect(), cRect=comet.getBoundingClientRect();
-      const cx = cRect.left - aRect.left + cRect.width/2, cy = cRect.top - aRect.top + cRect.height/2;
-
-      for (let i=0;i<3;i++){
-        setTimeout(()=>{ const ring=document.createElement('div'); ring.className='impact-ring'; ring.style.left=cx+'px'; ring.style.top=cy+'px'; gameArea.appendChild(ring); setTimeout(()=>ring.remove(),800); }, i*90);
-      }
-      const popup=document.createElement('div'); popup.className='score-popup'; popup.textContent = `+${points}`;
-      popup.style.left=cx+'px'; popup.style.top=cy+'px'; gameArea.appendChild(popup); setTimeout(()=>popup.remove(),1000);
-    }
-
-    function updateComets(){
-      if (!isActive || isPaused){ if (isActive && !isPaused) requestAnimationFrame(updateComets); return; }
-      const W=gameArea.clientWidth, H=gameArea.clientHeight;
-      gameRect = gameArea.getBoundingClientRect();
-
-      for (let i=comets.length-1; i>=0; i--){
-        const comet=comets[i]; const vx=parseFloat(comet.dataset.velX), vy=parseFloat(comet.dataset.velY), ang=parseFloat(comet.dataset.angle);
-        let x=parseFloat(comet.style.left), y=parseFloat(comet.style.top);
-        x += vx; y += vy; comet.style.left=x+'px'; comet.style.top=y+'px'; comet.style.transform=`rotate(${ang}deg)`;
-        const size=parseFloat(comet.style.width);
-        if (x<-size*3 || x>W+size*3 || y<-size*3 || y>H+size*3){
-          if (comet._particleInterval) clearInterval(comet._particleInterval);
-          comet.remove(); comets.splice(i,1); if (focusedIndex>=i && focusedIndex>0) focusedIndex--; else if (focusedIndex>=comets.length) focusedIndex=comets.length-1;
-          misses++;
-        }
-      }
-      if (isActive) requestAnimationFrame(updateComets);
-    }
-
-    function endSession(){ doEndSession(); }
-    function doEndSession(){
-      isActive=false; isPaused=false; clearInterval(timerInterval); clearInterval(spawnInterval);
-      const acc = taps+misses>0 ? Math.round((taps/(taps+misses))*100) : 0;
-      const avg = taps>0 ? (totalResponseTime/taps/1000).toFixed(2) : '0.00';
-
-      try{ sessionEnhancement.handleSessionComplete({ score, taps, accuracy: acc, avgResponseTime: parseFloat(avg) }); }catch{}
-
-      try{
-        recordSession(EXERCISE_ID, currentDifficulty(), score);
-        markExerciseTried(EXERCISE_ID);
-        const unlocked = checkAndUnlockAchievements(); if (unlocked?.length){ achievementLine.classList.remove('hidden'); unlocked.forEach(a=>toast?.show?.(`Achievement unlocked: ${a}`, {duration:3500})); } else { achievementLine.classList.add('hidden'); }
-      }catch{}
-
-      if (score>getPB()){ setPB(score); pbEl.textContent=score; toast?.show?.('New Personal Best! 🎉', {duration:3000}); }
-
-      finalScoreEl.textContent=score; finalTapsEl.textContent=taps; finalAccEl.textContent=acc+'%'; finalAvgEl.textContent=avg;
-      const xp=Math.max(1, Math.floor(score/10)); finalXpEl.textContent=xp;
-
-      completionMessage.classList.remove('hidden'); setTimeout(()=>closeCompletionBtn.focus(), 100);
-
-      comets.forEach(c=>{ if (c._particleInterval) clearInterval(c._particleInterval); c.remove(); }); comets=[]; focusedIndex=-1;
-      pauseBtn.disabled=true;
-
-      if ('inert' in HTMLElement.prototype) settingsPanel.removeAttribute('inert');
-      else settingsPanel.querySelectorAll('input,select,button').forEach(i=>{ i.disabled = i.dataset.wasDisabled==='true'; });
-    }
-
-    /* Window management */
-    window.addEventListener('beforeunload', ()=>{ if (isActive){ clearInterval(timerInterval); clearInterval(spawnInterval); } });
-    window.addEventListener('blur', ()=>{ if (isActive && !isPaused) pauseSession(); });
-    window.addEventListener('resize', ()=>{ if (isActive) gameRect = gameArea.getBoundingClientRect(); });
-
-    /* Init */
-    window.addEventListener('load', ()=>{
-      pbEl.textContent=getPB();
-      try{ audio.create('hit-sound','/audio/hit'); audio.create('complete-sound','/audio/complete'); }catch{}
-      startBtn.focus();
-      console.log('Comet Tap merged UI+logic loaded');
-    });
-  </script>
+})();
+</script>
 </body>
 </html>
