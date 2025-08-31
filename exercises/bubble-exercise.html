@@ -111,7 +111,9 @@
         inset 0 0 22px rgba(255,255,255,.6);
       transform: translate(-50%, -50%);
       touch-action: none;
+      display:flex; align-items:center; justify-content:center;
       animation: bubblePulse 2.2s ease-in-out infinite;
+      font-weight:900; font-size:22px; color:#eaffff; text-shadow: 0 0 10px rgba(255,255,255,.6);
     }
     #bubble.spawn {
       animation: bubbleSpawn .18s ease-out, bubblePulse 2.2s ease-in-out infinite;
@@ -199,7 +201,7 @@
     <!-- SETTINGS -->
     <aside id="settings" class="panel" aria-label="Settings">
       <h2>Settings</h2>
-      <div class="desc"><strong>How to play:</strong> tap the bubble as soon as it appears. Smaller bubbles are harder (more points). Use finger mode for single-finger training if needed.</div>
+      <div class="desc"><strong>How to play:</strong> tap the bubble as soon as it appears. Smaller bubbles are harder (more points).</div>
 
       <!-- Stats (PB shown on settings) -->
       <div class="stats-row" role="region" aria-label="Player stats">
@@ -227,10 +229,10 @@
         <label class="label" for="fingerMode">Finger Mode</label>
         <select id="fingerMode">
           <option value="any" selected>Any finger</option>
-          <option value="single">Single finger (guided)</option>
+          <option value="all">All fingers (guided)</option>
         </select>
         <div id="singleFingerWrap" class="desc" style="display:none; margin-top:8px;">
-          <strong>Guided mode:</strong> follow the highlighted finger chips at the bottom.
+          <strong>All fingers (guided):</strong> a number appears in each bubble (1–5). Match the number to the finger shown below.
         </div>
       </div>
 
@@ -260,7 +262,7 @@
           <!-- Guided finger UI -->
           <div id="fingerGuide" class="finger-guide" aria-live="polite">
             <div class="card">
-              <div class="guide-title">Tap with the highlighted finger</div>
+              <div class="guide-title">Match the bubble number to the finger</div>
               <div class="fingers" id="fingersRow">
                 <!-- Chips will be filled by JS -->
               </div>
@@ -376,28 +378,23 @@
 
     const BUBBLE_SIZES = { large: 120, medium: 80, small: 56 };
 
-    // Guided fingers
+    // Finger mapping (1..5)
     const FINGERS = [
-      { key:'T', name:'Thumb' },
-      { key:'I', name:'Index' },
-      { key:'M', name:'Middle' },
-      { key:'R', name:'Ring' },
-      { key:'L', name:'Little' },
+      { num:1, name:'Thumb' },
+      { num:2, name:'Index' },
+      { num:3, name:'Middle' },
+      { num:4, name:'Ring' },
+      { num:5, name:'Little' },
     ];
-    let fingerIdx = -1;
 
     function buildFingerChips(){
       fingersRow.innerHTML = '';
-      FINGERS.forEach((f,i) => {
+      FINGERS.forEach((f) => {
         const chip = el('div', 'chip');
-        chip.append(el('div', '', f.key));
+        chip.append(el('div', '', String(f.num)));
         chip.append(el('div', 'tiny', f.name));
-        chip.dataset.idx = i;
         fingersRow.append(chip);
       });
-    }
-    function highlightFinger(i){
-      [...fingersRow.children].forEach(ch => ch.classList.toggle('active', Number(ch.dataset.idx) === i));
     }
 
     function msToClock(ms){
@@ -427,10 +424,12 @@
       bubbleSpawnTime = performance.now();
       bubbleEl.classList.remove('spawn'); void bubbleEl.offsetWidth; bubbleEl.classList.add('spawn');
 
-      // Cycle finger prompt in guided mode
-      if(fingerMode === 'single'){
-        fingerIdx = (fingerIdx + 1) % FINGERS.length;
-        highlightFinger(fingerIdx);
+      // If 'all' mode, show a random 1..5 number in the bubble
+      if(fingerMode === 'all'){
+        const n = 1 + Math.floor(Math.random()*5);
+        bubbleEl.textContent = String(n);
+      } else {
+        bubbleEl.textContent = '';
       }
     }
 
@@ -496,13 +495,12 @@
       timeRemaining = sessionDurationMs;
       bubbleSizePx = BUBBLE_SIZES[sizeSel.value] ?? 80;
       fingerMode = fmSel.value;
-      showFingerGuide(fingerMode === 'single');
+      showFingerGuide(fingerMode === 'all');
+      if(fingerMode === 'all'){ buildFingerChips(); }
 
       // Reset
       isActive = true; isPaused = false; pauseBtn.textContent = 'Pause';
       taps = 0; misses = 0; score = 0; totalRT = 0;
-      fingerIdx = -1;
-      if(fingerMode === 'single'){ buildFingerChips(); }
       hideBubble(); updateHUD();
 
       // UI
@@ -526,6 +524,7 @@
       exitImmersive();
       pauseBtn.textContent = 'Pause';
       doneModal.classList.remove('open');
+      bubbleEl.textContent = '';
     }
 
     function endSession(){
@@ -552,6 +551,7 @@
 
       doneModal.classList.add('open');
       try { sessionEnhancement.handleSessionComplete?.('bubble_tap', { score, taps, acc, avg }); } catch {}
+      bubbleEl.textContent = '';
     }
 
     // Buttons
@@ -561,8 +561,12 @@
     newSessionBtn.addEventListener('click', () => { doneModal.classList.remove('open'); startSession(); });
 
     // Settings interactivity
-    fmSel.addEventListener('change', () => { singleWrap.style.display = fmSel.value === 'single' ? '' : 'none'; });
-    singleWrap.style.display = (fmSel.value === 'single') ? '' : 'none';
+    fmSel.addEventListener('change', () => {
+      const isAll = fmSel.value === 'all';
+      singleWrap.style.display = isAll ? '' : 'none';
+    });
+    // reflect current on load
+    singleWrap.style.display = (fmSel.value === 'all') ? '' : 'none';
 
     // Modal UX: backdrop click + Esc
     doneModal.addEventListener('click', (e) => { if(e.target === doneModal){ doneModal.classList.remove('open'); } });
