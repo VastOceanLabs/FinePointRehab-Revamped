@@ -376,6 +376,8 @@
     let fingerMode = 'any';
     let lastSpawn = 0, bubbleVisible = false, bubbleSpawnTime = 0;
 
+    const MAX_VISIBLE_MS = 2500; // failsafe: hide bubble after 2.5s to prevent stalls
+
     const BUBBLE_SIZES = { large: 120, medium: 80, small: 56 };
 
     // Finger mapping (1..5)
@@ -416,8 +418,10 @@
 
     function spawnBubble(){
       const rect = surface.getBoundingClientRect();
-      const x = Math.random() * (rect.width - bubbleSizePx) + bubbleSizePx/2;
-      const y = Math.random() * (rect.height - bubbleSizePx) + bubbleSizePx/2;
+      const sw = Math.max(rect.width, bubbleSizePx + 2);
+      const sh = Math.max(rect.height, bubbleSizePx + 2);
+      const x = Math.random() * (sw - bubbleSizePx) + bubbleSizePx/2;
+      const y = Math.random() * (sh - bubbleSizePx) + bubbleSizePx/2;
       bubbleEl.style.left = x+'px'; bubbleEl.style.top = y+'px';
       bubbleEl.style.width = bubbleSizePx+'px'; bubbleEl.style.height = bubbleSizePx+'px';
       bubbleVisible = true;
@@ -433,7 +437,7 @@
       }
     }
 
-    function hideBubble(){ bubbleVisible = false; bubbleEl.style.left = '-9999px'; bubbleEl.style.top = '-9999px'; }
+    function hideBubble(){ bubbleVisible = false; bubbleEl.style.left = '-9999px'; bubbleEl.style.top = '-9999px'; bubbleEl.textContent=''; }
 
     function showPoints(x, y, pts){
       const p = el('div', 'points', `+${pts}`);
@@ -479,6 +483,8 @@
       if(!isPaused){
         timeRemaining -= dt;
         if(timeRemaining <= 0){ endSession(); return; }
+        // Failsafe: if a bubble has been visible too long (missed or event lost), hide it
+        if(bubbleVisible && (now - bubbleSpawnTime) > MAX_VISIBLE_MS){ hideBubble(); }
         if(!bubbleVisible && (now - lastSpawn) > 450){
           spawnBubble(); lastSpawn = now;
         }
