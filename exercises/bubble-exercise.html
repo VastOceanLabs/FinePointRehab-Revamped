@@ -1,360 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);} 
-    gtag('js', new Date());
-    gtag('config', 'G-RVKCCWBFKE');
-  </script>
-
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Bubble Tap Therapy - Fine Motor Exercise | Fine Point Rehab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bubble Tap — Fine Point Rehab</title>
 
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="Interactive bubble therapy exercise designed by Fine Point Rehab to build fine motor control, reaction time, and finger isolation. Accessible, responsive, and evidence-informed rehabilitation tool.">
-  <meta name="keywords" content="bubble exercise therapy, stroke hand exercises, fine motor rehabilitation, reaction time training, finger isolation therapy, hand-eye coordination, occupational therapy exercises, TBI recovery exercises, neurological rehabilitation">
-
-  <!-- Open Graph Tags -->
-  <meta property="og:title" content="Bubble Tap Therapy - Fine Motor Exercise for Fine Point Rehab">
-  <meta property="og:description" content="Interactive bubble therapy exercise for motor skill development, featuring difficulty levels, personal best tracking, and mobile-friendly controls. Evidence-based tool for physical and occupational therapy.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://finepointrehab.com/exercises/bubble-tap-therapy">
-  <meta property="og:image" content="https://finepointrehab.com/images/bubble-therapy-preview.jpg">
-
-  <!-- Twitter Card Tags -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Bubble Tap Therapy - Fine Motor Exercise | Fine Point Rehab">
-  <meta name="twitter:description" content="Interactive rehabilitation exercise for reaction time and finger isolation with personal best tracking.">
-  <meta name="twitter:image" content="https://finepointrehab.com/images/bubble-therapy-preview.jpg">
-
-  <!-- Global tokens & base styles (root-relative) -->
+  <!-- Global tokens & components -->
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/components.css">
 
   <style>
-    :root {
-      --header-h: 64px;
-      /* Force dark theme token overrides for proper visibility */
-      --text-primary: #f9fafb;
-      --text-secondary: #cbd5e1;
+    :root{
+      --vh: 1vh;
+      --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
+      --accent: var(--brand-aqua, #6fd3f5);
+      --radius: 14px;
+      --panel: rgba(10,16,36,.9);
+      --panel-border: rgba(255,255,255,.08);
+      --text: #eaf6ff;
     }
-
-    body {
-      margin: 0;
-      font-family: var(--font-family-sans);
-      background: linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
-      color: var(--text-primary);
-      min-height: 100vh;
+    body{ margin:0; color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
+        radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+      min-height: calc(var(--vh) * 100);
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    body.playing { overflow: hidden; }
+    body.playing header.app { display: none; }
+
+    header.app{
+      position: sticky; top:0; z-index: 50;
+      padding:12px 16px; display:flex; gap:12px; align-items:center;
+      background: linear-gradient(180deg, rgba(8,12,26,.9), rgba(8,12,26,.55));
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      backdrop-filter: blur(6px);
+    }
+    header .home { text-decoration:none; color:var(--text); font-weight:700;
+      border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:8px 12px; }
+    header h1{ margin:0; font-size: clamp(18px,3vw,24px); }
+
+    .layout{ display:grid; grid-template-columns: 1fr; gap:16px; padding:16px; height:auto; }
+    .panel{ background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
+            box-shadow: 0 10px 40px rgba(0,0,0,.35); padding:16px; }
+    .panel h2{ margin:0 0 12px 0; font-size: clamp(18px,3vw,22px); }
+    .desc{ margin-bottom:12px; background: rgba(111,211,245,.08);
+           border-left: 4px solid rgba(111,211,245,.7); padding:10px; border-radius:8px; font-size:14px; line-height:1.5; }
+
+    /* Stats on settings (shows PB) */
+    .stats-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
+    .metric{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center;
+             text-align:center; padding:8px 12px; border:1px solid rgba(255,255,255,.12); border-radius:12px;
+             background: rgba(255,255,255,.05); min-width:110px; }
+    .v{ font-weight:900; font-size:18px; color:#bfe6ff; text-shadow: 0 0 6px rgba(150,220,255,.5); line-height:1.1; }
+    .t{ font-size:11px; opacity:.9; margin-top:3px; }
+
+    .group{ margin-bottom:12px; }
+    .label{ display:block; margin-bottom:6px; font-weight:700; letter-spacing:.2px; }
+    select, input[type="number"]{
+      width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+      background: rgba(5,10,26,.8); color:var(--text); font-size:16px;
+    }
+    select:focus, input[type="number"]:focus{
+      outline:none; border-color: rgba(111,211,245,.9); box-shadow: 0 0 0 2px rgba(111,211,245,.25);
+    }
+    .btn{
+      min-height:46px; border:1px solid rgba(111,211,245,.35); background: rgba(111,211,245,.12);
+      color:var(--text); border-radius:10px; font-weight:800; letter-spacing:.2px; cursor:pointer; transition:.2s;
+    }
+    .btn:hover:not(:disabled){ background: rgba(111,211,245,.22); transform: translateY(-1px); }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; }
+    .btn-primary{ background: rgba(111,211,245,.95); color:#07101e; border-color: rgba(111,211,245,1); }
+    .btn-primary:hover:not(:disabled){ background: rgba(111,211,245,1); box-shadow: 0 6px 18px rgba(111,211,245,.45); }
+    .btn-ghost{ background: transparent; border:1px solid rgba(255,255,255,.15); }
+
+    /* Game column – hidden until playing */
+    #gameCol{ display:none; position:relative; padding:0; overflow:hidden; }
+    body.playing #gameCol{ display:block; }
+    body.playing #settings{ display:none; }
+
+    .hud{
+      position:sticky; top:0; z-index:5; display:flex; gap:8px; align-items:center; justify-content:space-between;
+      padding:10px; background: linear-gradient(180deg, rgba(6,10,22,.88), rgba(6,10,22,.55)); border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .hud .metrics{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .chip{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:92px;
+           border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:6px 10px; background: rgba(255,255,255,.06); }
+    .chip .v{ font-size:16px; font-weight:800; color:#c9ecff; }
+    .chip .t{ font-size:11px; opacity:.9; }
+
+    .hud .controls{ display:flex; gap:8px; }
+    .stage-wrap{ position:relative; width:100%; height: calc(var(--vh) * 100); }
+
+    /* Bubble game surface (DOM-based) */
+    .game-surface{ position:relative; width:100%; height:100%; overflow:hidden; }
+    #bubble{
+      position:absolute; width:80px; height:80px; border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(111,211,245,.35) 40%, rgba(20,80,150,.35) 70%, rgba(10,20,40,.25) 100%);
+      box-shadow: 0 12px 30px rgba(111,211,245,.35), inset 0 0 22px rgba(255,255,255,.6);
+      transform: translate(-50%, -50%);
+      touch-action: none;
     }
 
-    /* Sticky header & nav */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-      height: var(--header-h);
-      background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.2));
-      backdrop-filter: blur(8px);
-      padding: 0 var(--space-4);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+    /* Finger guide (optional) */
+    .finger-guide{
+      position:absolute; left:0; right:0; bottom:0; padding:12px; z-index:6;
+      display:none;
     }
-    .site-header h1 { font-size: var(--font-size-xl); margin: 0; }
-
-    /* 2-column layout */
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(260px, 360px) 1fr;
-      gap: var(--space-4);
-      padding: var(--space-4);
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    @media (max-width: 980px) {
-      .layout { grid-template-columns: 1fr; }
+    .finger-guide .card{
+      margin:0 auto; max-width:640px; border:1px solid rgba(255,255,255,.18); border-radius:12px;
+      background: rgba(0,0,0,.35); padding:12px; text-align:center;
     }
 
-    /* Panels */
-    .panel {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
+    /* Completion modal */
+    .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:20;
+            background: rgba(0,0,0,.45); backdrop-filter: blur(4px); }
+    .modal.open{ display:flex; }
+    .modal .card{ width:min(560px, 92vw); border:1px solid rgba(255,255,255,.18); border-radius:14px;
+                  background: var(--panel); padding:16px; }
+
+    @media (min-width: 920px){
+      .layout{ grid-template-columns: 1fr 1.2fr; align-items:start; }
+      /* Still hide gameCol until playing; when not playing, settings spans both on large screens */
+      body:not(.playing) #settings{ grid-column: 1 / -1; }
     }
-
-    .settings-panel {
-      padding: var(--space-5);
-      overflow: auto;
-      max-height: calc(100vh - var(--header-h) - 2 * var(--space-4));
-    }
-
-    .game-panel {
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* HUD Row */
-    .hud {
-      position: relative;
-      display: grid;
-      grid-template-columns: 1fr auto auto auto auto;
-      gap: var(--space-3);
-      align-items: center;
-      padding: var(--space-3) var(--space-4);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .timer-rail { position: relative; height: 8px; width: 100%; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
-    .timer-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: linear-gradient(90deg, var(--brand-aqua), #8ab4f8); transform-origin: left center; }
-
-    .hud-stat { display: grid; gap: 4px; }
-    .hud-stat .label { color: var(--text-secondary); font-size: var(--font-size-sm); }
-    .hud-stat .value { font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
-
-    .hud-controls .btn { min-width: 88px; }
-
-    /* Game container */
-    #game-container {
-      position: relative;
-      width: 100%;
-      /* height is managed by flex; keep a sensible minimum */
-      min-height: 420px;
-      flex: 1 1 auto;
-      background:
-        radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.35) 0%, transparent 40%),
-        radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.25) 0%, transparent 40%);
-    }
-
-    #stars-container { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-
-    /* Fallback starfield styles */
-    .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; animation: twinkle 3s ease-in-out infinite; }
-    @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } }
-
-    #playable-area { position: absolute; inset: var(--space-3); z-index: 2; border-radius: 16px; }
-
-    .bubble {
-      position: absolute;
-      z-index: 3;
-      width: 80px; height: 80px; /* default, overwritten by JS */
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(146, 197, 255, 0.85) 45%, rgba(52, 86, 169, 0.85) 60%, rgba(18, 28, 66, 0.9) 100%);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 4px 8px rgba(255,255,255,0.35);
-      border: 1px solid rgba(255,255,255,0.35);
-      transition: transform 120ms ease;
-    }
-    .bubble:active { transform: scale(0.96); }
-
-    /* Finger guide */
-    #finger-guide { position: absolute; left: 12px; right: 12px; bottom: 12px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 12px; z-index: 3; }
-    .finger-legend { display: flex; gap: 10px; align-items: center; }
-    .finger-item { display: flex; gap: 6px; align-items: center; }
-    .finger-number { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.12); display: grid; place-items: center; font-size: 12px; }
-
-    /* Modal */
-    .modal-overlay { position: absolute; inset: 0; display: none; place-items: center; background: rgba(0,0,0,0.4); z-index: 5; }
-    .modal-overlay.open { display: grid; }
-    .modal-card { background: rgba(10,12,24,0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: var(--space-5); width: min(680px, calc(100% - 24px)); box-shadow: var(--shadow-lg); }
-    .modal-card h2 { margin-top: 0; font-size: var(--font-size-2xl); }
-    .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin: var(--space-4) 0; }
-    .score-highlight { color: var(--brand-aqua); font-weight: var(--font-weight-bold); }
-    .xp-line { font-size: var(--font-size-sm); opacity: 0.9; }
-
-    .hidden { display: none !important; }
-
-    /* Forms & buttons */
-    .settings-group { margin-bottom: var(--space-4); }
-    .settings-label { display: block; margin-bottom: var(--space-2); font-weight: var(--font-weight-semibold); color: var(--brand-aqua); }
-    .setting-description { margin-top: 6px; font-size: var(--font-size-sm); color: var(--text-secondary); }
-
-    .btn-row { display: flex; gap: var(--space-2); }
-
-    .input, select, input[type="number"] { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; color: var(--text-primary); }
-
-    .btn { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid transparent; cursor: pointer; font-weight: var(--font-weight-semibold); background: rgba(255,255,255,0.06); color: var(--text-primary); }
-    .btn:hover { filter: brightness(1.05); }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-primary { background: linear-gradient(90deg, var(--brand-aqua), #8ab4f8); color: #00131f; border-color: rgba(255,255,255,0.16); }
-    .btn-outline { background: transparent; border-color: rgba(255,255,255,0.28); }
-    .btn-ghost { background: transparent; border-color: transparent; color: var(--text-primary); }
-
-    /* Responsive HUD: give stats room on small screens */
-    @media (max-width: 600px) {
-      .hud { grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(44px, auto); row-gap: var(--space-2); }
-      .hud-controls { grid-column: 1 / -1; display: flex; gap: var(--space-2); justify-content: flex-end; }
-      .hud-stat .label { font-size: var(--font-size-xs); }
-      .hud-stat .value { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
-    }
-
-    /* One control cluster per viewport */
-    @media (max-width: 980px) {
-      .hud-controls { display: none; }
-      .settings-panel .btn-row { display: flex; gap: var(--space-2); }
-    }
-    @media (min-width: 981px) {
-      .hud-controls { display: inline-block; }
-      .settings-panel .btn-row { display: none; }
-    }
-
-    /* Keep finger guide clear of controls */
-    #finger-guide { bottom: calc(var(--space-4) + 8px); z-index: 4; }
   </style>
 </head>
 <body>
-  <!-- Audio elements for feedback -->
-  <audio id="pop" preload="auto">
-    <source src="../audio/pop.mp3" type="audio/mpeg">
-    <source src="../audio/pop.ogg" type="audio/ogg">
-  </audio>
-  <audio id="sessionComplete" preload="auto">
-    <source src="../audio/session-complete.mp3" type="audio/mpeg">
-    <source src="../audio/session-complete.ogg" type="audio/ogg">
-  </audio>
-  <audio id="personalBest" preload="auto">
-    <source src="../audio/personal-best.mp3" type="audio/mpeg">
-    <source src="../audio/personal-best.ogg" type="audio/ogg">
-  </audio>
-
-  <!-- Sticky Header & Nav -->
-  <header class="site-header" role="banner">
-    <a href="/" class="btn btn-ghost" aria-label="Go to Home">← Home</a>
+  <header class="app" role="banner" aria-label="Exercise header">
+    <a class="home" href="/" aria-label="Back to Home">← Home</a>
     <h1>Bubble Tap</h1>
   </header>
 
-  <main class="layout" role="main">
-    <!-- Left: Settings panel -->
-    <aside class="panel settings-panel" aria-labelledby="settings-title">
-      <h2 id="settings-title" class="sr-only">Settings</h2>
+  <main class="layout">
+    <!-- SETTINGS -->
+    <aside id="settings" class="panel" aria-label="Settings">
+      <h2>Settings</h2>
+      <div class="desc"><strong>How to play:</strong> tap the bubble as soon as it appears. Smaller bubbles are harder (more points). Use finger mode for single-finger training if needed.</div>
 
-      <div class="game-description panel" style="padding: var(--space-4); margin-bottom: var(--space-4);">
-        <p><strong>About this exercise:</strong> Tap the moving bubble as quickly and accurately as you can. Adjust the bubble size for difficulty, pick a session duration, and choose which finger(s) you want to practice. Great for hand-eye coordination, reaction time, and finger precision.</p>
-      </div>
-
-      <div id="settings-panel" aria-live="polite">
-        <div class="settings-group">
-          <label class="settings-label" for="bubble-size">Bubble Size (difficulty)</label>
-          <p class="setting-description">Larger bubbles are easier; smaller bubbles are harder.</p>
-          <select id="bubble-size" class="input" autocomplete="off">
-            <option value="large">Large (easy)</option>
-            <option value="medium" selected>Medium (normal)</option>
-            <option value="small">Small (hard)</option>
-          </select>
-        </div>
-
-        <div class="settings-group">
-          <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
-          <input id="session-duration" class="input" type="number" min="1" max="30" step="1" value="2">
-        </div>
-
-        <div class="settings-group">
-          <label class="settings-label" for="finger-option">Finger Option</label>
-          <p class="setting-description">Practice specific fingers in sequence or any finger.</p>
-          <select id="finger-option" class="input" autocomplete="off">
-            <option value="any" selected>Any finger</option>
-            <option value="sequence">Thumb → Pinky (1→5)</option>
-            <option value="single">Single finger only</option>
-          </select>
-        </div>
-
-        <div class="settings-group" id="single-finger-select" style="display:none">
-          <label class="settings-label" for="finger-number">Select finger</label>
-          <select id="finger-number" class="input" autocomplete="off">
-            <option value="1">Thumb (1)</option>
-            <option value="2">Index (2)</option>
-            <option value="3">Middle (3)</option>
-            <option value="4">Ring (4)</option>
-            <option value="5">Pinky (5)</option>
-          </select>
-        </div>
-
-        <div class="settings-group">
-          <div class="btn-row">
-            <button id="start-btn" class="btn btn-primary" type="button" aria-label="Start session">Start</button>
-            <button id="pause-btn" class="btn btn-outline" type="button" aria-label="Pause session" disabled>Pause</button>
-            <button id="restart-btn" class="btn btn-outline" type="button" aria-label="Restart session" disabled>Restart</button>
-          </div>
+      <!-- Stats (PB shown on settings) -->
+      <div class="stats-row" role="region" aria-label="Player stats">
+        <div class="metric" aria-live="polite">
+          <div id="pbSettings" class="v">0</div>
+          <div class="t">Personal Best</div>
         </div>
       </div>
+
+      <div class="group">
+        <label class="label" for="dur">Session Duration (minutes)</label>
+        <input id="dur" type="number" min="0.5" step="0.5" max="10" value="2" inputmode="decimal" />
+      </div>
+
+      <div class="group">
+        <label class="label" for="size">Bubble Size</label>
+        <select id="size">
+          <option value="large">Large (Easier)</option>
+          <option value="medium" selected>Medium</option>
+          <option value="small">Small (Harder)</option>
+        </select>
+      </div>
+
+      <div class="group">
+        <label class="label" for="fingerMode">Finger Mode</label>
+        <select id="fingerMode">
+          <option value="any" selected>Any finger</option>
+          <option value="single">Single finger (guided)</option>
+        </select>
+        <div id="singleFingerWrap" class="desc" style="display:none; margin-top:8px;">Single-finger training shows a short on-screen prompt to alternate taps with the selected finger.</div>
+      </div>
+
+      <button id="startBtn" class="btn btn-primary" type="button" aria-label="Start session">Start</button>
     </aside>
 
-    <!-- Right: HUD + Game -->
-    <section class="panel game-panel" aria-label="Game area">
-      <div class="hud" role="region" aria-label="Game heads-up display">
-        <div class="timer-rail" aria-hidden="true">
-          <div id="timer-bar" class="timer-bar" style="width:100%"></div>
+    <!-- GAME COLUMN (hidden until playing) -->
+    <section id="gameCol" class="panel" aria-label="Game">
+      <!-- HUD -->
+      <div class="hud" role="region" aria-label="In-game HUD">
+        <div class="metrics">
+          <div class="chip"><div id="score" class="v">0</div><div class="t">Score</div></div>
+          <div class="chip"><div id="pb" class="v">0</div><div class="t">PB</div></div>
+          <div class="chip"><div id="time" class="v">00:00</div><div class="t">Time</div></div>
         </div>
-
-        <div class="hud-stat" aria-live="polite">
-          <span class="label">Score</span>
-          <span id="score" class="value">0</span>
-        </div>
-
-        <div class="hud-stat" aria-live="polite">
-          <span class="label">Personal Best</span>
-          <span id="personal-best" class="value">0</span>
-        </div>
-
-        <div class="hud-stat">
-          <span class="label">Difficulty</span>
-          <span id="hud-difficulty" class="value">medium</span>
-        </div>
-
-        <div class="hud-controls">
-          <button id="hud-start" class="btn btn-primary" type="button" aria-label="Start session (HUD)">Start</button>
-          <button id="hud-pause" class="btn btn-outline" type="button" aria-label="Pause session (HUD)" disabled>Pause</button>
-          <button id="hud-restart" class="btn btn-outline" type="button" aria-label="Restart session (HUD)" disabled>Restart</button>
+        <div class="controls">
+          <button id="pauseBtn" class="btn btn-ghost" type="button" aria-label="Pause">Pause</button>
+          <button id="exitBtn" class="btn btn-ghost" type="button" aria-label="Exit to settings">Exit</button>
         </div>
       </div>
 
-      <!-- Game canvas -->
-      <div id="game-container" role="application" aria-label="Bubble tap game">
-        <div id="stars-container" aria-hidden="true"></div>
-        <div id="playable-area" aria-hidden="true"></div>
-        <button id="bubble" class="bubble" type="button" aria-label="Tap bubble" tabindex="0"></button>
-
-        <!-- Finger guide -->
-        <div id="finger-guide" class="hidden" role="note" aria-live="polite">
-          <h3>Finger Guide</h3>
-          <div class="finger-legend">
-            <div class="finger-item"><div class="finger-number">1</div><span>Thumb</span></div>
-            <div class="finger-item"><div class="finger-number">2</div><span>Index</span></div>
-            <div class="finger-item"><div class="finger-number">3</div><span>Middle</span></div>
-            <div class="finger-item"><div class="finger-number">4</div><span>Ring</span></div>
-            <div class="finger-item"><div class="finger-number">5</div><span>Pinky</span></div>
-          </div>
-        </div>
-
-        <!-- Completion Modal -->
-        <div id="completion-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-          <div class="modal-card">
-            <h2 id="modal-title">Session Complete</h2>
-            <p>Great work! Here are your results:</p>
-
-            <div class="modal-row">
-              <div><strong>Score</strong><div id="final-score" class="score-highlight">0</div></div>
-              <div><strong>Taps</strong><div id="final-taps">0</div></div>
-              <div><strong>Avg Response</strong><div id="final-avg-time">0.00s</div></div>
-              <div><strong>Accuracy</strong><div id="final-accuracy">0%</div></div>
-            </div>
-            <p id="xp-earned" class="xp-line">+0 XP</p>
-
-            <div class="btn-row">
-              <button id="modal-restart" class="btn btn-primary" type="button">Start New Session</button>
-              <button id="modal-close" class="btn btn-outline" type="button">Close</button>
+      <!-- Play surface -->
+      <div class="stage-wrap">
+        <div id="surface" class="game-surface" aria-label="Play area">
+          <div id="bubble" role="button" aria-label="Bubble" tabindex="0"></div>
+          <div id="fingerGuide" class="finger-guide" aria-live="polite">
+            <div class="card">
+              <strong>Single-finger mode:</strong> follow the prompts to tap with the indicated finger.
             </div>
           </div>
         </div>
@@ -362,18 +205,59 @@
     </section>
   </main>
 
-  <!-- Core JavaScript modules -->
+  <!-- Completion Modal -->
+  <div id="done" class="modal" role="dialog" aria-modal="true" aria-labelledby="doneTitle" aria-describedby="doneDesc">
+    <div class="card">
+      <h2 id="doneTitle" style="margin:0 0 8px 0;">Session Complete</h2>
+      <p id="doneDesc" style="margin:0 0 12px 0;">Nice work! Here are your results:</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+        <div class="metric"><div id="fScore" class="v">0</div><div class="t">Score</div></div>
+        <div class="metric"><div id="fTaps" class="v">0</div><div class="t">Taps</div></div>
+        <div class="metric"><div id="fAcc" class="v">0%</div><div class="t">Accuracy</div></div>
+        <div class="metric"><div id="fAvg" class="v">0ms</div><div class="t">Avg RT</div></div>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="newSession" class="btn btn-primary" type="button">Start New Session</button>
+        <a class="btn btn-ghost" href="/" aria-label="Home">Home</a>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
-    // Guarded dynamic imports with graceful fallbacks
+    // ===== Helpers =====
+    const $ = sel => document.querySelector(sel);
+
+    // DOM
+    const settingsEl = $('#settings');
+    const gameCol = $('#gameCol');
+    const surface = $('#surface');
+    const bubbleEl = $('#bubble');
+    const fingerGuide = $('#fingerGuide');
+    const startBtn = $('#startBtn');
+    const pauseBtn = $('#pauseBtn');
+    const exitBtn = $('#exitBtn');
+    const timeEl = $('#time');
+    const scoreEl = $('#score');
+    const pbEl = $('#pb');
+    const pbSettingsEl = $('#pbSettings');
+    const doneModal = $('#done');
+    const fScore = $('#fScore'), fTaps = $('#fTaps'), fAcc = $('#fAcc'), fAvg = $('#fAvg');
+    const newSessionBtn = $('#newSession');
+
+    // Settings inputs
+    const durIn = $('#dur'), sizeSel = $('#size'), fmSel = $('#fingerMode'), singleWrap = $('#singleFingerWrap');
+
+    // Storage & modules (graceful fallbacks)
+    const EXERCISE_ID = 'bubble_tap';
     const NullEnhancement = { initializeExercise(){}, handleSessionComplete(){} };
-    const NullAudio = { play(){ /* no-op */ } };
+    const NullAudio = { play(){}, click(){}, miss(){} };
     const storageFallback = {
       get:(k, def)=>{ try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
       set:(k,v)=>{ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
     };
-
-    let storage = storageFallback, starfield = null, initUtils = ()=>{}, audio = NullAudio, sessionEnhancement = NullEnhancement;
+    let storage = storageFallback, audio = NullAudio, sessionEnhancement = NullEnhancement;
     let recordSession = (id, diff, score)=>{}, checkAndUnlockAchievements = ()=>{}, markExerciseTried = ()=>{};
+    let starfield = null, initUtils = ()=>{};
 
     try {
       const u = await import('/js/utils.js');
@@ -382,294 +266,207 @@
       initUtils = u.initUtils ?? initUtils;
       audio = u.audio ?? audio;
     } catch {}
-
     try {
       const s = await import('/js/session-enhancement.js');
       sessionEnhancement = s.sessionEnhancement ?? sessionEnhancement;
     } catch {}
-
     try {
       const p = await import('/js/progress.js');
       recordSession = p.recordSession ?? recordSession;
     } catch {}
-
     try {
       const a = await import('/js/achievements.js');
       checkAndUnlockAchievements = a.checkAndUnlockAchievements ?? checkAndUnlockAchievements;
       markExerciseTried = a.markExerciseTried ?? markExerciseTried;
     } catch {}
 
-    // Force dark theme for proper visibility
-    document.body.classList.add('dark-theme');
-    initUtils();
+    // ===== Geometry & fullscreen =====
+    function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
 
-    // DOM refs
-    const bubble = document.getElementById('bubble');
-    const starsContainer = document.getElementById('stars-container');
-    const playableArea = document.getElementById('playable-area');
-
-    const bubbleSizeSelect = document.getElementById('bubble-size');
-    const sessionDurationInput = document.getElementById('session-duration');
-    const fingerOptionSelect = document.getElementById('finger-option');
-
-    const scoreEl = document.getElementById('score');
-    const pbEl = document.getElementById('personal-best');
-    const hudDifficultyEl = document.getElementById('hud-difficulty');
-    const timerBar = document.getElementById('timer-bar');
-
-    const fingerGuide = document.getElementById('finger-guide');
-
-    // Buttons (settings panel)
-    const startBtn = document.getElementById('start-btn');
-    const pauseBtn = document.getElementById('pause-btn');
-    const restartBtn = document.getElementById('restart-btn');
-
-    // Buttons (HUD)
-    const hudStart = document.getElementById('hud-start');
-    const hudPause = document.getElementById('hud-pause');
-    const hudRestart = document.getElementById('hud-restart');
-
-    // Modal
-    const completionModal = document.getElementById('completion-modal');
-    const finalScoreEl = document.getElementById('final-score');
-    const finalTapsEl = document.getElementById('final-taps');
-    const finalAvgTimeEl = document.getElementById('final-avg-time');
-    const finalAccuracyEl = document.getElementById('final-accuracy');
-    const xpEarnedEl = document.getElementById('xp-earned');
-    const modalRestart = document.getElementById('modal-restart');
-    const modalClose = document.getElementById('modal-close');
-
-    // Sound fallbacks: try DOM <audio> first, then utils audio module
-    const domSounds = {
-      pop: document.getElementById('pop'),
-      sessionComplete: document.getElementById('sessionComplete'),
-      personalBest: document.getElementById('personalBest')
-    };
-    function playSound(key) {
-      try { if (domSounds[key]) { domSounds[key].currentTime = 0; domSounds[key].play(); return; } } catch {}
-      try { audio?.play?.(key); } catch {}
+    async function enterImmersive(){
+      document.body.classList.add('playing');
+      try { await document.documentElement.requestFullscreen?.(); } catch {}
+    }
+    async function exitImmersive(){
+      document.body.classList.remove('playing');
+      try { await document.exitFullscreen?.(); } catch {}
     }
 
-    // Game state
-    const EXERCISE_ID = 'bubble-tap';
-    const bubbleSizes = { large: 90, medium: 70, small: 50 };
-
-    let isActive = false;
-    let isPaused = false;
-    let taps = 0;
-    let misses = 0;
-    let score = 0;
-    let lastTapTime = 0;
-    let totalResponseTime = 0;
-    let bubbleSize = bubbleSizes.medium;
-    let sessionDurationMs = 2 * 60 * 1000; // default 2 min
-    let timeRemaining = sessionDurationMs;
-    let timerStart = 0;
-    let timerInterval = null;
+    // ===== Session state =====
+    let isActive = false, isPaused = false;
+    let taps = 0, misses = 0, score = 0, totalRT = 0;
+    let sessionDurationMs = 2 * 60 * 1000, timeRemaining = sessionDurationMs;
+    let bubbleSizePx = 80;
     let fingerMode = 'any';
-    let fingerIndex = 1;
+    let lastSpawn = 0, bubbleVisible = false, bubbleSpawnTime = 0;
 
-    // PB helpers
-    function getPB() { return Number(storage.get('pb_' + EXERCISE_ID, 0)); }
-    function setPB(val) {
-      const current = getPB();
-      if (val > current) { storage.set('pb_' + EXERCISE_ID, val); pbEl.textContent = String(val); return true; }
-      pbEl.textContent = String(getPB());
-      return false;
+    const BUBBLE_SIZES = { large: 120, medium: 80, small: 56 };
+
+    function msToClock(ms){
+      const s = Math.max(0, Math.floor(ms/1000));
+      const m = Math.floor(s/60);
+      const rem = s % 60;
+      return String(m).padStart(2,'0')+':'+String(rem).padStart(2,'0');
     }
-    pbEl.textContent = String(getPB());
 
-    // Difficulty into session-enhancement (for streaks/achievements)
-    function difficultyLabel() { if (bubbleSize >= bubbleSizes.large) return 'easy'; if (bubbleSize <= bubbleSizes.small) return 'hard'; return 'medium'; }
+    function updateHUD(){
+      timeEl.textContent = msToClock(timeRemaining);
+      scoreEl.textContent = String(score);
+      const pb = storage.get('PB_'+EXERCISE_ID, 0) || 0;
+      pbEl.textContent = String(pb);
+      pbSettingsEl.textContent = String(pb);
+    }
 
-    function updateHUD() { scoreEl.textContent = String(score); hudDifficultyEl.textContent = difficultyLabel(); }
+    function showFingerGuide(show){ fingerGuide.style.display = show ? 'block' : 'none'; }
 
-    // Starfield (fallback if module missing)
-    try { starfield?.(starsContainer); } catch {}
+    function spawnBubble(){
+      const rect = surface.getBoundingClientRect();
+      const x = Math.random() * (rect.width - bubbleSizePx) + bubbleSizePx/2;
+      const y = Math.random() * (rect.height - bubbleSizePx) + bubbleSizePx/2;
+      bubbleEl.style.left = x+'px'; bubbleEl.style.top = y+'px';
+      bubbleEl.style.width = bubbleSizePx+'px'; bubbleEl.style.height = bubbleSizePx+'px';
+      bubbleVisible = true;
+      bubbleSpawnTime = performance.now();
+    }
 
-    // Ensure bubble is positioned inside playable area (DOM move)
-    try { playableArea.appendChild(bubble); } catch {}
+    function hideBubble(){ bubbleVisible = false; bubbleEl.style.left = '-9999px'; bubbleEl.style.top = '-9999px'; }
 
-    // Bubble placement constrained to playable area
-    function placeBubble(randomizeFinger = true) {
-      const rect = playableArea.getBoundingClientRect();
-      const x = Math.random() * (rect.width - bubbleSize);
-      const y = Math.random() * (rect.height - bubbleSize);
-
-      bubble.style.width = bubble.style.height = `${bubbleSize}px`;
-      bubble.style.left = `${x}px`;
-      bubble.style.top  = `${y}px`;
-
-      if (fingerMode === 'sequence' && randomizeFinger) {
-        fingerIndex = ((fingerIndex) % 5) + 1; // cycle 1..5
-        showFingerGuide(fingerIndex);
-      } else if (fingerMode === 'single') {
-        showFingerGuide(Number(document.getElementById('finger-number').value || 1));
-      } else {
-        hideFingerGuide();
+    // Input handlers
+    bubbleEl.addEventListener('pointerdown', () => {
+      if(!isActive || isPaused || !bubbleVisible) return;
+      const rt = performance.now() - bubbleSpawnTime;
+      taps++; score += Math.max(1, Math.round(1500/Math.max(200, rt))); totalRT += rt;
+      hideBubble();
+      audio.click?.();
+    });
+    bubbleEl.addEventListener('keydown', (e) => {
+      if(e.key === ' ' || e.key === 'Enter'){
+        e.preventDefault();
+        bubbleEl.dispatchEvent(new PointerEvent('pointerdown'));
       }
+    });
+    surface.addEventListener('pointerdown', (e) => {
+      if(!isActive || isPaused) return;
+      // Miss: clicks/taps that are not on bubble
+      if(e.target !== bubbleEl){ misses++; audio.miss?.(); }
+    }, { passive:true });
 
-      lastTapTime = performance.now();
-    }
-
-    function showFingerGuide(n) {
-      fingerGuide.classList.remove('hidden');
-      const labels = fingerGuide.querySelectorAll('.finger-item');
-      labels.forEach((el, idx) => { el.style.opacity = (idx + 1) === n ? '1' : '0.5'; });
-    }
-    function hideFingerGuide() { fingerGuide.classList.add('hidden'); }
-
-    function startTimer() {
-      timerStart = performance.now();
-      const endAt = timerStart + timeRemaining;
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        const now = performance.now();
-        timeRemaining = Math.max(0, endAt - now);
-        const pct = (timeRemaining / sessionDurationMs);
-        timerBar.style.transform = `scaleX(${pct})`;
-        if (timeRemaining <= 0) { clearInterval(timerInterval); endSession(); }
-      }, 100);
-    }
-
-    function handleBubbleTap() {
-      if (!isActive || isPaused) return;
-      const now = performance.now();
-      taps++; score++;
-      totalResponseTime += (now - lastTapTime);
-      playSound('pop');
-      placeBubble();
+    // Timer/loop with real delta
+    let rafId = 0, prevTs = 0;
+    function loop(now){
+      if(!isActive) return;
+      const dt = prevTs ? (now - prevTs) : 16;
+      prevTs = now;
+      if(!isPaused){
+        timeRemaining -= dt;
+        if(timeRemaining <= 0){ endSession(); return; }
+        // spawn logic: simple delay after hide
+        if(!bubbleVisible && (now - lastSpawn) > 450){
+          spawnBubble();
+          lastSpawn = now;
+        }
+      }
       updateHUD();
+      rafId = requestAnimationFrame(loop);
     }
 
-    function togglePause() {
-      if (!isActive) return;
-      isPaused = !isPaused;
-      if (isPaused) { clearInterval(timerInterval); timerInterval = null; }
-      else { startTimer(); lastTapTime = performance.now(); }
-      [pauseBtn, hudPause].forEach(b => { b.textContent = isPaused ? 'Resume' : 'Pause'; b.setAttribute('aria-label', isPaused ? 'Resume session' : 'Pause session'); });
-    }
-
-    function restartSession() { if (!isActive) return; clearInterval(timerInterval); isActive = false; isPaused = false; startSession(); }
-
-    function endSession() {
-      clearInterval(timerInterval);
-      isActive = false; isPaused = false;
-
-      // Stats
-      const accuracy = taps > 0 ? Math.round((taps / (taps + misses)) * 100) : 0;
-      const avgResponse = taps > 0 ? (totalResponseTime / taps / 1000) : 0;
-
-      // Check for new personal best
-      const isNewPB = setPB(score);
-      if (isNewPB) {
-        const note = document.createElement('div');
-        note.textContent = '🎉 New Personal Best!';
-        note.className = 'xp-line';
-        note.style.position = 'absolute'; note.style.right = '12px'; note.style.top = '12px';
-        note.style.background = 'rgba(0,0,0,0.35)'; note.style.padding = '6px 10px'; note.style.borderRadius = '8px';
-        document.querySelector('.game-panel')?.appendChild(note);
-        setTimeout(() => note.remove(), 2500);
-        playSound('personalBest');
-      }
-
-      // Notify sessionEnhancement
-      sessionEnhancement.handleSessionComplete({ score, difficulty: difficultyLabel(), extras: { taps, misses, accuracy, avg: avgResponse } });
-      try { markExerciseTried(EXERCISE_ID); } catch {}
-      try { checkAndUnlockAchievements(); } catch {}
-      try { recordSession(EXERCISE_ID, difficultyLabel(), score, { accuracy, avg: avgResponse, taps }); } catch {}
-
-      // Modal data
-      finalScoreEl.textContent = String(score);
-      finalTapsEl.textContent = String(taps);
-      finalAvgTimeEl.textContent = `${avgResponse.toFixed(2)}s`;
-      finalAccuracyEl.textContent = `${accuracy}%`;
-      xpEarnedEl.textContent = `+${Math.max(5, Math.round(score / 2))} XP`;
-
-      playSound('sessionComplete');
-      completionModal.classList.add('open');
-
-      // Reset buttons
-      [pauseBtn, hudPause].forEach(b => b.disabled = true);
-      [restartBtn, hudRestart].forEach(b => b.disabled = false);
-      [startBtn, hudStart].forEach(b => b.disabled = false);
-    }
-
-    function startSession() {
-      // Close any open completion modal
-      completionModal.classList.remove('open');
-
+    // ===== Controls =====
+    function startSession(){
       // Read settings
-      bubbleSize = bubbleSizes[bubbleSizeSelect.value];
-      sessionDurationMs = Math.max(1, parseInt(sessionDurationInput.value || '2', 10)) * 60 * 1000;
+      const durMin = Math.max(0.5, parseFloat(durIn.value || '2'));
+      sessionDurationMs = durMin * 60 * 1000;
       timeRemaining = sessionDurationMs;
-      fingerMode = fingerOptionSelect.value;
+      bubbleSizePx = BUBBLE_SIZES[sizeSel.value] ?? 80;
+      fingerMode = fmSel.value;
+      showFingerGuide(fingerMode === 'single');
 
-      // Reset state
-      isActive = true; isPaused = false;
-      taps = 0; misses = 0; score = 0; totalResponseTime = 0; fingerIndex = 1;
+      // Reset
+      isActive = true; isPaused = false; pauseBtn.textContent = 'Pause';
+      taps = 0; misses = 0; score = 0; totalRT = 0;
+      hideBubble(); updateHUD();
 
-      hideFingerGuide();
-      updateHUD();
+      // UI
+      enterImmersive();
+      requestAnimationFrame(ts => { lastSpawn = prevTs = ts; rafId = requestAnimationFrame(loop); });
 
-      // Buttons
-      [startBtn, hudStart].forEach(b => b.disabled = true);
-      [pauseBtn, hudPause].forEach(b => { b.disabled = false; b.textContent = 'Pause'; b.setAttribute('aria-label','Pause session'); });
-      [restartBtn, hudRestart].forEach(b => b.disabled = true);
-
-      // Bubble + timer
-      placeBubble(false);
-      startTimer();
+      try { sessionEnhancement.initializeExercise?.('bubble_tap'); } catch {}
+      try { markExerciseTried(EXERCISE_ID); } catch {}
     }
 
-    // Event bindings
-    [startBtn, hudStart, modalRestart].forEach(b => b.addEventListener('click', startSession));
-    [pauseBtn, hudPause].forEach(b => b.addEventListener('click', togglePause));
-    [restartBtn, hudRestart].forEach(b => b.addEventListener('click', restartSession));
-    modalClose.addEventListener('click', () => completionModal.classList.remove('open'));
+    function pauseSession(){
+      if(!isActive) return;
+      isPaused = !isPaused;
+      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+    }
 
-    // Close modal on Escape for convenience
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && completionModal.classList.contains('open')) {
-        completionModal.classList.remove('open');
-      }
-    });
+    function exitToSettings(){
+      if(isActive) { isActive = false; cancelAnimationFrame(rafId); }
+      prevTs = 0;
+      hideBubble();
+      exitImmersive();
+      pauseBtn.textContent = 'Pause';
+      doneModal.classList.remove('open');
+    }
 
-    // Accessibility: keyboard bubble tap (Space/Enter), Escape for pause
-    bubble.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); handleBubbleTap(); }
-      else if (e.code === 'Escape') { e.preventDefault(); togglePause(); }
-    });
-    bubble.addEventListener('click', handleBubbleTap);
-    bubble.addEventListener('touchstart', (e) => { e.preventDefault(); handleBubbleTap(); }, {passive:false});
+    function endSession(){
+      isActive = false; cancelAnimationFrame(rafId);
+      prevTs = 0;
+      hideBubble(); exitImmersive();
 
-    // Miss tracking with safer semantics for touch: count on pointerup if the press didn't start on the bubble
-    let downOnBubble = false;
-    bubble.addEventListener('pointerdown', () => { downOnBubble = true; });
-    bubble.addEventListener('pointerup',   () => { downOnBubble = false; });
-    document.getElementById('game-container').addEventListener('pointerup', (e) => {
-      if (!isActive) return;
-      if (e.target === bubble || downOnBubble) return;
-      misses++;
-      downOnBubble = false;
-    });
+      const total = taps + misses;
+      const acc = total > 0 ? Math.round((taps/total)*100) : 0;
+      const avg = taps > 0 ? Math.round(totalRT / taps) : 0;
 
-    // Re-place bubble on resize to keep it inside bounds
-    window.addEventListener('resize', () => { if (isActive && !isPaused) placeBubble(false); });
+      fScore.textContent = String(score);
+      fTaps.textContent = String(taps);
+      fAcc.textContent = acc + '%';
+      fAvg.textContent = avg + 'ms';
 
-    // Expose standardized global endSession hook (already required globally)
-    if (!window.endSession) {
-      window.endSession = function(score, difficulty = 'easy') {
-        try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
-        try { markExerciseTried(EXERCISE_ID); } catch {}
-        try { checkAndUnlockAchievements(); } catch {}
+      // PB
+      const prev = storage.get('PB_'+EXERCISE_ID, 0) || 0;
+      if(score > prev){ storage.set('PB_'+EXERCISE_ID, score); }
+
+      // Progress + achievements
+      try { recordSession(EXERCISE_ID, (sizeSel.value||'medium'), score); } catch {}
+      try { checkAndUnlockAchievements(); } catch {}
+
+      doneModal.classList.add('open');
+      try { sessionEnhancement.handleSessionComplete?.('bubble_tap', { score, taps, acc, avg }); } catch {}
+    }
+
+    // Buttons
+    startBtn.addEventListener('click', () => { doneModal.classList.remove('open'); startSession(); });
+    pauseBtn.addEventListener('click', pauseSession);
+    exitBtn.addEventListener('click', exitToSettings);
+    newSessionBtn.addEventListener('click', () => { doneModal.classList.remove('open'); startSession(); });
+
+    // Settings interactivity
+    fmSel.addEventListener('change', () => { singleWrap.style.display = fmSel.value === 'single' ? '' : 'none'; });
+    // reflect current on load too
+    singleWrap.style.display = (fmSel.value === 'single') ? '' : 'none';
+
+    // Modal UX: backdrop click + Esc
+    doneModal.addEventListener('click', (e) => { if(e.target === doneModal){ doneModal.classList.remove('open'); } });
+    addEventListener('keydown', (e) => { if(e.key === 'Escape') doneModal.classList.remove('open'); });
+
+    // Init
+    updateHUD();
+    (async () => {
+      try { await initUtils?.({ starfieldTarget: surface }); } catch {}
+      // draw starfield, if available, after surface has size
+      const tryStarfield = () => {
+        if(surface.clientHeight > 0){ try { starfield?.(surface); } catch {} }
+        else { requestAnimationFrame(tryStarfield); }
       };
-    }
+      tryStarfield();
+    })();
 
-    // Update finger controls visibility
-    fingerOptionSelect.addEventListener('change', () => {
-      document.getElementById('single-finger-select').style.display = fingerOptionSelect.value === 'single' ? '' : 'none';
-    });
+    // Global hook for external callers
+    window.endSession = function(score, difficulty='medium'){
+      try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
+      try { checkAndUnlockAchievements(); } catch {}
+    };
   </script>
 </body>
 </html>
