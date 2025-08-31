@@ -51,7 +51,7 @@
   .desc{ margin-bottom:12px; background: rgba(111,211,245,.08);
          border-left: 4px solid rgba(111,211,245,.7); padding:10px; border-radius:8px; font-size:14px; line-height:1.5; }
 
-  /* NEW: compact stats row (shows PB on settings) */
+  /* Stats on settings (shows PB) */
   .stats-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
   .metric{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center;
            text-align:center; padding:8px 12px; border:1px solid rgba(255,255,255,.12); border-radius:12px;
@@ -131,7 +131,7 @@
       <h2>Settings</h2>
       <div class="desc"><strong>How to play:</strong> tap a glowing comet before it escapes. Smaller &amp; faster = harder (more points).</div>
 
-      <!-- NEW: Stats (shows PB on settings) -->
+      <!-- Stats (shows PB on settings) -->
       <div class="stats-row" role="region" aria-label="Player stats">
         <div class="metric" aria-live="polite">
           <div id="pbSettings" class="v">0</div>
@@ -303,7 +303,6 @@
   const PB_KEY='comet:best';
   const getPB=()=>parseInt(localStorage.getItem(PB_KEY)||'0',10);
   const setPB=(v)=>localStorage.setItem(PB_KEY,String(v));
-  // sync PB in both locations (settings + HUD)
   function refreshPB(){
     const pbv = getPB();
     if (pbEl) pbEl.textContent = pbv;
@@ -360,7 +359,7 @@
       // trail: keep more points for a clearer tail
       c.trail.push({ x:c.x - c.vx*8, y:c.y - c.vy*8, life: 1, hue:c.hue });
       if (c.trail.length>28) c.trail.shift();
-      c.trail.forEach(t=>t.life -= 0.025*px*60); // slower fade for more visible tail
+      c.trail.forEach(t=>t.life -= 0.025*px*60);
     });
     const margin = 60;
     const before = comets.length;
@@ -373,9 +372,30 @@
     for (let i=0;i<24;i++){
       particles.push({ x, y, vx: rnd(-2.4,2.4), vy: rnd(-2.4,2.4), life: 1, r: rnd(1,2.6), hue: hue + rnd(-10,10) });
     }
-    popups.push({ x, y, life:1, text:'+!' });
+    addPopup(x, y, '+!');
     shakeT = 120;
   }
+
+  // NEW: smarter popup creation (stagger near-collocated popups)
+  function addPopup(x, y, text){
+    const nearby = popups.filter(p => p.life > 0.45 && Math.hypot(p.x - x, p.y - y) < 64).length;
+    const offsetY = -nearby * 18;
+    const offsetX = (nearby % 2 ? -1 : 1) * (6 + nearby * 2);
+    popups.push({ x, y, life:1, text, oX: offsetX, oY: offsetY });
+  }
+
+  // rounded rect helper for popup background
+  function roundRect(ctx, x, y, w, h, r){
+    const rr = Math.min(r, h/2, w/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y,   x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x,   y+h, rr);
+    ctx.arcTo(x,   y+h, x,   y,   rr);
+    ctx.arcTo(x,   y,   x+w, y,   rr);
+    ctx.closePath();
+  }
+
   function updateParticles(dt){
     const px = dt/1000;
     particles.forEach(p=>{ p.x += p.vx*60*px; p.y += p.vy*60*px; p.vy += 0.2; p.life -= 1.6*px; });
@@ -384,19 +404,43 @@
     popups = popups.filter(s=>s.life>0);
   }
 
-  // NEW: draw popups (+points)
+  // Popup rendering with readable pill background
   function drawPopups(){
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '900 18px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+
     popups.forEach(s=>{
       const a = Math.max(0, Math.min(1, s.life));
-      ctx.fillStyle = `rgba(255,255,255,${0.9*a})`;
-      ctx.shadowColor = 'rgba(160,220,255,0.85)';
-      ctx.shadowBlur = 14;
-      ctx.fillText(s.text, s.x, s.y);
+      const x = s.x + (s.oX || 0);
+      const y = s.y + (s.oY || 0);
+      const text = s.text;
+
+      const m = ctx.measureText(text);
+      const w = Math.ceil(m.width) + 14;
+      const h = 24;
+      const rx = x - w/2;
+      const ry = y - h/2;
+
+      ctx.save();
+      ctx.globalAlpha = 0.85 * a;
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = 'rgba(10,16,36,0.75)';
+      roundRect(ctx, rx, ry, w, h, 10);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.shadowColor = 'rgba(170,220,255,0.9)';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(text, x, y);
+      ctx.restore();
     });
+
     ctx.restore();
   }
 
@@ -421,7 +465,7 @@
         const speedB = spdSel.value==='fast'?1.6 : spdSel.value==='medium'?1.2 : 1.0;
         const pts = Math.floor(10 * sizeB * speedB * clamp(3000/rt, 0.8, 6));
         score += pts; scoreEl.textContent = String(score);
-        popups.push({ x:c.x, y:c.y, life:1, text: '+'+pts });
+        addPopup(c.x, c.y, '+'+pts);
         burst(c.x,c.y,c.hue);
         break;
       }
