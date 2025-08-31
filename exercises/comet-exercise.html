@@ -1,508 +1,575 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Comet Tap — FinePointRehab</title>
-  <meta name="description" content="Tap the moving comets before they exit the screen. Adjustable size, speed, and spawn rate.">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Comet Tap — Fine Point Rehab</title>
 
-  <!-- Site styles (root-relative, as in your project) -->
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/components.css">
 
-  <style>
-    :root{
-      --panel-max: 1000px;
-      --panel-pad: 16px;
-      --hud-h: 56px;
-    }
-    body {
-      background: var(--bg-secondary, #f8fafc);
-      color: var(--text-primary, #111827);
-      -webkit-tap-highlight-color: transparent;
-    }
-    header.nav {
-      position: sticky; top: 0;
-      backdrop-filter: blur(8px);
-      background: color-mix(in oklab, var(--bg-primary, #fff) 82%, transparent);
-      border-bottom: 1px solid var(--bg-tertiary, #e5e7eb);
-      z-index: 50;
-    }
-    header.nav .wrap, main .wrap { max-width: var(--panel-max); margin: 0 auto; padding: 12px var(--panel-pad); }
-    header.nav a { text-decoration: none; font-weight: 600; }
+<style>
+  :root{
+    --vh: 1vh;
+    --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
+    --accent: var(--brand-aqua, #6fd3f5);
+    --radius: 14px;
+    --panel: rgba(10,16,36,.9);
+    --panel-border: rgba(255,255,255,.08);
+    --text: #eaf6ff;
+  }
+  /* Cosmic background with nebula */
+  body{
+    margin:0; color:var(--text);
+    background:
+      radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
+      radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 55%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+    min-height: calc(var(--vh) * 100);
+    touch-action: manipulation;
+  }
+  header.app{
+    position: sticky; top:0; z-index: 50;
+    padding:12px 16px; display:flex; gap:12px; align-items:center;
+    background: linear-gradient(180deg, rgba(8,12,26,.9), rgba(8,12,26,.55));
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    backdrop-filter: blur(6px);
+  }
+  header .home {
+    text-decoration:none; color:var(--text); font-weight:700;
+    border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:8px 12px;
+  }
+  header h1{ margin:0; font-size: clamp(18px,3vw,24px); }
 
-    h1 { margin: 8px 0 4px; }
-    .lede { color: var(--text-secondary,#6b7280); margin: 0 0 12px; }
+  .layout{
+    display:grid; grid-template-columns: 360px 1fr; gap:16px;
+    padding:16px; height: calc((var(--vh) * 100) - 56px);
+  }
+  @media (max-width: 900px){
+    .layout{ grid-template-columns: 1fr; height:auto; }
+  }
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05);
+  }
+  /* Left — Settings */
+  #settings { padding:18px; overflow:auto; position:relative; z-index: 5; }
+  #settings h2{ margin:0 0 10px; font-size:20px; text-align:center; }
+  .desc{
+    margin-bottom:12px;
+    background: rgba(111,211,245,.08);
+    border-left: 4px solid rgba(111,211,245,.7);
+    padding:10px; border-radius:8px; font-size:14px; line-height:1.5;
+  }
+  .group{ margin-bottom:12px; }
+  .label{ display:block; margin-bottom:6px; font-weight:700; letter-spacing:.2px; }
+  select, input[type="number"]{
+    width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+    background: rgba(5,10,26,.8); color:var(--text); font-size:16px;
+  }
+  select:focus, input[type="number"]:focus{
+    outline:none; border-color: rgba(111,211,245,.9); box-shadow: 0 0 0 2px rgba(111,211,245,.25);
+  }
+  .btn-row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px; }
+  .btn{
+    min-height:46px; border:1px solid rgba(111,211,245,.35); background: rgba(111,211,245,.12);
+    color:var(--text); border-radius:10px; font-weight:800; letter-spacing:.2px; cursor:pointer; transition:.2s;
+  }
+  .btn:hover:not(:disabled){ background: rgba(111,211,245,.22); transform: translateY(-1px); }
+  .btn:disabled{ opacity:.55; cursor:not-allowed; }
+  .btn-primary{ background: rgba(111,211,245,.95); color:#07101e; border-color: rgba(111,211,245,1); }
+  .btn-primary:hover:not(:disabled){ background: rgba(111,211,245,1); box-shadow: 0 6px 18px rgba(111,211,245,.45); }
 
-    /* Layout: controls first, then canvas below (so controls stay interactive) */
-    .grid {
-      display: grid; gap: 16px;
-      grid-template-columns: 1fr;
-    }
+  /* Right — HUD + Canvas */
+  .right{ position:relative; }
+  .hud{
+    display:grid; grid-template-columns: 1fr auto auto auto; gap:12px; align-items:center;
+    padding:10px 12px; margin-bottom:12px;
+    background: rgba(8,14,36,.85);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius); box-shadow: 0 6px 16px rgba(0,0,0,.35);
+    position:relative; z-index:4; pointer-events:auto;
+  }
+  .timer{ position:relative; height:10px; background: rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
+  #timerBar{ position:absolute; inset:0 auto 0 0; width:100%;
+    background: linear-gradient(90deg, rgba(111,211,245,.95), rgba(150,180,255,.95), rgba(200,150,255,.95));
+    box-shadow: 0 2px 10px rgba(111,211,245,.5);
+    transition: width .25s ease;
+  }
+  .hudItem{ text-align:right; min-width:120px; }
+  .v{ font-weight:900; font-size:20px; color:#bfe6ff; text-shadow: 0 0 8px rgba(150,220,255,.5); }
+  #score{ font-size:22px; color:#d7f2ff; text-shadow: 0 0 10px rgba(160,220,255,.7); }
+  .t{ font-size:12px; opacity:.8; }
+  /* Canvas frame */
+  .frame{
+    position:relative; border-radius: var(--radius); overflow:hidden;
+    border:1px solid var(--panel-border); box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+    background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%);
+  }
+  canvas#stage{ display:block; width:100%; height:62vh; max-height:760px; background: transparent; }
+  @media (max-width:900px){ canvas#stage{ height:58vh; } }
 
-    /* Settings panel */
-    .card {
-      background: var(--bg-primary, #fff);
-      border: 1px solid var(--bg-tertiary,#e5e7eb);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04);
-      position: relative;
-      z-index: 3; /* ABOVE canvas so it's clickable */
-    }
-    .fieldset { margin: 12px 0; }
-    .fieldset legend { font-weight: 600; margin-bottom: 8px; }
-    .choices { display: flex; flex-wrap: wrap; gap: 8px; }
-    .choices label {
-      display: inline-flex; align-items: center; gap: 8px;
-      border: 1px solid var(--bg-tertiary,#e5e7eb);
-      border-radius: 999px; padding: 8px 12px; cursor: pointer;
-      user-select: none;
-    }
-    .choices input { accent-color: var(--brand-blue,#2563eb); }
+  /* Completion modal */
+  #done{ position:absolute; inset:0; display:grid; place-items:center; background: rgba(0,0,0,.65);
+         backdrop-filter: blur(4px); z-index:10; }
+  #doneCard{ max-width:min(520px, 92vw); max-height:80vh; overflow:auto; padding:22px; }
+  #done h2{ margin-top:0; color:var(--accent); }
+  .hi{ color:#9ee7ff; font-weight:900; }
+  .hidden{ display:none !important; }
 
-    /* Sticky action bar so Start is always reachable on phones */
-    .actions {
-      position: sticky; bottom: env(safe-area-inset-bottom, 0);
-      background: var(--bg-primary,#fff);
-      border: 1px solid var(--bg-tertiary,#e5e7eb);
-      border-radius: 16px;
-      padding: 10px;
-      display: flex; gap: 8px; justify-content: space-between; align-items: center;
-      z-index: 4; /* above canvas */
-    }
-    .btn {
-      appearance: none; border: 0; cursor: pointer;
-      padding: 10px 14px; border-radius: 10px; font-weight: 600;
-    }
-    .btn.primary { background: var(--brand-blue,#2563eb); color: #fff; }
-    .btn.ghost { background: transparent; border: 1px solid var(--bg-tertiary,#e5e7eb); }
-    .btn.warn { background: var(--error-color,#ef4444); color: #fff; }
-
-    .stats { display:flex; gap:12px; flex-wrap:wrap; font-size:.95rem; color: var(--text-secondary,#6b7280); }
-
-    /* Canvas area */
-    .stage-card {
-      position: relative;
-      border-radius: 16px;
-      overflow: hidden;
-      background: radial-gradient(circle at 50% 40%, rgba(72,202,228,.12), transparent 55%), var(--bg-primary,#fff);
-      border: 1px solid var(--bg-tertiary,#e5e7eb);
-      z-index: 1; /* BELOW panel/controls */
-    }
-    #stage {
-      display:block; width:100%; height:56vh; max-height:720px;
-      touch-action: manipulation; /* faster taps */
-    }
-    /* Pause overlay inside the stage */
-    .pause-overlay {
-      position:absolute; inset:0; display:none; place-items:center;
-      background: color-mix(in oklab, black 18%, transparent);
-      color:#fff; font-weight:700; font-size: clamp(1rem, 2.5vw, 1.25rem);
-      z-index: 2; pointer-events:none;
-    }
-    .pause-overlay.show { display:grid; }
-
-    /* Results panel (hidden until complete) */
-    .results { display:none; }
-    .results.show { display:block; }
-
-    @media (min-width: 900px){
-      .grid { grid-template-columns: 1fr 1fr; align-items: start; }
-      #stage { height: 66vh; }
-      .actions { position: static; }
-    }
-  </style>
+  :focus-visible{ outline: 3px solid rgba(111,211,245,.85); outline-offset:2px; }
+</style>
 </head>
 <body>
-  <header class="nav">
-    <div class="wrap">
-      <a href="/" aria-label="Back to Home">← Home</a>
-    </div>
+  <header class="app">
+    <a class="home" href="/" aria-label="Back to Home">← Home</a>
+    <h1>Comet Tap</h1>
   </header>
 
-  <main>
-    <div class="wrap">
-      <h1>Comet Tap</h1>
-      <p class="lede">Glowing comets streak across the screen. Tap a comet before it exits to score points. Smaller &amp; faster = harder (and more points).</p>
-
-      <div class="grid">
-        <!-- Settings & Actions (top, above the canvas for clickability) -->
-        <section class="card" aria-labelledby="settings-h">
-          <h2 id="settings-h">Settings</h2>
-
-          <fieldset class="fieldset">
-            <legend>Session Duration (minutes)</legend>
-            <div class="choices" role="radiogroup" aria-label="Duration (minutes)">
-              <label><input type="radio" name="duration" value="0.5"> 0.5</label>
-              <label><input type="radio" name="duration" value="1" checked> 1</label>
-              <label><input type="radio" name="duration" value="2"> 2</label>
-              <label><input type="radio" name="duration" value="3"> 3</label>
-            </div>
-          </fieldset>
-
-          <fieldset class="fieldset">
-            <legend>Comet Size</legend>
-            <div class="choices" role="radiogroup" aria-label="Comet size">
-              <label><input type="radio" name="size" value="large" checked> Large (easier)</label>
-              <label><input type="radio" name="size" value="medium"> Medium</label>
-              <label><input type="radio" name="size" value="small"> Small (harder)</label>
-            </div>
-          </fieldset>
-
-          <fieldset class="fieldset">
-            <legend>Comet Speed</legend>
-            <div class="choices" role="radiogroup" aria-label="Comet speed">
-              <label><input type="radio" name="speed" value="slow" checked> Slow</label>
-              <label><input type="radio" name="speed" value="medium"> Medium</label>
-              <label><input type="radio" name="speed" value="fast"> Fast</label>
-            </div>
-          </fieldset>
-
-          <fieldset class="fieldset">
-            <legend>Spawn Rate</legend>
-            <div class="choices" role="radiogroup" aria-label="Spawn rate">
-              <label><input type="radio" name="spawn" value="slow" checked> Slow (2s)</label>
-              <label><input type="radio" name="spawn" value="med"> Medium (1.5s)</label>
-              <label><input type="radio" name="spawn" value="fast"> Fast (1s)</label>
-              <label><input type="radio" name="spawn" value="vfast"> Very Fast (0.5s)</label>
-            </div>
-          </fieldset>
-
-          <div class="actions" role="group" aria-label="Session actions">
-            <div style="display:flex; gap:8px;">
-              <button id="startBtn" class="btn primary" type="button">Start</button>
-              <button id="pauseBtn" class="btn ghost" type="button" disabled>Pause</button>
-              <button id="restartBtn" class="btn ghost" type="button" disabled>Restart</button>
-            </div>
-            <div class="stats" aria-live="polite">
-              <span>Score: <strong id="scoreEl">0</strong></span>
-              <span>Best: <strong id="bestEl">0</strong></span>
-              <span>Difficulty: <strong id="diffEl">Medium</strong></span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Stage -->
-        <section class="stage-card" aria-labelledby="stage-h">
-          <h2 id="stage-h" class="sr-only">Stage</h2>
-          <canvas id="stage" width="1280" height="720" aria-label="Game stage"></canvas>
-          <div id="pauseOverlay" class="pause-overlay">Paused — tap Pause to resume</div>
-
-          <div id="results" class="card results" aria-live="polite" style="margin:16px;">
-            <h3>Session Complete!</h3>
-            <p>Final Score: <strong id="finalScore">0</strong></p>
-            <p>Comets Tapped: <strong id="tappedCount">0</strong></p>
-            <p>Accuracy: <strong id="accuracy">0%</strong></p>
-            <p>Average Response Time: <strong id="avgRt">0.0s</strong></p>
-            <button id="newSessionBtn" class="btn primary" type="button">Start New Session</button>
-          </div>
-        </section>
+  <main class="layout">
+    <!-- SETTINGS -->
+    <aside id="settings" class="panel" aria-label="Settings">
+      <h2>Settings</h2>
+      <div class="desc">
+        <strong>How to play:</strong> tap a glowing comet before it escapes. Smaller &amp; faster = harder (more points).
       </div>
-    </div>
+
+      <div class="group">
+        <label class="label" for="dur">Session Duration (minutes)</label>
+        <input id="dur" type="number" min="0.5" step="0.5" max="10" value="2" inputmode="decimal" />
+      </div>
+      <div class="group">
+        <label class="label" for="size">Comet Size</label>
+        <select id="size">
+          <option value="large">Large (Easier)</option>
+          <option value="medium" selected>Medium (Balanced)</option>
+          <option value="small">Small (Challenging)</option>
+        </select>
+      </div>
+      <div class="group">
+        <label class="label" for="spd">Comet Speed</label>
+        <select id="spd">
+          <option value="slow">Slow (Beginner)</option>
+          <option value="medium" selected>Medium (Intermediate)</option>
+          <option value="fast">Fast (Advanced)</option>
+        </select>
+      </div>
+      <div class="group">
+        <label class="label" for="spawn">Spawn Rate</label>
+        <select id="spawn">
+          <option value="slow">Slow (2s)</option>
+          <option value="medium">Medium (1.5s)</option>
+          <option value="fast" selected>Fast (1s)</option>
+          <option value="vfast">Very Fast (0.5s)</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button id="start" class="btn btn-primary" type="button">Start</button>
+        <button id="pause" class="btn" type="button" disabled>Pause</button>
+      </div>
+      <button id="restart" class="btn" type="button" disabled>Restart</button>
+    </aside>
+
+    <!-- GAME -->
+    <section class="right" aria-label="Game area">
+      <div class="hud">
+        <div class="timer" aria-hidden="true"><div id="timerBar"></div></div>
+        <div class="hudItem" aria-live="polite"><div id="score" class="v">0</div><div class="t">Score</div></div>
+        <div class="hudItem" aria-live="polite"><div id="pb" class="v">0</div><div class="t">Personal Best</div></div>
+        <div class="hudItem" aria-live="polite"><div id="diff" class="v">Medium</div><div class="t">Difficulty</div></div>
+      </div>
+
+      <div class="frame panel">
+        <canvas id="stage" width="1280" height="720" aria-label="Game stage"></canvas>
+      </div>
+
+      <!-- Completion -->
+      <div id="done" class="hidden" role="dialog" aria-modal="true" aria-labelledby="doneT">
+        <div id="doneCard" class="panel">
+          <h2 id="doneT">Session Complete!</h2>
+          <p>Final Score: <span id="fScore" class="hi">0</span></p>
+          <p>Comets Tapped: <span id="fTaps" class="hi">0</span></p>
+          <p>Accuracy: <span id="fAcc" class="hi">0%</span></p>
+          <p>Average Response Time: <span id="fAvg" class="hi">0.00s</span></p>
+          <div class="btn-row" style="grid-template-columns:1fr;">
+            <button id="doneBtn" class="btn btn-primary" type="button">Start New Session</button>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <script>
-  (function(){
-    // --- Helpers ---
-    const $ = (sel, root=document) => root.querySelector(sel);
-    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-    const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
-    const now = ()=>performance.now();
+<script>
+(function(){
+  // ===== Helpers & DOM =====
+  const $ = (s, r=document)=>r.querySelector(s);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+  const rnd = (a,b)=>Math.random()*(b-a)+a;
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const now = ()=>performance.now();
 
-    // --- DOM refs ---
-    const startBtn = $('#startBtn');
-    const pauseBtn = $('#pauseBtn');
-    const restartBtn = $('#restartBtn');
-    const scoreEl = $('#scoreEl');
-    const bestEl = $('#bestEl');
-    const diffEl = $('#diffEl');
-    const stage = $('#stage');
-    const overlay = $('#pauseOverlay');
-    const resultsPanel = $('#results');
-    const finalScore = $('#finalScore');
-    const tappedCountEl = $('#tappedCount');
-    const accuracyEl = $('#accuracy');
-    const avgRtEl = $('#avgRt');
-    const newSessionBtn = $('#newSessionBtn');
+  const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn');
+  [startBtn, pauseBtn, restartBtn, doneBtn].forEach(b=>b.setAttribute('type','button'));
+  const durIn = $('#dur'), sizeSel = $('#size'), spdSel = $('#spd'), spawnSel = $('#spawn');
+  const scoreEl = $('#score'), pbEl = $('#pb'), diffEl = $('#diff'), timerBar = $('#timerBar');
+  const doneModal = $('#done'), fScore = $('#fScore'), fTaps = $('#fTaps'), fAcc = $('#fAcc'), fAvg = $('#fAvg');
+  const settings = $('#settings');
+  const canvas = $('#stage'); const ctx = canvas.getContext('2d');
 
-    // Ensure controls are never covered by the canvas
-    // (extra safety in case site CSS changes)
-    document.querySelectorAll('.card,.actions').forEach(el=>{
-      el.style.pointerEvents = 'auto';
+  // keep controls on top & interactive
+  settings.style.pointerEvents = 'auto';
+
+  // ===== HiDPI Canvas =====
+  let DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+  function fit(){
+    const r = canvas.getBoundingClientRect();
+    const w = Math.max(640, Math.floor(r.width * DPR));
+    const h = Math.max(360, Math.floor(r.height * DPR));
+    canvas.width = w; canvas.height = h;
+    ctx.setTransform(DPR,0,0,DPR,0,0); // draw in CSS px
+  }
+  fit();
+  window.addEventListener('resize', fit, {passive:true});
+
+  // ===== Starfield (parallax) =====
+  const layers = [
+    { count: 80, speed: .02, stars: [], alpha:.45 },
+    { count: 50, speed: .06, stars: [], alpha:.75 },
+    { count: 25, speed: .12, stars: [], alpha:1.0 }
+  ];
+  function initStars(){
+    layers.forEach((L,i)=>{
+      L.stars = Array.from({length:L.count}, () => ({
+        x: Math.random()*canvas.width/DPR,
+        y: Math.random()*canvas.height/DPR,
+        r: Math.random()*(i+1)*.8 + .5,
+        tw: Math.random()*2*Math.PI
+      }));
     });
-    stage.style.pointerEvents = 'auto';
+  }
+  initStars();
 
-    // --- Settings ---
-    const settings = {
-      durationMin: 1,
-      size: 'large',
-      speed: 'slow',
-      spawn: 'slow'
-    };
+  function drawStars(dt){
+    layers.forEach(L=>{
+      ctx.save();
+      ctx.globalAlpha = L.alpha;
+      L.stars.forEach(s=>{
+        s.x -= L.speed * dt * 0.06;
+        if (s.x < -4) s.x = canvas.width/DPR + 4, s.y = Math.random()*canvas.height/DPR;
+        s.tw += dt*0.002;
+        const o = 0.6 + Math.sin(s.tw)*0.4;
+        ctx.fillStyle = `rgba(255,255,255,${o})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+      });
+      ctx.restore();
+    });
+  }
 
-    const sizeMap = { large: 26, medium: 18, small: 12 };
-    const speedMap = { slow: 140, medium: 210, fast: 290 }; // px/s baseline
-    const spawnMap = { slow: 2000, med: 1500, fast: 1000, vfast: 500 };
+  // ===== Game State =====
+  const sizeMap = { small: 10, medium: 16, large: 22 };         // comet head radius (CSS px)
+  const speedMap = { slow: 140, medium: 220, fast: 320 };        // px/s baseline
+  const spawnMap = { slow: 2000, medium: 1500, fast: 1000, vfast: 500 };
 
-    // bind radios
-    $$('input[name="duration"]').forEach(r => r.addEventListener('change', e=>{
-      settings.durationMin = parseFloat(e.target.value);
-      updateDiffLabel();
-    }));
-    $$('input[name="size"]').forEach(r => r.addEventListener('change', e=>{
-      settings.size = e.target.value; updateDiffLabel();
-    }));
-    $$('input[name="speed"]').forEach(r => r.addEventListener('change', e=>{
-      settings.speed = e.target.value; updateDiffLabel();
-    }));
-    $$('input[name="spawn"]').forEach(r => r.addEventListener('change', e=>{
-      settings.spawn = e.target.value; updateDiffLabel();
-    }));
+  let running=false, paused=false;
+  let durationMs=120000, timeLeft=0, lastTick=0, lastSpawn=0;
+  let score=0, taps=0, misses=0, totalRT=0;
+  let comets=[], particles=[], popups=[];
+  let shakeT=0, hueBase=rnd(160,220);
 
-    function updateDiffLabel(){
-      // Simple heuristic summary
-      const s = settings;
-      let lvl = 0;
-      lvl += (s.size==='small') ? 2 : (s.size==='medium'?1:0);
-      lvl += (s.speed==='fast') ? 2 : (s.speed==='medium'?1:0);
-      lvl += (s.spawn==='vfast') ? 2 : (s.spawn==='fast'?1:0);
-      lvl += (s.durationMin>=2) ? 1 : 0;
-      diffEl.textContent = lvl>=5 ? 'Hard' : lvl>=3 ? 'Medium' : 'Easy';
-    }
-    updateDiffLabel();
+  const PB_KEY='comet:best';
+  const getPB=()=>parseInt(localStorage.getItem(PB_KEY)||'0',10);
+  const setPB=(v)=>localStorage.setItem(PB_KEY,String(v));
+  pbEl.textContent = getPB();
 
-    // --- Score/Best ---
-    function getBest(){ return parseInt(localStorage.getItem('comet:best')||'0',10); }
-    function setBest(v){ localStorage.setItem('comet:best', String(v)); }
-    bestEl.textContent = getBest();
+  // Difficulty label
+  function updateDiff(){
+    const s=sizeSel.value, v=spdSel.value, sp=spawnSel.value;
+    let lvl = 0;
+    if (s==='small') lvl+=2; else if (s==='medium') lvl+=1;
+    if (v==='fast') lvl+=2; else if (v==='medium') lvl+=1;
+    if (sp==='vfast') lvl+=2; else if (sp==='fast') lvl+=1;
+    diffEl.textContent = lvl>=5 ? 'Hard' : (lvl>=3 ? 'Medium' : 'Easy');
+  }
+  sizeSel.addEventListener('change', updateDiff);
+  spdSel.addEventListener('change', updateDiff);
+  spawnSel.addEventListener('change', updateDiff);
+  updateDiff();
 
-    // --- Stage / Drawing ---
-    const ctx = stage.getContext('2d');
-    const DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-    function fitCanvas(){
-      const rect = stage.getBoundingClientRect();
-      stage.width = Math.max(640, Math.floor(rect.width * DPR));
-      stage.height = Math.max(360, Math.floor(rect.height * DPR));
-      ctx.setTransform(DPR,0,0,DPR,0,0); // draw in CSS pixels
-    }
-    fitCanvas();
-    window.addEventListener('resize', fitCanvas, { passive:true });
+  // ===== Comet Model =====
+  function spawnComet(){
+    const r = sizeMap[sizeSel.value];
+    const spd = speedMap[spdSel.value]*(.85 + Math.random()*.4);
+    const edge = Math.floor(Math.random()*4);
+    const pad = r + 8;
+    let x,y,vx,vy;
 
-    // --- Game State ---
-    let running = false;
-    let paused = false;
-    let score = 0;
-    let tapped = 0;
-    let missed = 0;
-    let startTime = 0;
-    let sessionEndTime = 0;
-    let lastSpawn = 0;
-    let comets = [];
-    let rafId = 0;
-    let spawnIntervalMs = spawnMap[settings.spawn];
-    let responseTimes = []; // ms from spawn to tap
+    if (edge===0){ x = rnd(pad, canvas.width/DPR-pad); y = -pad; vx=rnd(-1,1); vy=1; }
+    else if (edge===1){ x = canvas.width/DPR+pad; y = rnd(pad, canvas.height/DPR-pad); vx=-1; vy=rnd(-1,1); }
+    else if (edge===2){ x = rnd(pad, canvas.width/DPR-pad); y = canvas.height/DPR+pad; vx=rnd(-1,1); vy=-1; }
+    else { x = -pad; y = rnd(pad, canvas.height/DPR-pad); vx=1; vy=rnd(-1,1); }
 
-    function resetState(){
-      running = false; paused = false;
-      score = 0; tapped = 0; missed = 0;
-      responseTimes.length = 0;
-      comets = [];
-      scoreEl.textContent = '0';
-      overlay.classList.remove('show');
-      resultsPanel.classList.remove('show');
-      pauseBtn.disabled = true;
-      restartBtn.disabled = true;
-    }
+    const len = Math.hypot(vx,vy)||1; vx/=len; vy/=len;
+    const hue = (hueBase + Math.random()*60) % 360;
 
-    // --- Comets ---
-    function makeComet(){
-      const size = sizeMap[settings.size];
-      const speed = speedMap[settings.speed] * (0.8 + Math.random()*0.4);
-      const edge = Math.floor(Math.random()*4); // 0 top, 1 right, 2 bottom, 3 left
-      const pad = size + 4;
+    comets.push({ x, y, vx, vy, r, spd, hue, born: now(), trail: [] });
+  }
 
-      let x, y, vx, vy;
-      if (edge===0){ x = rand(pad, stage.width/DPR - pad); y = -pad; vx = rand(-1,1); vy = 1; }
-      if (edge===1){ x = stage.width/DPR + pad; y = rand(pad, stage.height/DPR - pad); vx = -1; vy = rand(-1,1); }
-      if (edge===2){ x = rand(pad, stage.width/DPR - pad); y = stage.height/DPR + pad; vx = rand(-1,1); vy = -1; }
-      if (edge===3){ x = -pad; y = rand(pad, stage.height/DPR - pad); vx = 1; vy = rand(-1,1); }
-
-      // normalize direction
-      const len = Math.hypot(vx,vy)||1;
-      vx/=len; vy/=len;
-
-      return {
-        x, y, vx, vy, size,
-        speed, // px/s
-        bornAt: now()
-      };
-    }
-    function rand(min,max){ return Math.random()*(max-min)+min; }
-
-    function update(dt){
-      // spawn
-      spawnIntervalMs = spawnMap[settings.spawn];
-      if (now() - lastSpawn >= spawnIntervalMs){
-        comets.push(makeComet());
-        lastSpawn = now();
-      }
-
-      // move & cull
-      const W = stage.width / DPR, H = stage.height / DPR;
+  function updateComets(dt){
+    const W=canvas.width/DPR, H=canvas.height/DPR;
+    comets.forEach(c=>{
       const px = dt/1000;
-      comets.forEach(c=>{
-        c.x += c.vx * c.speed * px;
-        c.y += c.vy * c.speed * px;
-      });
-      const prevLen = comets.length;
-      comets = comets.filter(c => c.x>-80 && c.x<W+80 && c.y>-80 && c.y<H+80);
-      missed += Math.max(0, prevLen - comets.length); // rough miss when it leaves
+      c.x += c.vx*c.spd*px;
+      c.y += c.vy*c.spd*px;
+      // trail
+      c.trail.push({ x:c.x - c.vx*6, y:c.y - c.vy*6, life: 1, hue:c.hue });
+      if (c.trail.length>24) c.trail.shift();
+      c.trail.forEach(t=>t.life -= 0.035*px*60);
+    });
+    // cull offscreen
+    const before = comets.length;
+    comets = comets.filter(c => c.x>-60 && c.x<W+60 && c.y>-60 && c.y<H+60);
+    misses += Math.max(0, before - comets.length);
+  }
 
-      // end?
-      if (now() >= sessionEndTime){
-        endSession();
-      }
-    }
-
-    function draw(){
-      const W = stage.width / DPR, H = stage.height / DPR;
-      // background
-      ctx.clearRect(0,0,W,H);
-
-      // mild starfield
-      for (let i=0;i<16;i++){
-        const sx = (i*97 % W), sy = (i*71 % H);
-        ctx.globalAlpha = 0.06;
-        ctx.beginPath(); ctx.arc(sx,sy,1.5,0,Math.PI*2); ctx.fillStyle = '#000'; ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      // comets
-      comets.forEach(c=>{
-        // tail
-        ctx.save();
-        ctx.translate(c.x,c.y);
-        const angle = Math.atan2(c.vy, c.vx);
-        ctx.rotate(angle);
-        const grd = ctx.createLinearGradient(-c.size*3,0,c.size,0);
-        grd.addColorStop(0,'rgba(37,99,235,0)');
-        grd.addColorStop(1,'rgba(37,99,235,0.6)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.ellipse(-c.size*1.8,0,c.size*2.3,c.size*0.6,0,0,Math.PI*2);
-        ctx.fill();
-        ctx.restore();
-
-        // head
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.size, 0, Math.PI*2);
-        ctx.fillStyle = '#2563eb';
-        ctx.fill();
-
-        // glow
-        ctx.globalAlpha = 0.25;
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.size*1.8, 0, Math.PI*2);
-        ctx.fillStyle = '#48cae4';
-        ctx.fill();
-        ctx.globalAlpha = 1;
+  // ===== Particles & Popups =====
+  function burst(x,y,hue){
+    for (let i=0;i<24;i++){
+      particles.push({
+        x, y,
+        vx: rnd(-2.4,2.4), vy: rnd(-2.4,2.4),
+        life: 1,
+        r: rnd(1,2.6),
+        hue: hue + rnd(-10,10)
       });
     }
+    popups.push({ x, y, life:1, text:'+!' });
+    shakeT = 120;
+  }
+  function updateParticles(dt){
+    const px = dt/1000;
+    particles.forEach(p=>{
+      p.x += p.vx*60*px; p.y += p.vy*60*px;
+      p.vy += 0.2; // gravity
+      p.life -= 1.6*px;
+    });
+    particles = particles.filter(p=>p.life>0);
+    popups.forEach(s=>{
+      s.y -= 24*px; s.life -= 1*px;
+    });
+    popups = popups.filter(s=>s.life>0);
+  }
 
-    // --- Input (tap to hit comet) ---
-    function stagePos(evt){
-      const rect = stage.getBoundingClientRect();
-      const x = (evt.touches?evt.touches[0].clientX:evt.clientX) - rect.left;
-      const y = (evt.touches?evt.touches[0].clientY:evt.clientY) - rect.top;
-      return { x, y };
-    }
-    function handleTap(evt){
-      if (!running || paused) return;
-      const {x,y} = stagePos(evt);
-      // find nearest comet within radius
-      let hitIndex = -1;
-      for (let i=0;i<comets.length;i++){
-        const c = comets[i];
-        const d = Math.hypot(c.x - x, c.y - y);
-        if (d <= c.size * 1.1){ hitIndex = i; break; }
-      }
-      if (hitIndex>-1){
-        const [c] = comets.splice(hitIndex,1);
-        tapped++;
-        const rt = now() - c.bornAt;
-        responseTimes.push(rt);
-        const sizeBonus = settings.size==='small' ? 6 : settings.size==='medium' ? 3 : 1;
-        const speedBonus = settings.speed==='fast' ? 6 : settings.speed==='medium' ? 3 : 1;
-        score += 10 + sizeBonus + speedBonus;
-        scoreEl.textContent = String(score);
-      }
-    }
-    stage.addEventListener('click', handleTap);
-    stage.addEventListener('touchstart', handleTap, { passive:true });
+  // ===== Rendering =====
+  function clearBG(){
+    // very subtle vignette; real background is body gradient
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0,0,canvas.width/DPR,canvas.height/DPR);
+    ctx.restore();
+  }
 
-    // --- Loop ---
-    let lastTs = 0;
-    function tick(ts){
-      if (!running){ return; }
-      rafId = requestAnimationFrame(tick);
-      const dt = ts - lastTs; lastTs = ts;
-      if (paused) return;
-      update(dt);
-      draw();
-    }
-
-    // --- Session lifecycle ---
-    function startSession(){
-      resetState();
-      running = true;
-      paused = false;
-      startTime = now();
-      sessionEndTime = startTime + settings.durationMin * 60_000;
-      lastSpawn = 0;
-      spawnIntervalMs = spawnMap[settings.spawn];
-      pauseBtn.disabled = false;
-      restartBtn.disabled = false;
-      tick(performance.now());
-    }
-
-    function pauseSession(p){
-      if (!running) return;
-      paused = !!p;
-      overlay.classList.toggle('show', paused);
-      pauseBtn.textContent = paused ? 'Resume' : 'Pause';
-    }
-
-    function endSession(){
-      running = false;
-      cancelAnimationFrame(rafId);
-      const best = getBest();
-      if (score > best){ setBest(score); bestEl.textContent = String(score); }
-
-      // results
-      finalScore.textContent = String(score);
-      tappedCountEl.textContent = String(tapped);
-      const total = tapped + missed;
-      const acc = total>0 ? Math.round((tapped/total)*100) : 0;
-      accuracyEl.textContent = acc + '%';
-      const avg = responseTimes.length ? (responseTimes.reduce((a,b)=>a+b,0)/responseTimes.length) : 0;
-      avgRtEl.textContent = (avg/1000).toFixed(2) + 's';
-      resultsPanel.classList.add('show');
-    }
-
-    // --- Buttons ---
-    startBtn.addEventListener('click', ()=> startSession());
-    pauseBtn.addEventListener('click', ()=> pauseSession(!paused));
-    restartBtn.addEventListener('click', ()=> startSession());
-    newSessionBtn.addEventListener('click', ()=> {
-      resultsPanel.classList.remove('show');
-      startSession();
+  function drawComet(c){
+    // tail (multi-layer, additive)
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    c.trail.forEach((t,i)=>{
+      const alpha = clamp(t.life,0,1) * (i/24);
+      const grad = ctx.createLinearGradient(c.x, c.y, t.x, t.y);
+      grad.addColorStop(0, `hsla(${c.hue},95%,65%,${alpha*0.85})`);
+      grad.addColorStop(1, `hsla(${c.hue+40},95%,55%,0)`);
+      ctx.strokeStyle = grad; ctx.lineWidth = Math.max(1, c.r*0.9*(i/24));
+      ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(t.x, t.y); ctx.stroke();
     });
 
-    // Defensive: ensure buttons are not inside a <form> submit context
-    [startBtn, pauseBtn, restartBtn, newSessionBtn].forEach(b => b.setAttribute('type','button'));
+    // glow
+    const g1 = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r*2.2);
+    g1.addColorStop(0, `hsla(${c.hue},95%,80%,.85)`);
+    g1.addColorStop(1, `hsla(${c.hue},95%,50%,0)`);
+    ctx.fillStyle = g1; ctx.beginPath(); ctx.arc(c.x, c.y, c.r*2.2, 0, Math.PI*2); ctx.fill();
+
+    // core
+    const g2 = ctx.createRadialGradient(c.x- c.r*0.4, c.y- c.r*0.4, 0, c.x, c.y, c.r);
+    g2.addColorStop(0, '#fff');
+    g2.addColorStop(0.35, `hsla(${c.hue},95%,75%,1)`);
+    g2.addColorStop(0.9, `hsla(${c.hue},95%,45%,.85)`);
+    g2.addColorStop(1, 'rgba(0,0,0,.0)');
+    ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawParticles(){
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    particles.forEach(p=>{
+      ctx.fillStyle = `hsla(${p.hue},95%,70%,${p.life})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
+
+    // popups
+    popups.forEach(s=>{
+      ctx.save();
+      ctx.globalAlpha = s.life;
+      ctx.font = '900 22px system-ui, Segoe UI, Roboto';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowBlur = 16; ctx.shadowColor = 'rgba(160,255,200,.85)';
+      ctx.fillStyle = '#a8ffd5';
+      ctx.fillText(s.text, s.x, s.y);
+      ctx.restore();
+    });
+  }
+
+  // ===== Input =====
+  function getPos(e){
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches?e.touches[0].clientX:e.clientX) - rect.left;
+    const y = (e.touches?e.touches[0].clientY:e.clientY) - rect.top;
+    return { x, y };
+  }
+  function onTap(e){
+    if (!running || paused) return;
+    const {x,y} = getPos(e);
+    let hit=-1;
+    for (let i=0;i<comets.length;i++){
+      const c = comets[i];
+      if (Math.hypot(c.x-x, c.y-y) <= c.r*1.15){ hit=i; break; }
+    }
+    if (hit>-1){
+      e.preventDefault();
+      const c = comets.splice(hit,1)[0];
+      taps++;
+      const rt = now() - c.born; totalRT += rt;
+      const sizeB = sizeSel.value==='small'?1.6 : sizeSel.value==='medium'?1.2 : 1.0;
+      const speedB = spdSel.value==='fast'?1.6 : spdSel.value==='medium'?1.2 : 1.0;
+      const pts = Math.floor(10 * sizeB * speedB * clamp(3000/rt, 0.8, 6));
+      score += pts; scoreEl.textContent = String(score);
+      popups.push({ x:c.x, y:c.y, life:1, text: '+'+pts });
+      burst(c.x,c.y,c.hue);
+    }
+  }
+  canvas.addEventListener('click', onTap);
+  canvas.addEventListener('touchstart', onTap, {passive:false});
+
+  // ===== Session lifecycle =====
+  function setTimerBar(){
+    const p = durationMs ? Math.max(0, timeLeft/durationMs) : 0;
+    timerBar.style.width = (p*100)+'%';
+  }
+  function startSession(){
+    durationMs = parseFloat(durIn.value||'2')*60*1000;
+    timeLeft = durationMs; setTimerBar();
+    running=true; paused=false; score=0; taps=0; misses=0; totalRT=0;
+    scoreEl.textContent='0'; lastTick = now(); lastSpawn = 0; hueBase = rnd(160,220);
+    comets.length = 0; particles.length=0; popups.length=0;
+    pauseBtn.disabled=false; restartBtn.disabled=false; pauseBtn.textContent='Pause';
+    // lock settings while running
+    if ('inert' in HTMLElement.prototype) settings.setAttribute('inert','');
+    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.dataset.wasDisabled=i.disabled; i.disabled=true; });
+    loopId = requestAnimationFrame(loop);
+  }
+  function pauseSession(){
+    if (!running||paused) return;
+    paused=true; pauseBtn.textContent='Resume';
+  }
+  function resumeSession(){
+    if (!running||!paused) return;
+    paused=false; pauseBtn.textContent='Pause'; lastTick = now(); loopId = requestAnimationFrame(loop);
+  }
+  function restartSession(){
+    running=false; paused=false;
+    pauseBtn.textContent='Pause'; pauseBtn.disabled=true; restartBtn.disabled=true;
+    doneModal.classList.add('hidden');
+    // unlock settings
+    if ('inert' in HTMLElement.prototype) settings.removeAttribute('inert');
+    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.disabled = i.dataset.wasDisabled==='true'; });
+    comets.length=0; particles.length=0; popups.length=0; timeLeft=0; setTimerBar(); scoreEl.textContent='0';
+  }
+  function endSession(){
+    running=false; paused=false;
+    const acc = taps+misses>0 ? Math.round((taps/(taps+misses))*100) : 0;
+    const avg = taps>0 ? (totalRT/taps/1000).toFixed(2) : '0.00';
+    if (score>getPB()){ setPB(score); pbEl.textContent=score; }
+    fScore.textContent=score; fTaps.textContent=taps; fAcc.textContent=acc+'%'; fAvg.textContent=avg;
+    doneModal.classList.remove('hidden');
+    pauseBtn.disabled=true;
+    if ('inert' in HTMLElement.prototype) settings.removeAttribute('inert');
+    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.disabled = i.dataset.wasDisabled==='true'; });
+  }
+
+  // ===== Main Loop =====
+  let loopId = 0;
+  function loop(ts){
+    if (!running) return;
+    loopId = requestAnimationFrame(loop);
+    const dt = ts - lastTick; lastTick = ts;
+    if (paused) return;
+
+    timeLeft -= dt; if (timeLeft<=0){ setTimerBar(); endSession(); return; }
+    setTimerBar();
+
+    // spawn
+    const sInt = spawnMap[spawnSel.value];
+    if (ts - lastSpawn >= sInt){ spawnComet(); lastSpawn = ts; }
+
+    // update
+    updateComets(dt);
+    updateParticles(dt);
+
+    // render
+    clearBG();
+
+    // camera shake
+    let ox=0, oy=0;
+    if (shakeT>0){
+      shakeT -= dt;
+      const p = clamp(shakeT/120, 0, 1);
+      ox = Math.sin(ts*0.9)*2*p; oy = Math.cos(ts*1.1)*2*p;
+      ctx.save(); ctx.translate(ox, oy);
+    }
+
+    drawStars(dt);
+
+    // Add subtle additive bloom layer behind everything
+    ctx.save();
+    comets.forEach(drawComet);
+    ctx.restore();
+
+    drawParticles();
+
+    if (shakeT>0){ ctx.restore(); }
+  }
+
+  // ===== Wire controls =====
+  startBtn.addEventListener('click', ()=>{ if (!running) startSession(); });
+  pauseBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
+  restartBtn.addEventListener('click', restartSession);
+  doneBtn.addEventListener('click', ()=>{ doneModal.classList.add('hidden'); restartSession(); setTimeout(startSession, 120); });
+
+  // ===== Persistence for user convenience =====
+  (function loadSave(){
+    try{
+      const ld = localStorage.getItem('comet:dur'); if (ld) durIn.value = ld;
+      const ls = localStorage.getItem('comet:size'); if (ls) sizeSel.value = ls;
+      const lv = localStorage.getItem('comet:spd'); if (lv) spdSel.value = lv;
+      const lsp= localStorage.getItem('comet:spawn'); if (lsp) spawnSel.value = lsp;
+      updateDiff();
+      [durIn,sizeSel,spdSel,spawnSel].forEach(el=>el.addEventListener('change', ()=>{
+        localStorage.setItem('comet:dur', durIn.value);
+        localStorage.setItem('comet:size', sizeSel.value);
+        localStorage.setItem('comet:spd', spdSel.value);
+        localStorage.setItem('comet:spawn', spawnSel.value);
+      }));
+    }catch{}
   })();
-  </script>
+
+  // ===== Viewport unit fix for mobile =====
+  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+  window.addEventListener('load', setVH); window.addEventListener('resize', setVH);
+
+})();
+</script>
 </body>
 </html>
