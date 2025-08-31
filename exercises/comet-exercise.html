@@ -92,7 +92,7 @@
   canvas#stage{ display:block; width:100%; height:62vh; max-height:760px; background: transparent; }
   @media (max-width:900px){ canvas#stage{ height:58vh; } }
 
-  /* HUD — single scrollable strip across top, excluded from play area */
+  /* HUD strip across top */
   .hud{
     display:flex; align-items:center; gap:12px; padding:10px 12px; margin-bottom:12px;
     background: rgba(8,14,36,.85);
@@ -212,7 +212,8 @@
         <div class="metric" aria-live="polite"><div id="diff" class="v">Medium</div><div class="t">Difficulty</div></div>
         <div class="actions">
           <button id="pauseHud" class="btn-ghost" type="button" aria-label="Pause or resume">Pause</button>
-          <button id="exitHud" class="btn-ghost" type="button" aria-label="Exit to settings">Exit</button>
+          <button id="returnHud" class="btn-ghost" type="button" aria-label="Return to settings">Return</button>
+          <button id="exitHud" class="btn-ghost" type="button" aria-label="Exit to results">Exit</button>
         </div>
       </div>
 
@@ -245,8 +246,8 @@
   const now = ()=>performance.now();
 
   const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn');
-  const pauseHudBtn = $('#pauseHud'), exitHudBtn = $('#exitHud');
-  [startBtn, pauseBtn, restartBtn, doneBtn, pauseHudBtn, exitHudBtn].forEach(b=>b && b.setAttribute('type','button'));
+  const pauseHudBtn = $('#pauseHud'), exitHudBtn = $('#exitHud'), returnHudBtn = $('#returnHud');
+  [startBtn, pauseBtn, restartBtn, doneBtn, pauseHudBtn, exitHudBtn, returnHudBtn].forEach(b=>b && b.setAttribute('type','button'));
 
   const durIn = $('#dur'), sizeSel = $('#size'), spdSel = $('#spd'), spawnSel = $('#spawn');
   const scoreEl = $('#score'), pbEl = $('#pb'), diffEl = $('#diff'), timerBar = $('#timerBar');
@@ -607,6 +608,13 @@
   doneBtn.addEventListener('click', ()=>{ doneModal.classList.add('hidden'); restartSession(); setTimeout(startSession, 120); });
   pauseHudBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
   exitHudBtn.addEventListener('click', ()=>{ if (running){ endSession(); } restartSession(); });
+  returnHudBtn.addEventListener('click', ()=>{
+    // Stop immediately and return to settings without results
+    running = false; paused = false;
+    comets.length=0; particles.length=0; popups.length=0;
+    fromImmersive();
+    fit(); refreshGeometry();
+  });
 })();
 </script>
 </body>
