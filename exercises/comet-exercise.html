@@ -29,6 +29,10 @@
     min-height: calc(var(--vh) * 100);
     touch-action: manipulation;
   }
+  /* Immersive mode: hide scroll + header, fill screen */
+  body.playing { overflow: hidden; }
+  body.playing header.app { display: none; }
+
   header.app{
     position: sticky; top:0; z-index: 50;
     padding:12px 16px; display:flex; gap:12px; align-items:center;
@@ -42,6 +46,7 @@
   }
   header h1{ margin:0; font-size: clamp(18px,3vw,24px); }
 
+  /* Two-panel layout before start */
   .layout{
     display:grid; grid-template-columns: 360px 1fr; gap:16px;
     padding:16px; height: calc((var(--vh) * 100) - 56px);
@@ -55,7 +60,7 @@
     border-radius: var(--radius);
     box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05);
   }
-  /* Left — Settings */
+  /* Left — Settings (shown pre-start, hidden during play) */
   #settings { padding:18px; overflow:auto; position:relative; z-index: 5; }
   #settings h2{ margin:0 0 10px; font-size:20px; text-align:center; }
   .desc{
@@ -83,11 +88,20 @@
   .btn-primary{ background: rgba(111,211,245,.95); color:#07101e; border-color: rgba(111,211,245,1); }
   .btn-primary:hover:not(:disabled){ background: rgba(111,211,245,1); box-shadow: 0 6px 18px rgba(111,211,245,.45); }
 
-  /* Right — HUD + Canvas */
+  /* Right — HUD + Canvas wrapper */
   .right{ position:relative; }
+  .frame{
+    position:relative; border-radius: var(--radius); overflow:hidden;
+    border:1px solid var(--panel-border); box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+    background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%);
+  }
+  canvas#stage{ display:block; width:100%; height:62vh; max-height:760px; background: transparent; }
+  @media (max-width:900px){ canvas#stage{ height:58vh; } }
+
+  /* HUD (overlay during play) */
   .hud{
-    display:grid; grid-template-columns: 1fr auto auto auto; gap:12px; align-items:center;
-    padding:10px 12px; margin-bottom:12px;
+    display:grid; grid-template-columns: 1fr auto auto auto auto; align-items:center;
+    gap:12px; padding:10px 12px; margin-bottom:12px;
     background: rgba(8,14,36,.85);
     border: 1px solid var(--panel-border);
     border-radius: var(--radius); box-shadow: 0 6px 16px rgba(0,0,0,.35);
@@ -103,14 +117,27 @@
   .v{ font-weight:900; font-size:20px; color:#bfe6ff; text-shadow: 0 0 8px rgba(150,220,255,.5); }
   #score{ font-size:22px; color:#d7f2ff; text-shadow: 0 0 10px rgba(160,220,255,.7); }
   .t{ font-size:12px; opacity:.8; }
-  /* Canvas frame */
-  .frame{
-    position:relative; border-radius: var(--radius); overflow:hidden;
-    border:1px solid var(--panel-border); box-shadow: inset 0 0 40px rgba(0,0,0,.35);
-    background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%);
+  .hud .btn-ghost{
+    min-height:36px; padding:6px 10px; font-weight:800;
+    border:1px solid rgba(255,255,255,.22); border-radius:999px; background: rgba(255,255,255,.06);
+    color:var(--text); cursor:pointer;
   }
-  canvas#stage{ display:block; width:100%; height:62vh; max-height:760px; background: transparent; }
-  @media (max-width:900px){ canvas#stage{ height:58vh; } }
+  .hud .btn-ghost:hover{ background: rgba(255,255,255,.12); }
+
+  /* Immersive playing layout: settings/header hidden, full-screen canvas, HUD floating */
+  body.playing .layout{ grid-template-columns: 1fr; padding:0; height: calc(var(--vh) * 100); }
+  body.playing #settings{ display:none; }
+  body.playing .right{ height: calc(var(--vh) * 100); }
+  body.playing .frame{
+    border:none; border-radius:0; height: calc(var(--vh) * 100);
+    box-shadow: none; background: transparent;
+  }
+  body.playing canvas#stage{ width:100vw; height: calc(var(--vh) * 100); max-height:none; }
+  body.playing .hud{
+    position:absolute; top:10px; left:10px; right:10px; margin:0;
+    background: linear-gradient(180deg, rgba(6,10,24,.65), rgba(6,10,24,.35));
+    border: 1px solid rgba(255,255,255,.12);
+  }
 
   /* Completion modal */
   #done{ position:absolute; inset:0; display:grid; place-items:center; background: rgba(0,0,0,.65);
@@ -124,18 +151,17 @@
 </style>
 </head>
 <body>
-  <header class="app">
+  <!-- Header (hidden in immersive playing mode) -->
+  <header class="app" role="banner" aria-label="Exercise header">
     <a class="home" href="/" aria-label="Back to Home">← Home</a>
     <h1>Comet Tap</h1>
   </header>
 
   <main class="layout">
-    <!-- SETTINGS -->
+    <!-- SETTINGS (pre-start only) -->
     <aside id="settings" class="panel" aria-label="Settings">
       <h2>Settings</h2>
-      <div class="desc">
-        <strong>How to play:</strong> tap a glowing comet before it escapes. Smaller &amp; faster = harder (more points).
-      </div>
+      <div class="desc"><strong>How to play:</strong> tap a glowing comet before it escapes. Smaller &amp; faster = harder (more points).</div>
 
       <div class="group">
         <label class="label" for="dur">Session Duration (minutes)</label>
@@ -176,11 +202,13 @@
 
     <!-- GAME -->
     <section class="right" aria-label="Game area">
-      <div class="hud">
+      <!-- HUD (floats during play) -->
+      <div class="hud" role="region" aria-label="Session HUD">
         <div class="timer" aria-hidden="true"><div id="timerBar"></div></div>
         <div class="hudItem" aria-live="polite"><div id="score" class="v">0</div><div class="t">Score</div></div>
         <div class="hudItem" aria-live="polite"><div id="pb" class="v">0</div><div class="t">Personal Best</div></div>
         <div class="hudItem" aria-live="polite"><div id="diff" class="v">Medium</div><div class="t">Difficulty</div></div>
+        <button id="endBtn" class="btn-ghost" type="button" aria-label="End session and return">End</button>
       </div>
 
       <div class="frame panel">
@@ -207,21 +235,16 @@
 (function(){
   // ===== Helpers & DOM =====
   const $ = (s, r=document)=>r.querySelector(s);
-  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
   const rnd = (a,b)=>Math.random()*(b-a)+a;
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const now = ()=>performance.now();
 
-  const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn');
-  [startBtn, pauseBtn, restartBtn, doneBtn].forEach(b=>b.setAttribute('type','button'));
+  const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn'), endBtn = $('#endBtn');
+  [startBtn, pauseBtn, restartBtn, doneBtn, endBtn].forEach(b=>b.setAttribute('type','button'));
   const durIn = $('#dur'), sizeSel = $('#size'), spdSel = $('#spd'), spawnSel = $('#spawn');
   const scoreEl = $('#score'), pbEl = $('#pb'), diffEl = $('#diff'), timerBar = $('#timerBar');
   const doneModal = $('#done'), fScore = $('#fScore'), fTaps = $('#fTaps'), fAcc = $('#fAcc'), fAvg = $('#fAvg');
-  const settings = $('#settings');
   const canvas = $('#stage'); const ctx = canvas.getContext('2d');
-
-  // keep controls on top & interactive
-  settings.style.pointerEvents = 'auto';
 
   // ===== HiDPI Canvas =====
   let DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
@@ -232,8 +255,10 @@
     canvas.width = w; canvas.height = h;
     ctx.setTransform(DPR,0,0,DPR,0,0); // draw in CSS px
   }
-  fit();
-  window.addEventListener('resize', fit, {passive:true});
+  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+  setVH(); fit();
+  window.addEventListener('resize', ()=>{ setVH(); fit(); }, {passive:true});
+  window.addEventListener('orientationchange', ()=>{ setTimeout(()=>{ setVH(); fit(); }, 200); });
 
   // ===== Starfield (parallax) =====
   const layers = [
@@ -294,9 +319,7 @@
     if (sp==='vfast') lvl+=2; else if (sp==='fast') lvl+=1;
     diffEl.textContent = lvl>=5 ? 'Hard' : (lvl>=3 ? 'Medium' : 'Easy');
   }
-  sizeSel.addEventListener('change', updateDiff);
-  spdSel.addEventListener('change', updateDiff);
-  spawnSel.addEventListener('change', updateDiff);
+  [sizeSel, spdSel, spawnSel].forEach(el=>el.addEventListener('change', updateDiff));
   updateDiff();
 
   // ===== Comet Model =====
@@ -365,11 +388,7 @@
 
   // ===== Rendering =====
   function clearBG(){
-    // very subtle vignette; real background is body gradient
-    ctx.save();
-    ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0,0,canvas.width/DPR,canvas.height/DPR);
-    ctx.restore();
   }
 
   function drawComet(c){
@@ -458,16 +477,42 @@
     const p = durationMs ? Math.max(0, timeLeft/durationMs) : 0;
     timerBar.style.width = (p*100)+'%';
   }
+
+  async function enterFullscreen(){
+    const el = document.documentElement;
+    try{
+      if (el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
+      else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+    }catch{}
+  }
+  async function exitFullscreen(){
+    try{
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (document.webkitFullscreenElement) await document.webkitExitFullscreen();
+    }catch{}
+  }
+
+  function toImmersive(){
+    document.body.classList.add('playing');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    fit();
+    enterFullscreen(); // best effort; safe to ignore if blocked
+  }
+  function fromImmersive(){
+    document.body.classList.remove('playing');
+    exitFullscreen();
+    fit();
+  }
+
   function startSession(){
     durationMs = parseFloat(durIn.value||'2')*60*1000;
     timeLeft = durationMs; setTimerBar();
+    toImmersive();
+
     running=true; paused=false; score=0; taps=0; misses=0; totalRT=0;
     scoreEl.textContent='0'; lastTick = now(); lastSpawn = 0; hueBase = rnd(160,220);
-    comets.length = 0; particles.length=0; popups.length=0;
+
     pauseBtn.disabled=false; restartBtn.disabled=false; pauseBtn.textContent='Pause';
-    // lock settings while running
-    if ('inert' in HTMLElement.prototype) settings.setAttribute('inert','');
-    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.dataset.wasDisabled=i.disabled; i.disabled=true; });
     loopId = requestAnimationFrame(loop);
   }
   function pauseSession(){
@@ -482,10 +527,8 @@
     running=false; paused=false;
     pauseBtn.textContent='Pause'; pauseBtn.disabled=true; restartBtn.disabled=true;
     doneModal.classList.add('hidden');
-    // unlock settings
-    if ('inert' in HTMLElement.prototype) settings.removeAttribute('inert');
-    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.disabled = i.dataset.wasDisabled==='true'; });
     comets.length=0; particles.length=0; popups.length=0; timeLeft=0; setTimerBar(); scoreEl.textContent='0';
+    fromImmersive();
   }
   function endSession(){
     running=false; paused=false;
@@ -495,8 +538,6 @@
     fScore.textContent=score; fTaps.textContent=taps; fAcc.textContent=acc+'%'; fAvg.textContent=avg;
     doneModal.classList.remove('hidden');
     pauseBtn.disabled=true;
-    if ('inert' in HTMLElement.prototype) settings.removeAttribute('inert');
-    else settings.querySelectorAll('input,select,button').forEach(i=>{ i.disabled = i.dataset.wasDisabled==='true'; });
   }
 
   // ===== Main Loop =====
@@ -511,7 +552,7 @@
     setTimerBar();
 
     // spawn
-    const sInt = spawnMap[spawnSel.value];
+    const sInt = { vfast:500, fast:1000, medium:1500, slow:2000 }[spawnSel.value];
     if (ts - lastSpawn >= sInt){ spawnComet(); lastSpawn = ts; }
 
     // update
@@ -531,12 +572,7 @@
     }
 
     drawStars(dt);
-
-    // Add subtle additive bloom layer behind everything
-    ctx.save();
-    comets.forEach(drawComet);
-    ctx.restore();
-
+    ctx.save(); comets.forEach(drawComet); ctx.restore();
     drawParticles();
 
     if (shakeT>0){ ctx.restore(); }
@@ -547,27 +583,10 @@
   pauseBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
   restartBtn.addEventListener('click', restartSession);
   doneBtn.addEventListener('click', ()=>{ doneModal.classList.add('hidden'); restartSession(); setTimeout(startSession, 120); });
-
-  // ===== Persistence for user convenience =====
-  (function loadSave(){
-    try{
-      const ld = localStorage.getItem('comet:dur'); if (ld) durIn.value = ld;
-      const ls = localStorage.getItem('comet:size'); if (ls) sizeSel.value = ls;
-      const lv = localStorage.getItem('comet:spd'); if (lv) spdSel.value = lv;
-      const lsp= localStorage.getItem('comet:spawn'); if (lsp) spawnSel.value = lsp;
-      updateDiff();
-      [durIn,sizeSel,spdSel,spawnSel].forEach(el=>el.addEventListener('change', ()=>{
-        localStorage.setItem('comet:dur', durIn.value);
-        localStorage.setItem('comet:size', sizeSel.value);
-        localStorage.setItem('comet:spd', spdSel.value);
-        localStorage.setItem('comet:spawn', spawnSel.value);
-      }));
-    }catch{}
-  })();
+  endBtn.addEventListener('click', ()=>{ if (running){ endSession(); } restartSession(); });
 
   // ===== Viewport unit fix for mobile =====
-  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
-  window.addEventListener('load', setVH); window.addEventListener('resize', setVH);
+  // (already handled in setVH/resize)
 
 })();
 </script>
