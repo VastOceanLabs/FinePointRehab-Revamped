@@ -15,10 +15,12 @@
       --vh: 1vh;
       --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
       --accent: var(--brand-aqua, #6fd3f5);
+      --accent-2: #9ae6ff;
       --radius: 14px;
       --panel: rgba(10,16,36,.9);
       --panel-border: rgba(255,255,255,.08);
       --text: #eaf6ff;
+      --good: #8ff5b2;
     }
     body{ margin:0; color:var(--text);
       background:
@@ -100,21 +102,79 @@
     .game-surface{ position:relative; width:100%; height:100%; overflow:hidden; }
     #bubble{
       position:absolute; width:80px; height:80px; border-radius:50%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(111,211,245,.35) 40%, rgba(20,80,150,.35) 70%, rgba(10,20,40,.25) 100%);
-      box-shadow: 0 12px 30px rgba(111,211,245,.35), inset 0 0 22px rgba(255,255,255,.6);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(111,211,245,.35) 40%, rgba(20,80,150,.35) 70%, rgba(10,20,40,.25) 100%),
+        radial-gradient(120px 120px at 70% 80%, rgba(255,255,255,.25), transparent 60%);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.15) inset,
+        0 12px 30px rgba(111,211,245,.35),
+        inset 0 0 22px rgba(255,255,255,.6);
       transform: translate(-50%, -50%);
       touch-action: none;
+      animation: bubblePulse 2.2s ease-in-out infinite;
+    }
+    #bubble.spawn {
+      animation: bubbleSpawn .18s ease-out, bubblePulse 2.2s ease-in-out infinite;
+    }
+    @keyframes bubbleSpawn{
+      from{ transform: translate(-50%, -50%) scale(.6); opacity:.0; filter: blur(2px); }
+      to  { transform: translate(-50%, -50%) scale(1); opacity:1; filter: blur(0); }
+    }
+    @keyframes bubblePulse{
+      0%,100%{ filter: drop-shadow(0 0 0 rgba(111,211,245,.0)); }
+      50%    { filter: drop-shadow(0 0 12px rgba(111,211,245,.45)); }
     }
 
-    /* Finger guide (optional) */
+    /* Points popup */
+    .points{
+      position:absolute; transform: translate(-50%, -50%);
+      font-weight:900; font-size:18px;
+      color: var(--good); text-shadow: 0 0 10px rgba(143,245,178,.45);
+      pointer-events:none; z-index:7;
+      animation: floatUp 700ms ease-out forwards;
+    }
+    @keyframes floatUp{
+      from{ opacity:0; transform: translate(-50%, -50%) translateY(6px) scale(.9); }
+      20% { opacity:1; }
+      to  { opacity:0; transform: translate(-50%, -50%) translateY(-36px) scale(1.05); }
+    }
+
+    /* Ripple effect */
+    .ripple{
+      position:absolute; transform: translate(-50%, -50%);
+      width:10px; height:10px; border-radius:50%;
+      border:2px solid var(--accent-2); opacity:.6;
+      animation: ripple 600ms ease-out forwards;
+      pointer-events:none; z-index:6;
+    }
+    @keyframes ripple{
+      from{ opacity:.7; transform: translate(-50%, -50%) scale(.8); }
+      to  { opacity:0; transform: translate(-50%, -50%) scale(8); }
+    }
+
+    /* Finger guide (guided mode) */
     .finger-guide{
       position:absolute; left:0; right:0; bottom:0; padding:12px; z-index:6;
       display:none;
     }
     .finger-guide .card{
-      margin:0 auto; max-width:640px; border:1px solid rgba(255,255,255,.18); border-radius:12px;
-      background: rgba(0,0,0,.35); padding:12px; text-align:center;
+      margin:0 auto; max-width:720px; border:1px solid rgba(255,255,255,.18); border-radius:12px;
+      background: rgba(0,0,0,.35); padding:12px;
     }
+    .fingers{ display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; }
+    .fingers .chip{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      width:56px; height:56px; border-radius:50%;
+      border:1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
+      font-weight:800;
+    }
+    .fingers .chip .tiny{ font-size:10px; opacity:.9; margin-top:2px; font-weight:600; }
+    .fingers .chip.active{
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 3px rgba(111,211,245,.25), 0 0 18px rgba(111,211,245,.45) inset;
+      background: rgba(111,211,245,.12);
+    }
+    .guide-title{ text-align:center; font-weight:700; margin-bottom:8px; }
 
     /* Completion modal */
     .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:20;
@@ -125,7 +185,6 @@
 
     @media (min-width: 920px){
       .layout{ grid-template-columns: 1fr 1.2fr; align-items:start; }
-      /* Still hide gameCol until playing; when not playing, settings spans both on large screens */
       body:not(.playing) #settings{ grid-column: 1 / -1; }
     }
   </style>
@@ -170,7 +229,9 @@
           <option value="any" selected>Any finger</option>
           <option value="single">Single finger (guided)</option>
         </select>
-        <div id="singleFingerWrap" class="desc" style="display:none; margin-top:8px;">Single-finger training shows a short on-screen prompt to alternate taps with the selected finger.</div>
+        <div id="singleFingerWrap" class="desc" style="display:none; margin-top:8px;">
+          <strong>Guided mode:</strong> follow the highlighted finger chips at the bottom.
+        </div>
       </div>
 
       <button id="startBtn" class="btn btn-primary" type="button" aria-label="Start session">Start</button>
@@ -195,9 +256,14 @@
       <div class="stage-wrap">
         <div id="surface" class="game-surface" aria-label="Play area">
           <div id="bubble" role="button" aria-label="Bubble" tabindex="0"></div>
+
+          <!-- Guided finger UI -->
           <div id="fingerGuide" class="finger-guide" aria-live="polite">
             <div class="card">
-              <strong>Single-finger mode:</strong> follow the prompts to tap with the indicated finger.
+              <div class="guide-title">Tap with the highlighted finger</div>
+              <div class="fingers" id="fingersRow">
+                <!-- Chips will be filled by JS -->
+              </div>
             </div>
           </div>
         </div>
@@ -226,6 +292,12 @@
   <script type="module">
     // ===== Helpers =====
     const $ = sel => document.querySelector(sel);
+    const el = (tag, cls, text) => {
+      const e = document.createElement(tag);
+      if(cls) e.className = cls;
+      if(text!=null) e.textContent = text;
+      return e;
+    };
 
     // DOM
     const settingsEl = $('#settings');
@@ -233,6 +305,7 @@
     const surface = $('#surface');
     const bubbleEl = $('#bubble');
     const fingerGuide = $('#fingerGuide');
+    const fingersRow = $('#fingersRow');
     const startBtn = $('#startBtn');
     const pauseBtn = $('#pauseBtn');
     const exitBtn = $('#exitBtn');
@@ -303,6 +376,30 @@
 
     const BUBBLE_SIZES = { large: 120, medium: 80, small: 56 };
 
+    // Guided fingers
+    const FINGERS = [
+      { key:'T', name:'Thumb' },
+      { key:'I', name:'Index' },
+      { key:'M', name:'Middle' },
+      { key:'R', name:'Ring' },
+      { key:'L', name:'Little' },
+    ];
+    let fingerIdx = -1;
+
+    function buildFingerChips(){
+      fingersRow.innerHTML = '';
+      FINGERS.forEach((f,i) => {
+        const chip = el('div', 'chip');
+        chip.append(el('div', '', f.key));
+        chip.append(el('div', 'tiny', f.name));
+        chip.dataset.idx = i;
+        fingersRow.append(chip);
+      });
+    }
+    function highlightFinger(i){
+      [...fingersRow.children].forEach(ch => ch.classList.toggle('active', Number(ch.dataset.idx) === i));
+    }
+
     function msToClock(ms){
       const s = Math.max(0, Math.floor(ms/1000));
       const m = Math.floor(s/60);
@@ -328,15 +425,38 @@
       bubbleEl.style.width = bubbleSizePx+'px'; bubbleEl.style.height = bubbleSizePx+'px';
       bubbleVisible = true;
       bubbleSpawnTime = performance.now();
+      bubbleEl.classList.remove('spawn'); void bubbleEl.offsetWidth; bubbleEl.classList.add('spawn');
+
+      // Cycle finger prompt in guided mode
+      if(fingerMode === 'single'){
+        fingerIdx = (fingerIdx + 1) % FINGERS.length;
+        highlightFinger(fingerIdx);
+      }
     }
 
     function hideBubble(){ bubbleVisible = false; bubbleEl.style.left = '-9999px'; bubbleEl.style.top = '-9999px'; }
 
+    function showPoints(x, y, pts){
+      const p = el('div', 'points', `+${pts}`);
+      p.style.left = x + 'px'; p.style.top = y + 'px';
+      surface.append(p);
+      p.addEventListener('animationend', () => p.remove());
+    }
+    function ripple(x, y){
+      const r = el('div', 'ripple');
+      r.style.left = x + 'px'; r.style.top = y + 'px';
+      surface.append(r);
+      r.addEventListener('animationend', () => r.remove());
+    }
+
     // Input handlers
-    bubbleEl.addEventListener('pointerdown', () => {
+    bubbleEl.addEventListener('pointerdown', (ev) => {
       if(!isActive || isPaused || !bubbleVisible) return;
       const rt = performance.now() - bubbleSpawnTime;
-      taps++; score += Math.max(1, Math.round(1500/Math.max(200, rt))); totalRT += rt;
+      const pts = Math.max(1, Math.round(1500/Math.max(200, rt)));
+      taps++; score += pts; totalRT += rt;
+      showPoints(parseFloat(bubbleEl.style.left), parseFloat(bubbleEl.style.top), pts);
+      ripple(parseFloat(bubbleEl.style.left), parseFloat(bubbleEl.style.top));
       hideBubble();
       audio.click?.();
     });
@@ -348,7 +468,6 @@
     });
     surface.addEventListener('pointerdown', (e) => {
       if(!isActive || isPaused) return;
-      // Miss: clicks/taps that are not on bubble
       if(e.target !== bubbleEl){ misses++; audio.miss?.(); }
     }, { passive:true });
 
@@ -361,10 +480,8 @@
       if(!isPaused){
         timeRemaining -= dt;
         if(timeRemaining <= 0){ endSession(); return; }
-        // spawn logic: simple delay after hide
         if(!bubbleVisible && (now - lastSpawn) > 450){
-          spawnBubble();
-          lastSpawn = now;
+          spawnBubble(); lastSpawn = now;
         }
       }
       updateHUD();
@@ -384,6 +501,8 @@
       // Reset
       isActive = true; isPaused = false; pauseBtn.textContent = 'Pause';
       taps = 0; misses = 0; score = 0; totalRT = 0;
+      fingerIdx = -1;
+      if(fingerMode === 'single'){ buildFingerChips(); }
       hideBubble(); updateHUD();
 
       // UI
@@ -443,7 +562,6 @@
 
     // Settings interactivity
     fmSel.addEventListener('change', () => { singleWrap.style.display = fmSel.value === 'single' ? '' : 'none'; });
-    // reflect current on load too
     singleWrap.style.display = (fmSel.value === 'single') ? '' : 'none';
 
     // Modal UX: backdrop click + Esc
@@ -454,7 +572,6 @@
     updateHUD();
     (async () => {
       try { await initUtils?.({ starfieldTarget: surface }); } catch {}
-      // draw starfield, if available, after surface has size
       const tryStarfield = () => {
         if(surface.clientHeight > 0){ try { starfield?.(surface); } catch {} }
         else { requestAnimationFrame(tryStarfield); }
@@ -462,7 +579,7 @@
       tryStarfield();
     })();
 
-    // Global hook for external callers
+    // Global hook
     window.endSession = function(score, difficulty='medium'){
       try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
       try { checkAndUnlockAchievements(); } catch {}
