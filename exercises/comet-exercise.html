@@ -68,7 +68,6 @@
   select:focus, input[type="number"]:focus{
     outline:none; border-color: rgba(111,211,245,.9); box-shadow: 0 0 0 2px rgba(111,211,245,.25);
   }
-  .btn-row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px; }
   .btn{
     min-height:46px; border:1px solid rgba(111,211,245,.35); background: rgba(111,211,245,.12);
     color:var(--text); border-radius:10px; font-weight:800; letter-spacing:.2px; cursor:pointer; transition:.2s;
@@ -117,6 +116,9 @@
   .hi{ color:#9ee7ff; font-weight:900; }
   .hidden{ display:none !important; }
   :focus-visible{ outline: 3px solid rgba(111,211,245,.85); outline-offset:2px; }
+
+  /* Settings primary button row (single Start button) */
+  .settings-actions { display:grid; grid-template-columns: 1fr; gap:10px; margin-top:12px; }
 </style>
 </head>
 <body>
@@ -169,11 +171,10 @@
         </select>
       </div>
 
-      <div class="btn-row">
+      <!-- Only Start here (Pause/Restart removed from settings) -->
+      <div class="settings-actions">
         <button id="start" class="btn btn-primary" type="button">Start</button>
-        <button id="pause" class="btn" type="button" disabled>Pause</button>
       </div>
-      <button id="restart" class="btn" type="button" disabled>Restart</button>
     </aside>
 
     <!-- GAME (hidden until playing) -->
@@ -200,8 +201,9 @@
           <p>Comets Tapped: <span id="fTaps" class="hi">0</span></p>
           <p>Accuracy: <span id="fAcc" class="hi">0%</span></p>
           <p>Average Response Time: <span id="fAvg" class="hi">0.00s</span></p>
-          <div class="btn-row" style="grid-template-columns:1fr;">
+          <div class="settings-actions" style="grid-template-columns:1fr 1fr;">
             <button id="doneBtn" class="btn btn-primary" type="button">Start New Session</button>
+            <button id="homeBtn" class="btn" type="button">Home</button>
           </div>
         </div>
       </div>
@@ -216,9 +218,13 @@
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const now = ()=>performance.now();
 
-  const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn');
+  const startBtn = $('#start'),
+        pauseBtn = $('#pause'),           // (doesn't exist in settings anymore)
+        restartBtn = $('#restart'),       // (doesn't exist in settings anymore)
+        doneBtn = $('#doneBtn'),
+        homeBtn = $('#homeBtn');
   const pauseHudBtn = $('#pauseHud'), exitHudBtn = $('#exitHud');
-  [startBtn, pauseBtn, restartBtn, doneBtn, pauseHudBtn, exitHudBtn].forEach(b=>b && b.setAttribute('type','button'));
+  [startBtn, pauseBtn, restartBtn, doneBtn, homeBtn, pauseHudBtn, exitHudBtn].forEach(b=>b && b.setAttribute('type','button'));
 
   const durIn = $('#dur'), sizeSel = $('#size'), spdSel = $('#spd'), spawnSel = $('#spawn');
   const scoreEl = $('#score'), pbEl = $('#pb'), timeEl = $('#time'), pbSettingsEl = $('#pbSettings');
@@ -372,11 +378,11 @@
     for (let i=0;i<24;i++){
       particles.push({ x, y, vx: rnd(-2.4,2.4), vy: rnd(-2.4,2.4), life: 1, r: rnd(1,2.6), hue: hue + rnd(-10,10) });
     }
-    addPopup(x, y, '+!');
+    // no popup here; popups only come from taps (numbers only)
     shakeT = 120;
   }
 
-  // NEW: smarter popup creation (stagger near-collocated popups)
+  // smarter popup creation (stagger near-collocated popups)
   function addPopup(x, y, text){
     const nearby = popups.filter(p => p.life > 0.45 && Math.hypot(p.x - x, p.y - y) < 64).length;
     const offsetY = -nearby * 18;
@@ -465,7 +471,7 @@
         const speedB = spdSel.value==='fast'?1.6 : spdSel.value==='medium'?1.2 : 1.0;
         const pts = Math.floor(10 * sizeB * speedB * clamp(3000/rt, 0.8, 6));
         score += pts; scoreEl.textContent = String(score);
-        addPopup(c.x, c.y, '+'+pts);
+        addPopup(c.x, c.y, String(pts)); // number only
         burst(c.x,c.y,c.hue);
         break;
       }
@@ -513,8 +519,9 @@
       running=true; paused=false; score=0; taps=0; misses=0; totalRT=0;
       scoreEl.textContent='0'; hueBase = (160+Math.random()*60);
 
-      pauseBtn.disabled=false; restartBtn.disabled=false;
-      pauseBtn.textContent='Pause'; pauseHudBtn.textContent='Pause';
+      if (pauseBtn){ pauseBtn.disabled=false; pauseBtn.textContent='Pause'; }
+      if (restartBtn){ restartBtn.disabled=false; }
+      if (pauseHudBtn){ pauseHudBtn.textContent='Pause'; }
 
       lastTick = performance.now();
       lastSpawn = -1e9;
@@ -523,12 +530,12 @@
       requestAnimationFrame(loop);
     });
   }
-  function pauseSession(){ if (!running||paused) return; paused=true; pauseBtn.textContent='Resume'; pauseHudBtn.textContent='Resume'; }
-  function resumeSession(){ if (!running||!paused) return; paused=false; pauseBtn.textContent='Pause'; pauseHudBtn.textContent='Pause'; lastTick = performance.now(); requestAnimationFrame(loop); }
+  function pauseSession(){ if (!running||paused) return; paused=true; if (pauseBtn){ pauseBtn.textContent='Resume'; } if (pauseHudBtn){ pauseHudBtn.textContent='Resume'; } }
+  function resumeSession(){ if (!running||!paused) return; paused=false; if (pauseBtn){ pauseBtn.textContent='Pause'; } if (pauseHudBtn){ pauseHudBtn.textContent='Pause'; } lastTick = performance.now(); requestAnimationFrame(loop); }
   function restartSession(){
     running=false; paused=false;
-    pauseBtn.textContent='Pause'; pauseHudBtn.textContent='Pause';
-    pauseBtn.disabled=true; restartBtn.disabled=true;
+    if (pauseBtn){ pauseBtn.textContent='Pause'; pauseBtn.disabled=true; }
+    if (restartBtn){ restartBtn.disabled=true; }
     doneModal.classList.add('hidden');
     comets.length=0; particles.length=0; popups.length=0; timeLeft=0; updateTimeUI(); scoreEl.textContent='0';
     fromImmersive();
@@ -541,7 +548,7 @@
     if (score>getPB()){ setPB(score); refreshPB(); }
     fScore.textContent=score; fTaps.textContent=taps; fAcc.textContent=acc+'%'; fAvg.textContent=avg;
     doneModal.classList.remove('hidden');
-    pauseBtn.disabled=true;
+    if (pauseBtn){ pauseBtn.disabled=true; }
   }
 
   // ===== Render =====
@@ -609,9 +616,10 @@
 
   // ===== Wire controls =====
   startBtn.addEventListener('click', ()=>{ if (!running) startSession(); });
-  pauseBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
-  restartBtn.addEventListener('click', restartSession);
+  if (pauseBtn){ pauseBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); }); }
+  if (restartBtn){ restartBtn.addEventListener('click', restartSession); }
   doneBtn?.addEventListener('click', ()=>{ doneModal.classList.add('hidden'); restartSession(); setTimeout(startSession, 120); });
+  homeBtn?.addEventListener('click', ()=>{ window.location.href = '/'; });
   pauseHudBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
   exitHudBtn.addEventListener('click', ()=>{ if (running){ endSession(); } restartSession(); });
 })();
