@@ -305,6 +305,7 @@
     const settingsEl = $('#settings');
     const gameCol = $('#gameCol');
     const surface = $('#surface');
+    const stageWrap = document.querySelector('.stage-wrap');
     const bubbleEl = $('#bubble');
     const fingerGuide = $('#fingerGuide');
     const fingersRow = $('#fingersRow');
@@ -357,7 +358,15 @@
 
     // ===== Geometry & fullscreen =====
     function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
-    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
+    function setStageHeight(){
+      const hud = document.querySelector('.hud');
+      const hudH = hud ? hud.offsetHeight : 0;
+      const H = window.innerHeight;
+      if(stageWrap){ stageWrap.style.height = Math.max(220, H - hudH) + 'px'; }
+    }
+    setVH(); setStageHeight();
+    addEventListener('resize', () => { setVH(); setStageHeight(); });
+    addEventListener('orientationchange', () => { setVH(); setStageHeight(); });
 
     async function enterImmersive(){
       document.body.classList.add('playing');
@@ -420,8 +429,14 @@
       const rect = surface.getBoundingClientRect();
       const sw = Math.max(rect.width, bubbleSizePx + 2);
       const sh = Math.max(rect.height, bubbleSizePx + 2);
-      const x = Math.random() * (sw - bubbleSizePx) + bubbleSizePx/2;
-      const y = Math.random() * (sh - bubbleSizePx) + bubbleSizePx/2;
+      const fgH = (fingerGuide && fingerGuide.style.display !== 'none') ? fingerGuide.offsetHeight : 0;
+      const margin = 8;
+      const minX = bubbleSizePx/2 + margin;
+      const maxX = Math.max(minX, sw - bubbleSizePx/2 - margin);
+      const minY = bubbleSizePx/2 + margin;
+      const maxY = Math.max(minY, sh - fgH - bubbleSizePx/2 - margin);
+      const x = minX + Math.random() * Math.max(1, (maxX - minX));
+      const y = minY + Math.random() * Math.max(1, (maxY - minY));
       bubbleEl.style.left = x+'px'; bubbleEl.style.top = y+'px';
       bubbleEl.style.width = bubbleSizePx+'px'; bubbleEl.style.height = bubbleSizePx+'px';
       bubbleVisible = true;
