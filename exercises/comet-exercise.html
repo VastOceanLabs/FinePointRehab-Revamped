@@ -117,7 +117,7 @@
   }
   .hud .btn-ghost:hover{ background: rgba(255,255,255,.12); }
 
-  /* Immersive */
+  /* Immersive (game-only) */
   body.playing .layout{ grid-template-columns: 1fr; padding:0; height: calc(var(--vh) * 100); }
   body.playing #settings{ display:none; }
   body.playing .right{ height: calc(var(--vh) * 100); }
@@ -226,25 +226,39 @@
 
 <script>
 (function(){
+  // ===== Helpers & DOM =====
   const $ = (s, r=document)=>r.querySelector(s);
   const rnd = (a,b)=>Math.random()*(b-a)+a;
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const now = ()=>performance.now();
 
-  // Buttons
   const startBtn = $('#start'), pauseBtn = $('#pause'), restartBtn = $('#restart'), doneBtn = $('#doneBtn');
   const pauseHudBtn = $('#pauseHud'), exitHudBtn = $('#exitHud');
   [startBtn, pauseBtn, restartBtn, doneBtn, pauseHudBtn, exitHudBtn].forEach(b=>b && b.setAttribute('type','button'));
 
-  // UI / DOM
   const durIn = $('#dur'), sizeSel = $('#size'), spdSel = $('#spd'), spawnSel = $('#spawn');
   const scoreEl = $('#score'), pbEl = $('#pb'), diffEl = $('#diff'), timerBar = $('#timerBar');
   const doneModal = $('#done'), fScore = $('#fScore'), fTaps = $('#fTaps'), fAcc = $('#fAcc'), fAvg = $('#fAvg');
   const canvas = $('#stage'); const ctx = canvas.getContext('2d'); const hud = document.querySelector('.hud');
 
-  // DPR + sizing
+  // ===== DPR & geometry (declare playArea FIRST to avoid TDZ) =====
   let DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+  const playArea = { x0:0, y0:0, w:0, h:0 };
+
+  function setVH(){
+    document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px');
+  }
+
+  function refreshGeometry(){
+    const W = canvas.width / DPR, H = canvas.height / DPR;
+    const hudRect = hud ? hud.getBoundingClientRect() : { height: 60 };
+    // In immersive mode, reserve the HUD height + gap; enforce a minimum play height
+    const reservedTop = document.body.classList.contains('playing') ? Math.max(48, Math.ceil(hudRect.height)+12) : 0;
+    playArea.x0 = 0;
+    playArea.y0 = reservedTop;
+    playArea.w = W;
+    playArea.h = Math.max(120, H - playArea.y0); // min 120px tall so math never collapses
+  }
 
   function fit(){
     const r = canvas.getBoundingClientRect();
@@ -255,31 +269,19 @@
     refreshGeometry();
   }
 
+  // listeners
   window.addEventListener('resize', ()=>{ setVH(); fit(); }, {passive:true});
   window.addEventListener('orientationchange', ()=>setTimeout(()=>{ setVH(); fit(); }, 200));
   setVH(); fit();
 
-  // Reserved HUD zone (excluded from gameplay) — robust and numeric
-  const playArea = { x0:0, y0:0, w:0, h:0 };
-  function refreshGeometry(){
-    const W = canvas.width / DPR, H = canvas.height / DPR;
-    const hudRect = hud ? hud.getBoundingClientRect() : { height: 60 };
-    // In immersive mode HUD is absolutely positioned at top; reserve its height + small gap
-    const reservedTop = Math.max(0, hudRect.height + 12);
-    playArea.x0 = 0;
-    playArea.y0 = document.body.classList.contains('playing') ? reservedTop : 0;
-    playArea.w = W;
-    playArea.h = Math.max(0, H - playArea.y0);
-  }
-
-  // Watch HUD size, but guard if ResizeObserver missing
+  // Watch HUD size (guarded)
   try{
     if ('ResizeObserver' in window){
       new ResizeObserver(()=>refreshGeometry()).observe(hud);
     }
   }catch{}
 
-  // Starfield (parallax)
+  // ===== Starfield (parallax) =====
   const layers = [
     { count: 80, speed: .02, stars: [], alpha:.45 },
     { count: 50, speed: .06, stars: [], alpha:.75 },
@@ -298,8 +300,7 @@
   initStars();
   function drawStars(dt){
     layers.forEach(L=>{
-      ctx.save();
-      ctx.globalAlpha = L.alpha;
+      ctx.save(); ctx.globalAlpha = L.alpha;
       L.stars.forEach(s=>{
         s.x -= L.speed * dt * 0.06;
         if (s.x < -4) s.x = canvas.width/DPR + 4, s.y = playArea.y0 + Math.random()*playArea.h;
@@ -312,7 +313,7 @@
     });
   }
 
-  // Game state
+  // ===== Game State =====
   const sizeMap = { small: 10, medium: 16, large: 22 };
   const speedMap = { slow: 140, medium: 220, fast: 320 };
   const spawnMap = { slow: 2000, medium: 1500, fast: 1000, vfast: 500 };
@@ -339,11 +340,11 @@
   [sizeSel, spdSel, spawnSel].forEach(el=>el.addEventListener('change', updateDiff));
   updateDiff();
 
-  // Edge → opposite edge inside playArea, with minimum offset for long travel
+  // ===== Spawning: edge → opposite edge, long paths, within playArea =====
   function spawnOppositeEdge(){
     const r = sizeMap[sizeSel.value], pad = r + 8;
     const W = playArea.w, H = playArea.h, X0 = playArea.x0, Y0 = playArea.y0;
-    const side = Math.floor(Math.random()*4); // 0 T,1 R,2 B,3 L
+    const side = Math.floor(Math.random()*4); // 0=TOP,1=RIGHT,2=BOTTOM,3=LEFT
     let x, y, tx, ty;
 
     if (side===0){ x = X0 + rnd(pad, W - pad); y = Y0 - pad;         tx = X0 + rnd(pad, W - pad); ty = Y0 + H + pad; }
@@ -351,6 +352,7 @@
     else if (side===2){ x = X0 + rnd(pad, W - pad); y = Y0 + H + pad; tx = X0 + rnd(pad, W - pad);  ty = Y0 - pad; }
     else { x = X0 - pad; y = Y0 + rnd(pad, H - pad);                   tx = X0 + W + pad;            ty = Y0 + rnd(pad, H - pad); }
 
+    // Guarantee long path: enforce >= 40% lateral/vertical travel
     if (side===0 || side===2){
       const minDx = 0.4*W;
       if (Math.abs(tx - x) < minDx){
@@ -367,14 +369,15 @@
   }
 
   function spawnComet(){
+    if (playArea.w <= 0 || playArea.h <= 0) return; // geometry not ready yet
     const r = sizeMap[sizeSel.value];
     const spd = speedMap[spdSel.value]*(.85 + Math.random()*.4);
     const {x,y,tx,ty} = spawnOppositeEdge();
 
     let vx = tx - x, vy = ty - y;
     const len = Math.hypot(vx,vy) || 1; vx/=len; vy/=len;
-    const hue = (hueBase + Math.random()*60) % 360;
 
+    const hue = (hueBase + Math.random()*60) % 360;
     comets.push({ x, y, vx, vy, r, spd, hue, born: now(), trail: [] });
   }
 
@@ -394,7 +397,7 @@
     misses += Math.max(0, before - comets.length);
   }
 
-  // Particles & popups
+  // ===== Particles & Popups =====
   function burst(x,y,hue){
     for (let i=0;i<24;i++){
       particles.push({ x, y, vx: rnd(-2.4,2.4), vy: rnd(-2.4,2.4), life: 1, r: rnd(1,2.6), hue: hue + rnd(-10,10) });
@@ -410,8 +413,9 @@
     popups = popups.filter(s=>s.life>0);
   }
 
-  // Render
+  // ===== Rendering =====
   function clearBG(){ ctx.clearRect(0,0,canvas.width/DPR,canvas.height/DPR); }
+
   function drawComet(c){
     ctx.save(); ctx.globalCompositeOperation='lighter';
     c.trail.forEach((t,i)=>{
@@ -430,6 +434,7 @@
     ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill();
     ctx.restore();
   }
+
   function drawParticles(){
     ctx.save(); ctx.globalCompositeOperation='lighter';
     particles.forEach(p=>{ ctx.fillStyle = `hsla(${p.hue},95%,70%,${p.life})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill(); });
@@ -441,7 +446,7 @@
     });
   }
 
-  // Input
+  // ===== Input =====
   function getPos(e){
     const rect = canvas.getBoundingClientRect();
     const x = (e.touches?e.touches[0].clientX:e.clientX) - rect.left;
@@ -471,7 +476,7 @@
   canvas.addEventListener('click', onTap);
   canvas.addEventListener('touchstart', onTap, {passive:false});
 
-  // Timer/UI
+  // ===== Timer/UI helpers =====
   function setTimerBar(){ const p = durationMs ? Math.max(0, timeLeft/durationMs) : 0; timerBar.style.width = (p*100)+'%'; }
 
   async function enterFullscreen(){
@@ -489,29 +494,42 @@
   }
   function toImmersive(){
     document.body.classList.add('playing');
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    setTimeout(()=>{ fit(); refreshGeometry(); }, 30);
-    enterFullscreen();
+    window.scrollTo({ top: 0 });
+    enterFullscreen(); // best-effort
   }
   function fromImmersive(){
     document.body.classList.remove('playing');
-    setTimeout(()=>{ fit(); refreshGeometry(); }, 30);
     exitFullscreen();
   }
 
-  // Lifecycle
+  // ===== Lifecycle =====
   function startSession(){
     const mins = parseFloat(durIn.value);
     durationMs = Number.isFinite(mins) && mins>0 ? mins*60*1000 : 120000;
     timeLeft = durationMs; setTimerBar();
+
     toImmersive();
-    running=true; paused=false; score=0; taps=0; misses=0; totalRT=0;
-    scoreEl.textContent='0'; lastTick = now(); lastSpawn = 0; hueBase = (160+Math.random()*60);
-    pauseBtn.disabled=false; restartBtn.disabled=false; pauseBtn.textContent='Pause';
-    requestAnimationFrame(loop);
+
+    // Defer one frame so HUD has a real height, then compute and start
+    requestAnimationFrame(()=>{
+      fit();          // sets canvas size & calls refreshGeometry
+      refreshGeometry();
+
+      running=true; paused=false; score=0; taps=0; misses=0; totalRT=0;
+      scoreEl.textContent='0'; hueBase = (160+Math.random()*60);
+
+      pauseBtn.disabled=false; restartBtn.disabled=false;
+      pauseBtn.textContent='Pause'; pauseHudBtn.textContent='Pause';
+
+      lastTick = performance.now();
+      lastSpawn = -1e9;    // allow immediate spawn
+      spawnComet();        // guarantee at least one comet is visible
+
+      requestAnimationFrame(loop);
+    });
   }
   function pauseSession(){ if (!running||paused) return; paused=true; pauseBtn.textContent='Resume'; pauseHudBtn.textContent='Resume'; }
-  function resumeSession(){ if (!running||!paused) return; paused=false; pauseBtn.textContent='Pause'; pauseHudBtn.textContent='Pause'; lastTick = now(); requestAnimationFrame(loop); }
+  function resumeSession(){ if (!running||!paused) return; paused=false; pauseBtn.textContent='Pause'; pauseHudBtn.textContent='Pause'; lastTick = performance.now(); requestAnimationFrame(loop); }
   function restartSession(){
     running=false; paused=false;
     pauseBtn.textContent='Pause'; pauseHudBtn.textContent='Pause';
@@ -519,6 +537,7 @@
     doneModal.classList.add('hidden');
     comets.length=0; particles.length=0; popups.length=0; timeLeft=0; setTimerBar(); scoreEl.textContent='0';
     fromImmersive();
+    fit(); refreshGeometry();
   }
   function endSession(){
     running=false; paused=false;
@@ -530,17 +549,18 @@
     pauseBtn.disabled=true;
   }
 
-  // Main loop
+  // ===== Main loop =====
   function loop(ts){
     if (!running) return;
     requestAnimationFrame(loop);
     const dt = ts - lastTick; lastTick = ts;
     if (paused) return;
 
+    // keep geometry fresh during play (rotations, dynamic UI)
+    if (document.body.classList.contains('playing')) refreshGeometry();
+
     timeLeft -= dt; if (timeLeft<=0){ setTimerBar(); endSession(); return; }
     setTimerBar();
-
-    refreshGeometry();
 
     const sInt = ({ vfast:500, fast:1000, medium:1500, slow:2000 })[spawnSel.value];
     if (ts - lastSpawn >= sInt){ spawnComet(); lastSpawn = ts; }
@@ -550,6 +570,7 @@
 
     clearBG();
 
+    // camera shake
     let ox=0, oy=0;
     if (shakeT>0){
       shakeT -= dt;
@@ -565,14 +586,13 @@
     if (shakeT>0){ ctx.restore(); }
   }
 
-  // Wire controls
-  startBtn.addEventListener('click', ()=>{ try{ if (!running) startSession(); }catch(e){ console.error(e); } });
+  // ===== Wire controls =====
+  startBtn.addEventListener('click', ()=>{ if (!running) startSession(); });
   pauseBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
   restartBtn.addEventListener('click', restartSession);
   doneBtn.addEventListener('click', ()=>{ doneModal.classList.add('hidden'); restartSession(); setTimeout(startSession, 120); });
   pauseHudBtn.addEventListener('click', ()=>{ if (!running) return; paused?resumeSession():pauseSession(); });
   exitHudBtn.addEventListener('click', ()=>{ if (running){ endSession(); } restartSession(); });
-
 })();
 </script>
 </body>
