@@ -3,343 +3,73 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Trace & Reveal — Fine Point Rehab</title>
-  <meta name="description" content="Trace & Reveal exercise with Comet-style UI and numeric countdown timer." />
-
-  <!-- Global tokens & components -->
-  <link rel="stylesheet" href="/css/tokens.css" />
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/components.css" />
-
+  <title>Trace & Reveal — Simple</title>
   <style>
-    :root{
-      --vh: 1vh;
-      --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
-      --accent: var(--brand-aqua, #6fd3f5);
-      --radius: 14px;
-      --panel: rgba(10,16,36,.9);
-      --panel-border: rgba(255,255,255,.08);
-      --text: #eaf6ff;
-    }
-    body{ margin:0; color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
-        radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 60%),
-        linear-gradient(180deg, var(--bg-2), var(--bg-3));
-      min-height: 100svh;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
-    }
-    header.site-header{
-      position: sticky; top:0; z-index:40;
-      border-bottom: 1px solid var(--panel-border);
-      background: linear-gradient(180deg, rgba(7,11,22,.85), rgba(7,11,22,.65));
-      backdrop-filter: blur(6px);
-    }
-    header .wrap{ display:flex; gap:12px; align-items:center; padding:10px 16px; }
-    header h1{ font-size:18px; margin:0; letter-spacing:.3px; }
-    header .spacer{ flex:1; }
-
-    /* Layout */
-    .grid{
-      display:grid; grid-template-columns: 360px 1fr; gap:16px;
-      padding:16px; max-width:1200px; margin:0 auto;
-    }
-    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
-
-    .panel{ background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--radius); }
-
-    /* Settings panel */
-    .settings{ padding:16px; }
-    .settings h2{ margin:0 0 8px; font-size:16px; opacity:.9; }
-    .settings .group{ margin:14px 0; display:grid; gap:8px; }
-    .settings label{ font-size:13px; opacity:.85; }
-    .settings input[type="range"], .settings select, .settings input[type="number"]{
-      width:100%;
-    }
-    .settings .start-row{ display:flex; gap:10px; align-items:center; margin-top:10px; }
-    .btn{ border-radius:12px; border:1px solid var(--panel-border); background:#0e1734; color:var(--text); padding:10px 14px; cursor:pointer; }
-    .btn-primary{ background:linear-gradient(180deg, #1c2f64, #123057); border-color:#2b406f; box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 6px 18px rgba(4, 183, 255, .15); }
-    .btn-ghost{ background:transparent; }
-    .muted{ opacity:.8; font-size:12px; }
-
-    /* Game panel */
-    .game{ position:relative; padding:12px; display:flex; flex-direction:column; align-items:center; }
-
-    /* HUD aligned to Comet style */
-    .hud{ width:100%; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .hud-left, .hud-right{ display:flex; gap:8px; align-items:center; }
-    .chip{ border:1px solid var(--panel-border); background:#0b132b; border-radius:999px; padding:6px 10px; font-size:12px; display:inline-flex; gap:6px; align-items:center; }
-    .chip b{ font-weight:600; }
-
-    /* Canvas area */
-    .playframe{ position:relative; width:100%; display:flex; justify-content:center; align-items:center; }
-    .canvas-stack{ position:relative; width:min(92vw, 720px); max-width:720px; aspect-ratio:1/1; }
-    canvas{ position:absolute; inset:0; width:100%; height:100%; border-radius:16px; background: radial-gradient(120% 120% at 50% 45%, rgba(255,255,255,.03), rgba(0,0,0,.25) 60%); }
-    .gridline{ pointer-events:none; mix-blend-mode:screen; opacity:.35; }
-
-    /* End dialog */
-    dialog.results{ border:1px solid var(--panel-border); background:var(--panel); color:var(--text); border-radius:16px; max-width:520px; width:clamp(320px, 70vw, 520px); }
-    dialog.results::backdrop{ background:rgba(0,0,0,.55); backdrop-filter: blur(2px); }
-    .results header{ padding:14px 16px; border-bottom:1px solid var(--panel-border); font-weight:600; }
-    .results .content{ padding:16px; display:grid; gap:10px; }
-    .results .actions{ padding:12px 16px 16px; display:flex; gap:10px; justify-content:flex-end; }
-
-    /* Immersive play state */
-    body.playing header.site-header{ display:none; }
-    body.playing .grid{ grid-template-columns: 1fr; max-width: min(1100px, 100%); padding:12px; }
-    body.playing .settings{ display:none; }
-    body.playing .game{ min-height: calc(var(--vh) * 100 - 12px); }
-
-    /* Focus & a11y */
-    :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:10px; }
+    body { background:#0b1024; color:#fff; font-family:sans-serif; margin:0; }
+    header { padding:10px 16px; background:#111a33; }
+    header h1 { margin:0; font-size:18px; }
+    .grid { display:grid; grid-template-columns:300px 1fr; gap:16px; padding:16px; }
+    @media(max-width:800px){ .grid{grid-template-columns:1fr;} }
+    .panel { background:#1a2347; border-radius:10px; padding:16px; }
+    .btn { background:#2b406f; color:#fff; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; }
+    .pill { border-radius:999px; padding:6px 10px; border:1px solid #3b4c7f; background:#223; color:#fff; cursor:pointer; }
+    .pill[aria-pressed="true"]{ background:#4c6fcf; }
+    .hud { display:flex; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:6px; }
+    .chip{ background:#223; padding:4px 8px; border-radius:999px; font-size:12px; }
+    canvas { width:100%; height:100%; border-radius:10px; background:#000; }
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap">
-      <h1>Trace & Reveal</h1>
-      <div class="spacer"></div>
-      <a href="/" class="btn btn-ghost" aria-label="Home">Home</a>
-    </div>
-  </header>
-
-  <main class="grid" id="app">
-    <!-- Settings Panel (Comet template: Start only) -->
-    <section class="panel settings" aria-labelledby="settingsTitle">
-      <h2 id="settingsTitle">Settings</h2>
-
-      <div class="group">
-        <label for="duration">Session Duration (seconds)</label>
-        <input id="duration" type="number" min="10" max="600" step="5" value="60" />
-        <span class="muted">How long the session runs.</span>
+  <header><h1>Trace & Reveal</h1></header>
+  <main class="grid">
+    <section class="panel">
+      <h2>Settings</h2>
+      <p>Session length:</p>
+      <div>
+        <button class="pill" data-length="30" aria-pressed="false">30 sec</button>
+        <button class="pill" data-length="60" aria-pressed="true">60 sec</button>
+        <button class="pill" data-length="90" aria-pressed="false">90 sec</button>
       </div>
-
-      <div class="group">
-        <label for="difficulty">Difficulty</label>
-        <select id="difficulty">
-          <option value="easy">Easy</option>
-          <option value="standard" selected>Standard</option>
-          <option value="hard">Hard</option>
-        </select>
-        <span class="muted">Controls trace tolerance and reveal speed.</span>
+      <p>Brush size:</p>
+      <input id="brush" type="range" min="6" max="40" step="2" value="18" />
+      <div style="margin-top:10px;">
+        <button id="startBtn" class="btn">Start</button>
       </div>
-
-      <div class="group">
-        <label for="brush">Brush Size</label>
-        <input id="brush" type="range" min="4" max="48" step="1" value="18" />
-        <span class="muted">Larger brushes fill the mask faster but reduce precision.</span>
-      </div>
-
-      <div class="group">
-        <label for="coverageReq">Coverage Required (%)</label>
-        <input id="coverageReq" type="number" min="10" max="100" step="1" value="85" />
-        <span class="muted">Percent of area to reveal to complete.</span>
-      </div>
-
-      <div class="start-row">
-        <button id="startBtn" class="btn btn-primary" type="button">Start</button>
-        <span class="muted" id="pbNote" aria-live="polite">PB: <b id="pbValue">0</b> pts</span>
-      </div>
+      <div>PB: <b id="pbValue">0</b></div>
     </section>
-
-    <!-- Game Panel -->
-    <section class="panel game" aria-live="polite">
-      <!-- HUD (Comet-style) -->
+    <section class="panel">
       <div class="hud">
-        <div class="hud-left">
-          <div class="chip" title="Score"><span>Score</span><b id="score">0</b></div>
-          <div class="chip" title="Personal Best"><span>PB</span><b id="pb">0</b></div>
-          <div class="chip" title="Best Coverage"><span>Best Cov.</span><b id="bestCoverage">0%</b></div>
-          <div class="chip" title="Difficulty"><span>Diff.</span><b id="diffChip">Std</b></div>
-        </div>
-        <div class="hud-right">
-          <div class="chip" title="Time Remaining"><span>Time</span><b id="timeChip">00:00</b></div>
-          <button id="pauseBtn" class="btn btn-ghost" type="button" aria-pressed="false">Pause</button>
-          <button id="exitBtn" class="btn btn-ghost" type="button">Exit</button>
-        </div>
+        <div><span class="chip">Score <b id="score">0</b></span>
+        <span class="chip">PB <b id="pb">0</b></span>
+        <span class="chip">Coverage <b id="coverage">0%</b></span></div>
+        <div><span class="chip">Time <b id="timeChip">00:00</b></span>
+        <button id="pauseBtn" class="btn">Pause</button>
+        <button id="exitBtn" class="btn">Exit</button></div>
       </div>
-
-      <!-- Canvas stack (guide/mask/reveal) -->
-      <div class="playframe">
-        <div class="canvas-stack" id="canvasStack">
-          <canvas id="guideCanvas" class="gridline" aria-hidden="true"></canvas>
-          <canvas id="maskCanvas"></canvas>
-          <canvas id="revealCanvas"></canvas>
-        </div>
+      <div style="aspect-ratio:1/1; max-width:500px; margin:auto;">
+        <canvas id="guideCanvas"></canvas>
       </div>
     </section>
   </main>
-
-  <!-- Completion Dialog -->
-  <dialog class="results" id="resultsDialog" aria-labelledby="resultsTitle">
-    <header id="resultsTitle">Session Complete</header>
-    <div class="content">
-      <div>Score: <b id="finalScore">0</b></div>
-      <div>Shapes completed: <b id="finalShapes">0</b></div>
-      <div>Perfect traces: <b id="finalPerfect">0</b></div>
-      <div>Best coverage: <b id="finalCoverage">0%</b></div>
-      <div class="muted">XP awarded: <span id="finalXP">+0</span></div>
-    </div>
-    <div class="actions">
-      <button class="btn btn-primary" id="newSessionBtn" value="default">Start New Session</button>
-      <button class="btn btn-ghost" id="closeDialogBtn" value="cancel">Close</button>
-    </div>
-  </dialog>
-
   <script>
-    /* --- Mobile 100vh fix --- */
-    const setVH = () => {
-      const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', `${vh}px`);
-    };
-    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
-
-    /* --- State --- */
-    let playing = false, paused = false, rafId = 0, startTs = 0, remainingMs = 0, totalMs = 60000;
-    let score = 0, bestCoverage = 0, personalBest = Number(localStorage.getItem('FPR_trace_pb')||'0');
-
-    const el = (id) => document.getElementById(id);
-    const fmtTime = (ms) => {
-      ms = Math.max(0, ms|0); const s = Math.ceil(ms/1000);
-      const m = Math.floor(s/60).toString().padStart(2,'0');
-      const ss = (s % 60).toString().padStart(2,'0');
-      return `${m}:${ss}`;
-    };
-
-    // DOM refs
-    const startBtn = el('startBtn');
-    const pauseBtn = el('pauseBtn');
-    const exitBtn  = el('exitBtn');
-    const timeChip = el('timeChip');
-    const scoreEl = el('score');
-    const pbEl = el('pb');
-    const pbValueEl = el('pbValue');
-    const bestCovEl = el('bestCoverage');
-    const diffChip = el('diffChip');
-
-    const durationInput = el('duration');
-    const brushInput = el('brush');
-    const diffInput = el('difficulty');
-    const covReqInput = el('coverageReq');
-
-    const resultsDialog = el('resultsDialog');
-    const finalScore = el('finalScore');
-    const finalShapes = el('finalShapes');
-    const finalPerfect = el('finalPerfect');
-    const finalCoverage = el('finalCoverage');
-    const finalXP = el('finalXP');
-    const newSessionBtn = el('newSessionBtn');
-    const closeDialogBtn = el('closeDialogBtn');
-
-    // canvases
-    const stack = el('canvasStack');
-    const guide = el('guideCanvas');
-    const mask = el('maskCanvas');
-    const reveal = el('revealCanvas');
-    const ctxGuide = guide.getContext('2d');
-    const ctxMask = mask.getContext('2d');
-    const ctxReveal = reveal.getContext('2d');
-
-    // Init HUD
-    pbEl.textContent = personalBest;
-    pbValueEl.textContent = personalBest;
-    const setDiffChip = () => {
-      const map = { easy:'Easy', standard:'Std', hard:'Hard' };
-      diffChip.textContent = map[diffInput.value] || 'Std';
-    };
-    setDiffChip();
-    diffInput.addEventListener('change', setDiffChip);
-
-    // Resize canvases to container
-    function resizeCanvases(){
-      const rect = stack.getBoundingClientRect();
-      [guide, mask, reveal].forEach(c => { c.width = rect.width * devicePixelRatio; c.height = rect.height * devicePixelRatio; c.style.width = rect.width+'px'; c.style.height = rect.height+'px'; });
-      drawGuide();
-      // Note: actual mask/reveal drawing comes from game logic; here we only keep placeholders for UI parity.
+    const pills=[...document.querySelectorAll('.pill[data-length]')]; let chosenLen=60;
+    function selectLength(sec){ chosenLen=sec; pills.forEach(p=>p.setAttribute('aria-pressed',String(p.dataset.length==sec)));}
+    pills.forEach(p=>p.addEventListener('click',()=>selectLength(Number(p.dataset.length)))); selectLength(60);
+    const $=id=>document.getElementById(id); const timeChip=$('timeChip'); const scoreEl=$('score'); const pbEl=$('pb'); const pbValueEl=$('pbValue'); const coverageEl=$('coverage');
+    let playing=false,paused=false,startTs=0,totalMs=60000,remainingMs=0,rafId=0; let score=0,bestCoverage=0,personalBest=0;
+    function fmtTime(ms){const s=Math.ceil(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+    function startSession(){ if(playing)return; score=0;scoreEl.textContent='0'; bestCoverage=0;coverageEl.textContent='0%'; totalMs=chosenLen*1000;remainingMs=totalMs;startTs=performance.now();playing=true; loop(); drawShapes();}
+    function loop(ts){ if(!playing){cancelAnimationFrame(rafId);return;} rafId=requestAnimationFrame(loop); if(paused)return; const now=performance.now();const elapsed=now-startTs;remainingMs=Math.max(0,totalMs-elapsed);timeChip.textContent=fmtTime(remainingMs); if(remainingMs<=0){endSession();}}
+    function pauseSession(){ if(!playing)return; paused=!paused; if(!paused){startTs=performance.now()-(totalMs-remainingMs);}}
+    function endSession(){playing=false;cancelAnimationFrame(rafId); if(score>personalBest){personalBest=score;pbEl.textContent=score;pbValueEl.textContent=score;}}
+    $('startBtn').onclick=startSession; $('pauseBtn').onclick=pauseSession; $('exitBtn').onclick=endSession;
+    // draw simple shapes
+    const guide=$('guideCanvas'); const ctx=guide.getContext('2d'); function resize(){guide.width=guide.clientWidth*devicePixelRatio;guide.height=guide.clientHeight*devicePixelRatio;drawShapes();} window.addEventListener('resize',resize);
+    function drawShapes(){ctx.clearRect(0,0,guide.width,guide.height);ctx.strokeStyle='#fff';ctx.lineWidth=3;const w=guide.width,h=guide.height;
+      ctx.strokeRect(w*0.2,h*0.2,w*0.2,h*0.2);ctx.beginPath();ctx.arc(w*0.7,h*0.3,w*0.1,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(w*0.5,h*0.7);ctx.lineTo(w*0.4,h*0.9);ctx.lineTo(w*0.6,h*0.9);ctx.closePath();ctx.stroke();
     }
-    addEventListener('resize', resizeCanvases);
-    const ro = new ResizeObserver(resizeCanvases); ro.observe(stack);
-
-    function drawGuide(){
-      const c = guide; const g = ctxGuide; g.clearRect(0,0,c.width,c.height);
-      g.save(); g.scale(devicePixelRatio, devicePixelRatio);
-      const w = c.width/devicePixelRatio, h = c.height/devicePixelRatio;
-      g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = 1;
-      const step = Math.round(Math.min(w,h)/14);
-      for(let x=step; x<w; x+=step){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,h); g.stroke(); }
-      for(let y=step; y<h; y+=step){ g.beginPath(); g.moveTo(0,y); g.lineTo(w,y); g.stroke(); }
-      g.restore();
-    }
-
-    function startSession(){
-      if(playing) return;
-      score = 0; scoreEl.textContent = '0'; bestCoverage = 0; bestCovEl.textContent = '0%';
-      totalMs = Math.max(10, Number(durationInput.value||60)) * 1000;
-      remainingMs = totalMs; startTs = performance.now(); paused = false; playing = true;
-      document.body.classList.add('playing');
-      timeChip.textContent = fmtTime(remainingMs);
-      resizeCanvases();
-      loop();
-    }
-
-    function loop(ts){
-      if(!playing){ cancelAnimationFrame(rafId); return; }
-      rafId = requestAnimationFrame(loop);
-      if(paused) return;
-      const now = performance.now();
-      const elapsed = now - startTs;
-      remainingMs = Math.max(0, totalMs - elapsed);
-      timeChip.textContent = fmtTime(remainingMs);
-
-      // Placeholder: update coverage/score visuals here if wired to actual game logic
-      // bestCoverage = Math.max(bestCoverage, currentCoverage)
-      // score += ...
-
-      if(remainingMs <= 0){ endSession(); }
-    }
-
-    function pauseSession(){
-      if(!playing) return; paused = !paused; pauseBtn.setAttribute('aria-pressed', String(paused));
-      if(!paused){ // resume baseline
-        startTs = performance.now() - (totalMs - remainingMs);
-      }
-    }
-
-    function exitSession(){
-      if(!playing) return; playing = false; paused = false; document.body.classList.remove('playing');
-      cancelAnimationFrame(rafId);
-    }
-
-    function endSession(){
-      playing = false; paused = false; document.body.classList.remove('playing');
-      cancelAnimationFrame(rafId);
-      // Compute final stats (placeholder)
-      finalScore.textContent = score;
-      finalShapes.textContent = 0;
-      finalPerfect.textContent = 0;
-      finalCoverage.textContent = bestCoverage + '%';
-      const xp = Math.max(1, Math.round(score/10));
-      finalXP.textContent = `+${xp}`;
-      // PB
-      if(score > personalBest){ personalBest = score; localStorage.setItem('FPR_trace_pb', String(score)); pbEl.textContent = score; pbValueEl.textContent = score; }
-      resultsDialog.showModal();
-    }
-
-    // Events
-    startBtn.addEventListener('click', startSession);
-    newSessionBtn.addEventListener('click', () => { resultsDialog.close(); startSession(); });
-    closeDialogBtn.addEventListener('click', () => resultsDialog.close());
-
-    pauseBtn.addEventListener('click', pauseSession);
-    exitBtn.addEventListener('click', exitSession);
-
-    // Keyboard a11y: space to pause, Esc to exit when playing
-    addEventListener('keydown', (e) => {
-      if(!playing) return; if(e.key === ' '){ e.preventDefault(); pauseSession(); }
-      if(e.key === 'Escape'){ e.preventDefault(); exitSession(); }
-    });
-
-    // Initialize once
-    requestAnimationFrame(() => resizeCanvases());
+    resize();
   </script>
 </body>
 </html>
