@@ -1,1024 +1,622 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-RVKCCWBFKE', { 'anonymize_ip': true });
-  </script>
-
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rhythm Reach — Comet Look (Immersive)</title>
+  <meta name="description" content="Rhythm Reach with Comet-style settings and immersive start." />
 
-  <title>Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation</title>
-  <meta name="description" content="Rhythm Reach helps improve cognitive function and memory through engaging pattern-matching exercises. Perfect for stroke rehabilitation, memory training, and cognitive therapy at home or in clinical settings.">
-  <meta name="author" content="Fine Point Rehab">
+  <!-- Base href for consistent imports -->
+  <base href="/">
 
-  <!-- Social -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://finepointrehab.com/exercises/rhythm-exercise.html">
-  <meta property="og:title" content="Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation">
-  <meta property="og:description" content="Improve cognitive function and memory with this engaging pattern-matching game designed for stroke rehabilitation and cognitive therapy.">
-  <meta property="og:image" content="https://finepointrehab.com/images/rhythm-reach-preview.jpg">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Rhythm Reach | Cognitive Pattern Memory Game for Stroke Rehabilitation">
-  <meta name="twitter:description" content="Improve cognitive function and memory with this engaging pattern-matching game designed for stroke rehabilitation and cognitive therapy.">
-  <meta name="twitter:image" content="https://finepointrehab.com/images/rhythm-reach-preview.jpg">
-
-  <meta name="robots" content="index, follow">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0f1a2e">
-  <link rel="canonical" href="https://finepointrehab.com/exercises/rhythm-exercise.html" />
-
-  <!-- Design System -->
+  <!-- Global styles -->
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
 
-  <!-- Fallback design system for artifacts/local preview -->
-  <script>
-  (function () {
-    // If tokens.css didn't load, define the essentials so the page still looks right.
-    const root = document.documentElement;
-    const hasTokens = getComputedStyle(root).getPropertyValue('--bg-primary').trim();
-    if (hasTokens) return;
-
-    const style = document.createElement('style');
-    style.setAttribute('id', 'fallback-design-system');
-    style.textContent = `
-      :root{
-        /* colors */
-        --bg-primary:#0f1a2e; --bg-secondary:#121d33; --bg-tertiary:#1a2744;
-        --text-primary:#f9fafb; --text-secondary:#cbd5e1; --text-muted:#94a3b8;
-        --brand-blue:#3b82f6; --brand-aqua:#48cae4; --brand-teal:#06b6d4;
-        --brand-gradient:linear-gradient(135deg,var(--brand-blue) 0%,var(--brand-aqua) 100%);
-        --success:#10b981; --success-color:#2ecc71; --error:#ef4444; --error-color:#e74c3c; --focus:#7aa5ff;
-        --border:rgba(255,255,255,.12); --border-light:rgba(255,255,255,.08);
-
-        /* radius, shadows, spacing, touch target */
-        --radius-md:.25rem; --radius-lg:.5rem; --radius-xl:.75rem; --radius-full:9999px;
-        --shadow-sm:0 2px 8px rgba(0,0,0,.2);
-        --space-2:.5rem; --space-3:.75rem; --space-4:1rem; --space-6:1.5rem; --space-8:2rem; --space-12:3rem;
-        --touch-target:44px;
-      }
-      /* minimal base so typography/buttons look sane without base.css/components.css */
-      *{box-sizing:border-box} html,body{height:100%}
-      body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--text-primary);background:var(--bg-primary)}
-      .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
-           padding:.5rem 1rem;border:1px solid transparent;border-radius:var(--radius-md);
-           min-height:var(--touch-target);cursor:pointer;text-decoration:none;
-           background:var(--bg-secondary);color:var(--text-primary)}
-      .btn-primary{background:var(--brand-gradient);color:#fff}
-      .btn-ghost{background:transparent;border-color:transparent;color:var(--text-secondary)}
-      .btn-ghost:hover,.btn-ghost:focus-visible{background:rgba(255,255,255,.06);color:var(--text-primary)}
-      .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-      select,input[type="range"]{width:100%;color:var(--text-primary);background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius-md);padding:.5rem .75rem}
-      input[type="range"]{padding:0;height:var(--touch-target);background:transparent}
-      .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
-    `;
-    document.head.appendChild(style);
-  })();
-  </script>
-
   <style>
-    /* Minimal panel baseline for this page */
-    .panel {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border, rgba(255,255,255,.12));
-      border-radius: var(--radius-lg, 12px);
-      box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,.2));
-      padding: var(--space-4, 16px);
+    dialog::backdrop{background:rgba(0,0,0,.5);}
+    :root {
+      --hud-height: 64px;
+      --pad-gap: 12px;
+      --pad-radius: 14px;
     }
 
-    /* Page background + layout */
     body {
-      min-height: 100vh;
-      background: linear-gradient(135deg, var(--bg-primary, #0f1a2e) 0%, #1a2744 50%, var(--bg-primary, #0f1a2e) 100%);
-      color: var(--text-primary, #f9fafb);
-      overflow-x: hidden;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
+      background: radial-gradient(1200px 800px at 10% 10%, rgba(255,255,255,0.05), transparent 60%),
+                  radial-gradient(1000px 600px at 90% 30%, rgba(255,255,255,0.06), transparent 60%),
+                  var(--bg, #0b1020);
+      min-height: 100svh;
+      overflow: hidden;
     }
 
-    /* Sticky header */
-    .app-header {
+    /* Screen switching */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Header */
+    header.site-header {
       position: sticky;
       top: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-3) var(--space-4);
-      background: linear-gradient(180deg, rgba(8,15,35,.85), rgba(8,15,35,.60));
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      z-index: 30;
+      backdrop-filter: blur(6px);
+      background: color-mix(in oklab, var(--panel-bg, rgba(255,255,255,0.06)) 90%, transparent);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .app-header .home-link {
-      text-decoration: none;
-      font-weight: 600;
+    header .wrap {
+      display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem;
     }
-    .app-header h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      letter-spacing: .3px;
-    }
+    .home-link { text-decoration: none; }
+    .home-link .chev { margin-right: .25rem; }
+    .title { font-size: clamp(18px, 2.2vw, 22px); font-weight: 600; }
 
-    /* Shared two-panel layout */
-    .app-main {
+    /* Settings layout (Comet-style) */
+    .settings-wrap {
       display: grid;
-      grid-template-columns: minmax(260px, 360px) 1fr;
-      gap: var(--space-4);
-      padding: var(--space-4);
-      min-height: calc(100dvh - var(--space-12, 48px));
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 16px;
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    @media (max-width: 900px) {
-      .app-main {
+    @media (max-width: 860px) {
+      .settings-wrap {
         grid-template-columns: 1fr;
-        grid-auto-rows: max-content 1fr;
-        height: auto;
-      }
-      body { 
-        overflow-y: auto; 
       }
     }
 
-    /* Left: Settings panel (uses .panel design system) */
-    .settings.panel {
-      max-height: calc(100dvh - 120px);
-      overflow: auto;
+    .panel {
+      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.35);
     }
-    .settings .settings-group + .settings-group {
-      margin-top: var(--space-4);
-    }
-    .settings .settings-label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 700;
-    }
-    .settings .setting-description {
-      font-size: .9rem;
-      opacity: .85;
-      margin-bottom: 8px;
-    }
-    .settings select,
-    .settings input[type="range"] {
-      width: 100%;
-    }
+    .panel h2 { margin: 0 0 10px 0; font-size: 1.1rem; }
+    .panel p { opacity: .9; }
 
-    /* Right: HUD row + game area */
-    .stage {
-      position: relative;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: var(--space-4);
-      height: 100%;
+    .fieldset { display: grid; gap: 12px; }
+    .field {
+      display: grid; gap: 6px;
     }
+    .field label {
+      font-weight: 600; font-size: .95rem;
+    }
+    .field .hint { font-size: .85rem; opacity: .8; }
 
-    /* Shared starfield utility replaces custom stars */
-    .starfield {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
+    .actions {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;
     }
-
-    /* HUD row: timer + stats + controls */
-    .hud.panel {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: var(--space-3);
-      align-items: center;
-    }
-    .hud-left {
-      display: grid;
-      gap: var(--space-2);
-    }
-    .timer-bar {
-      position: relative;
-      height: 10px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: rgba(255,255,255,.12);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-    }
-    .timer-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--brand-gradient);
-      box-shadow: 0 2px 10px rgba(111,211,245,.5);
-      transition: width .1s linear;
-    }
-    .stats-row {
-      display: flex;
-      gap: var(--space-4);
-      flex-wrap: wrap;
-      font-variant-numeric: tabular-nums;
-    }
-    .stat {
-      display: grid;
-      gap: 2px;
-      min-width: 90px;
-    }
-    .stat .label {
-      font-size: .8rem;
-      opacity: .8;
-    }
-    .stat .value {
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: var(--brand-aqua, #48cae4);
-    }
-    .hud-right {
-      display: flex;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    /* Game board */
-    .game-wrap {
-      position: relative;
-      display: grid;
-      place-items: center;
-      z-index: 1;
-    }
-    #game-area {
-      width: clamp(260px, 70vw, 420px);
-      height: clamp(260px, 70vw, 420px);
-      background: radial-gradient(circle at center, rgba(31, 48, 85, 0.9), rgba(20, 30, 53, 0.95));
-      border: 3px solid rgba(111, 211, 245, 0.5);
-      border-radius: var(--radius-xl);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: var(--space-3);
-      padding: var(--space-4);
-      box-shadow:
-        0 0 40px rgba(111, 211, 245, 0.3),
-        inset 0 0 20px rgba(111, 211, 245, 0.1);
-      animation: gameAreaGlow 3s ease-in-out infinite;
-    }
-    @keyframes gameAreaGlow {
-      0%,100% { box-shadow: 0 0 40px rgba(111,211,245,.3), inset 0 0 20px rgba(111,211,245,.1); }
-      50%     { box-shadow: 0 0 60px rgba(111,211,245,.5), inset 0 0 30px rgba(111,211,245,.2); }
-    }
-
-    .pad {
-      background: linear-gradient(145deg, #2a3b6a, #1e2a4f);
-      border: 2px solid rgba(111, 211, 245, 0.2);
-      border-radius: var(--radius-lg);
-      cursor: pointer;
-      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-      position: relative;
-      display: grid;
-      place-items: center;
-      font-size: 26px;
-      font-weight: 800;
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0,0,0,.35);
-      overflow: hidden;
-      min-height: var(--touch-target);
-      min-width: var(--touch-target);
-      box-shadow:
-        0 4px 15px rgba(0,0,0,.3),
-        inset 0 1px 0 rgba(255,255,255,.1);
-    }
-    .pad:hover { 
-      transform: translateY(-2px); 
-      border-color: rgba(111,211,245,.4); 
-    }
-    .pad:focus-visible { 
-      outline: 3px solid var(--focus); 
-      outline-offset: 2px; 
-    }
-    .pad:active { 
-      transform: scale(.96); 
-    }
-    .pad.active {
-      background: var(--brand-gradient);
-      border-color: var(--focus);
-      color: #0f1a2e;
-      text-shadow: none;
-      box-shadow: 0 0 25px rgba(111,211,245,.8), inset 0 0 15px rgba(255,255,255,.3);
-    }
-    .pad.correct { 
-      background: linear-gradient(145deg, var(--success-color), #27ae60); 
-      border-color: var(--success-color); 
-      color: #0f1a2e;
-      text-shadow: none; 
-    }
-    .pad.incorrect { 
-      background: linear-gradient(145deg, var(--error-color), #c0392b); 
-      border-color: var(--error-color); 
-      color: #0f1a2e;
-      text-shadow: none; 
-    }
-
-    /* Context messages */
-    #status-message, #sequence-display {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-      z-index: 2;
-      text-shadow: 0 2px 4px rgba(0,0,0,.3);
-    }
-    #status-message { top: 18%; font-size: 1.25rem; font-weight: 800; opacity: 0; transition: opacity .25s ease; }
-    #sequence-display { top: 8%; font-weight: 800; color: #6fd3f5; }
-
-    /* Completion modal (uses .panel) */
-    .completion.panel {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(0,0,0,.35);
-      z-index: 3;
-    }
-    .completion-card {
-      width: min(560px, 92vw);
-    }
-    .scores {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-3);
-      margin-block: var(--space-3);
-      text-align: center;
-    }
-    .scores .score {
-      padding: var(--space-3);
-      border-radius: var(--radius-lg);
-      background: rgba(255,255,255,.06);
-    }
-    .scores .score .label { font-size: .85rem; opacity: .8; }
-    .scores .score .value { font-weight: 900; font-size: 1.4rem; color: #6fd3f5; }
-
-    .xp-line {
-      margin-top: var(--space-2);
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: .7rem 1rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      cursor: pointer; user-select: none; text-decoration: none;
       font-weight: 600;
-      opacity: .9;
+    }
+    .btn:hover { filter: brightness(1.05); }
+    .btn-primary {
+      border-color: color-mix(in oklab, var(--brand-blue, #8ab4f8) 60%, white 0%);
+      background: linear-gradient(180deg, color-mix(in oklab, var(--brand-blue, #8ab4f8) 24%, transparent), rgba(255,255,255,.02));
+    }
+    .btn-ghost { background: transparent; }
+
+    /* Game Screen */
+    #gameScreen {
+      position: fixed; inset: 0;
+      display: grid; grid-template-rows: var(--hud-height) 1fr;
+      background: inherit;
+      z-index: 100;
+    }
+    .hud {
+      display: grid; grid-template-columns: 1fr auto; align-items: center;
+      padding: 8px 12px; gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: color-mix(in oklab, rgba(10,16,32,0.6) 70%, transparent);
+      backdrop-filter: blur(6px);
+    }
+    .stats { display: flex; gap: 16px; align-items: center; font-variant-numeric: tabular-nums; }
+    .stat { opacity: .95; }
+    .hud-actions { display: flex; gap: 10px; }
+
+    /* Grid play area */
+    .play-area {
+      position: relative; display: grid; place-items: center;
+      padding: 14px;
+    }
+    .grid9 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--pad-gap);
+      width: min(90vw, 720px);
+      aspect-ratio: 1 / 1;
+      touch-action: manipulation;
+    }
+    .pad {
+      border-radius: var(--pad-radius);
+      border: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: inset 0 2px 8px rgba(0,0,0,.3);
+      display: grid; place-items: center;
+      font-size: clamp(18px, 5.2vw, 32px);
+      font-weight: 700;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+    }
+    .pad:active { filter: brightness(1.15); }
+    .pad.show {
+      outline: 3px solid color-mix(in oklab, var(--brand-aqua, #80e6ff) 70%, white 0%);
+      box-shadow: 0 0 22px rgba(128,230,255,.45), inset 0 2px 10px rgba(0,0,0,.35);
     }
 
-    .hidden { display:none !important; }
-
-    /* Reduced motion */
-    @media (prefers-reduced-motion: reduce) {
-      * { animation: none !important; transition: none !important; }
+    /* Pause overlay */
+    .pause-overlay {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      background: color-mix(in oklab, #000 55%, transparent);
+      opacity: 0; pointer-events: none; transition: opacity .2s ease;
+    }
+    .pause-overlay.active { opacity: 1; pointer-events: auto; }
+    .pause-card {
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px; padding: 18px; text-align: center; min-width: 260px;
+      box-shadow: 0 14px 24px rgba(0,0,0,.4);
     }
 
-    /* Mobile tweaks */
-    @media (max-width: 768px) {
-      #game-area { 
-        gap: var(--space-2); 
-        padding: var(--space-3); 
-      }
+    /* Accessibility helpers */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); border: 0;
     }
-    
-    /* Extra mobile tap target boost */
-    @media (max-width: 480px) {
-      #game-area { 
-        gap: var(--space-3); 
-        padding: var(--space-4); 
-      }
-    }
+
+    /* Size mapping via "Comet Size" choice */
+    .size-large .grid9 { width: min(92vw, 820px); }
+    .size-medium .grid9 { width: min(90vw, 680px); }
+    .size-small .grid9 { width: min(88vw, 560px); }
   </style>
 </head>
 <body>
-  <!-- Header & Navigation -->
-  <header class="app-header">
-    <a class="home-link btn btn-ghost" href="/" aria-label="Go to home">← Home</a>
-    <h1>Rhythm Reach</h1>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="home-link btn btn-ghost" href="/" aria-label="Back to home"><span class="chev">←</span> Home</a>
+      <div class="title">Rhythm Reach</div>
+      <div style="margin-left:auto;opacity:.8;font-size:.9rem">Comet-style settings • Immersive start</div>
+    </div>
   </header>
 
-  <!-- Main two-panel layout -->
-  <main class="app-main" role="main">
-    <!-- Left panel: Settings -->
-    <aside class="settings panel" id="settings-panel" aria-labelledby="settings-title">
-      <h2 id="settings-title">Settings</h2>
+  <!-- SETTINGS SCREEN (Comet-style) -->
+  <main id="settingsScreen" class="screen active">
+    <div class="settings-wrap">
+      <section class="panel" aria-labelledby="settings-title">
+        <h2 id="settings-title">Settings</h2>
+        <div class="fieldset">
+          <div class="field">
+            <label for="duration">Session Duration (minutes)</label>
+            <input id="duration" type="number" min="1" max="30" value="2" />
+            <div class="hint">How long the session runs. Timer shows as mm:ss in the HUD.</div>
+          </div>
 
-      <section class="game-description">
-        <h3>How to Play</h3>
-        <p>Watch the sequence of flashing pads, then repeat it by clicking (or pressing 1–9) in the same order. Each level adds one more step.</p>
-        <p>Great for memory, attention, and processing speed.</p>
+          <div class="field">
+            <label for="size">Comet Size</label>
+            <select id="size">
+              <option value="large">Large</option>
+              <option value="medium" selected>Medium</option>
+              <option value="small">Small</option>
+            </select>
+            <div class="hint">Controls the grid pad size visually.</div>
+          </div>
+
+          <div class="field">
+            <label for="speed">Comet Speed</label>
+            <select id="speed">
+              <option value="slow">Slow</option>
+              <option value="medium" selected>Medium</option>
+              <option value="fast">Fast</option>
+            </select>
+            <div class="hint">Maps to sequence playback speed.</div>
+          </div>
+
+          <div class="field">
+            <label for="spawn">Spawn Rate</label>
+            <select id="spawn">
+              <option value="slow">Slow (2s)</option>
+              <option value="med">Medium (1.5s)</option>
+              <option value="fast">Fast (1s)</option>
+              <option value="vfast">Very Fast (0.5s)</option>
+            </select>
+            <div class="hint">Delay between sequences (after you complete one).</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="startBtn" class="btn btn-primary" type="button">Start</button>
+          <button id="pauseBtnSettings" class="btn btn-ghost" type="button" disabled>Pause</button>
+          <button id="restartBtnSettings" class="btn btn-ghost" type="button" disabled>Restart</button>
+        </div>
       </section>
 
-      <div class="settings-group">
-        <label class="settings-label" for="difficulty">Difficulty</label>
-        <div class="setting-description">Affects sequence speed and input time limit.</div>
-        <select id="difficulty" aria-label="Difficulty">
-          <option value="easy">Easy – Slower pace</option>
-          <option value="medium" selected>Medium – Balanced</option>
-          <option value="hard">Hard – Fast pace</option>
-        </select>
-      </div>
-
-      <div class="settings-group">
-        <label class="settings-label" for="sequence-speed">Sequence Speed</label>
-        <div class="setting-description">How fast the pattern is shown (1 slow – 10 fast)</div>
-        <input id="sequence-speed" type="range" min="1" max="10" value="5" aria-valuemin="1" aria-valuemax="10" />
-      </div>
-
-      <div class="settings-group">
-        <label class="settings-label" for="starting-length">Starting Sequence Length</label>
-        <div class="setting-description">Steps in the first pattern (2–5)</div>
-        <input id="starting-length" type="range" min="2" max="5" value="3" />
-      </div>
-
-      <div class="settings-group">
-        <label class="settings-label" for="max-level">Maximum Level</label>
-        <div class="setting-description">Game ends on reaching this level (5–20)</div>
-        <input id="max-level" type="range" min="5" max="20" value="12" />
-      </div>
-
-      <!-- Session Flow controls (unified) -->
-      <div class="settings-group" aria-label="Game controls">
-        <button id="start-btn" class="btn btn-primary" type="button">Start</button>
-        <div style="display:flex; gap:var(--space-2); margin-top:var(--space-2);">
-          <button id="pause-btn" class="btn" type="button" aria-pressed="false">Pause</button>
-          <button id="restart-btn" class="btn" type="button">Restart</button>
-        </div>
-        <p class="setting-description" style="margin-top:var(--space-2);">Shortcuts: <kbd>S</kbd> Start, <kbd>P</kbd> Pause/Resume, <kbd>R</kbd> Restart, <kbd>1–9</kbd> Pads.</p>
-      </div>
-    </aside>
-
-    <!-- Right panel: HUD + game area -->
-    <section class="stage" aria-label="Game stage">
-      <!-- Starfield background (shared utility) -->
-      <div class="starfield" data-starfield></div>
-
-      <!-- HUD Row -->
-      <div class="hud panel" role="region" aria-label="Game heads-up display">
-        <div class="hud-left">
-          <div class="timer-bar" aria-hidden="true"><div id="timer-fill" class="timer-fill"></div></div>
-          <div class="stats-row">
-            <div class="stat" aria-live="polite">
-              <span class="label">Score</span>
-              <span id="score-display" class="value">0</span>
-            </div>
-            <div class="stat" aria-live="polite">
-              <span class="label">Personal Best</span>
-              <span id="pb-display" class="value">0</span>
-            </div>
-            <div class="stat" aria-live="polite">
-              <span class="label">Difficulty</span>
-              <span id="diff-display" class="value">Medium</span>
-            </div>
-          </div>
-        </div>
-        <div class="hud-right">
-          <!-- Mirror controls in HUD as well -->
-          <button id="hud-start" class="btn btn-primary" type="button" aria-label="Start game">Start</button>
-          <button id="hud-pause" class="btn" type="button" aria-label="Pause or resume">Pause</button>
-          <button id="hud-restart" class="btn" type="button" aria-label="Restart game">Restart</button>
-        </div>
-      </div>
-
-      <!-- Game Area -->
-      <div class="game-wrap panel" role="region" aria-label="Game area">
-        <div id="sequence-display" aria-live="polite"></div>
-        <div id="status-message" aria-live="polite"></div>
-
-        <div id="game-area" role="group" tabindex="0" aria-label="Rhythm grid">
-          <button class="pad" data-pad="1" aria-label="Pad 1">1</button>
-          <button class="pad" data-pad="2" aria-label="Pad 2">2</button>
-          <button class="pad" data-pad="3" aria-label="Pad 3">3</button>
-          <button class="pad" data-pad="4" aria-label="Pad 4">4</button>
-          <button class="pad" data-pad="5" aria-label="Pad 5">5</button>
-          <button class="pad" data-pad="6" aria-label="Pad 6">6</button>
-          <button class="pad" data-pad="7" aria-label="Pad 7">7</button>
-          <button class="pad" data-pad="8" aria-label="Pad 8">8</button>
-          <button class="pad" data-pad="9" aria-label="Pad 9">9</button>
-        </div>
-      </div>
-
-      <!-- Completion Modal -->
-      <div id="completion-overlay" class="completion panel hidden" role="dialog" aria-modal="true" aria-labelledby="completion-title">
-        <div class="panel completion-card">
-          <h2 id="completion-title">Great Work!</h2>
-          <div class="scores" role="group" aria-label="Session results">
-            <div class="score">
-              <div class="label">Final Score</div>
-              <div id="final-score" class="value">0</div>
-            </div>
-            <div class="score">
-              <div class="label">Level Reached</div>
-              <div id="final-level" class="value">1</div>
-            </div>
-            <div class="score">
-              <div class="label">Best Streak</div>
-              <div id="final-streak" class="value">0</div>
-            </div>
-          </div>
-          <p id="xp-line" class="xp-line">+0 XP earned</p>
-          <div id="achievement-banner" class="hidden" aria-live="polite" style="margin-top:var(--space-2);"></div>
-          <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-top:var(--space-3);">
-            <button id="play-again-btn" class="btn btn-primary" type="button">Play Again</button>
-            <button id="close-modal-btn" class="btn" type="button">Close</button>
-          </div>
-        </div>
-      </div>
-    </section>
+      <section class="panel" aria-labelledby="howto-title">
+        <h2 id="howto-title">How to play</h2>
+        <p>Watch the pads light up in a sequence, then repeat the pattern. Each round adds one more step. Earn more points by keeping a long streak and completing rounds quickly.</p>
+        <ul>
+          <li>Tap pads 1–9 (or press keys 1–9).</li>
+          <li>Use <strong>Pause</strong> to take a break; <strong>Exit</strong> returns you to this screen.</li>
+          <li>Session ends when the timer reaches 0.</li>
+        </ul>
+      </section>
+    </div>
   </main>
 
-  <!-- Screen reader live region -->
-  <div id="sr-announcements" class="visually-hidden" aria-live="assertive"></div>
+  <!-- GAME SCREEN (immersive fullscreen) -->
+  <section id="gameScreen" class="screen" aria-hidden="true">
+    <div class="hud">
+      <div class="stats">
+        <div class="stat">Score: <span id="score">0</span></div>
+        <div class="stat">Personal Best: <span id="best">0</span></div>
+        <div class="stat">Time: <span id="time">00:00</span></div>
+      </div>
+      <div class="hud-actions">
+        <button id="pauseBtn" class="btn btn-ghost" type="button" aria-pressed="false">Pause</button>
+        <button id="exitBtn" class="btn btn-ghost" type="button">Exit</button>
+      </div>
+    </div>
 
-  <!-- Progress & Achievements (optional imports) -->
-  <script type="module">
-    const EXERCISE_ID = 'rhythm';
-    // optional, silent failures outside your site
-    (async () => {
-      try {
-        const [{ recordSession }, { checkAndUnlockAchievements, markExerciseTried }] =
-          await Promise.all([
-            import('/js/progress.js'),
-            import('/js/achievements.js')
-          ]);
+    <div class="play-area size-medium" id="playArea">
+      <div class="grid9" id="grid" role="application" aria-label="Rhythm grid">
+        <!-- 9 pads -->
+        <button class="pad" data-id="1">1</button>
+        <button class="pad" data-id="2">2</button>
+        <button class="pad" data-id="3">3</button>
+        <button class="pad" data-id="4">4</button>
+        <button class="pad" data-id="5">5</button>
+        <button class="pad" data-id="6">6</button>
+        <button class="pad" data-id="7">7</button>
+        <button class="pad" data-id="8">8</button>
+        <button class="pad" data-id="9">9</button>
+      </div>
 
-        window.endSession = (score, difficulty = 'easy') => {
-          try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
-          try { markExerciseTried(EXERCISE_ID); } catch {}
-          try { checkAndUnlockAchievements(); } catch {}
-        };
-      } catch {
-        // fallback: no-op endSession so gameplay still ends cleanly
-        window.endSession = () => {};
-      }
-    })();
-  </script>
+      <div id="pauseOverlay" class="pause-overlay" aria-hidden="true">
+        <div class="pause-card">
+          <h3>Paused</h3>
+          <p>Tap Resume to continue.</p>
+          <div class="actions" style="justify-content:center;">
+            <button id="resumeBtn" class="btn btn-primary">Resume</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- End Modal (simple, inline) -->
+  <dialog id="endModal" aria-labelledby="endTitle">
+    <form method="dialog" class="panel" style="min-width: min(520px, 92vw);">
+      <h2 id="endTitle">Session Complete</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-block:10px;">
+        <div class="field"><label>Final Score</label><div id="finalScore"><strong>0</strong></div></div>
+        <div class="field"><label>Level Reached</label><div id="finalLevel"><strong>0</strong></div></div>
+        <div class="field"><label>Best Streak</label><div id="finalStreak"><strong>0</strong></div></div>
+        <div class="field"><label>Time Played</label><div id="finalTime"><strong>00:00</strong></div></div>
+      </div>
+      <div class="actions" style="justify-content:flex-end;">
+        <button id="newSessionBtn" class="btn btn-primary">Start New Session</button>
+        <button id="closeSummaryBtn" class="btn btn-ghost">Close</button>
+      </div>
+    </form>
+  </dialog>
 
   <script>
-    // ---------- Game State ----------
-    let gameState = {
-      sequence: [],
-      userSequence: [],
-      level: 1,
-      score: 0,
-      streak: 0,
-      maxStreak: 0,
-      isShowingSequence: false,
-      isGameActive: false,
-      isPaused: false,
-      settings: {
-        difficulty: 'medium',
-        sequenceSpeed: 5,
-        startingLength: 3,
-        maxLevel: 12
+    // ===== Utilities =====
+    const qs = (sel, el = document) => el.querySelector(sel);
+    const qsa = (sel, el = document) => [...el.querySelectorAll(sel)];
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+
+    function fmtTime(ms) {
+      const total = Math.max(0, Math.floor(ms / 1000));
+      const m = String(Math.floor(total / 60)).padStart(2, '0');
+      const s = String(total % 60).padStart(2, '0');
+      return \`\${m}:\${s}\`;
+    }
+
+    const screens = {
+      settings: qs('#settingsScreen'),
+      game: qs('#gameScreen')
+    };
+
+    function showScreen(which) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      if (which === 'settings') {
+        screens.settings.classList.add('active');
+        screens.settings.removeAttribute('aria-hidden');
+        screens.game.setAttribute('aria-hidden', 'true');
+      } else {
+        screens.game.classList.add('active');
+        screens.game.removeAttribute('aria-hidden');
+        screens.settings.setAttribute('aria-hidden', 'true');
       }
-    };
-
-    const difficultySettings = {
-      easy:   { baseSpeed: 1000, speedDecrease: 50,  baseInput: 5000, perStep: 1200, xp: 5  },
-      medium: { baseSpeed:  800, speedDecrease: 75,  baseInput: 4500, perStep: 1000, xp: 8  },
-      hard:   { baseSpeed:  600, speedDecrease: 100, baseInput: 4000, perStep:  900, xp: 12 }
-    };
-
-    // ---------- DOM ----------
-    const pads = document.querySelectorAll('.pad');
-    const diffSelect = document.getElementById('difficulty');
-    const seqSpeed = document.getElementById('sequence-speed');
-    const startLen = document.getElementById('starting-length');
-    const maxLevel = document.getElementById('max-level');
-
-    const scoreDisplay = document.getElementById('score-display');
-    const pbDisplay = document.getElementById('pb-display');
-    const diffDisplay = document.getElementById('diff-display');
-    const statusMessage = document.getElementById('status-message');
-    const sequenceDisplay = document.getElementById('sequence-display');
-
-    const timerFill = document.getElementById('timer-fill');
-
-    const completionOverlay = document.getElementById('completion-overlay');
-    const finalScore = document.getElementById('final-score');
-    const finalLevel = document.getElementById('final-level');
-    const finalStreak = document.getElementById('final-streak');
-    const xpLine = document.getElementById('xp-line');
-    const achievementBanner = document.getElementById('achievement-banner');
-
-    const startBtn = document.getElementById('start-btn');
-    const pauseBtn = document.getElementById('pause-btn');
-    const restartBtn = document.getElementById('restart-btn');
-    const hudStart = document.getElementById('hud-start');
-    const hudPause = document.getElementById('hud-pause');
-    const hudRestart = document.getElementById('hud-restart');
-    const playAgainBtn = document.getElementById('play-again-btn');
-    const closeModalBtn = document.getElementById('close-modal-btn');
-
-    // ---------- Personal Best (local fallback) ----------
-    const PB_KEY = 'pb_rhythm_v1';
-    function getPB() {
-      const v = Number(localStorage.getItem(PB_KEY) || 0);
-      return Number.isFinite(v) ? v : 0;
-    }
-    function setPB(v) {
-      const current = getPB();
-      if (v > current) localStorage.setItem(PB_KEY, String(v));
-    }
-    function updatePBHUD() {
-      pbDisplay.textContent = getPB().toLocaleString();
     }
 
-    // ---------- Init ----------
-    document.addEventListener('DOMContentLoaded', () => {
-      updatePBHUD();
-      loadSettings();
-      attachEvents();
-      updateHUD();
+    // ===== Elements =====
+    const durationEl = qs('#duration');
+    const sizeEl     = qs('#size');
+    const speedEl    = qs('#speed');
+    const spawnEl    = qs('#spawn');
+    const playArea   = qs('#playArea');
+    const gridEl     = qs('#grid');
+    const pads       = qsa('.pad', gridEl);
+
+    const scoreEl = qs('#score');
+    const bestEl  = qs('#best');
+    const timeEl  = qs('#time');
+
+    const startBtn           = qs('#startBtn');
+    const pauseBtn           = qs('#pauseBtn');
+    const exitBtn            = qs('#exitBtn');
+    const pauseBtnSettings   = qs('#pauseBtnSettings');
+    const restartBtnSettings = qs('#restartBtnSettings');
+    const pauseOverlay       = qs('#pauseOverlay');
+    const resumeBtn          = qs('#resumeBtn');
+
+    const endModal = qs('#endModal');
+    const finalScore  = qs('#finalScore');
+    const finalLevel  = qs('#finalLevel');
+    const finalStreak = qs('#finalStreak');
+    const finalTime   = qs('#finalTime');
+    const newSessionBtn = qs('#newSessionBtn');
+    const closeSummaryBtn = qs('#closeSummaryBtn');
+
+    // State
+    let running = false;
+    let paused = false;
+    let sequence = [];
+    let userIndex = 0;
+    let level = 0;
+    let score = 0;
+    let best = Number(localStorage.getItem('RR_best') || 0);
+    bestEl.textContent = String(best);
+
+    let sessionEndAt = 0;
+    let timeTimer = null;
+    let spawnDelay = 1500; // based on spawn select
+
+    // Map "Comet" speed to playback ms per pad
+    function padMsFromSpeed(speed) {
+      switch (speed) {
+        case 'slow':   return 700;
+        case 'fast':   return 350;
+        default:       return 500;
+      }
+    }
+    function spawnMsFromOption(opt) {
+      switch (opt) {
+        case 'slow':  return 2000;
+        case 'fast':  return 1000;
+        case 'vfast': return 500;
+        default:      return 1500; // med
+      }
+    }
+
+    // Fullscreen helpers
+    async function goFullscreen() {
+      try {
+        await document.documentElement.requestFullscreen();
+        if (screen.orientation && screen.orientation.lock) {
+          try { await screen.orientation.lock('portrait-primary'); } catch {}
+        }
+      } catch {}
+    }
+    async function exitFullscreen() {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+      } catch {}
+    }
+
+    // ===== Game logic =====
+    function resetGameState() {
+      running = false;
+      paused = false;
+      sequence = [];
+      userIndex = 0;
+      level = 0;
+      score = 0;
+      scoreEl.textContent = '0';
+      timeEl.textContent = '00:00';
+      pauseOverlay.classList.remove('active');
+      pauseOverlay.setAttribute('aria-hidden', 'true');
+      pauseBtn.setAttribute('aria-pressed', 'false');
+    }
+
+    function applySizeClass(size) {
+      playArea.classList.remove('size-large','size-medium','size-small');
+      playArea.classList.add(\`size-\${size}\`);
+    }
+
+    function updateTimer() {
+      const remaining = sessionEndAt - Date.now();
+      timeEl.textContent = fmtTime(remaining);
+      if (remaining <= 0) {
+        clearInterval(timeTimer);
+        endSession();
+      }
+    }
+
+    async function startSession() {
+      if (startBtn.disabled) return; startBtn.disabled = true;
+      // read settings
+      const mins = clamp(parseInt(durationEl.value || '2', 10), 1, 30);
+      const size = sizeEl.value;
+      const speed = speedEl.value;
+      const spawn = spawnEl.value;
+
+      applySizeClass(size);
+      spawnDelay = spawnMsFromOption(spawn);
+      const padMs = padMsFromSpeed(speed);
+
+      resetGameState();
+      running = true;
+
+      // switch to game screen and go immersive
+      showScreen('game');
+      await goFullscreen();
+
+      // set timer
+      sessionEndAt = Date.now() + mins * 60 * 1000;
+      timeTimer = setInterval(updateTimer, 250);
+      updateTimer();
+
+      // kick off first level
+      setTimeout(() => nextLevel(padMs), 400);
+    }
+
+    function endSession() {
+      startBtn.disabled = false;
+      running = false;
+      paused = false;
+      clearInterval(timeTimer);
+
+      // Update best
+      if (score > best) {
+        best = score;
+        localStorage.setItem('RR_best', String(best));
+        bestEl.textContent = String(best);
+      }
+
+      finalScore.innerHTML  = '<strong>' + score + '</strong>';
+      finalLevel.innerHTML  = '<strong>' + level + '</strong>';
+      finalStreak.innerHTML = '<strong>' + Math.max(0, level - 1) + '</strong>';
+      const playedMs = Math.max(0, (parseInt(durationEl.value||'2',10)*60*1000) - Math.max(0, sessionEndAt - Date.now()));
+      finalTime.innerHTML = '<strong>' + fmtTime(playedMs) + '</strong>';
+
+      try { endModal.showModal(); } catch { alert(`Session Complete\nScore: ${score}\nLevel: ${level}`); exitToSettings(); }
+    }
+
+    function pauseToggle(force) {
+      if (!running) return;
+      paused = (typeof force === 'boolean') ? force : !paused;
+      pauseOverlay.classList.toggle('active', paused);
+      pauseOverlay.setAttribute('aria-hidden', String(!paused));
+      pauseBtn.setAttribute('aria-pressed', String(paused));
+    }
+
+    async function exitToSettings() {
+      startBtn.disabled = false;
+      running = false;
+      paused = false;
+      clearInterval(timeTimer);
+      try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch {}
+      await exitFullscreen();
+      endModal.close?.();
+      showScreen('settings');
+    }
+
+    function flashPad(id, ms) {
+      const pad = pads.find(p => p.dataset.id === String(id));
+      if (!pad) return;
+      pad.classList.add('show');
+      setTimeout(() => pad.classList.remove('show'), ms * 0.8);
+    }
+
+    async function playSequence(seq, msPer) {
+      for (const id of seq) {
+        if (!running) return;
+        while (paused) { await new Promise(r => setTimeout(r, 60)); }
+        flashPad(id, msPer);
+        await new Promise(r => setTimeout(r, msPer));
+      }
+    }
+
+    function nextLevel(msPer) {
+      if (!running) return;
+      level += 1;
+      // extend sequence
+      const next = Math.floor(Math.random() * 9) + 1;
+      sequence.push(next);
+      userIndex = 0;
+      // play
+      playSequence(sequence, msPer).then(() => {
+        // ready for user input
+      });
+    }
+
+    function handleUserPress(id) {
+      if (!running || paused) return;
+      const expect = sequence[userIndex];
+      if (id === expect) {
+        userIndex += 1;
+        score += 10;
+        scoreEl.textContent = String(score);
+        if (userIndex >= sequence.length) {
+          // completed level
+          setTimeout(() => {
+            const msPer = padMsFromSpeed(speedEl.value);
+            nextLevel(msPer);
+          }, spawnDelay);
+        }
+      } else {
+        // mistake: small penalty
+        score = Math.max(0, score - 5);
+        scoreEl.textContent = String(score);
+        userIndex = 0; // retry current sequence from start
+      }
+    }
+
+    // ===== Event wiring =====
+    startBtn.addEventListener('click', startSession);
+    pauseBtn.addEventListener('click', () => pauseToggle());
+    resumeBtn.addEventListener('click', () => pauseToggle(false));
+    exitBtn.addEventListener('click', exitToSettings);
+
+    // also wire disabled settings actions (for parity/UX)
+    pauseBtnSettings.addEventListener('click', () => pauseToggle());
+    restartBtnSettings.addEventListener('click', () => {
+      if (!document.fullscreenElement) return;
+      // restart = exit to settings then start again with same values
+      const mins = durationEl.value, size = sizeEl.value, speed = speedEl.value, spawn = spawnEl.value;
+      exitToSettings().then(() => {
+        durationEl.value = mins; sizeEl.value = size; speedEl.value = speed; spawnEl.value = spawn;
+        startSession();
+      });
     });
 
-    function loadSettings() {
-      gameState.settings = {
-        difficulty: diffSelect.value,
-        sequenceSpeed: parseInt(seqSpeed.value, 10),
-        startingLength: parseInt(startLen.value, 10),
-        maxLevel: parseInt(maxLevel.value, 10)
-      };
-      diffDisplay.textContent = capitalize(gameState.settings.difficulty);
-    }
+    // Pads
+    pads.forEach(p => {
+      p.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        handleUserPress(parseInt(p.dataset.id, 10));
+      }, { passive: false });
+    });
 
-    function attachEvents() {
-      // Pads: pointer events (avoids double-fires) + keyboard clicks
-      pads.forEach(pad => {
-        pad.addEventListener('pointerdown', (e) => {
-          // ignore secondary / pen buttons
-          if (e.pointerType === 'mouse' && e.button !== 0) return;
-          handlePadClick({ target: pad });
-        }, { passive: true });
-
-        // add click for keyboard activation (Enter/Space)
-        pad.addEventListener('click', (e) => {
-          // if pointerdown already handled this event (mouse/touch), do nothing
-          if (e.detail === 0) handlePadClick({ target: pad }); // detail===0 → keyboard click
-        });
-      });
-
-      // Keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        // Handle modal escape and focus trapping
-        if (!completionOverlay.classList.contains('hidden')) {
-          if (e.key === 'Escape') { closeCompletion(); return; }
-          if (e.key === 'Tab') {
-            const focusables = completionOverlay.querySelectorAll('button,[href],[tabindex]:not([tabindex="-1"])');
-            const first = focusables[0], last = focusables[focusables.length - 1];
-            if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
-            else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
-          }
-          return;
-        }
-
-        const tag = e.target.tagName;
-        const isTyping = tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || e.isComposing;
-        if (isTyping) return; // ignore shortcuts while editing controls
-
-        if (e.key >= '1' && e.key <= '9') {
-          const pad = document.querySelector(`[data-pad="${e.key}"]`);
-          if (pad) handlePadClick({ target: pad });
-        }
-        if (e.key === 'S' || e.key === 's') startGame();
-        if (e.key === 'P' || e.key === 'p') togglePause();
-        if (e.key === 'R' || e.key === 'r') restartGame();
-      });
-
-      // Controls (settings panel)
-      startBtn.addEventListener('click', startGame);
-      pauseBtn.addEventListener('click', togglePause);
-      restartBtn.addEventListener('click', restartGame);
-
-      // Controls (HUD)
-      hudStart.addEventListener('click', startGame);
-      hudPause.addEventListener('click', togglePause);
-      hudRestart.addEventListener('click', restartGame);
-
-      // Modal
-      playAgainBtn.addEventListener('click', () => { closeCompletion(); startGame(); });
-      closeModalBtn.addEventListener('click', closeCompletion);
-
-      // Settings change
-      [diffSelect, seqSpeed, startLen, maxLevel].forEach(el => el.addEventListener('change', () => {
-        loadSettings();
-        updateHUD();
-      }));
-    }
-
-    // ---------- Game Flow ----------
-    function startGame() {
-      loadSettings();
-      gameState.sequence = [];
-      gameState.userSequence = [];
-      gameState.level = 1;
-      gameState.score = 0;
-      gameState.streak = 0;
-      gameState.maxStreak = 0;
-      gameState.isShowingSequence = false;
-      gameState.isGameActive = true;
-      gameState.isPaused = false;
-
-      sequenceDisplay.textContent = '';
-      statusMessage.style.opacity = 0;
-
-      updateHUD();
-      generateSequence();
-      showSequence();
-      setPausedUI(false);
-      
-      // Set focus to game area for keyboard play
-      document.getElementById('game-area').focus({preventScroll:true});
-    }
-
-    function togglePause() {
-      if (!gameState.isGameActive) return;
-      if (gameState.isShowingSequence) { // block pause during playback
-        showStatus('Please wait for the sequence…', 'info');
-        return;
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (endModal.open) return;
+      if (e.key === 'p' || e.key === 'P') {
+        pauseToggle();
+      } else if (e.key === 'Escape') {
+        if (endModal.open) endModal.close(); else exitToSettings();
+      } else if (/^[1-9]$/.test(e.key)) {
+        handleUserPress(parseInt(e.key, 10));
       }
-      gameState.isPaused = !gameState.isPaused;
-      setPausedUI(gameState.isPaused);
-      if (!gameState.isPaused) {
-        startInputTimer();
-        showStatus('Your turn! Click the pads…', 'info');
-      } else {
-        showStatus('Paused', 'info');
+    });
+
+    // End modal actions
+    newSessionBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      endModal.close();
+      startSession();
+    });
+    closeSummaryBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      endModal.close();
+      exitToSettings();
+    });
+
+    // Clean up fullscreen state if the user swipes away
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && screens.game.classList.contains('active')) {
+        // if fullscreen exits unexpectedly, go back to settings to avoid odd states
+        exitToSettings();
       }
-    }
-
-    function setPausedUI(paused) {
-      document.getElementById('pause-btn').setAttribute('aria-pressed', paused ? 'true' : 'false');
-      hudPause.setAttribute('aria-pressed', paused ? 'true' : 'false');
-      pauseBtn.textContent = paused ? 'Resume' : 'Pause';
-      hudPause.textContent = paused ? 'Resume' : 'Pause';
-
-      // Actually freeze/resume timer
-      if (paused) {
-        // compute remaining
-        const elapsed = performance.now() - timerStartedAt;
-        timerRemainingMs = Math.max(0, timerLimitMs - elapsed);
-        clearTimeout(inputTimerId);
-
-        // freeze CSS width at current position
-        const computed = getComputedStyle(timerFill).width;
-        timerFill.style.transition = 'none';
-        timerFill.style.width = computed; // locks pixel width
-      } else {
-        // convert pixel width back to % and resume
-        const bar = timerFill.parentElement.getBoundingClientRect().width;
-        const px = parseFloat(getComputedStyle(timerFill).width);
-        timerFill.style.width = (px / bar * 100) + '%';
-        requestAnimationFrame(() => startInputTimer());
-      }
-    }
-
-    function restartGame() {
-      completionOverlay.classList.add('hidden');
-      startGame();
-    }
-
-    function endGame() {
-      gameState.isGameActive = false;
-      finalScore.textContent = gameState.score.toLocaleString();
-      finalLevel.textContent = String(gameState.level);
-      finalStreak.textContent = String(gameState.maxStreak);
-
-      // XP line (simple estimate per difficulty + level)
-      const xpPerLevel = difficultySettings[gameState.settings.difficulty].xp;
-      const earned = Math.max(1, Math.round(xpPerLevel * (gameState.level * 0.6)));
-      xpLine.textContent = `+${earned} XP earned`;
-
-      // PB update & banner
-      const prevPB = getPB();
-      if (gameState.score > prevPB) {
-        setPB(gameState.score);
-        updatePBHUD();
-        showAchievementBanner(`New Personal Best! ${gameState.score.toLocaleString()} 🎉`);
-      } else {
-        achievementBanner.classList.add('hidden');
-      }
-
-      // Completion modal open with focus management
-      completionOverlay.classList.remove('hidden');
-      document.querySelector('main').setAttribute('aria-hidden','true');
-      playAgainBtn.focus(); // primary action
-
-      // Progress & achievements (global)
-      if (window.endSession) {
-        window.endSession(gameState.score, gameState.settings.difficulty);
-      }
-    }
-
-    function closeCompletion() {
-      completionOverlay.classList.add('hidden');
-      document.querySelector('main').removeAttribute('aria-hidden');
-      // Return focus where the user likely came from
-      document.getElementById('hud-start').focus({preventScroll:true});
-    }
-
-    // ---------- Sequence Logic ----------
-    function generateSequence() {
-      const length = gameState.settings.startingLength + gameState.level - 1;
-      gameState.sequence = Array.from({ length }, () => Math.floor(Math.random() * 9) + 1);
-    }
-
-    function showSequence() {
-      gameState.isShowingSequence = true;
-      gameState.userSequence = [];
-      const ga = document.getElementById('game-area');
-      ga.setAttribute('aria-busy','true');
-      ga.style.pointerEvents = 'none';
-      pads.forEach(p => p.setAttribute('aria-disabled', 'true'));
-      pauseBtn.disabled = true; 
-      hudPause.disabled = true;
-
-      const diffCfg = difficultySettings[gameState.settings.difficulty];
-      const baseDelay = diffCfg.baseSpeed - (gameState.level * diffCfg.speedDecrease) - ((gameState.settings.sequenceSpeed - 5) * 20);
-      const delay = Math.max(baseDelay, 200);
-
-      showStatus('Watch the sequence…', 'info');
-      sequenceDisplay.innerHTML = gameState.sequence.map(n => `<span style="display:inline-block; margin:0 2px">${n}</span>`).join(' ');
-
-      setTimeout(() => {
-        sequenceDisplay.textContent = '';
-        playSequence(delay);
-      }, 800);
-    }
-
-    function playSequence(delay) {
-      gameState.sequence.forEach((n, i) => {
-        setTimeout(() => {
-          const pad = document.querySelector(`[data-pad="${n}"]`);
-          flashPad(pad);
-
-          if (i === gameState.sequence.length - 1) {
-            setTimeout(() => {
-              gameState.isShowingSequence = false;
-              const ga = document.getElementById('game-area');
-              ga.removeAttribute('aria-busy');
-              ga.style.pointerEvents = '';
-              pads.forEach(p => p.removeAttribute('aria-disabled'));
-              pauseBtn.disabled = false; 
-              hudPause.disabled = false;
-              showStatus('Your turn! Click the pads…', 'info');
-              startInputTimer();
-            }, delay);
-          }
-        }, i * delay);
-      });
-    }
-
-    function handlePadClick(e) {
-      const target = e.target;
-      if (!target?.dataset?.pad) return;
-      if (!gameState.isGameActive || gameState.isShowingSequence || gameState.isPaused) return;
-
-      const padNumber = parseInt(target.dataset.pad, 10);
-      const expected = gameState.sequence[gameState.userSequence.length];
-
-      flashPad(target);
-
-      gameState.userSequence.push(padNumber);
-
-      if (padNumber === expected) {
-        target.classList.add('correct');
-        setTimeout(() => target.classList.remove('correct'), 150);
-
-        if (gameState.userSequence.length === gameState.sequence.length) {
-          // Completed level
-          gameState.streak++;
-          gameState.maxStreak = Math.max(gameState.maxStreak, gameState.streak);
-          gameState.score += Math.max(10, Math.round(gameState.level * 10 * (1 + (gameState.streak - 1) * 0.2)));
-
-          updateHUD();
-          if (gameState.level >= gameState.settings.maxLevel) {
-            setTimeout(endGame, 500);
-          } else {
-            showStatus('Nice! Next level…', 'success');
-            setTimeout(() => {
-              gameState.level++;
-              announce(`Level ${gameState.level}`);
-              generateSequence();
-              showSequence();
-            }, 600);
-          }
-        }
-      } else {
-        // Mistake
-        target.classList.add('incorrect');
-        setTimeout(() => target.classList.remove('incorrect'), 220);
-        gameState.streak = 0;
-        updateHUD();
-        showStatus('Oops! Try this level again…', 'error');
-        setTimeout(() => showSequence(), 600);
-      }
-    }
-
-    function flashPad(pad) {
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) { 
-        pad.classList.add('active'); 
-        setTimeout(() => pad.classList.remove('active'), 80); 
-        return; 
-      }
-      pad.classList.add('active');
-      setTimeout(() => pad.classList.remove('active'), 220);
-    }
-
-    // ---------- Timer ----------
-    let inputTimerId = null, timerStartedAt = 0, timerLimitMs = 0, timerRemainingMs = 0;
-    
-    function startInputTimer() {
-      clearTimeout(inputTimerId);
-
-      const diffCfg = difficultySettings[gameState.settings.difficulty];
-      const speedFactor = (11 - gameState.settings.sequenceSpeed) / 10; // slower show speed => more thinking time
-      const computedLimit = Math.round(
-        (diffCfg.baseInput + diffCfg.perStep * gameState.sequence.length) *
-        (0.9 + 0.3*speedFactor)
-      );
-
-      // if we're resuming from pause, keep remaining; otherwise reset
-      timerLimitMs = timerRemainingMs > 0 ? timerRemainingMs : computedLimit;
-      timerRemainingMs = 0;
-      timerStartedAt = performance.now();
-
-      // lock in current width, then animate to 0
-      timerFill.style.transition = 'none';
-      timerFill.style.width = '100%';
-      void timerFill.offsetWidth; // force reflow before transition
-      timerFill.style.transition = `width ${timerLimitMs}ms linear`;
-      timerFill.style.width = '0%';
-
-      inputTimerId = setTimeout(onInputTimeUp, timerLimitMs);
-    }
-
-    function onInputTimeUp() {
-      if (gameState.isGameActive && !gameState.isShowingSequence && gameState.userSequence.length < gameState.sequence.length) {
-        gameState.streak = 0;
-        updateHUD();
-        showStatus('Time! Try again…', 'error');
-        setTimeout(() => showSequence(), 500);
-      }
-    }
-
-    // ---------- HUD / UI ----------
-    function updateHUD() {
-      scoreDisplay.textContent = gameState.score.toLocaleString();
-      diffDisplay.textContent = capitalize(gameState.settings.difficulty);
-    }
-
-    function showStatus(text, _type = 'info') {
-      statusMessage.textContent = text;
-      statusMessage.style.opacity = 1;
-      clearTimeout(showStatus._t);
-      showStatus._t = setTimeout(() => { statusMessage.style.opacity = 0; }, 1800);
-    }
-
-    function showAchievementBanner(text) {
-      achievementBanner.textContent = text;
-      achievementBanner.classList.remove('hidden');
-      // Global achievement toast is handled centrally; this inline banner is a one-off per completion.
-    }
-
-    // ---------- Utils ----------
-    function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
-    
-    const sr = document.getElementById('sr-announcements');
-    function announce(msg){ sr.textContent=''; setTimeout(()=> sr.textContent = msg, 20); }
-  </script>
-
-  <!-- Starfield background renderer -->
-  <script>
-    (function () {
-      const host = document.querySelector('[data-starfield]');
-      if (!host) return;
-
-      function draw() {
-        host.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        const rect = host.getBoundingClientRect();
-        const w = Math.max(rect.width, window.innerWidth);
-        const h = Math.max(rect.height, window.innerHeight);
-        const count = Math.floor((w * h) / 14000);
-        for (let i = 0; i < count; i++) {
-          const s = document.createElement('span');
-          const size = Math.random() * 2 + 1;
-          Object.assign(s.style, {
-            position:'absolute', left: Math.random()*100+'%', top: Math.random()*100+'%',
-            width: size+'px', height: size+'px', borderRadius:'50%',
-            opacity: (0.8*Math.random()+0.2), background:'rgba(255,255,255,0.9)'
-          });
-          fragment.appendChild(s);
-        }
-        Object.assign(host.style, { position:'absolute', inset:0, pointerEvents:'none' });
-        host.appendChild(fragment);
-      }
-
-      // draw after layout and on resize
-      requestAnimationFrame(() => { draw(); });
-      window.addEventListener('resize', () => { draw(); });
-    })();
+    });
   </script>
 </body>
 </html>
