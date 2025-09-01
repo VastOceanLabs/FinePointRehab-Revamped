@@ -92,7 +92,7 @@
 
     <div class="frame panel" style="padding:8px">
       <div class="stage-wrap">
-        <!-- Layer order: hidden (image) -> mask (where drawn) -> fx (composite reveal) -> ink (visible trail) -> guide (dotted outline) -->
+        <!-- Order: hidden -> mask -> fx -> ink -> guide -->
         <canvas id="hidden" class="stage" aria-hidden="true"></canvas>
         <canvas id="mask"   class="stage" aria-hidden="true"></canvas>
         <canvas id="fx"     class="stage" aria-hidden="true"></canvas>
@@ -141,6 +141,7 @@
   const againBtn = document.getElementById("again");
   const closeBtn = document.getElementById("close");
 
+  // canvases & ctx
   const hidden = document.getElementById("hidden");
   const mask   = document.getElementById("mask");
   const fx     = document.getElementById("fx");
@@ -153,6 +154,7 @@
   const gg = guide.getContext("2d");
   const DPR = Math.max(1, window.devicePixelRatio || 1);
 
+  // === state ===
   let playing = false;
   let paused = false;
   let remainingMs = 0;
@@ -165,12 +167,16 @@
   let pathClosed = true;
   let pathStrokePx = 0;
 
-  const coverPts = new Set();
-  const covered = new Set();
+  // coverage sampling (fixed): sample ALONG the guide; mark samples "hit" when ink passes near them
+  let samples = [];       // [{x,y,hit:false}]
+  let hits = 0;
+  let grid = null;        // Map<"i|j", int[]>
+  let cellSize = 16;      // will recompute per resize
 
   const brush = 28; // px at 1x DPR
   let requiredCov = 85;
 
+  // === helpers ===
   const fmt = (ms) => {
     const s = Math.max(0, Math.ceil(ms / 1000));
     const mm = String(Math.floor(s / 60)).padStart(2, "0");
@@ -194,11 +200,19 @@
       c.style.width = size + "px";
       c.style.height = size + "px";
     });
+    // Ink stroke styling
     gi.lineCap = "round"; gi.lineJoin = "round";
     gi.strokeStyle = "rgba(111,211,245,0.95)";
     gi.lineWidth = Math.max(3, Math.round(brush * DPR * 0.5));
 
-    if (playing) { newShape(); } else { drawIdleGuide(); }
+    // Grid cell tuned to brush; ~0.8x radius
+    cellSize = Math.max(8, Math.round(brush * DPR * 0.8));
+
+    if (playing) {
+      newShape(); // regenerate to fit new size
+    } else {
+      drawIdleGuide();
+    }
   };
   new ResizeObserver(resizeStage).observe(fx.parentElement);
 
@@ -215,8 +229,10 @@
     gg.restore();
   };
 
+  // === shape helpers (clean outlines) ===
   const desc = (pts, closed = true, strokePx = 0) => ({ points: pts, closed, strokePx });
 
+  // open/simple
   const lineH = () => {
     const y = hidden.height * 0.5, x1 = hidden.width * 0.15, x2 = hidden.width * 0.85;
     return desc([{ x: x1, y }, { x: x2, y }], false, Math.round(hidden.height * 0.08));
@@ -255,6 +271,7 @@
     return desc([{ x, y }, { x, y: y + h }, { x: x + w, y: y + h }], false, Math.round(hidden.width * 0.07));
   };
 
+  // closed/complex
   const circle = () => {
     const cx = hidden.width / 2, cy = hidden.height / 2, r = Math.min(hidden.width, hidden.height) * 0.32, pts = [];
     for (let i = 0; i <= 180; i++) { const a = (i / 180) * Math.PI * 2; pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }); }
@@ -317,25 +334,31 @@
     hard:   [house, tree, boat, bolt, star, hex]
   };
 
+  // === high-contrast dotted guide ===
   const drawGuide = () => {
     if (!path.length) { drawIdleGuide(); return; }
     gg.clearRect(0, 0, guide.width, guide.height);
     gg.save();
     gg.lineCap = "round"; gg.lineJoin = "round";
+
+    // black under-stroke
     gg.strokeStyle = "rgba(0,0,0,.92)"; gg.lineWidth = 8 * DPR; gg.setLineDash([]);
     gg.beginPath(); gg.moveTo(path[0].x, path[0].y);
     for (let i = 1; i < path.length; i++) gg.lineTo(path[i].x, path[i].y);
     if (pathClosed) gg.closePath();
     gg.stroke();
 
+    // white dotted on top
     gg.strokeStyle = "rgba(255,255,255,.98)"; gg.lineWidth = 4 * DPR; gg.setLineDash([14 * DPR, 10 * DPR]);
     gg.beginPath(); gg.moveTo(path[0].x, path[0].y);
     for (let i = 1; i < path.length; i++) gg.lineTo(path[i].x, path[i].y);
     if (pathClosed) gg.closePath();
     gg.stroke();
+
     gg.restore();
   };
 
+  // === hidden image (revealed through mask) ===
   const drawHidden = () => {
     gh.clearRect(0, 0, hidden.width, hidden.height);
     const hue = Math.floor(Math.random() * 360);
@@ -352,25 +375,42 @@
     if (pathClosed) { gh.closePath(); gh.fillStyle = grd; gh.fill(); }
     else { gh.lineCap = "round"; gh.lineJoin = "round"; gh.lineWidth = Math.max(4, pathStrokePx); gh.strokeStyle = grd; gh.stroke(); }
 
+    // clear mask & ink for new round
     gm.clearRect(0, 0, mask.width, mask.height);
     gi.clearRect(0, 0, ink.width, ink.height);
   };
 
+  // === coverage sampling (build samples + spatial grid) ===
   const buildCoverage = () => {
-    coverPts.clear(); covered.clear();
+    samples = [];
+    hits = 0;
+    grid = new Map();
+
+    const addSample = (x, y) => {
+      const idx = samples.length;
+      samples.push({ x, y, hit: false });
+      const ci = Math.floor(x / cellSize), cj = Math.floor(y / cellSize);
+      const key = ci + "|" + cj;
+      const arr = grid.get(key);
+      if (arr) arr.push(idx); else grid.set(key, [idx]);
+    };
+
+    // sample each segment
     for (let i = 0; i < path.length - 1; i++) {
       const p1 = path[i], p2 = path[i + 1];
       const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      const steps = Math.max(1, Math.ceil(dist / (6 * DPR)));
+      const step = 6 * DPR; // sample spacing along guide
+      const steps = Math.max(1, Math.ceil(dist / step));
       for (let j = 0; j <= steps; j++) {
         const t = j / steps;
         const x = Math.round(p1.x + (p2.x - p1.x) * t);
         const y = Math.round(p1.y + (p2.y - p1.y) * t);
-        coverPts.add(x + "," + y);
+        addSample(x, y);
       }
     }
   };
 
+  // === composite reveal ===
   const updateComposite = () => {
     const tmp = document.createElement("canvas"); tmp.width = hidden.width; tmp.height = hidden.height;
     const gt = tmp.getContext("2d");
@@ -387,6 +427,7 @@
     gx.restore();
   };
 
+  // === input ===
   const pos = (e) => {
     const r = fx.getBoundingClientRect();
     const x = ((e.clientX || e.pageX) - r.left) * DPR;
@@ -398,13 +439,40 @@
   let isCompleting = false;
   let lastP = null;
 
+  const markCoverageNear = (p) => {
+    if (!samples.length) return;
+    const r = (brush * DPR / 2);
+    const r2 = r * r;
+    const ci = Math.floor(p.x / cellSize), cj = Math.floor(p.y / cellSize);
+    for (let di = -1; di <= 1; di++) {
+      for (let dj = -1; dj <= 1; dj++) {
+        const key = (ci + di) + "|" + (cj + dj);
+        const arr = grid.get(key);
+        if (!arr) continue;
+        for (const idx of arr) {
+          const s = samples[idx];
+          if (!s.hit) {
+            const dx = s.x - p.x, dy = s.y - p.y;
+            if (dx*dx + dy*dy <= r2) { s.hit = true; hits++; }
+          }
+        }
+      }
+    }
+    const cov = Math.min(100, Math.round((hits / Math.max(1, samples.length)) * 100));
+    bestCov = Math.max(bestCov, cov);
+    covNowV.textContent = cov + "%";
+    if (cov >= requiredCov && !isCompleting) complete();
+  };
+
   const drawAt = (p) => {
+    // paint mask (reveal)
     gm.globalCompositeOperation = "source-over";
     gm.fillStyle = "white";
     gm.beginPath();
     gm.arc(p.x, p.y, brush * DPR / 2, 0, Math.PI * 2);
     gm.fill();
 
+    // visible ink on top
     if (lastP) {
       gi.beginPath();
       gi.moveTo(lastP.x, lastP.y);
@@ -419,20 +487,7 @@
     lastP = p;
 
     updateComposite();
-
-    const rpx = Math.round(brush * DPR / 2);
-    for (let dx = -rpx; dx <= rpx; dx++) {
-      for (let dy = -rpx; dy <= rpx; dy++) {
-        if (dx * dx + dy * dy <= rpx * rpx) {
-          covered.add(Math.round(p.x + dx) + "," + Math.round(p.y + dy));
-        }
-      }
-    }
-    const cov = Math.min(100, Math.round((covered.size / Math.max(1, coverPts.size)) * 100));
-    bestCov = Math.max(bestCov, cov);
-    covNowV.textContent = cov + "%";
-
-    if (cov >= requiredCov && !isCompleting) complete();
+    markCoverageNear(p);
   };
 
   const down = (e) => { if (!playing || isCompleting) return; isDrawing = true; drawAt(pos(e)); };
@@ -447,6 +502,7 @@
   fx.addEventListener("touchmove",  (e) => { e.preventDefault(); move(e.touches[0]); }, { passive: false });
   fx.addEventListener("touchend",   (e) => { e.preventDefault(); up(); }, { passive: false });
 
+  // === flow ===
   const newShape = () => {
     const pool = POOLS[diffSelect.value] || POOLS.medium;
     const gen = pool[Math.floor(Math.random() * pool.length)];
@@ -496,13 +552,19 @@
     isCompleting = true;
     shapesDone += 1;
     doneV.textContent = String(shapesDone);
+
+    // brief flash effect
     gx.save(); gx.fillStyle = "rgba(255,255,255,.16)"; gx.fillRect(0, 0, fx.width, fx.height); gx.restore();
     setTimeout(() => {
       gx.clearRect(0, 0, fx.width, fx.height);
-      if (playing) { isCompleting = false; newShape(); }
+      if (playing) {
+        isCompleting = false;
+        newShape();
+      }
     }, 160);
   };
 
+  // buttons & keys
   startBtn.addEventListener("click", start);
   pauseBtn.addEventListener("click", pause);
   exitBtn.addEventListener("click", exit);
@@ -515,6 +577,7 @@
     if (e.key === "Escape") { e.preventDefault(); exit(); }
   });
 
+  // initial idle state
   drawIdleGuide();
 })();
 </script>
