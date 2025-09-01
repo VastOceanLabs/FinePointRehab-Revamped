@@ -2,370 +2,399 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Trace & Reveal — Comet-style (Immersive + Numeric Timer)</title>
-  <meta name="description" content="Trace & Reveal exercise with Comet-style settings, immersive play mode, numeric countdown, and visible guide shapes." />
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
+  <title>Trace & Reveal — Comet Merge</title>
+  <meta name="description" content="Trace & Reveal exercise with Comet-style settings, immersive play, numeric timer, and the full original tracing features." />
   <style>
-    :root { --vh: 1vh; --bg:#0b1024; --panel:#111a33; --panel2:#1a2347; --border:#2a355d; --text:#eaf6ff; --accent:#6fd3f5; }
+    :root { --vh: 1vh; --bg:#121d33; --panel:#0b132b; --panel2:#122148; --border:rgba(255,255,255,.14); --text:#eaf6ff; --accent:#6fd3f5; }
     * { box-sizing: border-box; }
-    html,body { height:100%; }
-    body { margin:0; color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%), radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 60%), linear-gradient(180deg, #0f1630, var(--bg)); }
-    a { color: inherit; text-decoration: none; }
-
-    header.site-header { position:sticky; top:0; z-index:40; background:linear-gradient(180deg, rgba(7,11,22,.85), rgba(7,11,22,.65)); backdrop-filter: blur(6px); border-bottom:1px solid var(--border); }
-    header .wrap { display:flex; gap:12px; align-items:center; padding:10px 16px; }
-    header h1 { margin:0; font-size:18px; letter-spacing:.3px; }
+    html, body { height:100%; }
+    body { margin:0; color:var(--text); background: var(--bg); font-family: Segoe UI, Inter, system-ui, -apple-system, Roboto, Arial, sans-serif; min-height: calc(var(--vh)*100); }
+    /* Header */
+    header.site { position:sticky; top:0; z-index:40; background:linear-gradient(180deg, rgba(7,11,22,.85), rgba(7,11,22,.65)); border-bottom:1px solid var(--border); backdrop-filter: blur(6px); }
+    header .wrap { display:flex; align-items:center; gap:12px; padding:10px 16px; }
+    header h1 { margin:0; font-size:18px; letter-spacing:.2px; }
     header .spacer { flex:1; }
+    a.btn { color:inherit; text-decoration:none; }
+    /* Buttons / chips */
     .btn { border-radius:12px; border:1px solid var(--border); background:#0e1734; color:var(--text); padding:10px 14px; cursor:pointer; }
     .btn-primary { background:linear-gradient(180deg, #1c2f64, #123057); border-color:#2b406f; box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 6px 18px rgba(4,183,255,.15); }
     .btn-ghost { background:transparent; }
-
+    .chip{ border:1px solid var(--border); background:#0b132b; border-radius:999px; padding:6px 10px; font-size:12px; display:inline-flex; gap:6px; align-items:center; }
+    .chip b{ font-weight:600; }
+    .pill { border-radius:999px; padding:8px 12px; border:1px solid var(--border); background:#0b132b; color:var(--text); cursor:pointer; }
+    .pill[aria-pressed="true"]{ outline:2px solid var(--accent); }
+    /* Layout */
     .grid { display:grid; grid-template-columns: 360px 1fr; gap:16px; padding:16px; max-width:1200px; margin:0 auto; }
-    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
-
+    @media (max-width: 980px) { .grid { grid-template-columns:1fr; } }
     .panel { background:var(--panel2); border:1px solid var(--border); border-radius:14px; }
-
-    /* Settings (Comet-style: simple, clear, one Start) */
+    /* Settings */
     .settings { padding:16px; }
     .settings h2 { margin:0 0 8px; font-size:16px; opacity:.95; }
     .group { margin:14px 0; display:grid; gap:8px; }
     .muted { opacity:.8; font-size:12px; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .pill { border-radius:999px; padding:8px 12px; border:1px solid var(--border); background:#0b132b; color:var(--text); cursor:pointer; }
-    .pill[aria-pressed="true"]{ outline:2px solid var(--accent); }
     .settings input[type="range"] { width:100%; }
-
     /* Game */
     .game { position:relative; padding:12px; display:flex; flex-direction:column; align-items:center; }
     .hud { width:100%; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px; }
     .hud-left, .hud-right { display:flex; gap:8px; align-items:center; }
-    .chip{ border:1px solid var(--border); background:#0b132b; border-radius:999px; padding:6px 10px; font-size:12px; display:inline-flex; gap:6px; align-items:center; }
-    .chip b{ font-weight:600; }
-
     .playframe { position:relative; width:100%; display:flex; justify-content:center; align-items:center; }
     .canvas-stack { position:relative; width:min(92vw, 720px); max-width:720px; aspect-ratio:1/1; }
-    canvas { position:absolute; inset:0; width:100%; height:100%; border-radius:16px; background: radial-gradient(120% 120% at 50% 45%, rgba(255,255,255,.03), rgba(0,0,0,.25) 60%); touch-action: none; }
-    .gridline { pointer-events:none; mix-blend-mode:screen; opacity:.35; }
-
-    dialog.results{ border:1px solid var(--border); background:var(--panel2); color:var(--text); border-radius:16px; max-width:520px; width:clamp(320px, 70vw, 520px); }
+    canvas { position:absolute; inset:0; width:100%; height:100%; border-radius:16px; background:#1c2a4e; touch-action:none; }
+    #guideLayer { pointer-events:none; }
+    #completionLayer { pointer-events:none; }
+    /* Stats panel (kept, but slimmer) */
+    #stats-panel { position:fixed; bottom:0; left:0; right:0; background-color:rgba(8, 15, 35, 0.95); padding:8px; display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:8px; border-top:1px solid var(--border); box-shadow:0 -8px 24px rgba(0,0,0,.25); }
+    .stat-box { text-align:center; }
+    .stat-value { font-size:clamp(18px, 4vw, 24px); font-weight:700; color:var(--accent); line-height:1; }
+    .stat-label { font-size:clamp(10px, 2.5vw, 14px); opacity:.85; }
+    .hidden { display:none !important; }
+    /* Completion dialog */
+    dialog.results{ border:1px solid var(--border); background:rgba(8,15,35,.96); color:var(--text); border-radius:16px; max-width:520px; width:clamp(320px, 70vw, 520px); }
     dialog.results::backdrop{ background:rgba(0,0,0,.55); backdrop-filter: blur(2px); }
     .results header{ padding:14px 16px; border-bottom:1px solid var(--border); font-weight:600; }
     .results .content{ padding:16px; display:grid; gap:10px; }
     .results .actions{ padding:12px 16px 16px; display:flex; gap:10px; justify-content:flex-end; }
-
-    /* Immersive play state */
-    body.playing header.site-header{ display:none; }
-    body.playing .grid{ grid-template-columns: 1fr; max-width:min(1100px,100%); padding:12px; }
+    /* Immersive */
+    body.playing header.site{ display:none; }
+    body.playing .grid{ grid-template-columns:1fr; max-width:min(1100px,100%); padding:12px; }
     body.playing .settings{ display:none; }
     body.playing .game{ min-height: calc(var(--vh) * 100 - 12px); }
-
+    /* Focus */
     :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:10px; }
   </style>
 </head>
 <body>
-  <header class="site-header">
+  <header class="site">
     <div class="wrap">
       <h1>Trace & Reveal</h1>
       <div class="spacer"></div>
-      <a href="/" class="btn btn-ghost" aria-label="Home">Home</a>
+      <a class="btn btn-ghost" href="./index.html">Home</a>
     </div>
   </header>
 
-  <main class="grid" id="app">
-    <!-- Settings Panel (Comet-style simplified) -->
+  <main class="grid">
+    <!-- Settings (Comet-style pills + single Start) -->
     <section class="panel settings" aria-labelledby="settingsTitle">
       <h2 id="settingsTitle">Settings</h2>
 
-      <!-- Session Length presets -->
       <div class="group" role="group" aria-labelledby="lenLbl">
         <label id="lenLbl">Session length</label>
         <div class="row">
-          <button class="pill" data-length="30" aria-pressed="false">30 sec</button>
-          <button class="pill" data-length="60" aria-pressed="true">60 sec</button>
-          <button class="pill" data-length="90" aria-pressed="false">90 sec</button>
+          <button class="pill" data-length="60" aria-pressed="false">1 min</button>
+          <button class="pill" data-length="180" aria-pressed="true">3 min</button>
+          <button class="pill" data-length="300" aria-pressed="false">5 min</button>
         </div>
-        <span class="muted">Choose how long you want to play.</span>
+        <span class="muted">How long to play.</span>
       </div>
 
-      <!-- Brush size -->
+      <div class="group" role="group" aria-labelledby="diffLbl">
+        <label id="diffLbl">Difficulty</label>
+        <div class="row">
+          <button class="pill" data-diff="easy" aria-pressed="false">Easy</button>
+          <button class="pill" data-diff="medium" aria-pressed="true">Medium</button>
+          <button class="pill" data-diff="hard" aria-pressed="false">Hard</button>
+        </div>
+        <span class="muted">Changes shape complexity.</span>
+      </div>
+
+      <div class="group" role="group" aria-labelledby="covLbl">
+        <label id="covLbl">Coverage required</label>
+        <div class="row">
+          <button class="pill" data-cov="75" aria-pressed="false">75%</button>
+          <button class="pill" data-cov="85" aria-pressed="true">85%</button>
+          <button class="pill" data-cov="95" aria-pressed="false">95%</button>
+        </div>
+        <span class="muted">How much of the dotted line to cover.</span>
+      </div>
+
       <div class="group">
         <label for="brush">Brush size</label>
-        <input id="brush" type="range" min="6" max="40" step="2" value="18" />
-        <div class="row" aria-hidden="true">
-          <span class="muted">Smaller</span><div style="flex:1"></div><span class="muted">Larger</span>
-        </div>
+        <input id="brush" type="range" min="10" max="70" step="5" value="35" />
+        <div class="row" aria-hidden="true"><span class="muted">Smaller</span><div style="flex:1"></div><span class="muted">Larger</span></div>
       </div>
 
       <div class="group">
-        <button id="startBtn" class="btn btn-primary" type="button">Start</button>
-        <div class="muted">PB: <b id="pbValue">0</b> pts</div>
+        <button id="startBtn" class="btn btn-primary">Start</button>
       </div>
     </section>
 
-    <!-- Game Panel -->
+    <!-- Game -->
     <section class="panel game" aria-live="polite">
-      <!-- HUD (Comet-style) -->
       <div class="hud">
         <div class="hud-left">
-          <div class="chip" title="Score"><span>Score</span><b id="score">0</b></div>
-          <div class="chip" title="Personal Best"><span>PB</span><b id="pb">0</b></div>
-          <div class="chip" title="Coverage"><span>Coverage</span><b id="coverage">0%</b></div>
+          <div class="chip"><span>Score</span><b id="score">0</b></div>
+          <div class="chip"><span>Completed</span><b id="shapesDone">0</b></div>
+          <div class="chip"><span>Coverage</span><b id="coverageChip">0%</b></div>
         </div>
         <div class="hud-right">
-          <div class="chip" title="Time Remaining"><span>Time</span><b id="timeChip">00:00</b></div>
-          <button id="pauseBtn" class="btn btn-ghost" type="button" aria-pressed="false">Pause</button>
-          <button id="exitBtn" class="btn btn-ghost" type="button">Exit</button>
+          <div class="chip"><span>Time</span><b id="timeChip">00:00</b></div>
+          <button id="pauseBtn" class="btn btn-ghost" aria-pressed="false">Pause</button>
+          <button id="exitBtn" class="btn btn-ghost">Exit</button>
         </div>
       </div>
 
-      <!-- Canvas stack -->
       <div class="playframe">
         <div class="canvas-stack" id="canvasStack">
-          <canvas id="guideCanvas" class="gridline" aria-hidden="true"></canvas>
-          <canvas id="maskCanvas"></canvas>
+          <canvas id="traceCanvas"></canvas>
+          <canvas id="guideLayer"></canvas>
+          <canvas id="completionLayer"></canvas>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Completion Dialog -->
+  <!-- Bottom stats (kept from original) -->
+  <div id="stats-panel" class="hidden">
+    <div class="stat-box">
+      <div id="shapes-completed" class="stat-value">0</div>
+      <div class="stat-label">Shapes Completed</div>
+    </div>
+    <div class="stat-box">
+      <div id="coverage" class="stat-value">0%</div>
+      <div class="stat-label">Line Coverage</div>
+    </div>
+    <div class="stat-box">
+      <div id="time-left" class="stat-value">3:00</div>
+      <div class="stat-label">Time Left</div>
+    </div>
+    <div class="stat-box">
+      <div id="completions" class="stat-value">0</div>
+      <div class="stat-label">Perfect Traces</div>
+    </div>
+  </div>
+
+  <!-- Completion dialog -->
   <dialog class="results" id="resultsDialog" aria-labelledby="resultsTitle">
     <header id="resultsTitle">Session Complete</header>
     <div class="content">
-      <div>Score: <b id="finalScore">0</b></div>
-      <div>Best coverage: <b id="finalCoverage">0%</b></div>
-      <div class="muted">XP awarded: <span id="finalXP">+0</span></div>
+      <div>Shapes Completed: <b id="finalShapes">0</b></div>
+      <div>Perfect Traces: <b id="finalPerfect">0</b></div>
+      <div>Best Coverage: <b id="finalCoverage">0%</b></div>
     </div>
     <div class="actions">
-      <button class="btn btn-primary" id="newSessionBtn" value="default">Start New Session</button>
-      <button class="btn btn-ghost" id="closeDialogBtn" value="cancel">Close</button>
+      <button class="btn btn-primary" id="newSessionBtn">Start New Session</button>
+      <button class="btn btn-ghost" id="closeDialogBtn">Close</button>
     </div>
   </dialog>
 
   <script>
-    // --- Mobile 100vh fix ---
+    /* --- Mobile 100vh fix --- */
     const setVH = () => { const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', vh + 'px'); };
-    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
+    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', () => setTimeout(setVH, 100));
 
-    // --- State ---
-    let playing = false, paused = false, rafId = 0, startTs = 0, remainingMs = 0, totalMs = 60000;
-    let score = 0, bestCoverage = 0, personalBest = Number(localStorage.getItem('FPR_trace_pb')||'0');
-    let chosenLen = 60;
-    let brushSize = 18;
-
+    /* --- Helpers --- */
     const $ = (id) => document.getElementById(id);
-    const fmtTime = (ms) => {
-      ms = Math.max(0, ms|0); const s = Math.ceil(ms/1000);
-      const m = Math.floor(s/60).toString().padStart(2,'0');
-      const ss = (s % 60).toString().padStart(2,'0');
-      return m + ':' + ss;
-    };
+    const fmtTime = (ms) => { ms = Math.max(0, ms|0); const s = Math.ceil(ms/1000); const m = Math.floor(s/60).toString().padStart(2,'0'); const ss=(s%60).toString().padStart(2,'0'); return m+':'+ss; };
 
-    // DOM refs
-    const startBtn = $('startBtn');
-    const pauseBtn = $('pauseBtn');
-    const exitBtn  = $('exitBtn');
-    const timeChip = $('timeChip');
-    const scoreEl = $('score');
-    const pbEl = $('pb');
-    const pbValueEl = $('pbValue');
-    const coverageEl = $('coverage');
+    /* --- DOM refs --- */
+    const startBtn = $('startBtn'), pauseBtn = $('pauseBtn'), exitBtn = $('exitBtn');
+    const scoreEl = $('score'), shapesDoneEl = $('shapesDone'), coverageChip = $('coverageChip'), timeChip = $('timeChip');
+    const statsPanel = $('stats-panel'), shapesCompletedEl = $('shapes-completed'), coverageEl = $('coverage'), timeLeftEl = $('time-left'), completionsEl = $('completions');
+    const resultsDialog = $('resultsDialog'), finalShapes = $('finalShapes'), finalPerfect = $('finalPerfect'), finalCoverage = $('finalCoverage');
+    const newSessionBtn = $('newSessionBtn'), closeDialogBtn = $('closeDialogBtn');
 
     const brushInput = $('brush');
-    const resultsDialog = $('resultsDialog');
-    const finalScore = $('finalScore');
-    const finalCoverage = $('finalCoverage');
-    const finalXP = $('finalXP');
-    const newSessionBtn = $('newSessionBtn');
-    const closeDialogBtn = $('closeDialogBtn');
+    const pillsLen = Array.from(document.querySelectorAll('.pill[data-length]'));
+    const pillsDiff = Array.from(document.querySelectorAll('.pill[data-diff]'));
+    const pillsCov = Array.from(document.querySelectorAll('.pill[data-cov]'));
 
-    // canvases
     const stack = $('canvasStack');
-    const guide = $('guideCanvas');
-    const mask = $('maskCanvas');
-    const gGuide = guide.getContext('2d');
-    const gMask = mask.getContext('2d');
+    const canvas = $('traceCanvas');
+    const guideCanvas = $('guideLayer');
+    const completionCanvas = $('completionLayer');
+    const ctx = canvas.getContext('2d'), guideCtx = guideCanvas.getContext('2d'), completionCtx = completionCanvas.getContext('2d');
 
-    // Length pills
-    const pills = Array.from(document.querySelectorAll('.pill[data-length]'));
-    function selectLength(sec){
-      chosenLen = sec;
-      pills.forEach(p => p.setAttribute('aria-pressed', String(Number(p.dataset.length) === sec)));
-    }
-    pills.forEach(p => p.addEventListener('click', () => selectLength(Number(p.dataset.length))));
-    selectLength(60);
+    /* --- State --- */
+    let playing=false, paused=false, rafId=0, startTs=0, totalMs=180000, remainingMs=0;
+    let score=0, shapesCompleted=0, perfectTraces=0, bestCoverage=0;
+    let chosenLen=180, difficulty='medium', requiredCoverage=85, brushSize=35;
+    let isDrawing=false, isCompleting=false, pathPoints=[], coveragePoints=new Set(), coveredPoints=new Set(), currentShapeType='';
 
+    // Hidden image + mask from original logic
+    const hiddenImage = document.createElement('canvas'), hiddenCtx = hiddenImage.getContext('2d');
+    const maskCanvas = document.createElement('canvas'), maskCtx = maskCanvas.getContext('2d');
+
+    /* --- Settings handlers (Comet-style pills) --- */
+    function selectBtn(btns, attr, value){ btns.forEach(b => b.setAttribute('aria-pressed', String(b.getAttribute(attr)==String(value)))); }
+    pillsLen.forEach(b => b.addEventListener('click', () => { chosenLen = Number(b.dataset.length); selectBtn(pillsLen,'data-length', chosenLen); }));
+    pillsDiff.forEach(b => b.addEventListener('click', () => { difficulty = b.dataset.diff; selectBtn(pillsDiff,'data-diff', difficulty); }));
+    pillsCov.forEach(b => b.addEventListener('click', () => { requiredCoverage = Number(b.dataset.cov); selectBtn(pillsCov,'data-cov', requiredCoverage); }));
+    selectBtn(pillsLen,'data-length', chosenLen); selectBtn(pillsDiff,'data-diff', difficulty); selectBtn(pillsCov,'data-cov', requiredCoverage);
     brushInput.addEventListener('input', () => brushSize = Number(brushInput.value));
 
-    // Init HUD
-    pbEl.textContent = personalBest;
-    pbValueEl.textContent = personalBest;
-
-    // Shapes visible in guide
-    let shapes = []; // {type, x, y, r/w/h}
-    function random(min, max){ return Math.random() * (max - min) + min; }
-    function generateShapes(){
-      shapes = [];
-      const W = guide.width, H = guide.height;
-      const count = 4;
-      for(let i=0;i<count;i++){
-        const typeIndex = Math.floor(Math.random()*3);
-        const size = Math.min(W, H) * random(0.14, 0.22);
-        const cx = random(size*0.7, W - size*0.7);
-        const cy = random(size*0.7, H - size*0.7);
-        if(typeIndex === 0){
-          shapes.push({type:'circle', x:cx, y:cy, r:size/2});
-        }else if(typeIndex === 1){
-          shapes.push({type:'rect', x:cx - size/2, y:cy - size/2, w:size, h:size});
-        }else{
-          shapes.push({type:'tri', x:cx, y:cy, r:size/2});
-        }
-      }
-    }
-    function drawGuide(){
-      gGuide.clearRect(0,0,guide.width,guide.height);
-      // grid
-      gGuide.save();
-      gGuide.strokeStyle = 'rgba(255,255,255,.12)'; gGuide.lineWidth = Math.max(1, devicePixelRatio);
-      const step = Math.round(Math.min(guide.width, guide.height)/14);
-      for(let x=step; x<guide.width; x+=step){ gGuide.beginPath(); gGuide.moveTo(x,0); gGuide.lineTo(x,guide.height); gGuide.stroke(); }
-      for(let y=step; y<guide.height; y+=step){ gGuide.beginPath(); gGuide.moveTo(0,y); gGuide.lineTo(guide.width,y); gGuide.stroke(); }
-      gGuide.restore();
-      // shapes
-      gGuide.strokeStyle = 'rgba(255,255,255,.9)';
-      gGuide.lineWidth = Math.max(3, 3*devicePixelRatio);
-      gGuide.setLineDash([8*devicePixelRatio,6*devicePixelRatio]);
-      shapes.forEach(s => {
-        gGuide.beginPath();
-        if(s.type === 'circle'){
-          gGuide.arc(s.x, s.y, s.r, 0, Math.PI*2);
-        }else if(s.type === 'rect'){
-          gGuide.rect(s.x, s.y, s.w, s.h);
-        }else{
-          const a = {x:s.x, y:s.y - s.r};
-          const b = {x:s.x - s.r*0.866, y:s.y + s.r*0.5};
-          const c = {x:s.x + s.r*0.866, y:s.y + s.r*0.5};
-          gGuide.moveTo(a.x,a.y); gGuide.lineTo(b.x,b.y); gGuide.lineTo(c.x,c.y); gGuide.closePath();
-        }
-        gGuide.stroke();
-      });
-      gGuide.setLineDash([]);
-    }
-
-    // resize canvases to container
+    /* --- Resize canvases --- */
     function resizeCanvases(){
       const rect = stack.getBoundingClientRect();
-      const W = Math.max(1, Math.floor(rect.width * devicePixelRatio));
-      const H = Math.max(1, Math.floor(rect.height * devicePixelRatio));
-      [guide, mask].forEach(c => { c.width = W; c.height = H; c.style.width = rect.width+'px'; c.style.height = rect.height+'px'; });
-      gMask.clearRect(0,0,mask.width,mask.height);
-      generateShapes();
-      drawGuide();
+      const size = Math.min(rect.width, rect.height);
+      [canvas, guideCanvas, completionCanvas].forEach(c => { c.width = size; c.height = size; c.style.width = size+'px'; c.style.height = size+'px'; });
+      hiddenImage.width = size; hiddenImage.height = size; maskCanvas.width = size; maskCanvas.height = size;
+      if(playing && !isCompleting){ loadNewShape(); }
     }
-    addEventListener('resize', resizeCanvases);
-    const ro = new ResizeObserver(resizeCanvases); ro.observe(stack);
+    addEventListener('resize', () => setTimeout(resizeCanvases, 100));
 
-    // Drawing on mask (to estimate coverage)
-    let drawing = false;
-    function pointerPos(e){
-      const r = mask.getBoundingClientRect();
-      return { x: (e.clientX - r.left) * devicePixelRatio, y: (e.clientY - r.top) * devicePixelRatio };
+    /* --- Shape generators (subset kept from original, scalable) --- */
+    function circlePoints(){ const cx=canvas.width/2, cy=canvas.height/2, r=Math.min(canvas.width,canvas.height)*0.3, pts=[]; for(let i=0;i<=100;i++){ const a=i/100*Math.PI*2; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); } return pts; }
+    function squarePoints(){ const s=Math.min(canvas.width,canvas.height)*0.6, x=(canvas.width-s)/2, y=(canvas.height-s)/2; return [{x,y},{x:x+s,y},{x:x+s,y:y+s},{x,y:y+s},{x,y}]; }
+    function triPoints(){ const s=Math.min(canvas.width,canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2; return [{x:cx,y:cy-s/2},{x:cx-s/2,y:cy+s/2},{x:cx+s/2,y:cy+s/2},{x:cx,y:cy-s/2}]; }
+    function rectPoints(){ const w=Math.min(canvas.width,canvas.height)*0.7, h=w*0.6, x=(canvas.width-w)/2, y=(canvas.height-h)/2; return [{x,y},{x:x+w,y},{x:x+w,y:y+h},{x,y:y+h},{x,y}]; }
+    function diamondPoints(){ const s=Math.min(canvas.width,canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2; return [{x:cx,y:cy-s/2},{x:cx+s/2,y:cy},{x:cx,y:cy+s/2},{x:cx-s/2,y:cy},{x:cx,y:cy-s/2}]; }
+    function hexPoints(){ const cx=canvas.width/2, cy=canvas.height/2, r=Math.min(canvas.width,canvas.height)*0.3, pts=[]; for(let i=0;i<6;i++){ const a=i/6*Math.PI*2; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); } pts.push(pts[0]); return pts; }
+    function starPoints(){ const cx=canvas.width/2, cy=canvas.height/2, R=Math.min(canvas.width,canvas.height)*0.3, r=R*0.4, pts=[]; for(let i=0;i<10;i++){ const a=i/10*Math.PI*2-Math.PI/2; const rad=(i%2===0)?R:r; pts.push({x:cx+Math.cos(a)*rad,y:cy+Math.sin(a)*rad}); } pts.push(pts[0]); return pts; }
+
+    const shapeGenerators = {
+      easy: { circle:circlePoints, square:squarePoints, triangle:triPoints, rectangle:rectPoints, diamond:diamondPoints },
+      medium: { hexagon:hexPoints, star:starPoints, oval:circlePoints, rhombus:diamondPoints },
+      hard: { house:rectPoints, car:rectPoints, tree:triPoints, boat:triPoints, airplane:triPoints } // placeholders for brevity
+    };
+
+    /* --- Draw guide path (dotted) --- */
+    function drawGuidePath(){
+      guideCtx.clearRect(0,0,guideCanvas.width,guideCanvas.height);
+      guideCtx.strokeStyle='rgba(111,211,245,.95)'; guideCtx.lineWidth=3; guideCtx.setLineDash([6,10]);
+      guideCtx.beginPath(); guideCtx.moveTo(pathPoints[0].x, pathPoints[0].y);
+      for(let i=1;i<pathPoints.length;i++){ guideCtx.lineTo(pathPoints[i].x, pathPoints[i].y); }
+      guideCtx.stroke(); guideCtx.setLineDash([]);
     }
-    function drawAt(e){
-      const {x,y} = pointerPos(e);
-      gMask.fillStyle = '#ffffff';
-      gMask.beginPath();
-      gMask.arc(x, y, brushSize * devicePixelRatio, 0, Math.PI*2);
-      gMask.fill();
+
+    /* --- Hidden image (gradient) and mask --- */
+    function drawHiddenImage(){
+      hiddenCtx.clearRect(0,0,hiddenImage.width,hiddenImage.height);
+      const grad = hiddenCtx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width/2);
+      const hue = Math.random()*360; grad.addColorStop(0, `hsl(${hue},70%,60%)`); grad.addColorStop(1, `hsl(${hue+30},80%,40%)`);
+      hiddenCtx.beginPath(); hiddenCtx.moveTo(pathPoints[0].x,pathPoints[0].y); for(let i=1;i<pathPoints.length;i++){ hiddenCtx.lineTo(pathPoints[i].x, pathPoints[i].y); }
+      hiddenCtx.fillStyle=grad; hiddenCtx.fill();
+      maskCtx.clearRect(0,0,maskCanvas.width,maskCanvas.height); maskCtx.fillStyle='black'; maskCtx.fillRect(0,0,maskCanvas.width,maskCanvas.height);
     }
-    function onPointerDown(e){ if(!playing || paused) return; drawing = true; mask.setPointerCapture(e.pointerId); drawAt(e); }
-    function onPointerMove(e){ if(!playing || paused || !drawing) return; drawAt(e); }
-    function onPointerUp(e){ drawing = false; try{ mask.releasePointerCapture(e.pointerId);}catch(_){ } }
 
-    mask.addEventListener('pointerdown', onPointerDown);
-    mask.addEventListener('pointermove', onPointerMove);
-    mask.addEventListener('pointerup', onPointerUp);
-    mask.addEventListener('pointercancel', onPointerUp);
-    mask.addEventListener('pointerleave', onPointerUp);
+    /* --- Coverage sampling points along the path --- */
+    function generateCoveragePoints(){
+      coveragePoints.clear(); coveredPoints.clear();
+      for(let i=0;i<pathPoints.length-1;i++){ const p1=pathPoints[i], p2=pathPoints[i+1]; const dist=Math.hypot(p2.x-p1.x, p2.y-p1.y); const steps=Math.ceil(dist/5);
+        for(let j=0;j<=steps;j++){ const t=j/steps; const x=Math.round(p1.x+(p2.x-p1.x)*t); const y=Math.round(p1.y+(p2.y-p1.y)*t); coveragePoints.add(`${x},${y}`); } }
+    }
 
-    // Light-weight coverage sampling (every N frames)
-    let tick = 0;
-    function updateCoverage(){
-      tick++; if(tick % 10 !== 0) return; // throttle sampling
-      const data = gMask.getImageData(0,0,mask.width,mask.height).data;
-      let ink=0;
-      for(let i=3;i<data.length;i+=4){ if(data[i] > 0) ink++; } // count non-empty alpha
-      const total = data.length/4;
-      const cov = Math.min(100, Math.round((ink/total)*100));
+    /* --- Composite visible canvas: hidden image with mask --- */
+    function updateCanvas(){
+      // composite hidden with mask
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // draw hidden onto ctx
+      ctx.drawImage(hiddenImage,0,0);
+      // overlay mask using destination-in to keep only unmasked areas
+      ctx.save();
+      ctx.globalCompositeOperation='destination-in';
+      ctx.drawImage(maskCanvas,0,0);
+      ctx.restore();
+    }
+
+    /* --- Drawing on mask --- */
+    function getPos(e){ const r=canvas.getBoundingClientRect(); const x=( (e.clientX||e.pageX) - r.left )*(canvas.width/r.width); const y=( (e.clientY||e.pageY) - r.top )*(canvas.height/r.height); return {x,y}; }
+    function startDrawing(e){ if(!playing||isCompleting) return; isDrawing=true; drawStroke(e); }
+    function moveDrawing(e){ if(!isDrawing||!playing||isCompleting) return; drawStroke(e); }
+    function stopDrawing(){ isDrawing=false; }
+    function drawStroke(e){
+      const {x,y}=getPos(e);
+      maskCtx.globalCompositeOperation='destination-out';
+      maskCtx.fillStyle='white'; maskCtx.beginPath(); maskCtx.arc(x, y, brushSize/2, 0, Math.PI*2); maskCtx.fill();
+      checkCoverage({x,y}); updateCanvas();
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', moveDrawing);
+    addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); startDrawing(e.touches[0]); }, {passive:false});
+    canvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); moveDrawing(e.touches[0]); }, {passive:false});
+    canvas.addEventListener('touchend', (e)=>{ e.preventDefault(); stopDrawing(); }, {passive:false});
+
+    /* --- Coverage calc --- */
+    function checkCoverage(pos){
+      const r = brushSize/2;
+      for(let dx=-r; dx<=r; dx++){
+        for(let dy=-r; dy<=r; dy++){
+          if(dx*dx+dy*dy<=r*r){
+            const key = `${Math.round(pos.x+dx)},${Math.round(pos.y+dy)}`;
+            if(coveragePoints.has(key)) coveredPoints.add(key);
+          }
+        }
+      }
+      const cov = Math.min(100, Math.round( (coveredPoints.size / Math.max(1, coveragePoints.size)) * 100 ));
       bestCoverage = Math.max(bestCoverage, cov);
+      coverageChip.textContent = cov + '%';
       coverageEl.textContent = cov + '%';
+      if(cov>=requiredCoverage && !isCompleting){ completeShape(cov); }
     }
 
-    // Session lifecycle
+    /* --- Complete shape animation & next --- */
+    function completeShape(cov){
+      isCompleting=true; shapesCompleted++; shapesDoneEl.textContent=String(shapesCompleted); shapesCompletedEl.textContent=String(shapesCompleted);
+      if(cov>=98) { perfectTraces++; completionsEl.textContent=String(perfectTraces); }
+      // simple flash
+      completionCtx.clearRect(0,0,completionCanvas.width,completionCanvas.height);
+      completionCtx.fillStyle='rgba(255,255,255,.15)'; completionCtx.fillRect(0,0,completionCanvas.width,completionCanvas.height);
+      setTimeout(()=>{ completionCtx.clearRect(0,0,completionCanvas.width,completionCanvas.height); isCompleting=false; if(playing) loadNewShape(); }, 300);
+    }
+
+    /* --- Load new shape --- */
+    function loadNewShape(){
+      const opts = Object.keys(shapeGenerators[difficulty]);
+      const key = opts[Math.floor(Math.random()*opts.length)];
+      currentShapeType = key;
+      pathPoints = shapeGenerators[difficulty][key]();
+      drawGuidePath();
+      drawHiddenImage();
+      generateCoveragePoints();
+      updateCanvas();
+    }
+
+    /* --- Session lifecycle --- */
     function startSession(){
       if(playing) return;
-      score = 0; scoreEl.textContent = '0'; bestCoverage = 0; coverageEl.textContent = '0%';
-      totalMs = Math.max(10, chosenLen) * 1000;
-      remainingMs = totalMs; startTs = performance.now(); paused = false; playing = true;
-      document.body.classList.add('playing');
-      timeChip.textContent = fmtTime(remainingMs);
-      resizeCanvases();
-      loop();
+      // reset state
+      score=0; shapesCompleted=0; perfectTraces=0; bestCoverage=0;
+      scoreEl.textContent='0'; shapesDoneEl.textContent='0'; coverageChip.textContent='0%';
+      shapesCompletedEl.textContent='0'; completionsEl.textContent='0'; coverageEl.textContent='0%';
+      totalMs = Math.max(10, chosenLen)*1000; remainingMs = totalMs; timeChip.textContent=fmtTime(remainingMs); timeLeftEl.textContent=fmtTime(remainingMs);
+      document.body.classList.add('playing'); statsPanel.classList.remove('hidden');
+      resizeCanvases(); playing=true; paused=false; startTs=performance.now(); loop(); loadNewShape();
     }
 
-    function loop(ts){
+    function loop(){
       if(!playing){ cancelAnimationFrame(rafId); return; }
       rafId = requestAnimationFrame(loop);
       if(paused) return;
-      const now = performance.now();
-      const elapsed = now - startTs;
-      remainingMs = Math.max(0, totalMs - elapsed);
-      timeChip.textContent = fmtTime(remainingMs);
-      updateCoverage();
-      if(remainingMs <= 0){ endSession(); }
+      const now = performance.now(); const elapsed = now - startTs; remainingMs = Math.max(0, totalMs - elapsed);
+      timeChip.textContent = fmtTime(remainingMs); timeLeftEl.textContent = fmtTime(remainingMs);
+      if(remainingMs<=0){ endSession(); }
     }
 
     function pauseSession(){
       if(!playing) return;
-      paused = !paused;
-      pauseBtn.setAttribute('aria-pressed', String(paused));
+      paused=!paused; pauseBtn.setAttribute('aria-pressed', String(paused));
       if(!paused){ startTs = performance.now() - (totalMs - remainingMs); }
     }
 
     function exitSession(){
       if(!playing) return;
-      playing = false; paused = false; document.body.classList.remove('playing');
-      cancelAnimationFrame(rafId);
+      playing=false; paused=false; document.body.classList.remove('playing'); statsPanel.classList.add('hidden'); cancelAnimationFrame(rafId);
     }
 
     function endSession(){
-      playing = false; paused = false; document.body.classList.remove('playing');
-      cancelAnimationFrame(rafId);
-      finalScore.textContent = score;
-      finalCoverage.textContent = bestCoverage + '%';
-      const xp = Math.max(1, Math.round(bestCoverage/5));
-      finalXP.textContent = '+' + xp;
-      if(score > personalBest){ personalBest = score; localStorage.setItem('FPR_trace_pb', String(score)); pbEl.textContent = score; pbValueEl.textContent = score; }
+      playing=false; paused=false; document.body.classList.remove('playing'); statsPanel.classList.add('hidden'); cancelAnimationFrame(rafId);
+      finalShapes.textContent=String(shapesCompleted); finalPerfect.textContent=String(perfectTraces); finalCoverage.textContent=Math.round(bestCoverage)+'%';
       resultsDialog.showModal();
     }
 
-    // Keyboard a11y
-    addEventListener('keydown', (e) => {
-      if(!playing) return;
-      if(e.key === ' '){ e.preventDefault(); pauseSession(); }
-      if(e.key === 'Escape'){ e.preventDefault(); exitSession(); }
-    });
-
-    // Wire buttons
+    /* --- Buttons & keys --- */
     startBtn.addEventListener('click', startSession);
-    newSessionBtn.addEventListener('click', () => { resultsDialog.close(); startSession(); });
-    closeDialogBtn.addEventListener('click', () => resultsDialog.close());
     pauseBtn.addEventListener('click', pauseSession);
     exitBtn.addEventListener('click', exitSession);
+    newSessionBtn.addEventListener('click', ()=>{ resultsDialog.close(); startSession(); });
+    closeDialogBtn.addEventListener('click', ()=> resultsDialog.close());
+    addEventListener('keydown', (e)=>{ if(!playing) return; if(e.key===' '){ e.preventDefault(); pauseSession(); } if(e.key==='Escape'){ e.preventDefault(); exitSession(); }});
 
-    // Initial layout
-    requestAnimationFrame(() => resizeCanvases());
+    /* --- Init --- */
+    requestAnimationFrame(resizeCanvases);
   </script>
 </body>
 </html>
