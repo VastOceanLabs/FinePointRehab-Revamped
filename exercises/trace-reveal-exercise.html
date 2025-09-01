@@ -66,6 +66,10 @@
   .hidden{ display:none !important; }
   :focus-visible{ outline: 3px solid rgba(111,211,245,.85); outline-offset:2px; }
   #guide{ pointer-events:none; filter: drop-shadow(0 0 6px rgba(0,0,0,.9)) drop-shadow(0 0 12px rgba(0,0,0,.7)); }
+
+  /* Inline error banner */
+  #errbar{ position: fixed; left: 0; right: 0; bottom: 0; background: #400; color: #fff; font: 13px/1.4 system-ui, sans-serif; padding: 8px 12px; z-index: 9999; display: none; }
+  #errbar b{ color: #ffb; }
 </style>
 </head>
 <body>
@@ -75,6 +79,8 @@
     <div class="spacer"></div>
   </div>
 </header>
+
+<div id="errbar"></div>
 
 <main class="layout">
   <!-- SETTINGS -->
@@ -143,307 +149,322 @@
 </div>
 
 <script>
-const setVH = () => { document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01) + 'px'); };
-setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
+(function(){
+  "use strict";
+  /* Inline error banner to surface any runtime issues clearly */
+  const errbar = document.getElementById('errbar');
+  window.addEventListener('error', (e)=>{
+    errbar.style.display='block';
+    errbar.innerHTML = '<b>Script error:</b> ' + (e.message||'') + (e.filename? (' &mdash; ' + e.filename + ':' + e.lineno): '');
+  });
 
-/* Elements */
-const startBtn = document.getElementById('start');
-const durInput = document.getElementById('dur');
-const diffSelect = document.getElementById('difficulty');
-const covHint = document.getElementById('covHint');
-const timeV = document.getElementById('time');
-const scoreV = document.getElementById('score');
-const doneV = document.getElementById('doneCount');
-const covNowV = document.getElementById('covNow');
-const pauseBtn = document.getElementById('pauseHud');
-const exitBtn = document.getElementById('exitHud');
-const donePane = document.getElementById('done');
-const againBtn = document.getElementById('again');
-const closeBtn = document.getElementById('close');
+  const setVH = () => { document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01) + 'px'); };
+  setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
 
-/* Canvases */
-const hidden = document.getElementById('hidden');
-const mask = document.getElementById('mask');
-const guide = document.getElementById('guide');
-const fx = document.getElementById('fx');
-const gh = hidden.getContext('2d');
-const gm = mask.getContext('2d');
-const gg = guide.getContext('2d');
-const gx = fx.getContext('2d');
-const DPR = Math.max(1, devicePixelRatio || 1);
+  /* Elements */
+  const startBtn = document.getElementById('start');
+  const durInput = document.getElementById('dur');
+  const diffSelect = document.getElementById('difficulty');
+  const covHint = document.getElementById('covHint');
+  const timeV = document.getElementById('time');
+  const scoreV = document.getElementById('score');
+  const doneV = document.getElementById('doneCount');
+  const covNowV = document.getElementById('covNow');
+  const pauseBtn = document.getElementById('pauseHud');
+  const exitBtn = document.getElementById('exitHud');
+  const donePane = document.getElementById('done');
+  const againBtn = document.getElementById('again');
+  const closeBtn = document.getElementById('close');
 
-/* State */
-let playing=false, paused=false, startTs=0, totalMs=0, remainingMs=0, raf=0;
-let score=0, shapesDone=0, bestCov=0;
-let brush=28; // standardized
-let requiredCov=85;
-let path=[], pathClosed=true, pathStrokePx=0, coverPts=new Set(), covered=new Set();
-let isDrawing=false, isCompleting=false;
+  /* Canvases */
+  const hidden = document.getElementById('hidden');
+  const mask = document.getElementById('mask');
+  const guide = document.getElementById('guide');
+  const fx = document.getElementById('fx');
+  const gh = hidden.getContext('2d');
+  const gm = mask.getContext('2d');
+  const gg = guide.getContext('2d');
+  const gx = fx.getContext('2d');
+  const DPR = Math.max(1, window.devicePixelRatio || 1);
 
-function fmt(ms){ ms=Math.max(0,ms|0); const s=Math.ceil(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+  /* State */
+  let playing=false, paused=false, startTs=0, totalMs=0, remainingMs=0, raf=0;
+  let score=0, shapesDone=0, bestCov=0;
+  const brush=28; // standardized
+  let requiredCov=85;
+  let path=[], pathClosed=true, pathStrokePx=0, coverPts=new Set(), covered=new Set();
+  let isDrawing=false, isCompleting=false;
 
-/* Difficulty -> coverage target */
-function applyDifficulty(){
-  const d = diffSelect.value;
-  if(d==='easy') requiredCov = 70;
-  else if(d==='hard') requiredCov = 95;
-  else requiredCov = 85;
-  covHint.textContent = 'Coverage target: ' + requiredCov + '%';
-}
-diffSelect.addEventListener('change', applyDifficulty);
-applyDifficulty();
+  function fmt(ms){ ms=Math.max(0,ms|0); const s=Math.ceil(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
 
-/* Resize stage */
-function resizeStage(){
-  const wrap = fx.parentElement.getBoundingClientRect();
-  const size = Math.floor(wrap.width);
-  [hidden,mask,guide,fx].forEach(c=>{ c.width = Math.floor(size*DPR); c.height = Math.floor(size*DPR); c.style.width=size+'px'; c.style.height=size+'px'; });
-  if(playing && !isCompleting){ newShape(); } else { drawIdleGuide(); }
-}
-new ResizeObserver(resizeStage).observe(fx.parentElement);
-
-/* Idle prompt */
-function drawIdleGuide(){
-  gg.clearRect(0,0,guide.width,guide.height);
-  gg.save();
-  gg.scale(DPR,DPR);
-  gg.fillStyle='rgba(255,255,255,.06)';
-  gg.fillRect(0,0,guide.width/DPR,guide.height/DPR);
-  gg.fillStyle='rgba(255,255,255,.9)';
-  gg.font='600 16px system-ui, sans-serif';
-  gg.textAlign='center';
-  gg.fillText('Set duration, pick difficulty, then Start', guide.width/(2*DPR), guide.height/(2*DPR));
-  gg.restore();
-}
-
-/* Utility to create descriptor */
-function desc(pts, closed=true, strokePx=0){ return {points:pts, closed, strokePx}; }
-
-/* Generators (use canvas pixels) */
-function lineH(){ const y=hidden.height*0.5, x1=hidden.width*0.15, x2=hidden.width*0.85; return desc([{x:x1,y},{x:x2,y}], false, Math.round(hidden.height*0.08)); }
-function lineV(){ const x=hidden.width*0.5, y1=hidden.height*0.18, y2=hidden.height*0.82; return desc([{x,y:y1},{x,y:y2}], false, Math.round(hidden.width*0.08)); }
-function lineD1(){ const m=hidden.width*0.15; return desc([{x:m,y:m},{x:hidden.width-m,y:hidden.height-m}], false, Math.round(hidden.width*0.07)); }
-function zigzag(){
-  const pts=[]; const left=hidden.width*0.18, right=hidden.width*0.82, top=hidden.height*0.22, bottom=hidden.height*0.78; const rows=6;
-  for(let i=0;i<=rows;i++){ const t=i/rows; const y=top+(bottom-top)*t; const x = (i%2===0)?left:right; pts.push({x,y}); }
-  return desc(pts, false, Math.round(hidden.width*0.07));
-}
-function sinewave(){
-  const pts=[]; const left=hidden.width*0.12, right=hidden.width*0.88, mid=hidden.height*0.5, amp=hidden.height*0.22, cycles=1.5, steps=160;
-  for(let i=0;i<=steps;i++){ const t=i/steps; const x=left+(right-left)*t; const y=mid + Math.sin(t*Math.PI*2*cycles)*amp; pts.push({x,y}); }
-  return desc(pts, false, Math.round(hidden.width*0.06));
-}
-function lshape(){
-  const x=hidden.width*0.25, y=hidden.height*0.25, w=hidden.width*0.5, h=hidden.height*0.5;
-  return desc([{x,y},{x,y+h},{x+w,y+h}], false, Math.round(hidden.width*0.07));
-}
-
-function circle(){
-  const cx=hidden.width/2, cy=hidden.height/2, r=Math.min(hidden.width,hidden.height)*0.32, pts=[];
-  for(let i=0;i<=180;i++){ const a=i/180*Math.PI*2; pts.push({x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r}); }
-  return desc(pts, true, 0);
-}
-function square(){
-  const s=Math.min(hidden.width,hidden.height)*0.64, x=(hidden.width-s)/2, y=(hidden.height-s)/2;
-  return desc([{x,y},{x:x+s,y},{x:x+s,y:y+s},{x,y:y+s},{x,y}], true, 0);
-}
-function rect(){
-  const w=Math.min(hidden.width,hidden.height)*0.72, h=w*0.6, x=(hidden.width-w)/2, y=(hidden.height-h)/2;
-  return desc([{x,y},{x:x+w,y},{x:x+w,y:y+h},{x,y:y+h},{x,y}], true, 0);
-}
-function tri(){
-  const s=Math.min(hidden.width,hidden.height)*0.68, cx=hidden.width/2, cy=hidden.height/2;
-  return desc([{x:cx,y:cy-s/2},{x:cx-s/2,y:cy+s/2},{x:cx+s/2,y:cy+s/2},{x:cx,y:cy-s/2}], true, 0);
-}
-function diamond(){
-  const s=Math.min(hidden.width,hidden.height)*0.68, cx=hidden.width/2, cy=hidden.height/2;
-  return desc([{x:cx,y:cy-s/2},{x:cx+s/2,y:cy},{x:cx,y:cy+s/2},{x:cx-s/2,y:cy},{x:cx,y:cy-s/2}], true, 0);
-}
-function hex(){
-  const cx=hidden.width/2, cy=hidden.height/2, r=Math.min(hidden.width,hidden.height)*0.32, pts=[];
-  for(let i=0;i<6;i++){ const a=i/6*Math.PI*2; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); } pts.push(pts[0]);
-  return desc(pts, true, 0);
-}
-function star(){
-  const cx=hidden.width/2, cy=hidden.height/2, R=Math.min(hidden.width,hidden.height)*0.34, r=R*0.45, pts=[];
-  for(let i=0;i<10;i++){ const a=i/10*Math.PI*2 - Math.PI/2; const rad=(i%2===0)?R:r; pts.push({x:cx+Math.cos(a)*rad,y:cy+Math.sin(a)*rad}); }
-  pts.push(pts[0]); return desc(pts, true, 0);
-}
-
-function house(){
-  const w=hidden.width*0.6, h=hidden.height*0.5, x=(hidden.width-w)/2, y=(hidden.height-h)/2 + hidden.height*0.08;
-  const roofH = h*0.45;
-  return desc([
-    {x:x, y:y+h}, {x:x, y:y+roofH}, {x:x+w/2, y:y},
-    {x:x+w, y:y+roofH}, {x:x+w, y:y+h}, {x:x, y:y+h}
-  ], true, 0);
-}
-function tree(){
-  const cx=hidden.width/2, base=hidden.height*0.78, trunkW=hidden.width*0.08, trunkH=hidden.height*0.18;
-  const trunk=[{x:cx-trunkW/2,y:base},{x:cx-trunkW/2,y:base-trunkH},{x:cx+trunkW/2,y:base-trunkH},{x:cx+trunkW/2,y:base},{x:cx-trunkW/2,y:base}];
-  const canopyW=hidden.width*0.6, canopyH=hidden.height*0.5, left=cx-canopyW/2, top=base-trunkH-canopyH;
-  const canopy=[{x:cx,y:top},{x:left+canopyW*0.15,y:top+canopyH*0.35},{x:left+canopyW*0.30,y:top+canopyH*0.35},{x:left+canopyW*0.10,y:top+canopyH*0.65},{x:left+canopyW*0.40,y:top+canopyH*0.65},{x:left+canopyW*0.20,y:top+canopyH*0.95},{x:left+canopyW*0.80,y:top+canopyH*0.95},{x:left+canopyW*0.60,y:top+canopyH*0.65},{x:left+canopyW*0.90,y:top+canopyH*0.65},{x:left+canopyW*0.70,y:top+canopyH*0.35},{x:left+canopyW*0.85,y:top+canopyH*0.35},{x:cx,y:top}];
-  return desc(canopy.concat(trunk), true, 0);
-}
-function boat(){
-  const cx=hidden.width/2, cy=hidden.height*0.6, w=hidden.width*0.7, h=hidden.height*0.18;
-  const hull=[{x:cx-w/2,y:cy},{x:cx-w*0.35,y:cy+h},{x:cx+w*0.35,y:cy+h},{x:cx+w/2,y:cy},{x:cx-w/2,y:cy}];
-  const sail=[{x:cx,y:cy},{x:cx,y:cy-h*2},{x:cx+w*0.25,y:cy-h},{x:cx,y:cy}];
-  return desc(hull.concat(sail), true, 0);
-}
-function bolt(){
-  const x=hidden.width*0.35, y=hidden.height*0.18, w=hidden.width*0.3, h=hidden.height*0.6;
-  return desc([{x:x,y:y},{x:x+w*0.25,y:y+h*0.25},{x:x-w*0.10,y:y+h*0.25},{x:x+w*0.65,y:y+h*0.9},{x:x+w*0.40,y:y+h*0.45},{x:x+w*0.75,y:y+h*0.45},{x:x,y:y}], true, 0);
-}
-
-/* Pools */
-const POOLS = {
-  easy:   [lineH, lineV, lineD1, zigzag, sinewave, lshape],
-  medium: [circle, square, rect, tri, diamond, hex, star],
-  hard:   [house, tree, boat, bolt, star, hex]
-};
-
-/* Guide drawing */
-function drawGuide(){
-  gg.clearRect(0,0,guide.width,guide.height);
-  gg.save();
-  gg.lineCap='round'; gg.lineJoin='round';
-  gg.strokeStyle='rgba(0,0,0,.9)'; gg.lineWidth=8*DPR; gg.setLineDash([]);
-  gg.beginPath(); gg.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gg.lineTo(path[i].x, path[i].y); if(pathClosed){ gg.closePath(); } gg.stroke();
-  gg.strokeStyle='rgba(255,255,255,.98)'; gg.lineWidth=4*DPR; gg.setLineDash([14*DPR, 10*DPR]);
-  gg.beginPath(); gg.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gg.lineTo(path[i].x, path[i].y); if(pathClosed){ gg.closePath(); } gg.stroke();
-  gg.restore();
-}
-
-/* Hidden image draw */
-function drawHidden(){
-  gh.clearRect(0,0,hidden.width,hidden.height);
-  const grd = gh.createRadialGradient(hidden.width/2, hidden.height/2, 0, hidden.width/2, hidden.height/2, hidden.width/2);
-  const hue = Math.floor(Math.random()*360);
-  grd.addColorStop(0, `hsl(${hue},80%,60%)`);
-  grd.addColorStop(1, `hsl(${(hue+40)%360},80%,45%)`);
-  gh.beginPath(); gh.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gh.lineTo(path[i].x, path[i].y);
-  if(pathClosed){ gh.closePath(); gh.fillStyle = grd; gh.fill(); }
-  else{ gh.lineCap='round'; gh.lineJoin='round'; gh.lineWidth = Math.max(4, pathStrokePx); gh.strokeStyle = grd; gh.stroke(); }
-  gm.clearRect(0,0,mask.width,mask.height);
-}
-
-/* Coverage sampling */
-function buildCoverage(){
-  coverPts.clear(); covered.clear();
-  for(let i=0;i<path.length-1;i++){
-    const p1=path[i], p2=path[i+1]; const dist=Math.hypot(p2.x-p1.x, p2.y-p1.y); const steps=Math.ceil(dist/(6*DPR));
-    for(let j=0;j<=steps;j++){ const t=j/steps; const x=Math.round(p1.x+(p2.x-p1.x)*t), y=Math.round(p1.y+(p2.y-p1.y)*t); coverPts.add(x+','+y); }
+  /* Difficulty -> coverage target */
+  function applyDifficulty(){
+    const d = diffSelect.value;
+    if(d==='easy') requiredCov = 70;
+    else if(d==='hard') requiredCov = 95;
+    else requiredCov = 85;
+    covHint.textContent = 'Coverage target: ' + requiredCov + '%';
   }
-}
+  diffSelect.addEventListener('change', applyDifficulty);
+  applyDifficulty();
 
-/* Composite to fx */
-function updateComposite(){
-  const tmp = document.createElement('canvas'); tmp.width=hidden.width; tmp.height=hidden.height;
-  const gt = tmp.getContext('2d');
-  gt.drawImage(hidden,0,0);
-  gt.globalCompositeOperation='destination-in';
-  gt.drawImage(mask,0,0);
-  gx.clearRect(0,0,fx.width,fx.height);
-  gx.drawImage(tmp,0,0);
-}
+  /* Resize stage */
+  function resizeStage(){
+    const wrap = fx.parentElement.getBoundingClientRect();
+    const size = Math.max(10, Math.floor(wrap.width)); // guard width=0
+    [hidden,mask,guide,fx].forEach(c=>{ c.width = Math.floor(size*DPR); c.height = Math.floor(size*DPR); c.style.width=size+'px'; c.style.height=size+'px'; });
+    if(playing && !isCompleting){ newShape(); } else { drawIdleGuide(); }
+  }
+  new ResizeObserver(resizeStage).observe(fx.parentElement);
 
-/* Pointer handling on fx */
-function pos(e){ const r=fx.getBoundingClientRect(); const x=((e.clientX||e.pageX)-r.left)*DPR; const y=((e.clientY||e.pageY)-r.top)*DPR; return {x,y}; }
-function down(e){ if(!playing||isCompleting) return; isDrawing=true; draw(e); }
-function move(e){ if(!isDrawing||!playing||isCompleting) return; draw(e); }
-function up(){ isDrawing=false; }
-function draw(e){
-  const {x,y}=pos(e);
-  gm.globalCompositeOperation='source-over';
-  gm.fillStyle='white'; gm.beginPath(); gm.arc(x, y, brush*DPR/2, 0, Math.PI*2); gm.fill();
-  updateComposite();
-  gx.save();
-  gx.globalCompositeOperation='source-over';
-  gx.strokeStyle='rgba(255,255,255,0.35)';
-  gx.lineWidth=Math.max(1,1*DPR);
-  gx.beginPath(); gx.arc(x, y, brush*DPR*0.48, 0, Math.PI*2); gx.stroke();
-  gx.restore();
-  const r = Math.round(brush*DPR/2);
-  for(let dx=-r; dx<=r; dx++){
-    for(let dy=-r; dy<=r; dy++){
-      if(dx*dx+dy*dy<=r*r){
-        const key=(Math.round(x+dx))+','+(Math.round(y+dy));
-        if(coverPts.has(key)) covered.add(key);
-      }
+  /* Idle prompt */
+  function drawIdleGuide(){
+    gg.clearRect(0,0,guide.width,guide.height);
+    gg.save();
+    gg.scale(DPR,DPR);
+    gg.fillStyle='rgba(255,255,255,.06)';
+    gg.fillRect(0,0,guide.width/DPR,guide.height/DPR);
+    gg.fillStyle='rgba(255,255,255,.9)';
+    gg.font='600 16px system-ui, sans-serif';
+    gg.textAlign='center';
+    gg.fillText('Set duration, pick difficulty, then Start', guide.width/(2*DPR), guide.height/(2*DPR));
+    gg.restore();
+  }
+
+  /* Utility to create descriptor */
+  function desc(pts, closed=true, strokePx=0){ return {points:pts, closed, strokePx}; }
+
+  /* Generators */
+  function lineH(){ const y=hidden.height*0.5, x1=hidden.width*0.15, x2=hidden.width*0.85; return desc([{x:x1,y},{x:x2,y}], false, Math.round(hidden.height*0.08)); }
+  function lineV(){ const x=hidden.width*0.5, y1=hidden.height*0.18, y2=hidden.height*0.82; return desc([{x,y:y1},{x,y:y2}], false, Math.round(hidden.width*0.08)); }
+  function lineD1(){ const m=hidden.width*0.15; return desc([{x:m,y:m},{x:hidden.width-m,y:hidden.height-m}], false, Math.round(hidden.width*0.07)); }
+  function zigzag(){
+    const pts=[]; const left=hidden.width*0.18, right=hidden.width*0.82, top=hidden.height*0.22, bottom=hidden.height*0.78; const rows=6;
+    for(let i=0;i<=rows;i++){ const t=i/rows; const y=top+(bottom-top)*t; const x = (i%2===0)?left:right; pts.push({x,y}); }
+    return desc(pts, false, Math.round(hidden.width*0.07));
+  }
+  function sinewave(){
+    const pts=[]; const left=hidden.width*0.12, right=hidden.width*0.88, mid=hidden.height*0.5, amp=hidden.height*0.22, cycles=1.5, steps=160;
+    for(let i=0;i<=steps;i++){ const t=i/steps; const x=left+(right-left)*t; const y=mid + Math.sin(t*Math.PI*2*cycles)*amp; pts.push({x,y}); }
+    return desc(pts, false, Math.round(hidden.width*0.06));
+  }
+  function lshape(){
+    const x=hidden.width*0.25, y=hidden.height*0.25, w=hidden.width*0.5, h=hidden.height*0.5;
+    return desc([{x,y},{x,y+h},{x+w,y+h}], false, Math.round(hidden.width*0.07));
+  }
+
+  function circle(){
+    const cx=hidden.width/2, cy=hidden.height/2, r=Math.min(hidden.width,hidden.height)*0.32, pts=[];
+    for(let i=0;i<=180;i++){ const a=i/180*Math.PI*2; pts.push({x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r}); }
+    return desc(pts, true, 0);
+  }
+  function square(){
+    const s=Math.min(hidden.width,hidden.height)*0.64, x=(hidden.width-s)/2, y=(hidden.height-s)/2;
+    return desc([{x,y},{x:x+s,y},{x:x+s,y:y+s},{x,y:y+s},{x,y}], true, 0);
+  }
+  function rect(){
+    const w=Math.min(hidden.width,hidden.height)*0.72, h=w*0.6, x=(hidden.width-w)/2, y=(hidden.height-h)/2;
+    return desc([{x,y},{x:x+w,y},{x:x+w,y:y+h},{x,y:y+h},{x,y}], true, 0);
+  }
+  function tri(){
+    const s=Math.min(hidden.width,hidden.height)*0.68, cx=hidden.width/2, cy=hidden.height/2;
+    return desc([{x:cx,y:cy-s/2},{x:cx-s/2,y:cy+s/2},{x:cx+s/2,y:cy+s/2},{x:cx,y:cy-s/2}], true, 0);
+  }
+  function diamond(){
+    const s=Math.min(hidden.width,hidden.height)*0.68, cx=hidden.width/2, cy=hidden.height/2;
+    return desc([{x:cx,y:cy-s/2},{x:cx+s/2,y:cy},{x:cx,y:cy+s/2},{x:cx-s/2,y:cy},{x:cx,y:cy-s/2}], true, 0);
+  }
+  function hex(){
+    const cx=hidden.width/2, cy=hidden.height/2, r=Math.min(hidden.width,hidden.height)*0.32, pts=[];
+    for(let i=0;i<6;i++){ const a=i/6*Math.PI*2; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); } pts.push(pts[0]);
+    return desc(pts, true, 0);
+  }
+  function star(){
+    const cx=hidden.width/2, cy=hidden.height/2, R=Math.min(hidden.width,hidden.height)*0.34, r=R*0.45, pts=[];
+    for(let i=0;i<10;i++){ const a=i/10*Math.PI*2 - Math.PI/2; const rad=(i%2===0)?R:r; pts.push({x:cx+Math.cos(a)*rad,y:cy+Math.sin(a)*rad}); }
+    pts.push(pts[0]); return desc(pts, true, 0);
+  }
+
+  function house(){
+    const w=hidden.width*0.6, h=hidden.height*0.5, x=(hidden.width-w)/2, y=(hidden.height-h)/2 + hidden.height*0.08;
+    const roofH = h*0.45;
+    return desc([
+      {x:x, y:y+h}, {x:x, y:y+roofH}, {x:x+w/2, y:y},
+      {x:x+w, y:y+roofH}, {x:x+w, y:y+h}, {x:x, y:y+h}
+    ], true, 0);
+  }
+  function tree(){
+    const cx=hidden.width/2, base=hidden.height*0.78, trunkW=hidden.width*0.08, trunkH=hidden.height*0.18;
+    const trunk=[{x:cx-trunkW/2,y:base},{x:cx-trunkW/2,y:base-trunkH},{x:cx+trunkW/2,y:base-trunkH},{x:cx+trunkW/2,y:base},{x:cx-trunkW/2,y:base}];
+    const canopyW=hidden.width*0.6, canopyH=hidden.height*0.5, left=cx-canopyW/2, top=base-trunkH-canopyH;
+    const canopy=[{x:cx,y:top},{x:left+canopyW*0.15,y:top+canopyH*0.35},{x:left+canopyW*0.30,y:top+canopyH*0.35},{x:left+canopyW*0.10,y:top+canopyH*0.65},{x:left+canopyW*0.40,y:top+canopyH*0.65},{x:left+canopyW*0.20,y:top+canopyH*0.95},{x:left+canopyW*0.80,y:top+canopyH*0.95},{x:left+canopyW*0.60,y:top+canopyH*0.65},{x:left+canopyW*0.90,y:top+canopyH*0.65},{x:left+canopyW*0.70,y:top+canopyH*0.35},{x:left+canopyW*0.85,y:top+canopyH*0.35},{x:cx,y:top}];
+    return desc(canopy.concat(trunk), true, 0);
+  }
+  function boat(){
+    const cx=hidden.width/2, cy=hidden.height*0.6, w=hidden.width*0.7, h=hidden.height*0.18;
+    const hull=[{x:cx-w/2,y:cy},{x:cx-w*0.35,y:cy+h},{x:cx+w*0.35,y:cy+h},{x:cx+w/2,y:cy},{x:cx-w/2,y:cy}];
+    const sail=[{x:cx,y:cy},{x:cx,y:cy-h*2},{x:cx+w*0.25,y:cy-h},{x:cx,y:cy}];
+    return desc(hull.concat(sail), true, 0);
+  }
+  function bolt(){
+    const x=hidden.width*0.35, y=hidden.height*0.18, w=hidden.width*0.3, h=hidden.height*0.6;
+    return desc([{x:x,y:y},{x:x+w*0.25,y:y+h*0.25},{x:x-w*0.10,y:y+h*0.25},{x:x+w*0.65,y:y+h*0.9},{x:x+w*0.40,y:y+h*0.45},{x:x+w*0.75,y:y+h*0.45},{x:x,y:y}], true, 0);
+  }
+
+  /* Pools */
+  const POOLS = {
+    easy:   [lineH, lineV, lineD1, zigzag, sinewave, lshape],
+    medium: [circle, square, rect, tri, diamond, hex, star],
+    hard:   [house, tree, boat, bolt, star, hex]
+  };
+
+  /* Guide drawing */
+  function drawGuide(){
+    gg.clearRect(0,0,guide.width,guide.height);
+    gg.save();
+    gg.lineCap='round'; gg.lineJoin='round';
+    gg.strokeStyle='rgba(0,0,0,.9)'; gg.lineWidth=8*DPR; gg.setLineDash([]);
+    gg.beginPath(); gg.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gg.lineTo(path[i].x, path[i].y); if(pathClosed){ gg.closePath(); } gg.stroke();
+    gg.strokeStyle='rgba(255,255,255,.98)'; gg.lineWidth=4*DPR; gg.setLineDash([14*DPR, 10*DPR]);
+    gg.beginPath(); gg.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gg.lineTo(path[i].x, path[i].y); if(pathClosed){ gg.closePath(); } gg.stroke();
+    gg.restore();
+  }
+
+  /* Hidden image draw */
+  function drawHidden(){
+    gh.clearRect(0,0,hidden.width,hidden.height);
+    const grd = gh.createRadialGradient(hidden.width/2, hidden.height/2, 0, hidden.width/2, hidden.height/2, hidden.width/2);
+    const hue = Math.floor(Math.random()*360);
+    grd.addColorStop(0, 'hsl(' + hue + ',80%,60%)');
+    grd.addColorStop(1, 'hsl(' + ((hue+40)%360) + ',80%,45%)');
+    gh.beginPath(); gh.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gh.lineTo(path[i].x, path[i].y);
+    if(pathClosed){ gh.closePath(); gh.fillStyle = grd; gh.fill(); }
+    else{ gh.lineCap='round'; gh.lineJoin='round'; gh.lineWidth = Math.max(4, pathStrokePx); gh.strokeStyle = grd; gh.stroke(); }
+    gm.clearRect(0,0,mask.width,mask.height);
+  }
+
+  /* Coverage sampling */
+  function buildCoverage(){
+    coverPts.clear(); covered.clear();
+    for(let i=0;i<path.length-1;i++){
+      const p1=path[i], p2=path[i+1]; const dist=Math.hypot(p2.x-p1.x, p2.y-p1.y); const steps=Math.ceil(dist/(6*DPR));
+      for(let j=0;j<=steps;j++){ const t=j/steps; const x=Math.round(p1.x+(p2.x-p1.x)*t), y=Math.round(p1.y+(p2.y-p1.y)*t); coverPts.add(x+','+y); }
     }
   }
-  const cov = Math.min(100, Math.round((covered.size/Math.max(1,coverPts.size))*100));
-  bestCov = Math.max(bestCov, cov);
-  covNowV.textContent = cov + '%';
-  if(cov>=requiredCov && !isCompleting){ complete(cov); }
-}
-fx.addEventListener('mousedown', down);
-fx.addEventListener('mousemove', move);
-addEventListener('mouseup', up);
-fx.addEventListener('touchstart', (e)=>{ e.preventDefault(); down(e.touches[0]); }, {passive:false});
-fx.addEventListener('touchmove', (e)=>{ e.preventDefault(); move(e.touches[0]); }, {passive:false});
-fx.addEventListener('touchend', (e)=>{ e.preventDefault(); up(); }, {passive:false});
 
-/* New shape */
-function newShape(){
-  const pool = POOLS[diffSelect.value] || POOLS.medium;
-  const gen = pool[Math.floor(Math.random()*pool.length)];
-  const d = gen();
-  path = d.points;
-  pathClosed = d.closed;
-  pathStrokePx = d.strokePx || 0;
-  drawGuide();
-  drawHidden();
-  buildCoverage();
-  updateComposite();
-}
+  /* Composite to fx */
+  function updateComposite(){
+    const tmp = document.createElement('canvas'); tmp.width=hidden.width; tmp.height=hidden.height;
+    const gt = tmp.getContext('2d');
+    gt.drawImage(hidden,0,0);
+    gt.globalCompositeOperation='destination-in';
+    gt.drawImage(mask,0,0);
+    gx.clearRect(0,0,fx.width,fx.height);
+    gx.drawImage(tmp,0,0);
+  }
 
-/* Session flow */
-let rafId=0;
-function start(){
-  const mins = Math.max(0.5, Math.min(30, Number(durInput.value||2)));
-  totalMs = Math.round(mins*60*1000);
-  remainingMs = totalMs;
-  score=0; shapesDone=0; bestCov=0; scoreV.textContent='0'; doneV.textContent='0'; covNowV.textContent='0%'; timeV.textContent=fmt(remainingMs);
-  document.body.classList.add('playing');
-  playing=true; paused=false; startTs=performance.now();
-  resizeStage(); newShape(); loop();
-}
-function loop(){
-  if(!playing){ cancelAnimationFrame(rafId); return; }
-  rafId = requestAnimationFrame(loop);
-  if(paused) return;
-  const now = performance.now();
-  remainingMs = Math.max(0, totalMs - (now - startTs));
-  timeV.textContent = fmt(remainingMs);
-  if(remainingMs<=0){ end(); }
-}
-function pause(){ if(!playing) return; paused=!paused; if(!paused){ startTs = performance.now() - (totalMs - remainingMs); } }
-function exit(){ if(!playing) return; playing=false; paused=false; document.body.classList.remove('playing'); cancelAnimationFrame(rafId); }
-function end(){
-  playing=false; paused=false; document.body.classList.remove('playing');
-  cancelAnimationFrame(rafId);
-  document.getElementById('finalShapes').textContent = String(shapesDone);
-  document.getElementById('finalCov').textContent = Math.round(bestCov) + '%';
-  donePane.classList.remove('hidden');
-}
-function complete(cov){
-  isCompleting=true; shapesDone++; doneV.textContent=String(shapesDone);
-  gx.save(); gx.fillStyle='rgba(255,255,255,.16)'; gx.fillRect(0,0,fx.width,fx.height); gx.restore();
-  setTimeout(()=>{ gx.clearRect(0,0,fx.width,fx.height); isCompleting=false; if(playing) newShape(); }, 180);
-}
+  /* Pointer handling on fx */
+  function pos(e){ const r=fx.getBoundingClientRect(); const x=((e.clientX||e.pageX)-r.left)*DPR; const y=((e.clientY||e.pageY)-r.top)*DPR; return {x:x,y:y}; }
+  function down(e){ if(!playing||isCompleting) return; isDrawing=true; draw(e); }
+  function move(e){ if(!isDrawing||!playing||isCompleting) return; draw(e); }
+  function up(){ isDrawing=false; }
+  function draw(e){
+    const p=pos(e);
+    gm.globalCompositeOperation='source-over';
+    gm.fillStyle='white'; gm.beginPath(); gm.arc(p.x, p.y, brush*DPR/2, 0, Math.PI*2); gm.fill();
+    updateComposite();
+    gx.save();
+    gx.globalCompositeOperation='source-over';
+    gx.strokeStyle='rgba(255,255,255,0.35)';
+    gx.lineWidth=Math.max(1,1*DPR);
+    gx.beginPath(); gx.arc(p.x, p.y, brush*DPR*0.48, 0, Math.PI*2); gx.stroke();
+    gx.restore();
+    const r = Math.round(brush*DPR/2);
+    for(let dx=-r; dx<=r; dx++){
+      for(let dy=-r; dy<=r; dy++){
+        if(dx*dx+dy*dy<=r*r){
+          const key=(Math.round(p.x+dx))+','+(Math.round(p.y+dy));
+          if(coverPts.has(key)) covered.add(key);
+        }
+      }
+    }
+    const cov = Math.min(100, Math.round((covered.size/Math.max(1,coverPts.size))*100));
+    bestCov = Math.max(bestCov, cov);
+    covNowV.textContent = cov + '%';
+    if(cov>=requiredCov && !isCompleting){ complete(cov); }
+  }
+  fx.addEventListener('mousedown', down);
+  fx.addEventListener('mousemove', move);
+  addEventListener('mouseup', up);
+  fx.addEventListener('touchstart', (e)=>{ e.preventDefault(); down(e.touches[0]); }, {passive:false});
+  fx.addEventListener('touchmove', (e)=>{ e.preventDefault(); move(e.touches[0]); }, {passive:false});
+  fx.addEventListener('touchend', (e)=>{ e.preventDefault(); up(); }, {passive:false});
 
-/* Buttons & keys */
-startBtn.addEventListener('click', start);
-pauseBtn.addEventListener('click', pause);
-exitBtn.addEventListener('click', exit);
-againBtn.addEventListener('click', ()=>{ donePane.classList.add('hidden'); start(); });
-closeBtn.addEventListener('click', ()=> donePane.classList.add('hidden'));
-addEventListener('keydown', (e)=>{ if(!playing) return; if(e.key===' '){ e.preventDefault(); pause(); } if(e.key==='Escape'){ e.preventDefault(); exit(); }});
+  /* New shape */
+  function newShape(){
+    const POOLS = {
+      easy:   [lineH, lineV, lineD1, zigzag, sinewave, lshape],
+      medium: [circle, square, rect, tri, diamond, hex, star],
+      hard:   [house, tree, boat, bolt, star, hex]
+    };
+    const pool = POOLS[diffSelect.value] || POOLS.medium;
+    const gen = pool[Math.floor(Math.random()*pool.length)];
+    const d = gen();
+    path = d.points;
+    pathClosed = d.closed;
+    pathStrokePx = d.strokePx || 0;
+    drawGuide();
+    drawHidden();
+    buildCoverage();
+    updateComposite();
+  }
 
-/* Init */
-drawIdleGuide();
-</script>
+  /* Session flow */
+  let rafId=0;
+  function start(){
+    const mins = Math.max(0.5, Math.min(30, Number(durInput.value||2)));
+    totalMs = Math.round(mins*60*1000);
+    remainingMs = totalMs;
+    score=0; shapesDone=0; bestCov=0; scoreV.textContent='0'; doneV.textContent='0'; covNowV.textContent='0%'; timeV.textContent=fmt(remainingMs);
+    document.body.classList.add('playing');
+    playing=true; paused=false; startTs=performance.now();
+    /* Defer layout-sensitive init to next frame to avoid zero-size canvas */
+    requestAnimationFrame(()=>{ resizeStage(); newShape(); loop(); });
+  }
+  function loop(){
+    if(!playing){ cancelAnimationFrame(rafId); return; }
+    rafId = requestAnimationFrame(loop);
+    if(paused) return;
+    const now = performance.now();
+    remainingMs = Math.max(0, totalMs - (now - startTs));
+    timeV.textContent = fmt(remainingMs);
+    if(remainingMs<=0){ end(); }
+  }
+  function pause(){ if(!playing) return; paused=!paused; if(!paused){ startTs = performance.now() - (totalMs - remainingMs); } }
+  function exit(){ if(!playing) return; playing=false; paused=false; document.body.classList.remove('playing'); cancelAnimationFrame(rafId); }
+  function end(){
+    playing=false; paused=false; document.body.classList.remove('playing');
+    cancelAnimationFrame(rafId);
+    document.getElementById('finalShapes').textContent = String(shapesDone);
+    document.getElementById('finalCov').textContent = Math.round(bestCov) + '%';
+    donePane.classList.remove('hidden');
+  }
+  function complete(cov){
+    isCompleting=true; shapesDone++; doneV.textContent=String(shapesDone);
+    gx.save(); gx.fillStyle='rgba(255,255,255,.16)'; gx.fillRect(0,0,fx.width,fx.height); gx.restore();
+    setTimeout(()=>{ gx.clearRect(0,0,fx.width,fx.height); isCompleting=false; if(playing) newShape(); }, 180);
+  }
+
+  /* Buttons & keys */
+  startBtn.addEventListener('click', start);
+  pauseBtn.addEventListener('click', pause);
+  exitBtn.addEventListener('click', exit);
+  againBtn.addEventListener('click', ()=>{ donePane.classList.add('hidden'); start(); });
+  closeBtn.addEventListener('click', ()=> donePane.classList.add('hidden'));
+  addEventListener('keydown', (e)=>{ if(!playing) return; if(e.key===' '){ e.preventDefault(); pause(); } if(e.key==='Escape'){ e.preventDefault(); exit(); }});
+
+  /* Init */
+  drawIdleGuide();
+})();</script>
 </body>
 </html>
