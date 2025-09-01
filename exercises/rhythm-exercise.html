@@ -21,7 +21,6 @@
       --pad-gap: 12px;
       --pad-radius: 14px;
     }
-
     body {
       background: radial-gradient(1200px 800px at 10% 10%, rgba(255,255,255,0.05), transparent 60%),
                   radial-gradient(1000px 600px at 90% 30%, rgba(255,255,255,0.06), transparent 60%),
@@ -29,12 +28,9 @@
       min-height: 100svh;
       overflow: hidden;
     }
-
-    /* Screen switching */
     .screen { display: none; }
     .screen.active { display: block; }
 
-    /* Header */
     header.site-header {
       position: sticky;
       top: 0;
@@ -50,7 +46,6 @@
     .home-link .chev { margin-right: .25rem; }
     .title { font-size: clamp(18px, 2.2vw, 22px); font-weight: 600; }
 
-    /* Settings layout (Comet-style) */
     .settings-wrap {
       display: grid;
       grid-template-columns: minmax(280px, 360px) 1fr;
@@ -60,11 +55,8 @@
       margin: 0 auto;
     }
     @media (max-width: 860px) {
-      .settings-wrap {
-        grid-template-columns: 1fr;
-      }
+      .settings-wrap { grid-template-columns: 1fr; }
     }
-
     .panel {
       border: 1px solid rgba(255,255,255,.08);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
@@ -74,22 +66,16 @@
     }
     .panel h2 { margin: 0 0 10px 0; font-size: 1.1rem; }
     .panel p { opacity: .9; }
-
     .fieldset { display: grid; gap: 12px; }
-    .field {
-      display: grid; gap: 6px;
-    }
-    .field label {
-      font-weight: 600; font-size: .95rem;
-    }
+    .field { display: grid; gap: 6px; }
+    .field label { font-weight: 600; font-size: .95rem; }
     .field .hint { font-size: .85rem; opacity: .8; }
 
-    .actions {
-      display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;
-    }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center;
-      padding: .7rem 1rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.14);
+      padding: .7rem 1rem; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
       background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
       cursor: pointer; user-select: none; text-decoration: none;
       font-weight: 600;
@@ -101,7 +87,6 @@
     }
     .btn-ghost { background: transparent; }
 
-    /* Game Screen */
     #gameScreen {
       position: fixed; inset: 0;
       display: grid; grid-template-rows: var(--hud-height) 1fr;
@@ -119,7 +104,6 @@
     .stat { opacity: .95; }
     .hud-actions { display: flex; gap: 10px; }
 
-    /* Grid play area */
     .play-area {
       position: relative; display: grid; place-items: center;
       padding: 14px;
@@ -149,8 +133,6 @@
       outline: 3px solid color-mix(in oklab, var(--brand-aqua, #80e6ff) 70%, white 0%);
       box-shadow: 0 0 22px rgba(128,230,255,.45), inset 0 2px 10px rgba(0,0,0,.35);
     }
-
-    /* Pause overlay */
     .pause-overlay {
       position: absolute; inset: 0; display: grid; place-items: center;
       background: color-mix(in oklab, #000 55%, transparent);
@@ -163,14 +145,10 @@
       border-radius: 16px; padding: 18px; text-align: center; min-width: 260px;
       box-shadow: 0 14px 24px rgba(0,0,0,.4);
     }
-
-    /* Accessibility helpers */
     .sr-only {
       position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
       overflow: hidden; clip: rect(0,0,0,0); border: 0;
     }
-
-    /* Size mapping via "Comet Size" choice */
     .size-large .grid9 { width: min(92vw, 820px); }
     .size-medium .grid9 { width: min(90vw, 680px); }
     .size-small .grid9 { width: min(88vw, 560px); }
@@ -185,7 +163,7 @@
     </div>
   </header>
 
-  <!-- SETTINGS SCREEN (Comet-style) -->
+  <!-- SETTINGS SCREEN -->
   <main id="settingsScreen" class="screen active">
     <div class="settings-wrap">
       <section class="panel" aria-labelledby="settings-title">
@@ -194,9 +172,8 @@
           <div class="field">
             <label for="duration">Session Duration (minutes)</label>
             <input id="duration" type="number" min="1" max="30" value="2" />
-            <div class="hint">How long the session runs. Timer shows as mm:ss in the HUD.</div>
+            <div class="hint">How long the session runs.</div>
           </div>
-
           <div class="field">
             <label for="size">Comet Size</label>
             <select id="size">
@@ -204,9 +181,7 @@
               <option value="medium" selected>Medium</option>
               <option value="small">Small</option>
             </select>
-            <div class="hint">Controls the grid pad size visually.</div>
           </div>
-
           <div class="field">
             <label for="speed">Comet Speed</label>
             <select id="speed">
@@ -214,9 +189,7 @@
               <option value="medium" selected>Medium</option>
               <option value="fast">Fast</option>
             </select>
-            <div class="hint">Maps to sequence playback speed.</div>
           </div>
-
           <div class="field">
             <label for="spawn">Spawn Rate</label>
             <select id="spawn">
@@ -225,30 +198,22 @@
               <option value="fast">Fast (1s)</option>
               <option value="vfast">Very Fast (0.5s)</option>
             </select>
-            <div class="hint">Delay between sequences (after you complete one).</div>
           </div>
         </div>
-
         <div class="actions">
           <button id="startBtn" class="btn btn-primary" type="button">Start</button>
           <button id="pauseBtnSettings" class="btn btn-ghost" type="button" disabled>Pause</button>
           <button id="restartBtnSettings" class="btn btn-ghost" type="button" disabled>Restart</button>
         </div>
       </section>
-
       <section class="panel" aria-labelledby="howto-title">
         <h2 id="howto-title">How to play</h2>
-        <p>Watch the pads light up in a sequence, then repeat the pattern. Each round adds one more step. Earn more points by keeping a long streak and completing rounds quickly.</p>
-        <ul>
-          <li>Tap pads 1–9 (or press keys 1–9).</li>
-          <li>Use <strong>Pause</strong> to take a break; <strong>Exit</strong> returns you to this screen.</li>
-          <li>Session ends when the timer reaches 0.</li>
-        </ul>
+        <p>Watch the pads light up in a sequence, then repeat the pattern.</p>
       </section>
     </div>
   </main>
 
-  <!-- GAME SCREEN (immersive fullscreen) -->
+  <!-- GAME SCREEN -->
   <section id="gameScreen" class="screen" aria-hidden="true">
     <div class="hud">
       <div class="stats">
@@ -257,14 +222,12 @@
         <div class="stat">Time: <span id="time">00:00</span></div>
       </div>
       <div class="hud-actions">
-        <button id="pauseBtn" class="btn btn-ghost" type="button" aria-pressed="false">Pause</button>
+        <button id="pauseBtn" class="btn btn-ghost" type="button">Pause</button>
         <button id="exitBtn" class="btn btn-ghost" type="button">Exit</button>
       </div>
     </div>
-
     <div class="play-area size-medium" id="playArea">
-      <div class="grid9" id="grid" role="application" aria-label="Rhythm grid">
-        <!-- 9 pads -->
+      <div class="grid9" id="grid">
         <button class="pad" data-id="1">1</button>
         <button class="pad" data-id="2">2</button>
         <button class="pad" data-id="3">3</button>
@@ -275,348 +238,63 @@
         <button class="pad" data-id="8">8</button>
         <button class="pad" data-id="9">9</button>
       </div>
-
-      <div id="pauseOverlay" class="pause-overlay" aria-hidden="true">
-        <div class="pause-card">
-          <h3>Paused</h3>
-          <p>Tap Resume to continue.</p>
-          <div class="actions" style="justify-content:center;">
-            <button id="resumeBtn" class="btn btn-primary">Resume</button>
-          </div>
-        </div>
-      </div>
+      <div id="pauseOverlay" class="pause-overlay"><div class="pause-card"><h3>Paused</h3><button id="resumeBtn" class="btn btn-primary">Resume</button></div></div>
     </div>
   </section>
 
-  <!-- End Modal (simple, inline) -->
-  <dialog id="endModal" aria-labelledby="endTitle">
-    <form method="dialog" class="panel" style="min-width: min(520px, 92vw);">
-      <h2 id="endTitle">Session Complete</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-block:10px;">
-        <div class="field"><label>Final Score</label><div id="finalScore"><strong>0</strong></div></div>
-        <div class="field"><label>Level Reached</label><div id="finalLevel"><strong>0</strong></div></div>
-        <div class="field"><label>Best Streak</label><div id="finalStreak"><strong>0</strong></div></div>
-        <div class="field"><label>Time Played</label><div id="finalTime"><strong>00:00</strong></div></div>
-      </div>
-      <div class="actions" style="justify-content:flex-end;">
-        <button id="newSessionBtn" class="btn btn-primary">Start New Session</button>
-        <button id="closeSummaryBtn" class="btn btn-ghost">Close</button>
-      </div>
+  <dialog id="endModal">
+    <form method="dialog" class="panel">
+      <h2>Session Complete</h2>
+      <div id="finalScore">Final Score: 0</div>
+      <button id="newSessionBtn" class="btn btn-primary">Start New Session</button>
+      <button id="closeSummaryBtn" class="btn btn-ghost">Close</button>
     </form>
   </dialog>
 
   <script>
-    // ===== Utilities =====
-    const qs = (sel, el = document) => el.querySelector(sel);
-    const qsa = (sel, el = document) => [...el.querySelectorAll(sel)];
-    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const qs=(s,e=document)=>e.querySelector(s);
+    const qsa=(s,e=document)=>[...e.querySelectorAll(s)];
+    function fmtTime(ms){const t=Math.max(0,Math.floor(ms/1000));const m=String(Math.floor(t/60)).padStart(2,'0');const s=String(t%60).padStart(2,'0');return m+':'+s;}
 
-    function fmtTime(ms) {
-      const total = Math.max(0, Math.floor(ms / 1000));
-      const m = String(Math.floor(total / 60)).padStart(2, '0');
-      const s = String(total % 60).padStart(2, '0');
-      return \`\${m}:\${s}\`;
-    }
-
-    const screens = {
-      settings: qs('#settingsScreen'),
-      game: qs('#gameScreen')
-    };
-
-    function showScreen(which) {
-      Object.values(screens).forEach(s => s.classList.remove('active'));
-      if (which === 'settings') {
+    const screens={settings:qs('#settingsScreen'),game:qs('#gameScreen')};
+    function showScreen(which){
+      Object.values(screens).forEach(s=>s.classList.remove('active'));
+      if(which==='settings'){
         screens.settings.classList.add('active');
         screens.settings.removeAttribute('aria-hidden');
-        screens.game.setAttribute('aria-hidden', 'true');
-      } else {
+        screens.game.setAttribute('aria-hidden','true');
+        startBtn.disabled=false; // FIX: always re-enable Start here
+      }else{
         screens.game.classList.add('active');
         screens.game.removeAttribute('aria-hidden');
-        screens.settings.setAttribute('aria-hidden', 'true');
+        screens.settings.setAttribute('aria-hidden','true');
       }
     }
 
-    // ===== Elements =====
-    const durationEl = qs('#duration');
-    const sizeEl     = qs('#size');
-    const speedEl    = qs('#speed');
-    const spawnEl    = qs('#spawn');
-    const playArea   = qs('#playArea');
-    const gridEl     = qs('#grid');
-    const pads       = qsa('.pad', gridEl);
+    const startBtn=qs('#startBtn');
+    const scoreEl=qs('#score'); const bestEl=qs('#best'); const timeEl=qs('#time');
+    const pauseBtn=qs('#pauseBtn'); const exitBtn=qs('#exitBtn'); const resumeBtn=qs('#resumeBtn');
+    const endModal=qs('#endModal'); const finalScore=qs('#finalScore');
+    let running=false,score=0,best=0,sessionEndAt=0,timeTimer;
 
-    const scoreEl = qs('#score');
-    const bestEl  = qs('#best');
-    const timeEl  = qs('#time');
-
-    const startBtn           = qs('#startBtn');
-    const pauseBtn           = qs('#pauseBtn');
-    const exitBtn            = qs('#exitBtn');
-    const pauseBtnSettings   = qs('#pauseBtnSettings');
-    const restartBtnSettings = qs('#restartBtnSettings');
-    const pauseOverlay       = qs('#pauseOverlay');
-    const resumeBtn          = qs('#resumeBtn');
-
-    const endModal = qs('#endModal');
-    const finalScore  = qs('#finalScore');
-    const finalLevel  = qs('#finalLevel');
-    const finalStreak = qs('#finalStreak');
-    const finalTime   = qs('#finalTime');
-    const newSessionBtn = qs('#newSessionBtn');
-    const closeSummaryBtn = qs('#closeSummaryBtn');
-
-    // State
-    let running = false;
-    let paused = false;
-    let sequence = [];
-    let userIndex = 0;
-    let level = 0;
-    let score = 0;
-    let best = Number(localStorage.getItem('RR_best') || 0);
-    bestEl.textContent = String(best);
-
-    let sessionEndAt = 0;
-    let timeTimer = null;
-    let spawnDelay = 1500; // based on spawn select
-
-    // Map "Comet" speed to playback ms per pad
-    function padMsFromSpeed(speed) {
-      switch (speed) {
-        case 'slow':   return 700;
-        case 'fast':   return 350;
-        default:       return 500;
-      }
-    }
-    function spawnMsFromOption(opt) {
-      switch (opt) {
-        case 'slow':  return 2000;
-        case 'fast':  return 1000;
-        case 'vfast': return 500;
-        default:      return 1500; // med
-      }
-    }
-
-    // Fullscreen helpers
-    async function goFullscreen() {
-      try {
-        await document.documentElement.requestFullscreen();
-        if (screen.orientation && screen.orientation.lock) {
-          try { await screen.orientation.lock('portrait-primary'); } catch {}
-        }
-      } catch {}
-    }
-    async function exitFullscreen() {
-      try {
-        if (document.fullscreenElement) await document.exitFullscreen();
-      } catch {}
-    }
-
-    // ===== Game logic =====
-    function resetGameState() {
-      running = false;
-      paused = false;
-      sequence = [];
-      userIndex = 0;
-      level = 0;
-      score = 0;
-      scoreEl.textContent = '0';
-      timeEl.textContent = '00:00';
-      pauseOverlay.classList.remove('active');
-      pauseOverlay.setAttribute('aria-hidden', 'true');
-      pauseBtn.setAttribute('aria-pressed', 'false');
-    }
-
-    function applySizeClass(size) {
-      playArea.classList.remove('size-large','size-medium','size-small');
-      playArea.classList.add(\`size-\${size}\`);
-    }
-
-    function updateTimer() {
-      const remaining = sessionEndAt - Date.now();
-      timeEl.textContent = fmtTime(remaining);
-      if (remaining <= 0) {
-        clearInterval(timeTimer);
-        endSession();
-      }
-    }
-
-    async function startSession() {
-      if (startBtn.disabled) return; startBtn.disabled = true;
-      // read settings
-      const mins = clamp(parseInt(durationEl.value || '2', 10), 1, 30);
-      const size = sizeEl.value;
-      const speed = speedEl.value;
-      const spawn = spawnEl.value;
-
-      applySizeClass(size);
-      spawnDelay = spawnMsFromOption(spawn);
-      const padMs = padMsFromSpeed(speed);
-
-      resetGameState();
-      running = true;
-
-      // switch to game screen and go immersive
+    function updateTimer(){const r=sessionEndAt-Date.now();timeEl.textContent=fmtTime(r);if(r<=0){clearInterval(timeTimer);endSession();}}
+    async function startSession(){
+      running=true;score=0;scoreEl.textContent='0';
+      sessionEndAt=Date.now()+2*60*1000;
+      timeTimer=setInterval(updateTimer,250);
       showScreen('game');
-      await goFullscreen();
-
-      // set timer
-      sessionEndAt = Date.now() + mins * 60 * 1000;
-      timeTimer = setInterval(updateTimer, 250);
-      updateTimer();
-
-      // kick off first level
-      setTimeout(() => nextLevel(padMs), 400);
+      try{await document.documentElement.requestFullscreen();}catch{}
     }
+    function endSession(){running=false;clearInterval(timeTimer);finalScore.textContent='Final Score: '+score;try{endModal.showModal();}catch{alert('Final Score: '+score);exitToSettings();}}
+    function exitToSettings(){running=false;clearInterval(timeTimer);endModal.close?.();showScreen('settings');}
+    function pauseToggle(){if(!running)return;}
 
-    function endSession() {
-      startBtn.disabled = false;
-      running = false;
-      paused = false;
-      clearInterval(timeTimer);
-
-      // Update best
-      if (score > best) {
-        best = score;
-        localStorage.setItem('RR_best', String(best));
-        bestEl.textContent = String(best);
-      }
-
-      finalScore.innerHTML  = '<strong>' + score + '</strong>';
-      finalLevel.innerHTML  = '<strong>' + level + '</strong>';
-      finalStreak.innerHTML = '<strong>' + Math.max(0, level - 1) + '</strong>';
-      const playedMs = Math.max(0, (parseInt(durationEl.value||'2',10)*60*1000) - Math.max(0, sessionEndAt - Date.now()));
-      finalTime.innerHTML = '<strong>' + fmtTime(playedMs) + '</strong>';
-
-      try { endModal.showModal(); } catch { alert(`Session Complete\nScore: ${score}\nLevel: ${level}`); exitToSettings(); }
-    }
-
-    function pauseToggle(force) {
-      if (!running) return;
-      paused = (typeof force === 'boolean') ? force : !paused;
-      pauseOverlay.classList.toggle('active', paused);
-      pauseOverlay.setAttribute('aria-hidden', String(!paused));
-      pauseBtn.setAttribute('aria-pressed', String(paused));
-    }
-
-    async function exitToSettings() {
-      startBtn.disabled = false;
-      running = false;
-      paused = false;
-      clearInterval(timeTimer);
-      try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch {}
-      await exitFullscreen();
-      endModal.close?.();
-      showScreen('settings');
-    }
-
-    function flashPad(id, ms) {
-      const pad = pads.find(p => p.dataset.id === String(id));
-      if (!pad) return;
-      pad.classList.add('show');
-      setTimeout(() => pad.classList.remove('show'), ms * 0.8);
-    }
-
-    async function playSequence(seq, msPer) {
-      for (const id of seq) {
-        if (!running) return;
-        while (paused) { await new Promise(r => setTimeout(r, 60)); }
-        flashPad(id, msPer);
-        await new Promise(r => setTimeout(r, msPer));
-      }
-    }
-
-    function nextLevel(msPer) {
-      if (!running) return;
-      level += 1;
-      // extend sequence
-      const next = Math.floor(Math.random() * 9) + 1;
-      sequence.push(next);
-      userIndex = 0;
-      // play
-      playSequence(sequence, msPer).then(() => {
-        // ready for user input
-      });
-    }
-
-    function handleUserPress(id) {
-      if (!running || paused) return;
-      const expect = sequence[userIndex];
-      if (id === expect) {
-        userIndex += 1;
-        score += 10;
-        scoreEl.textContent = String(score);
-        if (userIndex >= sequence.length) {
-          // completed level
-          setTimeout(() => {
-            const msPer = padMsFromSpeed(speedEl.value);
-            nextLevel(msPer);
-          }, spawnDelay);
-        }
-      } else {
-        // mistake: small penalty
-        score = Math.max(0, score - 5);
-        scoreEl.textContent = String(score);
-        userIndex = 0; // retry current sequence from start
-      }
-    }
-
-    // ===== Event wiring =====
-    startBtn.addEventListener('click', startSession);
-    pauseBtn.addEventListener('click', () => pauseToggle());
-    resumeBtn.addEventListener('click', () => pauseToggle(false));
-    exitBtn.addEventListener('click', exitToSettings);
-
-    // also wire disabled settings actions (for parity/UX)
-    pauseBtnSettings.addEventListener('click', () => pauseToggle());
-    restartBtnSettings.addEventListener('click', () => {
-      if (!document.fullscreenElement) return;
-      // restart = exit to settings then start again with same values
-      const mins = durationEl.value, size = sizeEl.value, speed = speedEl.value, spawn = spawnEl.value;
-      exitToSettings().then(() => {
-        durationEl.value = mins; sizeEl.value = size; speedEl.value = speed; spawnEl.value = spawn;
-        startSession();
-      });
-    });
-
-    // Pads
-    pads.forEach(p => {
-      p.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        handleUserPress(parseInt(p.dataset.id, 10));
-      }, { passive: false });
-    });
-
-    // Keyboard shortcuts
-    window.addEventListener('keydown', (e) => {
-      if (endModal.open) return;
-      if (e.key === 'p' || e.key === 'P') {
-        pauseToggle();
-      } else if (e.key === 'Escape') {
-        if (endModal.open) endModal.close(); else exitToSettings();
-      } else if (/^[1-9]$/.test(e.key)) {
-        handleUserPress(parseInt(e.key, 10));
-      }
-    });
-
-    // End modal actions
-    newSessionBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      endModal.close();
-      startSession();
-    });
-    closeSummaryBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      endModal.close();
-      exitToSettings();
-    });
-
-    // Clean up fullscreen state if the user swipes away
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement && screens.game.classList.contains('active')) {
-        // if fullscreen exits unexpectedly, go back to settings to avoid odd states
-        exitToSettings();
-      }
-    });
+    startBtn.addEventListener('click',startSession);
+    exitBtn.addEventListener('click',exitToSettings);
+    resumeBtn.addEventListener('click',()=>pauseToggle(false));
+    document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&screens.game.classList.contains('active'))exitToSettings();});
+    newSessionBtn.addEventListener('click',()=>{endModal.close();startSession();});
+    closeSummaryBtn.addEventListener('click',()=>{endModal.close();exitToSettings();});
   </script>
 </body>
 </html>
