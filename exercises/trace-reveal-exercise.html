@@ -43,6 +43,8 @@
     .frame{position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid var(--bd);box-shadow:inset 0 0 40px rgba(0,0,0,.35);background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%)}
     .stage-wrap{position:relative;width:100%;aspect-ratio:1/1}
     canvas.stage{position:absolute;inset:0;width:100%;height:100%;display:block;background:transparent;touch-action:none}
+    #guide{pointer-events:none}
+    #ink{pointer-events:none}
     body.playing .layout{grid-template-columns:1fr;padding:0;height:calc(var(--vh) * 100)}
     body.playing #settings{display:none}
     .hidden{display:none !important}
@@ -55,7 +57,6 @@
 <div id="errbar"></div>
 
 <main class="layout">
-  <!-- SETTINGS -->
   <aside id="settings" class="panel" style="padding:16px" aria-label="Settings">
     <h2>Settings</h2>
     <div class="desc">
@@ -71,14 +72,13 @@
       <select id="difficulty">
         <option value="easy">Easy (lines &amp; zigzags)</option>
         <option value="medium" selected>Medium (basic shapes)</option>
-        <option value="hard">Hard (complex outlines)</option>
+        <option value="hard">Hard (clean complex shapes)</option>
       </select>
       <div id="covHint" class="t" aria-live="polite" style="margin-top:6px">Coverage target: 85%</div>
     </div>
     <button id="start" class="btn btn-primary" type="button">Start</button>
   </aside>
 
-  <!-- GAME -->
   <section aria-label="Game">
     <div class="hud">
       <div class="metric" aria-live="polite"><div id="doneCount" class="v">0</div><div class="t">Completed</div></div>
@@ -92,16 +92,17 @@
 
     <div class="frame panel" style="padding:8px">
       <div class="stage-wrap">
+        <!-- Layer order: hidden (image) -> mask (where drawn) -> fx (composite reveal) -> ink (visible trail) -> guide (dotted outline) -->
         <canvas id="hidden" class="stage" aria-hidden="true"></canvas>
         <canvas id="mask"   class="stage" aria-hidden="true"></canvas>
         <canvas id="fx"     class="stage" aria-hidden="true"></canvas>
+        <canvas id="ink"    class="stage" aria-hidden="true"></canvas>
         <canvas id="guide"  class="stage" aria-label="Trace guide"></canvas>
       </div>
     </div>
   </section>
 </main>
 
-<!-- RESULTS -->
 <div id="done" class="hidden" role="dialog" aria-modal="true" style="position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)">
   <div class="panel" style="padding:20px;max-width:min(520px,92vw)">
     <h2 style="color:var(--accent);margin:0 0 8px">Session Complete</h2>
@@ -118,18 +119,15 @@
 (() => {
   "use strict";
 
-  // === friendly error banner ===
   const errbar = document.getElementById("errbar");
   window.addEventListener("error", (e) => {
     errbar.style.display = "block";
-    errbar.textContent = `Script error: ${e.message || ""} ${e.filename ? "— " + e.filename + ":" + e.lineno : ""}`;
+    errbar.textContent = "Script error: " + (e.message || "") + (e.filename ? " — " + e.filename + ":" + e.lineno : "");
   });
 
-  // === viewport fix for mobile ===
-  const setVH = () => document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
+  const setVH = () => document.documentElement.style.setProperty("--vh", (window.innerHeight * 0.01) + "px");
   setVH(); addEventListener("resize", setVH); addEventListener("orientationchange", setVH);
 
-  // === elements ===
   const startBtn = document.getElementById("start");
   const durInput = document.getElementById("dur");
   const diffSelect = document.getElementById("difficulty");
@@ -143,18 +141,18 @@
   const againBtn = document.getElementById("again");
   const closeBtn = document.getElementById("close");
 
-  // canvases
   const hidden = document.getElementById("hidden");
   const mask   = document.getElementById("mask");
   const fx     = document.getElementById("fx");
+  const ink    = document.getElementById("ink");
   const guide  = document.getElementById("guide");
   const gh = hidden.getContext("2d");
   const gm = mask.getContext("2d");
   const gx = fx.getContext("2d");
+  const gi = ink.getContext("2d");
   const gg = guide.getContext("2d");
   const DPR = Math.max(1, window.devicePixelRatio || 1);
 
-  // === state ===
   let playing = false;
   let paused = false;
   let remainingMs = 0;
@@ -173,17 +171,16 @@
   const brush = 28; // px at 1x DPR
   let requiredCov = 85;
 
-  // === helpers ===
   const fmt = (ms) => {
     const s = Math.max(0, Math.ceil(ms / 1000));
     const mm = String(Math.floor(s / 60)).padStart(2, "0");
     const ss = String(s % 60).padStart(2, "0");
-    return `${mm}:${ss}`;
+    return mm + ":" + ss;
   };
 
   const applyDifficulty = () => {
     requiredCov = diffSelect.value === "easy" ? 70 : (diffSelect.value === "hard" ? 95 : 85);
-    covHint.textContent = `Coverage target: ${requiredCov}%`;
+    covHint.textContent = "Coverage target: " + requiredCov + "%";
   };
   diffSelect.addEventListener("change", applyDifficulty);
   applyDifficulty();
@@ -191,17 +188,17 @@
   const resizeStage = () => {
     const wrap = fx.parentElement.getBoundingClientRect();
     const size = Math.max(10, Math.floor(wrap.width));
-    [hidden, mask, fx, guide].forEach((c) => {
+    [hidden, mask, fx, ink, guide].forEach((c) => {
       c.width = Math.floor(size * DPR);
       c.height = Math.floor(size * DPR);
-      c.style.width = `${size}px`;
-      c.style.height = `${size}px`;
+      c.style.width = size + "px";
+      c.style.height = size + "px";
     });
-    if (playing) {
-      newShape(); // regenerate to fit new size
-    } else {
-      drawIdleGuide();
-    }
+    gi.lineCap = "round"; gi.lineJoin = "round";
+    gi.strokeStyle = "rgba(111,211,245,0.95)";
+    gi.lineWidth = Math.max(3, Math.round(brush * DPR * 0.5));
+
+    if (playing) { newShape(); } else { drawIdleGuide(); }
   };
   new ResizeObserver(resizeStage).observe(fx.parentElement);
 
@@ -218,7 +215,6 @@
     gg.restore();
   };
 
-  // === shape helpers ===
   const desc = (pts, closed = true, strokePx = 0) => ({ points: pts, closed, strokePx });
 
   const lineH = () => {
@@ -245,7 +241,7 @@
   };
   const sine = () => {
     const pts = [];
-    const l = hidden.width * 0.12, r = hidden.width * 0.88, mid = hidden.height * 0.5, amp = hidden.height * 0.22, cyc = 1.5, steps = 160;
+    const l = hidden.width * 0.12, r = hidden.width * 0.88, mid = hidden.height * 0.5, amp = hidden.height * 0.22, cyc = 1.5, steps = 180;
     for (let i = 0; i <= steps; i++) {
       const t = i / steps;
       const x = l + (r - l) * t;
@@ -261,10 +257,7 @@
 
   const circle = () => {
     const cx = hidden.width / 2, cy = hidden.height / 2, r = Math.min(hidden.width, hidden.height) * 0.32, pts = [];
-    for (let i = 0; i <= 180; i++) {
-      const a = (i / 180) * Math.PI * 2;
-      pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
-    }
+    for (let i = 0; i <= 180; i++) { const a = (i / 180) * Math.PI * 2; pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }); }
     return desc(pts, true, 0);
   };
   const square = () => {
@@ -285,49 +278,37 @@
   };
   const hex = () => {
     const cx = hidden.width / 2, cy = hidden.height / 2, r = Math.min(hidden.width, hidden.height) * 0.32, pts = [];
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
-    }
+    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }); }
     pts.push(pts[0]);
     return desc(pts, true, 0);
   };
   const star = () => {
-    const cx = hidden.width / 2, cy = hidden.height / 2, R = Math.min(hidden.width, hidden.height) * 0.34, r = R * 0.45, pts = [];
-    for (let i = 0; i < 10; i++) {
-      const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-      const rad = (i % 2 === 0) ? R : r;
-      pts.push({ x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad });
-    }
+    const cx = hidden.width / 2, cy = hidden.height / 2, R = Math.min(hidden.width, hidden.height) * 0.34, r = R * 0.5, pts = [];
+    for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2 - Math.PI / 2; const rad = (i % 2 === 0) ? R : r; pts.push({ x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad }); }
     pts.push(pts[0]);
     return desc(pts, true, 0);
   };
-
   const house = () => {
     const w = hidden.width * 0.6, h = hidden.height * 0.5, x = (hidden.width - w) / 2, y = (hidden.height - h) / 2 + hidden.height * 0.08, roofH = h * 0.45;
-    return desc([{ x: x, y: y + h }, { x: x, y: y + roofH }, { x: x + w / 2, y: y }, { x: x + w, y: y + roofH }, { x: x + w, y: y + h }, { x: x, y: y + h }], true, 0);
+    return desc([{ x:x, y:y+h }, { x:x, y:y+roofH }, { x:x+w/2, y:y }, { x:x+w, y:y+roofH }, { x:x+w, y:y+h }, { x:x, y:y+h }], true, 0);
   };
   const tree = () => {
-    const cx = hidden.width / 2, base = hidden.height * 0.78, tw = hidden.width * 0.08, th = hidden.height * 0.18;
-    const trunk = [{ x: cx - tw / 2, y: base }, { x: cx - tw / 2, y: base - th }, { x: cx + tw / 2, y: base - th }, { x: cx + tw / 2, y: base }, { x: cx - tw / 2, y: base }];
-    const cw = hidden.width * 0.6, ch = hidden.height * 0.5, left = cx - cw / 2, top = base - th - ch;
-    const canopy = [
-      { x: cx, y: top }, { x: left + cw * 0.15, y: top + ch * 0.35 }, { x: left + cw * 0.30, y: top + ch * 0.35 },
-      { x: left + cw * 0.10, y: top + ch * 0.65 }, { x: left + cw * 0.40, y: top + ch * 0.65 }, { x: left + cw * 0.20, y: top + ch * 0.95 },
-      { x: left + cw * 0.80, y: top + ch * 0.95 }, { x: left + cw * 0.60, y: top + ch * 0.65 }, { x: left + cw * 0.90, y: top + ch * 0.65 },
-      { x: left + cw * 0.70, y: top + ch * 0.35 }, { x: left + cw * 0.85, y: top + ch * 0.35 }, { x: cx, y: top }
-    ];
-    return desc(canopy.concat(trunk), true, 0);
+    const cx = hidden.width / 2, cy = hidden.height / 2, rw = Math.min(hidden.width, hidden.height) * 0.42, rh = rw * 0.7;
+    const trunkW = hidden.width * 0.08, trunkH = hidden.height * 0.16, base = cy + rh * 0.6;
+    const trunk = [{ x: cx - trunkW/2, y: base }, { x: cx - trunkW/2, y: base - trunkH }, { x: cx + trunkW/2, y: base - trunkH }, { x: cx + trunkW/2, y: base }, { x: cx - trunkW/2, y: base }];
+    const steps = 120, pts = [];
+    for (let i = 0; i <= steps; i++) { const a = (i/steps) * Math.PI * 2; pts.push({ x: cx + Math.cos(a) * rw/2, y: cy + Math.sin(a) * rh/2 }); }
+    return desc(pts.concat(trunk), true, 0);
   };
   const boat = () => {
-    const cx = hidden.width / 2, cy = hidden.height * 0.6, w = hidden.width * 0.7, h = hidden.height * 0.18;
-    const hull = [{ x: cx - w / 2, y: cy }, { x: cx - w * 0.35, y: cy + h }, { x: cx + w * 0.35, y: cy + h }, { x: cx + w / 2, y: cy }, { x: cx - w / 2, y: cy }];
-    const sail = [{ x: cx, y: cy }, { x: cx, y: cy - h * 2 }, { x: cx + w * 0.25, y: cy - h }, { x: cx, y: cy }];
+    const cx = hidden.width / 2, cy = hidden.height * 0.62, w = hidden.width * 0.66, h = hidden.height * 0.16;
+    const hull = [{ x: cx-w/2, y: cy }, { x: cx-w*0.35, y: cy+h }, { x: cx+w*0.35, y: cy+h }, { x: cx+w/2, y: cy }, { x: cx-w/2, y: cy }];
+    const sail = [{ x: cx, y: cy }, { x: cx, y: cy-h*2 }, { x: cx+w*0.28, y: cy-h }, { x: cx, y: cy }];
     return desc(hull.concat(sail), true, 0);
   };
   const bolt = () => {
     const x = hidden.width * 0.35, y = hidden.height * 0.18, w = hidden.width * 0.3, h = hidden.height * 0.6;
-    return desc([{ x: x, y: y }, { x: x + w * 0.25, y: y + h * 0.25 }, { x: x - w * 0.10, y: y + h * 0.25 }, { x: x + w * 0.65, y: y + h * 0.9 }, { x: x + w * 0.40, y: y + h * 0.45 }, { x: x + w * 0.75, y: y + h * 0.45 }, { x: x, y: y }], true, 0);
+    return desc([{ x:x, y:y }, { x:x+w*0.30, y:y+h*0.24 }, { x:x-w*0.10, y:y+h*0.24 }, { x:x+w*0.64, y:y+h*0.9 }, { x:x+w*0.38, y:y+h*0.45 }, { x:x+w*0.78, y:y+h*0.45 }, { x:x, y:y }], true, 0);
   };
 
   const POOLS = {
@@ -341,16 +322,14 @@
     gg.clearRect(0, 0, guide.width, guide.height);
     gg.save();
     gg.lineCap = "round"; gg.lineJoin = "round";
-    gg.strokeStyle = "rgba(0,0,0,.9)"; gg.lineWidth = 8 * DPR; gg.setLineDash([]);
-    gg.beginPath();
-    gg.moveTo(path[0].x, path[0].y);
+    gg.strokeStyle = "rgba(0,0,0,.92)"; gg.lineWidth = 8 * DPR; gg.setLineDash([]);
+    gg.beginPath(); gg.moveTo(path[0].x, path[0].y);
     for (let i = 1; i < path.length; i++) gg.lineTo(path[i].x, path[i].y);
     if (pathClosed) gg.closePath();
     gg.stroke();
 
     gg.strokeStyle = "rgba(255,255,255,.98)"; gg.lineWidth = 4 * DPR; gg.setLineDash([14 * DPR, 10 * DPR]);
-    gg.beginPath();
-    gg.moveTo(path[0].x, path[0].y);
+    gg.beginPath(); gg.moveTo(path[0].x, path[0].y);
     for (let i = 1; i < path.length; i++) gg.lineTo(path[i].x, path[i].y);
     if (pathClosed) gg.closePath();
     gg.stroke();
@@ -360,8 +339,8 @@
   const drawHidden = () => {
     gh.clearRect(0, 0, hidden.width, hidden.height);
     const hue = Math.floor(Math.random() * 360);
-    const g0 = `hsl(${hue},80%,60%)`;
-    const g1 = `hsl(${(hue + 40) % 360},80%,45%)`;
+    const g0 = "hsl(" + hue + ",85%,62%)";
+    const g1 = "hsl(" + ((hue + 40) % 360) + ",85%,46%)";
     const grd = gh.createRadialGradient(hidden.width / 2, hidden.height / 2, 0, hidden.width / 2, hidden.height / 2, hidden.width / 2);
     grd.addColorStop(0, g0);
     grd.addColorStop(1, g1);
@@ -370,15 +349,11 @@
     gh.moveTo(path[0].x, path[0].y);
     for (let i = 1; i < path.length; i++) gh.lineTo(path[i].x, path[i].y);
 
-    if (pathClosed) {
-      gh.closePath();
-      gh.fillStyle = grd;
-      gh.fill();
-    } else {
-      gh.lineCap = "round"; gh.lineJoin = "round"; gh.lineWidth = Math.max(4, pathStrokePx); gh.strokeStyle = grd; gh.stroke();
-    }
+    if (pathClosed) { gh.closePath(); gh.fillStyle = grd; gh.fill(); }
+    else { gh.lineCap = "round"; gh.lineJoin = "round"; gh.lineWidth = Math.max(4, pathStrokePx); gh.strokeStyle = grd; gh.stroke(); }
 
     gm.clearRect(0, 0, mask.width, mask.height);
+    gi.clearRect(0, 0, ink.width, ink.height);
   };
 
   const buildCoverage = () => {
@@ -391,23 +366,27 @@
         const t = j / steps;
         const x = Math.round(p1.x + (p2.x - p1.x) * t);
         const y = Math.round(p1.y + (p2.y - p1.y) * t);
-        coverPts.add(`${x},${y}`);
+        coverPts.add(x + "," + y);
       }
     }
   };
 
   const updateComposite = () => {
-    const tmp = document.createElement("canvas");
-    tmp.width = hidden.width; tmp.height = hidden.height;
+    const tmp = document.createElement("canvas"); tmp.width = hidden.width; tmp.height = hidden.height;
     const gt = tmp.getContext("2d");
     gt.drawImage(hidden, 0, 0);
     gt.globalCompositeOperation = "destination-in";
     gt.drawImage(mask, 0, 0);
+
     gx.clearRect(0, 0, fx.width, fx.height);
     gx.drawImage(tmp, 0, 0);
+
+    gx.save();
+    gx.globalCompositeOperation = "lighter";
+    gx.drawImage(tmp, 0, 0);
+    gx.restore();
   };
 
-  // pointer helpers
   const pos = (e) => {
     const r = fx.getBoundingClientRect();
     const x = ((e.clientX || e.pageX) - r.left) * DPR;
@@ -417,48 +396,48 @@
 
   let isDrawing = false;
   let isCompleting = false;
+  let lastP = null;
 
-  const draw = (e) => {
-    const p = pos(e);
-
+  const drawAt = (p) => {
     gm.globalCompositeOperation = "source-over";
     gm.fillStyle = "white";
     gm.beginPath();
     gm.arc(p.x, p.y, brush * DPR / 2, 0, Math.PI * 2);
     gm.fill();
 
+    if (lastP) {
+      gi.beginPath();
+      gi.moveTo(lastP.x, lastP.y);
+      gi.lineTo(p.x, p.y);
+      gi.stroke();
+    } else {
+      gi.beginPath();
+      gi.arc(p.x, p.y, Math.max(1, (brush * DPR * 0.25)), 0, Math.PI * 2);
+      gi.fillStyle = "rgba(111,211,245,0.95)";
+      gi.fill();
+    }
+    lastP = p;
+
     updateComposite();
 
-    // cursor ring
-    gx.save();
-    gx.globalCompositeOperation = "source-over";
-    gx.strokeStyle = "rgba(255,255,255,0.35)";
-    gx.lineWidth = Math.max(1, 1 * DPR);
-    gx.beginPath();
-    gx.arc(p.x, p.y, brush * DPR * 0.48, 0, Math.PI * 2);
-    gx.stroke();
-    gx.restore();
-
-    // coverage sampling
     const rpx = Math.round(brush * DPR / 2);
     for (let dx = -rpx; dx <= rpx; dx++) {
       for (let dy = -rpx; dy <= rpx; dy++) {
         if (dx * dx + dy * dy <= rpx * rpx) {
-          covered.add(`${Math.round(p.x + dx)},${Math.round(p.y + dy)}`);
+          covered.add(Math.round(p.x + dx) + "," + Math.round(p.y + dy));
         }
       }
     }
-
     const cov = Math.min(100, Math.round((covered.size / Math.max(1, coverPts.size)) * 100));
     bestCov = Math.max(bestCov, cov);
-    covNowV.textContent = `${cov}%`;
+    covNowV.textContent = cov + "%";
 
     if (cov >= requiredCov && !isCompleting) complete();
   };
 
-  const down = (e) => { if (!playing || isCompleting) return; isDrawing = true; draw(e); };
-  const move = (e) => { if (!isDrawing || !playing || isCompleting) return; draw(e); };
-  const up   = () => { isDrawing = false; };
+  const down = (e) => { if (!playing || isCompleting) return; isDrawing = true; drawAt(pos(e)); };
+  const move = (e) => { if (!isDrawing || !playing || isCompleting) return; drawAt(pos(e)); };
+  const up   = () => { isDrawing = false; lastP = null; };
 
   fx.addEventListener("mousedown", down);
   fx.addEventListener("mousemove", move);
@@ -476,7 +455,6 @@
     drawGuide(); drawHidden(); buildCoverage(); updateComposite();
   };
 
-  // === flow ===
   const start = () => {
     const mins = Math.max(0.5, Math.min(30, Number(durInput.value || 2)));
     remainingMs = Math.round(mins * 60 * 1000);
@@ -488,7 +466,6 @@
     document.body.classList.add("playing");
     playing = true; paused = false;
 
-    // Defer sizing until after layout
     requestAnimationFrame(() => { resizeStage(); newShape(); loop(performance.now()); });
   };
 
@@ -511,7 +488,7 @@
   const end = () => {
     playing = false; paused = false; document.body.classList.remove("playing"); cancelAnimationFrame(timeLoop);
     document.getElementById("finalShapes").textContent = String(shapesDone);
-    document.getElementById("finalCov").textContent = `${Math.round(bestCov)}%`;
+    document.getElementById("finalCov").textContent = Math.round(bestCov) + "%";
     donePane.classList.remove("hidden");
   };
 
@@ -522,12 +499,10 @@
     gx.save(); gx.fillStyle = "rgba(255,255,255,.16)"; gx.fillRect(0, 0, fx.width, fx.height); gx.restore();
     setTimeout(() => {
       gx.clearRect(0, 0, fx.width, fx.height);
-      isCompleting = false;
-      if (playing) newShape();
-    }, 180);
+      if (playing) { isCompleting = false; newShape(); }
+    }, 160);
   };
 
-  // buttons & keys
   startBtn.addEventListener("click", start);
   pauseBtn.addEventListener("click", pause);
   exitBtn.addEventListener("click", exit);
@@ -540,7 +515,6 @@
     if (e.key === "Escape") { e.preventDefault(); exit(); }
   });
 
-  // initial idle state
   drawIdleGuide();
 })();
 </script>
