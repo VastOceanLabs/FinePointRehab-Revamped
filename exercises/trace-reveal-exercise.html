@@ -141,7 +141,6 @@
   const againBtn = document.getElementById("again");
   const closeBtn = document.getElementById("close");
 
-  // canvases & ctx
   const hidden = document.getElementById("hidden");
   const mask   = document.getElementById("mask");
   const fx     = document.getElementById("fx");
@@ -154,7 +153,6 @@
   const gg = guide.getContext("2d");
   const DPR = Math.max(1, window.devicePixelRatio || 1);
 
-  // === state ===
   let playing = false;
   let paused = false;
   let remainingMs = 0;
@@ -163,20 +161,18 @@
   let shapesDone = 0;
   let bestCov = 0;
 
-  let path = [];
-  let pathClosed = true;
-  let pathStrokePx = 0;
+  let subs = [];  // current multi-subpath shape: [{points, closed, strokePx}]
 
-  // coverage sampling (fixed): sample ALONG the guide; mark samples "hit" when ink passes near them
-  let samples = [];       // [{x,y,hit:false}]
+  let samples = [];
   let hits = 0;
-  let grid = null;        // Map<"i|j", int[]>
-  let cellSize = 16;      // will recompute per resize
+  let grid = null;
+  let cellSize = 16;
 
-  const brush = 28; // px at 1x DPR
+  const brush = 28;
   let requiredCov = 85;
 
-  // === helpers ===
+  const bags = { easy: [], medium: [], hard: [] };
+
   const fmt = (ms) => {
     const s = Math.max(0, Math.ceil(ms / 1000));
     const mm = String(Math.floor(s / 60)).padStart(2, "0");
@@ -200,19 +196,13 @@
       c.style.width = size + "px";
       c.style.height = size + "px";
     });
-    // Ink stroke styling
     gi.lineCap = "round"; gi.lineJoin = "round";
     gi.strokeStyle = "rgba(111,211,245,0.95)";
     gi.lineWidth = Math.max(3, Math.round(brush * DPR * 0.5));
 
-    // Grid cell tuned to brush; ~0.8x radius
     cellSize = Math.max(8, Math.round(brush * DPR * 0.8));
 
-    if (playing) {
-      newShape(); // regenerate to fit new size
-    } else {
-      drawIdleGuide();
-    }
+    if (playing) { newShape(); } else { drawIdleGuide(); }
   };
   new ResizeObserver(resizeStage).observe(fx.parentElement);
 
@@ -229,21 +219,21 @@
     gg.restore();
   };
 
-  // === shape helpers (clean outlines) ===
-  const desc = (pts, closed = true, strokePx = 0) => ({ points: pts, closed, strokePx });
+  const make = (pts, closed = true, strokePx = 0) => ({ points: pts, closed, strokePx });
+  const minSide = () => Math.min(hidden.width, hidden.height);
 
-  // open/simple
+  // Open/simple
   const lineH = () => {
     const y = hidden.height * 0.5, x1 = hidden.width * 0.15, x2 = hidden.width * 0.85;
-    return desc([{ x: x1, y }, { x: x2, y }], false, Math.round(hidden.height * 0.08));
+    return [make([{ x: x1, y }, { x: x2, y }], false, Math.round(hidden.height * 0.08))];
   };
   const lineV = () => {
     const x = hidden.width * 0.5, y1 = hidden.height * 0.18, y2 = hidden.height * 0.82;
-    return desc([{ x, y: y1 }, { x, y: y2 }], false, Math.round(hidden.width * 0.08));
+    return [make([{ x, y: y1 }, { x, y: y2 }], false, Math.round(hidden.width * 0.08))];
   };
   const lineD = () => {
     const m = hidden.width * 0.15;
-    return desc([{ x: m, y: m }, { x: hidden.width - m, y: hidden.height - m }], false, Math.round(hidden.width * 0.07));
+    return [make([{ x: m, y: m }, { x: hidden.width - m, y: hidden.height - m }], false, Math.round(hidden.width * 0.07))];
   };
   const zigzag = () => {
     const pts = [];
@@ -253,7 +243,7 @@
       const x = (i % 2 === 0) ? l : r;
       pts.push({ x, y });
     }
-    return desc(pts, false, Math.round(hidden.width * 0.07));
+    return [make(pts, false, Math.round(hidden.width * 0.07))];
   };
   const sine = () => {
     const pts = [];
@@ -264,101 +254,159 @@
       const y = mid + Math.sin(t * Math.PI * 2 * cyc) * amp;
       pts.push({ x, y });
     }
-    return desc(pts, false, Math.round(hidden.width * 0.06));
+    return [make(pts, false, Math.round(hidden.width * 0.06))];
   };
   const lshape = () => {
     const x = hidden.width * 0.25, y = hidden.height * 0.25, w = hidden.width * 0.5, h = hidden.height * 0.5;
-    return desc([{ x, y }, { x, y: y + h }, { x: x + w, y: y + h }], false, Math.round(hidden.width * 0.07));
+    return [make([{ x, y }, { x, y: y + h }, { x: x + w, y: y + h }], false, Math.round(hidden.width * 0.07))];
   };
 
-  // closed/complex
+  // Closed/simple
   const circle = () => {
-    const cx = hidden.width / 2, cy = hidden.height / 2, r = Math.min(hidden.width, hidden.height) * 0.32, pts = [];
+    const cx = hidden.width / 2, cy = hidden.height / 2, r = minSide() * 0.32, pts = [];
     for (let i = 0; i <= 180; i++) { const a = (i / 180) * Math.PI * 2; pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }); }
-    return desc(pts, true, 0);
+    return [make(pts, true, 0)];
   };
   const square = () => {
-    const s = Math.min(hidden.width, hidden.height) * 0.64, x = (hidden.width - s) / 2, y = (hidden.height - s) / 2;
-    return desc([{ x, y }, { x: x + s, y }, { x: x + s, y: y + s }, { x, y: y + s }, { x, y }], true, 0);
+    const s = minSide() * 0.64, x = (hidden.width - s) / 2, y = (hidden.height - s) / 2;
+    const pts = [{ x, y }, { x: x + s, y }, { x: x + s, y: y + s }, { x, y: y + s }, { x, y }];
+    return [make(pts, true, 0)];
   };
   const rect = () => {
-    const w = Math.min(hidden.width, hidden.height) * 0.72, h = w * 0.6, x = (hidden.width - w) / 2, y = (hidden.height - h) / 2;
-    return desc([{ x, y }, { x: x + w, y }, { x: x + w, y: y + h }, { x, y: y + h }, { x, y }], true, 0);
+    const w = minSide() * 0.72, h = w * 0.6, x = (hidden.width - w) / 2, y = (hidden.height - h) / 2;
+    const pts = [{ x, y }, { x: x + w, y }, { x: x + w, y: y + h }, { x, y: y + h }, { x, y }];
+    return [make(pts, true, 0)];
   };
   const tri = () => {
-    const s = Math.min(hidden.width, hidden.height) * 0.68, cx = hidden.width / 2, cy = hidden.height / 2;
-    return desc([{ x: cx, y: cy - s / 2 }, { x: cx - s / 2, y: cy + s / 2 }, { x: cx + s / 2, y: cy + s / 2 }, { x: cx, y: cy - s / 2 }], true, 0);
+    const s = minSide() * 0.68, cx = hidden.width / 2, cy = hidden.height / 2;
+    const pts = [{ x: cx, y: cy - s / 2 }, { x: cx - s / 2, y: cy + s / 2 }, { x: cx + s / 2, y: cy + s / 2 }, { x: cx, y: cy - s / 2 }];
+    return [make(pts, true, 0)];
   };
   const diamond = () => {
-    const s = Math.min(hidden.width, hidden.height) * 0.68, cx = hidden.width / 2, cy = hidden.height / 2;
-    return desc([{ x: cx, y: cy - s / 2 }, { x: cx + s / 2, y: cy }, { x: cx, y: cy + s / 2 }, { x: cx - s / 2, y: cy }, { x: cx, y: cy - s / 2 }], true, 0);
+    const s = minSide() * 0.68, cx = hidden.width / 2, cy = hidden.height / 2;
+    const pts = [{ x: cx, y: cy - s / 2 }, { x: cx + s / 2, y: cy }, { x: cx, y: cy + s / 2 }, { x: cx - s / 2, y: cy }, { x: cx, y: cy - s / 2 }];
+    return [make(pts, true, 0)];
   };
   const hex = () => {
-    const cx = hidden.width / 2, cy = hidden.height / 2, r = Math.min(hidden.width, hidden.height) * 0.32, pts = [];
+    const cx = hidden.width / 2, cy = hidden.height / 2, r = minSide() * 0.32, pts = [];
     for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r }); }
     pts.push(pts[0]);
-    return desc(pts, true, 0);
+    return [make(pts, true, 0)];
   };
   const star = () => {
-    const cx = hidden.width / 2, cy = hidden.height / 2, R = Math.min(hidden.width, hidden.height) * 0.34, r = R * 0.5, pts = [];
+    const cx = hidden.width / 2, cy = hidden.height / 2, R = minSide() * 0.34, r = R * 0.5, pts = [];
     for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2 - Math.PI / 2; const rad = (i % 2 === 0) ? R : r; pts.push({ x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad }); }
     pts.push(pts[0]);
-    return desc(pts, true, 0);
+    return [make(pts, true, 0)];
   };
+
+  // Complex
   const house = () => {
     const w = hidden.width * 0.6, h = hidden.height * 0.5, x = (hidden.width - w) / 2, y = (hidden.height - h) / 2 + hidden.height * 0.08, roofH = h * 0.45;
-    return desc([{ x:x, y:y+h }, { x:x, y:y+roofH }, { x:x+w/2, y:y }, { x:x+w, y:y+roofH }, { x:x+w, y:y+h }, { x:x, y:y+h }], true, 0);
+    const pts = [{ x:x, y:y+h }, { x:x, y:y+roofH }, { x:x+w/2, y:y }, { x:x+w, y:y+roofH }, { x:x+w, y:y+h }, { x:x, y:y+h }];
+    return [make(pts, true, 0)];
   };
   const tree = () => {
-    const cx = hidden.width / 2, cy = hidden.height / 2, rw = Math.min(hidden.width, hidden.height) * 0.42, rh = rw * 0.7;
+    const cx = hidden.width / 2, cy = hidden.height / 2, rw = minSide() * 0.42, rh = rw * 0.7;
     const trunkW = hidden.width * 0.08, trunkH = hidden.height * 0.16, base = cy + rh * 0.6;
     const trunk = [{ x: cx - trunkW/2, y: base }, { x: cx - trunkW/2, y: base - trunkH }, { x: cx + trunkW/2, y: base - trunkH }, { x: cx + trunkW/2, y: base }, { x: cx - trunkW/2, y: base }];
-    const steps = 120, pts = [];
-    for (let i = 0; i <= steps; i++) { const a = (i/steps) * Math.PI * 2; pts.push({ x: cx + Math.cos(a) * rw/2, y: cy + Math.sin(a) * rh/2 }); }
-    return desc(pts.concat(trunk), true, 0);
+    const steps = 140, canopy = [];
+    for (let i = 0; i <= steps; i++) { const a = (i/steps) * Math.PI * 2; canopy.push({ x: cx + Math.cos(a) * rw/2, y: cy + Math.sin(a) * rh/2 }); }
+    return [make(canopy, true, 0), make(trunk, true, 0)];
   };
   const boat = () => {
     const cx = hidden.width / 2, cy = hidden.height * 0.62, w = hidden.width * 0.66, h = hidden.height * 0.16;
     const hull = [{ x: cx-w/2, y: cy }, { x: cx-w*0.35, y: cy+h }, { x: cx+w*0.35, y: cy+h }, { x: cx+w/2, y: cy }, { x: cx-w/2, y: cy }];
     const sail = [{ x: cx, y: cy }, { x: cx, y: cy-h*2 }, { x: cx+w*0.28, y: cy-h }, { x: cx, y: cy }];
-    return desc(hull.concat(sail), true, 0);
+    return [make(hull, true, 0), make(sail, true, 0)];
   };
   const bolt = () => {
     const x = hidden.width * 0.35, y = hidden.height * 0.18, w = hidden.width * 0.3, h = hidden.height * 0.6;
-    return desc([{ x:x, y:y }, { x:x+w*0.30, y:y+h*0.24 }, { x:x-w*0.10, y:y+h*0.24 }, { x:x+w*0.64, y:y+h*0.9 }, { x:x+w*0.38, y:y+h*0.45 }, { x:x+w*0.78, y:y+h*0.45 }, { x:x, y:y }], true, 0);
+    const pts = [{ x:x, y:y }, { x:x+w*0.30, y:y+h*0.24 }, { x:x-w*0.10, y:y+h*0.24 }, { x:x+w*0.64, y:y+h*0.9 }, { x:x+w*0.38, y:y+h*0.45 }, { x:x+w*0.78, y:y+h*0.45 }, { x:x, y:y }];
+    return [make(pts, true, 0)];
+  };
+  const arrow = () => {
+    const cx = hidden.width / 2, cy = hidden.height / 2, w = hidden.width * 0.6, h = hidden.height * 0.22, head = w * 0.28;
+    const x1 = cx - w/2, x2 = cx + w/2 - head;
+    const pts = [
+      {x:x1, y: cy - h/2}, {x:x2, y: cy - h/2},
+      {x:x2, y: cy - h},   {x:cx + w/2, y: cy},
+      {x:x2, y: cy + h},   {x:x2, y: cy + h/2},
+      {x:x1, y: cy + h/2}, {x:x1, y: cy - h/2}
+    ];
+    return [make(pts, true, 0)];
+  };
+  const heart = () => {
+    const cx = hidden.width / 2, cy = hidden.height / 2;
+    const k = Math.min(hidden.width, hidden.height) * 0.02;
+    const steps = 220, pts = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = (i / steps) * Math.PI * 2;
+      const x = cx + k * 16 * Math.pow(Math.sin(t), 3);
+      const y = cy - k * (13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t));
+      pts.push({x,y});
+    }
+    return [make(pts, true, 0)];
+  };
+  const moon = () => {
+    const cx = hidden.width / 2, cy = hidden.height / 2;
+    const R = Math.min(hidden.width, hidden.height) * 0.34, r = R * 0.7, dx = R * 0.35;
+    const a1 = -Math.PI * 0.6, a2 = Math.PI * 1.2;
+    const outer = [], inner = [];
+    const steps = 180;
+    for (let i = 0; i <= steps; i++) {
+      const t = a1 + (a2 - a1) * (i / steps);
+      outer.push({ x: cx + Math.cos(t) * R, y: cy + Math.sin(t) * R });
+    }
+    for (let i = steps; i >= 0; i--) {
+      const t = a1 + (a2 - a1) * (i / steps);
+      inner.push({ x: cx + dx + Math.cos(t) * r, y: cy + Math.sin(t) * r });
+    }
+    return [make(outer.concat(inner), true, 0)];
+  };
+  const cloud = () => {
+    const cx = hidden.width / 2, cy = hidden.height / 2;
+    const a = hidden.width * 0.34, b = hidden.height * 0.24, p = 2.5, pts = [];
+    const steps = 240;
+    const sgn = (v) => (v < 0 ? -1 : 1);
+    for (let i = 0; i <= steps; i++) {
+      const t = (i / steps) * Math.PI * 2;
+      const ct = Math.cos(t), st = Math.sin(t);
+      const x = cx + a * sgn(ct) * Math.pow(Math.abs(ct), 2 / p);
+      const y = cy + b * sgn(st) * Math.pow(Math.abs(st), 2 / p);
+      pts.push({x,y});
+    }
+    return [make(pts, true, 0)];
   };
 
   const POOLS = {
     easy:   [lineH, lineV, lineD, zigzag, sine, lshape],
-    medium: [circle, square, rect, tri, diamond, hex, star],
-    hard:   [house, tree, boat, bolt, star, hex]
+    medium: [circle, square, rect, tri, diamond, hex, star, heart, arrow, cloud],
+    hard:   [house, tree, boat, bolt, star, hex, heart, moon, arrow, cloud]
   };
 
-  // === high-contrast dotted guide ===
   const drawGuide = () => {
-    if (!path.length) { drawIdleGuide(); return; }
     gg.clearRect(0, 0, guide.width, guide.height);
     gg.save();
     gg.lineCap = "round"; gg.lineJoin = "round";
+    for (const sp of subs) {
+      const pts = sp.points;
+      if (!pts || pts.length < 2) continue;
+      gg.strokeStyle = "rgba(0,0,0,.92)"; gg.lineWidth = 8 * DPR; gg.setLineDash([]);
+      gg.beginPath(); gg.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) gg.lineTo(pts[i].x, pts[i].y);
+      if (sp.closed) gg.closePath();
+      gg.stroke();
 
-    // black under-stroke
-    gg.strokeStyle = "rgba(0,0,0,.92)"; gg.lineWidth = 8 * DPR; gg.setLineDash([]);
-    gg.beginPath(); gg.moveTo(path[0].x, path[0].y);
-    for (let i = 1; i < path.length; i++) gg.lineTo(path[i].x, path[i].y);
-    if (pathClosed) gg.closePath();
-    gg.stroke();
-
-    // white dotted on top
-    gg.strokeStyle = "rgba(255,255,255,.98)"; gg.lineWidth = 4 * DPR; gg.setLineDash([14 * DPR, 10 * DPR]);
-    gg.beginPath(); gg.moveTo(path[0].x, path[0].y);
-    for (let i = 1; i < path.length; i++) gg.lineTo(path[i].x, path[i].y);
-    if (pathClosed) gg.closePath();
-    gg.stroke();
-
+      gg.strokeStyle = "rgba(255,255,255,.98)"; gg.lineWidth = 4 * DPR; gg.setLineDash([14 * DPR, 10 * DPR]);
+      gg.beginPath(); gg.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) gg.lineTo(pts[i].x, pts[i].y);
+      if (sp.closed) gg.closePath();
+      gg.stroke();
+    }
     gg.restore();
   };
 
-  // === hidden image (revealed through mask) ===
   const drawHidden = () => {
     gh.clearRect(0, 0, hidden.width, hidden.height);
     const hue = Math.floor(Math.random() * 360);
@@ -368,24 +416,25 @@
     grd.addColorStop(0, g0);
     grd.addColorStop(1, g1);
 
-    gh.beginPath();
-    gh.moveTo(path[0].x, path[0].y);
-    for (let i = 1; i < path.length; i++) gh.lineTo(path[i].x, path[i].y);
+    for (const sp of subs) {
+      const pts = sp.points;
+      if (!pts || pts.length < 2) continue;
+      gh.beginPath();
+      gh.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) gh.lineTo(pts[i].x, pts[i].y);
+      if (sp.closed) gh.closePath();
+      if (sp.closed) { gh.fillStyle = grd; gh.fill(); }
+      else { gh.lineCap = "round"; gh.lineJoin = "round"; gh.lineWidth = Math.max(4, sp.strokePx || 0); gh.strokeStyle = grd; gh.stroke(); }
+    }
 
-    if (pathClosed) { gh.closePath(); gh.fillStyle = grd; gh.fill(); }
-    else { gh.lineCap = "round"; gh.lineJoin = "round"; gh.lineWidth = Math.max(4, pathStrokePx); gh.strokeStyle = grd; gh.stroke(); }
-
-    // clear mask & ink for new round
     gm.clearRect(0, 0, mask.width, mask.height);
     gi.clearRect(0, 0, ink.width, ink.height);
   };
 
-  // === coverage sampling (build samples + spatial grid) ===
   const buildCoverage = () => {
     samples = [];
     hits = 0;
     grid = new Map();
-
     const addSample = (x, y) => {
       const idx = samples.length;
       samples.push({ x, y, hit: false });
@@ -394,23 +443,30 @@
       const arr = grid.get(key);
       if (arr) arr.push(idx); else grid.set(key, [idx]);
     };
-
-    // sample each segment
-    for (let i = 0; i < path.length - 1; i++) {
-      const p1 = path[i], p2 = path[i + 1];
-      const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      const step = 6 * DPR; // sample spacing along guide
-      const steps = Math.max(1, Math.ceil(dist / step));
-      for (let j = 0; j <= steps; j++) {
-        const t = j / steps;
-        const x = Math.round(p1.x + (p2.x - p1.x) * t);
-        const y = Math.round(p1.y + (p2.y - p1.y) * t);
-        addSample(x, y);
+    const step = 6 * DPR;
+    for (const sp of subs) {
+      const pts = sp.points;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p1 = pts[i], p2 = pts[i + 1];
+        const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        const steps = Math.max(1, Math.ceil(dist / step));
+        for (let j = 0; j <= steps; j++) {
+          const t = j / steps;
+          addSample(Math.round(p1.x + (p2.x - p1.x) * t), Math.round(p1.y + (p2.y - p1.y) * t));
+        }
+      }
+      if (sp.closed && pts.length > 2) {
+        const p1 = pts[pts.length - 1], p2 = pts[0];
+        const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        const steps = Math.max(1, Math.ceil(dist / step));
+        for (let j = 0; j <= steps; j++) {
+          const t = j / steps;
+          addSample(Math.round(p1.x + (p2.x - p1.x) * t), Math.round(p1.y + (p2.y - p1.y) * t));
+        }
       }
     }
   };
 
-  // === composite reveal ===
   const updateComposite = () => {
     const tmp = document.createElement("canvas"); tmp.width = hidden.width; tmp.height = hidden.height;
     const gt = tmp.getContext("2d");
@@ -427,7 +483,6 @@
     gx.restore();
   };
 
-  // === input ===
   const pos = (e) => {
     const r = fx.getBoundingClientRect();
     const x = ((e.clientX || e.pageX) - r.left) * DPR;
@@ -465,14 +520,12 @@
   };
 
   const drawAt = (p) => {
-    // paint mask (reveal)
     gm.globalCompositeOperation = "source-over";
     gm.fillStyle = "white";
     gm.beginPath();
     gm.arc(p.x, p.y, brush * DPR / 2, 0, Math.PI * 2);
     gm.fill();
 
-    // visible ink on top
     if (lastP) {
       gi.beginPath();
       gi.moveTo(lastP.x, lastP.y);
@@ -502,12 +555,17 @@
   fx.addEventListener("touchmove",  (e) => { e.preventDefault(); move(e.touches[0]); }, { passive: false });
   fx.addEventListener("touchend",   (e) => { e.preventDefault(); up(); }, { passive: false });
 
-  // === flow ===
+  const bagPick = (level) => {
+    if (!bags[level] || bags[level].length === 0) bags[level] = [...POOLS[level]];
+    const i = Math.floor(Math.random() * bags[level].length);
+    const fn = bags[level].splice(i, 1)[0];
+    return fn;
+  };
+
   const newShape = () => {
-    const pool = POOLS[diffSelect.value] || POOLS.medium;
-    const gen = pool[Math.floor(Math.random() * pool.length)];
-    const d = gen();
-    path = d.points; pathClosed = d.closed; pathStrokePx = d.strokePx || 0;
+    const level = diffSelect.value;
+    const gen = bagPick(level);
+    subs = gen();
     drawGuide(); drawHidden(); buildCoverage(); updateComposite();
   };
 
@@ -552,19 +610,10 @@
     isCompleting = true;
     shapesDone += 1;
     doneV.textContent = String(shapesDone);
-
-    // brief flash effect
     gx.save(); gx.fillStyle = "rgba(255,255,255,.16)"; gx.fillRect(0, 0, fx.width, fx.height); gx.restore();
-    setTimeout(() => {
-      gx.clearRect(0, 0, fx.width, fx.height);
-      if (playing) {
-        isCompleting = false;
-        newShape();
-      }
-    }, 160);
+    setTimeout(() => { gx.clearRect(0, 0, fx.width, fx.height); if (playing) { isCompleting = false; newShape(); } }, 160);
   };
 
-  // buttons & keys
   startBtn.addEventListener("click", start);
   pauseBtn.addEventListener("click", pause);
   exitBtn.addEventListener("click", exit);
@@ -577,7 +626,6 @@
     if (e.key === "Escape") { e.preventDefault(); exit(); }
   });
 
-  // initial idle state
   drawIdleGuide();
 })();
 </script>
