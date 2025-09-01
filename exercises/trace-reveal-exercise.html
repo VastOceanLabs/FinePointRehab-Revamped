@@ -1,382 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
-  <title>Trace & Reveal — Comet-style Cohesive</title>
-  <meta name="description" content="Trace & Reveal with Comet-style settings, numeric timer, visible guide, and simplified flow." />
-  <style>
-    :root { --vh: 1vh; --bg:#121d33; --panel:#0b132b; --panel2:#122148; --border:rgba(255,255,255,.14); --text:#eaf6ff; --accent:#6fd3f5; }
-    * { box-sizing: border-box; }
-    html, body { height:100%; }
-    body { margin:0; color:var(--text); background: var(--bg); font-family: Segoe UI, Inter, system-ui, -apple-system, Roboto, Arial, sans-serif; min-height: calc(var(--vh)*100); }
-    header.site { position:sticky; top:0; z-index:40; background:linear-gradient(180deg, rgba(7,11,22,.85), rgba(7,11,22,.65)); border-bottom:1px solid var(--border); backdrop-filter: blur(6px); }
-    header .wrap { display:flex; align-items:center; gap:12px; padding:10px 16px; }
-    header h1 { margin:0; font-size:18px; letter-spacing:.2px; }
-    header .spacer { flex:1; }
-    a.btn { color:inherit; text-decoration:none; }
-    .btn { border-radius:12px; border:1px solid var(--border); background:#0e1734; color:var(--text); padding:10px 14px; cursor:pointer; }
-    .btn-primary { background:linear-gradient(180deg, #1c2f64, #123057); border-color:#2b406f; box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 6px 18px rgba(4,183,255,.15); }
-    .btn-ghost { background:transparent; }
-    .chip{ border:1px solid var(--border); background:#0b132b; border-radius:999px; padding:6px 10px; font-size:12px; display:inline-flex; gap:6px; align-items:center; }
-    .chip b{ font-weight:600; }
-    .pill { border-radius:999px; padding:8px 12px; border:1px solid var(--border); background:#0b132b; color:var(--text); cursor:pointer; }
-    .pill[aria-pressed="true"]{ outline:2px solid var(--accent); }
-    .grid { display:grid; grid-template-columns: 360px 1fr; gap:16px; padding:16px; max-width:1200px; margin:0 auto; }
-    @media (max-width: 980px) { .grid { grid-template-columns:1fr; } }
-    .panel { background:var(--panel2); border:1px solid var(--border); border-radius:14px; }
-    .settings { padding:16px; }
-    .settings h2 { margin:0 0 8px; font-size:16px; opacity:.95; }
-    .group { margin:14px 0; display:grid; gap:8px; }
-    .muted { opacity:.8; font-size:12px; }
-    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .instr { font-size:13px; opacity:.9; background:#0b132b; border:1px dashed var(--border); border-radius:10px; padding:10px; }
-    .game { position:relative; padding:12px; display:flex; flex-direction:column; align-items:center; }
-    .hud { width:100%; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .hud-left, .hud-right { display:flex; gap:8px; align-items:center; }
-    .playframe { position:relative; width:100%; display:flex; justify-content:center; align-items:center; }
-    .canvas-stack { position:relative; width:min(92vw, 720px); max-width:720px; aspect-ratio:1/1; }
-    canvas { position:absolute; inset:0; width:100%; height:100%; border-radius:16px; background:#0e1734; touch-action:none; }
-    #guideLayer { pointer-events:none; }
-    #completionLayer { pointer-events:none; }
-    #stats-panel { position:fixed; bottom:0; left:0; right:0; background-color:rgba(8, 15, 35, 0.95); padding:8px; display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)); gap:8px; border-top:1px solid var(--border); box-shadow:0 -8px 24px rgba(0,0,0,.25); }
-    .stat-box { text-align:center; }
-    .stat-value { font-size:clamp(18px, 4vw, 24px); font-weight:700; color:var(--accent); line-height:1; }
-    .stat-label { font-size:clamp(10px, 2.5vw, 14px); opacity:.85; }
-    .hidden { display:none !important; }
-    dialog.results{ border:1px solid var(--border); background:rgba(8,15,35,.96); color:var(--text); border-radius:16px; max-width:520px; width:clamp(320px, 70vw, 520px); }
-    dialog.results::backdrop{ background:rgba(0,0,0,.55); backdrop-filter: blur(2px); }
-    .results header{ padding:14px 16px; border-bottom:1px solid var(--border); font-weight:600; }
-    .results .content{ padding:16px; display:grid; gap:10px; }
-    .results .actions{ padding:12px 16px 16px; display:flex; gap:10px; justify-content:flex-end; }
-    body.playing header.site{ display:none; }
-    body.playing .grid{ grid-template-columns:1fr; max-width:min(1100px,100%); padding:12px; }
-    body.playing .settings{ display:none; }
-    body.playing .game{ min-height: calc(var(--vh) * 100 - 12px); }
-    :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:10px; }
-    input[type="number"]{ width:100px; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Trace & Reveal — Fine Point Rehab</title>
+
+<!-- Comet-style inline theme (tokens/components extracted for consistency) -->
+<style>
+  :root{
+    --vh: 1vh;
+    --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
+    --accent: #6fd3f5;
+    --radius: 14px;
+    --panel: rgba(10,16,36,.9);
+    --panel-border: rgba(255,255,255,.08);
+    --text: #eaf6ff;
+  }
+  body{ margin:0; color:var(--text);
+    background:
+      radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
+      radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 55%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+    min-height: calc(var(--vh) * 100);
+    touch-action: manipulation;
+    font-family: Segoe UI, Inter, system-ui, -apple-system, Roboto, Arial, sans-serif;
+  }
+  .layout{ display:grid; grid-template-columns: min(420px, 36vw) 1fr; gap:16px; padding:16px; max-width:1280px; margin:0 auto; }
+  @media (max-width: 900px){ .layout{ grid-template-columns:1fr; } }
+  .panel{ background: var(--panel); border:1px solid var(--panel-border); border-radius: var(--radius); box-shadow: 0 12px 28px rgba(0,0,0,.35), inset 0 0 40px rgba(0,0,0,.25); }
+  h1,h2{ margin:0; }
+  header.site{ position:sticky; top:0; z-index:10; background: linear-gradient(180deg, rgba(6,10,24,.85), rgba(6,10,24,.55)); border-bottom:1px solid var(--panel-border); backdrop-filter: blur(6px); }
+  header .wrap{ display:flex; align-items:center; gap:12px; padding:10px 16px; }
+  header .spacer{ flex:1; }
+  .desc{ font-size:13px; opacity:.92; background: linear-gradient(180deg, rgba(6,10,24,.65), rgba(6,10,24,.35)); border: 1px solid rgba(255,255,255,.12); border-radius:10px; padding:10px; }
+  .group{ margin-bottom:12px; }
+  .label{ display:block; margin-bottom:6px; font-weight:700; letter-spacing:.2px; }
+  select, input[type="number"]{
+    width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+    background: rgba(5,10,26,.8); color:var(--text); font-size:16px;
+  }
+  select:focus, input[type="number"]:focus{
+    outline:none; border-color: rgba(111,211,245,.9); box-shadow: 0 0 0 2px rgba(111,211,245,.25);
+  }
+  .btn{
+    min-height:46px; border:1px solid rgba(111,211,245,.35); background: rgba(111,211,245,.12);
+    color:var(--text); border-radius:10px; font-weight:800; letter-spacing:.2px; cursor:pointer; transition:.2s;
+  }
+  .btn:hover:not(:disabled){ background: rgba(111,211,245,.22); transform: translateY(-1px); }
+  .btn:disabled{ opacity:.55; cursor:not-allowed; }
+  .btn-primary{ background: rgba(111,211,245,.95); color:#07101e; border-color: rgba(111,211,245,1); }
+  .btn-primary:hover:not(:disabled){ background: rgba(111,211,245,1); box-shadow: 0 6px 18px rgba(111,211,245,.45); }
+  .hud{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px 10px; margin-bottom:10px;
+        background: rgba(8,14,36,.85); border: 1px solid var(--panel-border); border-radius: var(--radius);
+        box-shadow: 0 6px 16px rgba(0,0,0,.35); position:relative; z-index:4; }
+  .metric{ display:grid; grid-template-rows:auto auto; align-items:center; justify-items:start; min-width:110px; }
+  .v{ font-weight:900; font-size:20px; color:#d7f2ff; text-shadow: 0 0 8px rgba(160,220,255,.7); line-height:1.1; }
+  .t{ font-size:11px; opacity:.9; margin-top:2px; }
+  .actions{ flex:0 0 auto; display:flex; gap:8px; margin-left:auto; }
+  .frame{ position:relative; border-radius: var(--radius); overflow:hidden;
+          border:1px solid var(--panel-border); box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+          background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%); }
+  canvas.stage{ display:block; width:100%; aspect-ratio: 1 / 1; background: transparent; touch-action:none; }
+  body.playing .layout{ grid-template-columns: 1fr; padding:0; height: calc(var(--vh) * 100); }
+  body.playing #settings{ display:none; }
+  .hidden{ display:none !important; }
+  :focus-visible{ outline: 3px solid rgba(111,211,245,.85); outline-offset:2px; }
+
+  /* High-contrast guide adjustments */
+  #guide{ pointer-events:none; }
+  #guide.halo{ filter: drop-shadow(0 0 6px rgba(0,0,0,.9)) drop-shadow(0 0 12px rgba(0,0,0,.7)); }
+</style>
 </head>
 <body>
-  <header class="site">
-    <div class="wrap">
-      <h1>Trace & Reveal</h1>
-      <div class="spacer"></div>
-      <a class="btn btn-ghost" href="./index.html">Home</a>
-    </div>
-  </header>
-
-  <main class="grid">
-    <section class="panel settings" aria-labelledby="settingsTitle">
-      <h2 id="settingsTitle">Settings</h2>
-
-      <div class="instr">
-        Trace along the dotted line to reveal the shape. Aim to reach the coverage target before time runs out.<br/>
-        <b>Tip:</b> Steady, continuous strokes work best. Press <b>Space</b> to pause, <b>Esc</b> to exit.
-      </div>
-
-      <div class="group" role="group" aria-labelledby="lenLbl">
-        <label id="lenLbl">Session length</label>
-        <div class="row">
-          <button class="pill" data-mins="1" aria-pressed="false">1 min</button>
-          <button class="pill" data-mins="2" aria-pressed="true">2 min</button>
-          <button class="pill" data-mins="3" aria-pressed="false">3 min</button>
-          <button class="pill" data-mins="5" aria-pressed="false">5 min</button>
-          <div style="flex:1"></div>
-          <label for="customMins" class="muted">Or enter:</label>
-          <input id="customMins" type="number" min="1" max="30" step="1" value="2" />
-          <span class="muted">min</span>
-        </div>
-      </div>
-
-      <div class="group" role="group" aria-labelledby="diffLbl">
-        <label id="diffLbl">Difficulty</label>
-        <div class="row">
-          <button class="pill" data-diff="easy" aria-pressed="false">Easy</button>
-          <button class="pill" data-diff="medium" aria-pressed="true">Medium</button>
-          <button class="pill" data-diff="hard" aria-pressed="false">Hard</button>
-        </div>
-      </div>
-
-      <div class="group" role="group" aria-labelledby="covLbl">
-        <label id="covLbl">Coverage target</label>
-        <div class="row">
-          <button class="pill" data-cov="75" aria-pressed="false">75%</button>
-          <button class="pill" data-cov="85" aria-pressed="true">85%</button>
-          <button class="pill" data-cov="95" aria-pressed="false">95%</button>
-        </div>
-      </div>
-
-      <div class="group">
-        <button id="startBtn" class="btn btn-primary">Start</button>
-      </div>
-    </section>
-
-    <section class="panel game" aria-live="polite">
-      <div class="hud">
-        <div class="hud-left">
-          <div class="chip"><span>Score</span><b id="score">0</b></div>
-          <div class="chip"><span>Completed</span><b id="shapesDone">0</b></div>
-          <div class="chip"><span>Coverage</span><b id="coverageChip">0%</b></div>
-        </div>
-        <div class="hud-right">
-          <div class="chip"><span>Time</span><b id="timeChip">00:00</b></div>
-          <button id="pauseBtn" class="btn btn-ghost" aria-pressed="false">Pause</button>
-          <button id="exitBtn" class="btn btn-ghost">Exit</button>
-        </div>
-      </div>
-
-      <div class="playframe">
-        <div class="canvas-stack" id="canvasStack">
-          <canvas id="traceCanvas"></canvas>
-          <canvas id="guideLayer"></canvas>
-          <canvas id="completionLayer"></canvas>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <div id="stats-panel" class="hidden">
-    <div class="stat-box"><div id="shapes-completed" class="stat-value">0</div><div class="stat-label">Shapes Completed</div></div>
-    <div class="stat-box"><div id="coverage" class="stat-value">0%</div><div class="stat-label">Line Coverage</div></div>
-    <div class="stat-box"><div id="time-left" class="stat-value">0:00</div><div class="stat-label">Time Left</div></div>
-    <div class="stat-box"><div id="completions" class="stat-value">0</div><div class="stat-label">Perfect Traces</div></div>
+<header class="site">
+  <div class="wrap">
+    <h1>Trace & Reveal</h1>
+    <div class="spacer"></div>
   </div>
+</header>
 
-  <dialog class="results" id="resultsDialog" aria-labelledby="resultsTitle">
-    <header id="resultsTitle">Session Complete</header>
-    <div class="content">
-      <div>Shapes Completed: <b id="finalShapes">0</b></div>
-      <div>Perfect Traces: <b id="finalPerfect">0</b></div>
-      <div>Best Coverage: <b id="finalCoverage">0%</b></div>
+<main class="layout">
+  <!-- SETTINGS -->
+  <aside id="settings" class="panel" aria-label="Settings" style="padding:16px;">
+    <h2>Settings</h2>
+    <div class="desc" style="margin:10px 0 14px;">
+      <strong>How to play:</strong> Trace along the <em>dotted line</em> to reveal the shape. Hit the coverage target before time runs out.
+      Press <strong>Space</strong> to pause, <strong>Esc</strong> to exit.
     </div>
-    <div class="actions">
-      <button class="btn btn-primary" id="newSessionBtn">Start New Session</button>
-      <button class="btn btn-ghost" id="closeDialogBtn">Close</button>
+
+    <div class="group">
+      <label class="label" for="dur">Session Duration (minutes)</label>
+      <input id="dur" type="number" min="0.5" step="0.5" max="30" value="2" inputmode="decimal" />
     </div>
-  </dialog>
 
-  <script>
-    const setVH = () => { const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', vh + 'px'); };
-    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', () => setTimeout(setVH, 100));
+    <div class="group">
+      <label class="label" for="difficulty">Difficulty</label>
+      <select id="difficulty">
+        <option value="easy">Easy (more guidance)</option>
+        <option value="medium" selected>Medium (balanced)</option>
+        <option value="hard">Hard (precise)</option>
+      </select>
+      <div id="covHint" class="t" aria-live="polite" style="margin-top:6px;">Coverage target: 85%</div>
+    </div>
 
-    const $ = (id) => document.getElementById(id);
-    const fmtTime = (ms) => { ms = Math.max(0, ms|0); const s = Math.ceil(ms/1000); const m = Math.floor(s/60).toString().padStart(2,'0'); const ss=(s%60).toString().padStart(2,'0'); return m+':'+ss; };
+    <div class="settings-actions">
+      <button id="start" class="btn btn-primary" type="button">Start</button>
+    </div>
+  </aside>
 
-    // Controls
-    const startBtn = $('startBtn'), pauseBtn = $('pauseBtn'), exitBtn = $('exitBtn');
-    const scoreEl = $('score'), shapesDoneEl = $('shapesDone'), coverageChip = $('coverageChip'), timeChip = $('timeChip');
-    const statsPanel = $('stats-panel'), shapesCompletedEl = $('shapes-completed'), coverageEl = $('coverage'), timeLeftEl = $('time-left'), completionsEl = $('completions');
-    const resultsDialog = $('resultsDialog'), finalShapes = $('finalShapes'), finalPerfect = $('finalPerfect'), finalCoverage = $('finalCoverage');
-    const newSessionBtn = $('newSessionBtn'), closeDialogBtn = $('closeDialogBtn');
+  <!-- GAME COLUMN -->
+  <section id="game" class="right">
+    <div class="hud">
+      <div class="metric" aria-live="polite"><div id="score" class="v">0</div><div class="t">Score</div></div>
+      <div class="metric" aria-live="polite"><div id="doneCount" class="v">0</div><div class="t">Completed</div></div>
+      <div class="metric" aria-live="polite"><div id="covNow" class="v">0%</div><div class="t">Coverage</div></div>
+      <div class="metric" aria-live="polite"><div id="time" class="v">00:00</div><div class="t">Time</div></div>
+      <div class="actions">
+        <button id="pauseHud" class="btn" type="button" aria-label="Pause or resume">Pause</button>
+        <button id="exitHud" class="btn" type="button" aria-label="Exit to results">Exit</button>
+      </div>
+    </div>
 
-    // Session length (presets + custom)
-    const customMins = $('customMins');
-    const durationPills = Array.from(document.querySelectorAll('.pill[data-mins]'));
-    let chosenLen = 120000; // default 2 minutes
-    function selectDuration(mins){
-      durationPills.forEach(p => p.setAttribute('aria-pressed', String(Number(p.dataset.mins)===mins)));
-      customMins.value = String(mins);
-      chosenLen = mins * 60 * 1000;
-    }
-    durationPills.forEach(p => p.addEventListener('click', () => selectDuration(Number(p.dataset.mins)) ));
-    customMins.addEventListener('input', () => {
-      const mins = Math.max(1, Math.min(30, Number(customMins.value||2)));
-      selectDuration(mins);
-    });
-    selectDuration(2);
+    <div class="frame panel" style="padding:8px;">
+      <div style="position:relative; width:100%;">
+        <canvas id="hidden" class="stage" aria-hidden="true"></canvas>
+        <canvas id="mask" class="stage" aria-hidden="true"></canvas>
+        <canvas id="guide" class="stage halo" aria-label="Trace guide"></canvas>
+        <canvas id="fx" class="stage" aria-hidden="true"></canvas>
+      </div>
+    </div>
+  </section>
+</main>
 
-    // Difficulty & Coverage
-    const pillsDiff = Array.from(document.querySelectorAll('.pill[data-diff]'));
-    const pillsCov  = Array.from(document.querySelectorAll('.pill[data-cov]'));
-    let difficulty='medium', requiredCoverage=85;
-    function selectBtn(btns, attr, value){ btns.forEach(b => b.setAttribute('aria-pressed', String(b.getAttribute(attr)==String(value)))); }
-    pillsDiff.forEach(b => b.addEventListener('click', () => { difficulty = b.dataset.diff; selectBtn(pillsDiff,'data-diff', difficulty); }));
-    pillsCov.forEach(b  => b.addEventListener('click', () => { requiredCoverage = Number(b.dataset.cov); selectBtn(pillsCov,'data-cov', requiredCoverage); }));
-    selectBtn(pillsDiff,'data-diff', difficulty); selectBtn(pillsCov,'data-cov', requiredCoverage);
+<!-- RESULTS (simple modal-like pane) -->
+<div id="done" class="hidden" role="dialog" aria-modal="true" style="position:fixed; inset:0; display:grid; place-items:center; background: rgba(0,0,0,.6); backdrop-filter: blur(4px);">
+  <div class="panel" style="padding:20px; max-width:min(520px,92vw);">
+    <h2 style="color:var(--accent); margin-top:0;">Session Complete</h2>
+    <p><strong>Shapes completed:</strong> <span id="finalShapes">0</span></p>
+    <p><strong>Best coverage:</strong> <span id="finalCov">0%</span></p>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button id="again" class="btn btn-primary">Start New Session</button>
+      <button id="close" class="btn">Close</button>
+    </div>
+  </div>
+</div>
 
-    // Canvas setup
-    const stack = $('canvasStack');
-    const canvas = $('traceCanvas');
-    const guideCanvas = $('guideLayer');
-    const completionCanvas = $('completionLayer');
-    const ctx = canvas.getContext('2d'), guideCtx = guideCanvas.getContext('2d'), completionCtx = completionCanvas.getContext('2d');
+<script>
+/* Viewport fix */
+const setVH = () => { document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01) + 'px'); };
+setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
 
-    // Hidden image + mask
-    const hiddenImage = document.createElement('canvas'), hiddenCtx = hiddenImage.getContext('2d');
-    const maskCanvas = document.createElement('canvas'), maskCtx = maskCanvas.getContext('2d');
-    // Standardized brush
-    const brushSize = 28;
+/* Elements */
+const startBtn = document.getElementById('start');
+const durInput = document.getElementById('dur');
+const diffSelect = document.getElementById('difficulty');
+const covHint = document.getElementById('covHint');
+const rightCol = document.querySelector('#game');
+const timeV = document.getElementById('time');
+const scoreV = document.getElementById('score');
+const doneV = document.getElementById('doneCount');
+const covNowV = document.getElementById('covNow');
+const pauseBtn = document.getElementById('pauseHud');
+const exitBtn = document.getElementById('exitHud');
+const donePane = document.getElementById('done');
+const againBtn = document.getElementById('again');
+const closeBtn = document.getElementById('close');
 
-    // State
-    let playing=false, paused=false, rafId=0, startTs=0, totalMs=0, remainingMs=0;
-    let score=0, shapesCompleted=0, perfectTraces=0, bestCoverage=0;
-    let isDrawing=false, isCompleting=false, pathPoints=[], coveragePoints=new Set(), coveredPoints=new Set();
+/* Canvases */
+const hidden = document.getElementById('hidden');
+const mask = document.getElementById('mask');
+const guide = document.getElementById('guide');
+const fx = document.getElementById('fx');
+const gh = hidden.getContext('2d');
+const gm = mask.getContext('2d');
+const gg = guide.getContext('2d');
+const gx = fx.getContext('2d');
+const DPR = Math.max(1, devicePixelRatio || 1);
 
-    function resizeCanvases(){
-      const rect = stack.getBoundingClientRect();
-      const size = Math.min(rect.width, rect.height);
-      [canvas, guideCanvas, completionCanvas].forEach(c => { c.width = size; c.height = size; c.style.width = size+'px'; c.style.height = size+'px'; });
-      hiddenImage.width = size; hiddenImage.height = size; maskCanvas.width = size; maskCanvas.height = size;
-      if(playing && !isCompleting){ loadNewShape(); }
-      else { drawWaitingGuide(); }
-    }
-    addEventListener('resize', () => setTimeout(resizeCanvases, 80));
+/* State */
+let playing=false, paused=false, startTs=0, totalMs=0, remainingMs=0, raf=0;
+let score=0, shapesDone=0, bestCov=0;
+let brush=28; // standardized
+let requiredCov=85;
+let path=[], coverPts=new Set(), covered=new Set();
+let isDrawing=false, isCompleting=false;
 
-    function drawWaitingGuide(){
-      guideCtx.clearRect(0,0,guideCanvas.width,guideCanvas.height);
-      guideCtx.fillStyle = 'rgba(255,255,255,.06)';
-      guideCtx.fillRect(0,0,guideCanvas.width,guideCanvas.height);
-      guideCtx.fillStyle = 'rgba(255,255,255,.8)';
-      guideCtx.font = '600 16px system-ui, sans-serif';
-      guideCtx.textAlign='center';
-      guideCtx.fillText('Choose time, then Start', guideCanvas.width/2, guideCanvas.height/2);
-    }
+function fmt(ms){ ms=Math.max(0,ms|0); const s=Math.ceil(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
 
-    // Shapes (subset, scalable)
-    function circlePoints(){ const cx=canvas.width/2, cy=canvas.height/2, r=Math.min(canvas.width,canvas.height)*0.3, pts=[]; for(let i=0;i<=100;i++){ const a=i/100*Math.PI*2; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); } return pts; }
-    function squarePoints(){ const s=Math.min(canvas.width,canvas.height)*0.6, x=(canvas.width-s)/2, y=(canvas.height-s)/2; return [{x,y},{x:x+s,y},{x:x+s,y:y+s},{x,y:y+s},{x,y}]; }
-    function triPoints(){ const s=Math.min(canvas.width,canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2; return [{x:cx,y:cy-s/2},{x:cx-s/2,y:cy+s/2},{x:cx+s/2,y:cy+s/2},{x:cx,y:cy-s/2}]; }
-    function rectPoints(){ const w=Math.min(canvas.width,canvas.height)*0.7, h=w*0.6, x=(canvas.width-w)/2, y=(canvas.height-h)/2; return [{x,y},{x:x+w,y},{x:x+w,y:y+h},{x,y:y+h},{x,y}]; }
-    function diamondPoints(){ const s=Math.min(canvas.width,canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2; return [{x:cx,y:cy-s/2},{x:cx+s/2,y:cy},{x:cx,y:cy+s/2},{x:cx-s/2,y:cy},{x:cx,y:cy-s/2}]; }
-    function hexPoints(){ const cx=canvas.width/2, cy=canvas.height/2, r=Math.min(canvas.width,canvas.height)*0.3, pts=[]; for(let i=0;i<6;i++){ const a=i/6*Math.PI*2; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); } pts.push(pts[0]); return pts; }
-    function starPoints(){ const cx=canvas.width/2, cy=canvas.height/2, R=Math.min(canvas.width,canvas.height)*0.3, r=R*0.4, pts=[]; for(let i=0;i<10;i++){ const a=i/10*Math.PI*2-Math.PI/2; const rad=(i%2===0)?R:r; pts.push({x:cx+Math.cos(a)*rad,y:cy+Math.sin(a)*rad}); } pts.push(pts[0]); return pts; }
+/* Difficulty -> coverage target */
+function applyDifficulty(){
+  const d = diffSelect.value;
+  if(d==='easy') requiredCov = 70;
+  else if(d==='hard') requiredCov = 95;
+  else requiredCov = 85;
+  covHint.textContent = 'Coverage target: ' + requiredCov + '%';
+}
+diffSelect.addEventListener('change', applyDifficulty);
+applyDifficulty();
 
-    const shapeGenerators = {
-      easy: { circle:circlePoints, square:squarePoints, triangle:triPoints, rectangle:rectPoints, diamond:diamondPoints },
-      medium: { hexagon:hexPoints, star:starPoints, oval:circlePoints, rhombus:diamondPoints },
-      hard: { house:rectPoints, car:rectPoints, tree:triPoints, boat:triPoints, airplane:triPoints } // placeholders
-    };
+/* Resize canvases square and regenerate if needed */
+function resizeStage(){
+  const wrap = hidden.parentElement.getBoundingClientRect();
+  const size = Math.floor(wrap.width);
+  [hidden,mask,guide,fx].forEach(c=>{ c.width = Math.floor(size*DPR); c.height = Math.floor(size*DPR); c.style.width=size+'px'; c.style.height=size+'px'; });
+  if(playing && !isCompleting){ newShape(); } else { drawIdleGuide(); }
+}
+new ResizeObserver(resizeStage).observe(hidden.parentElement);
 
-    function drawGuidePath(){
-      guideCtx.clearRect(0,0,guideCanvas.width,guideCanvas.height);
-      guideCtx.strokeStyle='rgba(111,211,245,.95)'; guideCtx.lineWidth=3; guideCtx.setLineDash([6,10]);
-      guideCtx.beginPath(); guideCtx.moveTo(pathPoints[0].x, pathPoints[0].y);
-      for(let i=1;i<pathPoints.length;i++){ guideCtx.lineTo(pathPoints[i].x, pathPoints[i].y); }
-      guideCtx.stroke(); guideCtx.setLineDash([]);
-    }
+/* Idle guide prompt for contrast debugging */
+function drawIdleGuide(){
+  gg.clearRect(0,0,guide.width,guide.height);
+  gg.save();
+  gg.scale(DPR,DPR);
+  gg.fillStyle='rgba(255,255,255,.06)';
+  gg.fillRect(0,0,guide.width/DPR,guide.height/DPR);
+  gg.fillStyle='rgba(255,255,255,.9)';
+  gg.font='600 16px system-ui, sans-serif';
+  gg.textAlign='center';
+  gg.fillText('Set duration, pick difficulty, then Start', guide.width/(2*DPR), guide.height/(2*DPR));
+  gg.restore();
+}
 
-    function drawHiddenImage(){
-      hiddenCtx.clearRect(0,0,hiddenImage.width,hiddenImage.height);
-      const grad = hiddenCtx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width/2);
-      const hue = Math.random()*360; grad.addColorStop(0, `hsl(${hue},70%,60%)`); grad.addColorStop(1, `hsl(${hue+30},80%,40%)`);
-      hiddenCtx.beginPath(); hiddenCtx.moveTo(pathPoints[0].x,pathPoints[0].y); for(let i=1;i<pathPoints.length;i++){ hiddenCtx.lineTo(pathPoints[i].x, pathPoints[i].y); }
-      hiddenCtx.fillStyle=grad; hiddenCtx.fill();
-      // Mask starts clear; drawing adds white to reveal
-      maskCtx.clearRect(0,0,maskCanvas.width,maskCanvas.height);
-    }
+/* Shapes (points around path) */
+function circle(){ const cx=hidden.width/2, cy=hidden.height/2, r=Math.min(hidden.width,hidden.height)*0.32; const pts=[]; for(let i=0;i<=160;i++){ const a=i/160*Math.PI*2; pts.push({x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r}); } return pts; }
+function square(){ const s=Math.min(hidden.width,hidden.height)*0.64, x=(hidden.width-s)/2, y=(hidden.height-s)/2; return [{x,y},{x:x+s,y},{x:x+s,y:y+s},{x,y:y+s},{x,y}]; }
+function tri(){ const s=Math.min(hidden.width,hidden.height)*0.64, cx=hidden.width/2, cy=hidden.height/2; return [{x:cx,y:cy-s/2},{x:cx-s/2,y:cy+s/2},{x:cx+s/2,y:cy+s/2},{x:cx,y:cy-s/2}]; }
+function diamond(){ const s=Math.min(hidden.width,hidden.height)*0.64, cx=hidden.width/2, cy=hidden.height/2; return [{x:cx,y:cy-s/2},{x:cx+s/2,y:cy},{x:cx,y:cy+s/2},{x:cx-s/2,y:cy},{x:cx,y:cy-s/2}]; }
+function hex(){ const cx=hidden.width/2, cy=hidden.height/2, r=Math.min(hidden.width,hidden.height)*0.32, pts=[]; for(let i=0;i<6;i++){ const a=i/6*Math.PI*2; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); } pts.push(pts[0]); return pts; }
+const SHAPES = [circle, square, tri, diamond, hex];
 
-    function generateCoveragePoints(){
-      coveragePoints.clear(); coveredPoints.clear();
-      for(let i=0;i<pathPoints.length-1;i++){ const p1=pathPoints[i], p2=pathPoints[i+1]; const dist=Math.hypot(p2.x-p1.x, p2.y-p1.y); const steps=Math.ceil(dist/5);
-        for(let j=0;j<=steps;j++){ const t=j/steps; const x=Math.round(p1.x+(p2.x-p1.x)*t); const y=Math.round(p1.y+(p2.y-p1.y)*t); coveragePoints.add(`${x},${y}`); } }
-    }
+/* Guide drawing with high contrast (halo + white dashed) */
+function drawGuide(){
+  gg.clearRect(0,0,guide.width,guide.height);
+  gg.save();
+  gg.lineCap='round'; gg.lineJoin='round';
+  // Halo stroke first
+  gg.strokeStyle='rgba(0,0,0,.85)'; gg.lineWidth=8*DPR; gg.setLineDash([]);
+  gg.beginPath(); gg.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gg.lineTo(path[i].x, path[i].y); gg.stroke();
+  // White dashed on top
+  gg.strokeStyle='rgba(255,255,255,.98)'; gg.lineWidth=4*DPR; gg.setLineDash([14*DPR, 10*DPR]);
+  gg.beginPath(); gg.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gg.lineTo(path[i].x, path[i].y); gg.stroke();
+  gg.restore();
+}
 
-    function updateCanvas(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(hiddenImage,0,0);
-      ctx.save(); ctx.globalCompositeOperation='destination-in'; ctx.drawImage(maskCanvas,0,0); ctx.restore();
-    }
+/* Hidden image fill (vivid gradient) and clear mask */
+function drawHidden(){
+  gh.clearRect(0,0,hidden.width,hidden.height);
+  const grd = gh.createRadialGradient(hidden.width/2, hidden.height/2, 0, hidden.width/2, hidden.height/2, hidden.width/2);
+  const hue = Math.floor(Math.random()*360);
+  grd.addColorStop(0, `hsl(${hue},80%,60%)`);
+  grd.addColorStop(1, `hsl(${(hue+40)%360},80%,45%)`);
+  gh.beginPath(); gh.moveTo(path[0].x, path[0].y); for(let i=1;i<path.length;i++) gh.lineTo(path[i].x, path[i].y); gh.closePath(); gh.fillStyle=grd; gh.fill();
 
-    function getPos(e){ const r=canvas.getBoundingClientRect(); const x=((e.clientX||e.pageX)-r.left)*(canvas.width/r.width); const y=((e.clientY||e.pageY)-r.top)*(canvas.height/r.height); return {x,y}; }
-    function startDrawing(e){ if(!playing||isCompleting) return; isDrawing=true; drawStroke(e); }
-    function moveDrawing(e){ if(!isDrawing||!playing||isCompleting) return; drawStroke(e); }
-    function stopDrawing(){ isDrawing=false; }
-    function drawStroke(e){
-      const {x,y}=getPos(e);
-      maskCtx.globalCompositeOperation='source-over';
-      maskCtx.fillStyle='white'; maskCtx.beginPath(); maskCtx.arc(x, y, brushSize/2, 0, Math.PI*2); maskCtx.fill();
-      checkCoverage({x,y}); updateCanvas();
-    }
+  // Mask starts transparent; we'll paint white where user draws to REVEAL
+  gm.clearRect(0,0,mask.width,mask.height);
+}
 
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', moveDrawing);
-    addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); startDrawing(e.touches[0]); }, {passive:false});
-    canvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); moveDrawing(e.touches[0]); }, {passive:false});
-    canvas.addEventListener('touchend', (e)=>{ e.preventDefault(); stopDrawing(); }, {passive:false});
+/* Coverage sampling points along the path */
+function buildCoverage(){
+  coverPts.clear(); covered.clear();
+  for(let i=0;i<path.length-1;i++){
+    const p1=path[i], p2=path[i+1]; const dist=Math.hypot(p2.x-p1.x, p2.y-p1.y); const steps=Math.ceil(dist/(6*DPR));
+    for(let j=0;j<=steps;j++){ const t=j/steps; const x=Math.round(p1.x+(p2.x-p1.x)*t), y=Math.round(p1.y+(p2.y-p1.y)*t); coverPts.add(x+','+y); }
+  }
+}
 
-    function checkCoverage(pos){
-      const r = brushSize/2;
-      for(let dx=-r; dx<=r; dx++){
-        for(let dy=-r; dy<=r; dy++){
-          if(dx*dx+dy*dy<=r*r){
-            const key = `${Math.round(pos.x+dx)},${Math.round(pos.y+dy)}`;
-            if(coveragePoints.has(key)) coveredPoints.add(key);
-          }
-        }
+/* Composite hidden with mask (destination-in keeps only masked areas) */
+function updateComposite(){
+  const ctx = hidden.getContext('2d');
+  // Draw hidden already present, now apply mask to fx canvas then copy back
+  const tmp = document.createElement('canvas'); tmp.width=hidden.width; tmp.height=hidden.height;
+  const gt = tmp.getContext('2d');
+  gt.drawImage(hidden,0,0);
+  gt.globalCompositeOperation='destination-in';
+  gt.drawImage(mask,0,0);
+  // Blit to fx for display, leaving guide above
+  gx.clearRect(0,0,fx.width,fx.height);
+  gx.drawImage(tmp,0,0);
+}
+
+/* Drawing handlers */
+function pos(e){ const r=fx.getBoundingClientRect(); const x=((e.clientX||e.pageX)-r.left)*DPR; const y=((e.clientY||e.pageY)-r.top)*DPR; return {x,y}; }
+function down(e){ if(!playing||isCompleting) return; isDrawing=true; draw(e); }
+function move(e){ if(!isDrawing||!playing||isCompleting) return; draw(e); }
+function up(){ isDrawing=false; }
+function draw(e){
+  const {x,y}=pos(e);
+  gm.globalCompositeOperation='source-over';
+  gm.fillStyle='white'; gm.beginPath(); gm.arc(x, y, brush*DPR/2, 0, Math.PI*2); gm.fill();
+  // Coverage
+  const r = Math.round(brush*DPR/2);
+  for(let dx=-r; dx<=r; dx++){
+    for(let dy=-r; dy<=r; dy++){
+      if(dx*dx+dy*dy<=r*r){
+        const key=(Math.round(x+dx))+','+(Math.round(y+dy));
+        if(coverPts.has(key)) covered.add(key);
       }
-      const cov = Math.min(100, Math.round( (coveredPoints.size / Math.max(1, coveragePoints.size)) * 100 ));
-      bestCoverage = Math.max(bestCoverage, cov);
-      coverageChip.textContent = cov + '%'; coverageEl.textContent = cov + '%';
-      if(cov>=requiredCoverage && !isCompleting){ completeShape(cov); }
     }
+  }
+  const cov = Math.min(100, Math.round((covered.size/Math.max(1,coverPts.size))*100));
+  bestCov = Math.max(bestCov, cov);
+  covNowV.textContent = cov + '%';
+  updateComposite();
+  if(cov>=requiredCov && !isCompleting){ complete(cov); }
+}
+fx.addEventListener('mousedown', down);
+fx.addEventListener('mousemove', move);
+addEventListener('mouseup', up);
+fx.addEventListener('touchstart', (e)=>{ e.preventDefault(); down(e.touches[0]); }, {passive:false});
+fx.addEventListener('touchmove', (e)=>{ e.preventDefault(); move(e.touches[0]); }, {passive:false});
+fx.addEventListener('touchend', (e)=>{ e.preventDefault(); up(); }, {passive:false});
 
-    function completeShape(cov){
-      isCompleting=true; shapesCompleted++; shapesDoneEl.textContent=String(shapesCompleted); shapesCompletedEl.textContent=String(shapesCompleted);
-      if(cov>=98) { perfectTraces++; completionsEl.textContent=String(perfectTraces); }
-      completionCtx.clearRect(0,0,completionCanvas.width,completionCanvas.height);
-      completionCtx.fillStyle='rgba(255,255,255,.15)'; completionCtx.fillRect(0,0,completionCanvas.width,completionCanvas.height);
-      setTimeout(()=>{ completionCtx.clearRect(0,0,completionCanvas.width,completionCanvas.height); isCompleting=false; if(playing) loadNewShape(); }, 300);
-    }
+/* Shape cycle */
+function newShape(){
+  const gen = SHAPES[Math.floor(Math.random()*SHAPES.length)];
+  path = gen();
+  drawGuide();
+  drawHidden();
+  buildCoverage();
+  updateComposite();
+}
 
-    function loadNewShape(){
-      const opts = Object.keys(shapeGenerators[difficulty]);
-      const key = opts[Math.floor(Math.random()*opts.length)];
-      pathPoints = shapeGenerators[difficulty][key]();
-      drawGuidePath();
-      drawHiddenImage();
-      generateCoveragePoints();
-      updateCanvas();
-    }
+/* Session flow */
+function start(){
+  const mins = Math.max(0.5, Math.min(30, Number(durInput.value||2)));
+  totalMs = Math.round(mins*60*1000);
+  remainingMs = totalMs;
+  score=0; shapesDone=0; bestCov=0; scoreV.textContent='0'; doneV.textContent='0'; covNowV.textContent='0%'; timeV.textContent=fmt(remainingMs);
+  rightCol.classList.remove('hidden'); document.body.classList.add('playing');
+  playing=true; paused=false; startTs=performance.now();
+  resizeStage(); newShape(); loop();
+}
+function loop(){
+  if(!playing){ cancelAnimationFrame(raf); return; }
+  raf = requestAnimationFrame(loop);
+  if(paused) return;
+  const now = performance.now();
+  remainingMs = Math.max(0, totalMs - (now - startTs));
+  timeV.textContent = fmt(remainingMs);
+  if(remainingMs<=0){ end(); }
+}
+function pause(){ if(!playing) return; paused=!paused; if(!paused){ startTs = performance.now() - (totalMs - remainingMs); } }
+function exit(){ if(!playing) return; playing=false; paused=false; document.body.classList.remove('playing'); rightCol.classList.add('hidden'); cancelAnimationFrame(raf); }
+function end(){
+  playing=false; paused=false; document.body.classList.remove('playing');
+  cancelAnimationFrame(raf);
+  document.getElementById('finalShapes').textContent = String(shapesDone);
+  document.getElementById('finalCov').textContent = Math.round(bestCov) + '%';
+  donePane.classList.remove('hidden');
+}
+function complete(cov){
+  isCompleting=true; shapesDone++; doneV.textContent=String(shapesDone);
+  // simple flash
+  gx.save(); gx.fillStyle='rgba(255,255,255,.16)'; gx.fillRect(0,0,fx.width,fx.height); gx.restore();
+  setTimeout(()=>{ gx.clearRect(0,0,fx.width,fx.height); isCompleting=false; if(playing) newShape(); }, 200);
+}
 
-    // Session lifecycle
-    function startSession(){
-      // Read final duration from custom input (keeps in sync with pills)
-      const mins = Math.max(1, Math.min(30, Number(customMins.value||2)));
-      chosenLen = mins*60*1000;
-      beginSession();
-    }
-    function beginSession(){
-      score=0; shapesCompleted=0; perfectTraces=0; bestCoverage=0;
-      shapesDoneEl.textContent='0'; coverageChip.textContent='0%'; shapesCompletedEl.textContent='0'; completionsEl.textContent='0'; coverageEl.textContent='0%';
-      totalMs = chosenLen; remainingMs = totalMs; timeChip.textContent=fmtTime(remainingMs); timeLeftEl.textContent=fmtTime(remainingMs);
-      document.body.classList.add('playing'); statsPanel.classList.remove('hidden');
-      resizeCanvases(); playing=true; paused=false; startTs=performance.now(); loop(); loadNewShape();
-    }
-    function loop(){
-      if(!playing){ cancelAnimationFrame(rafId); return; }
-      rafId = requestAnimationFrame(loop);
-      if(paused) return;
-      const now = performance.now(); const elapsed = now - startTs; remainingMs = Math.max(0, totalMs - elapsed);
-      timeChip.textContent = fmtTime(remainingMs); timeLeftEl.textContent = fmtTime(remainingMs);
-      if(remainingMs<=0){ endSession(); }
-    }
-    function pauseSession(){
-      if(!playing) return;
-      paused=!paused; pauseBtn.setAttribute('aria-pressed', String(paused));
-      if(!paused){ startTs = performance.now() - (totalMs - remainingMs); }
-    }
-    function exitSession(){
-      if(!playing) return;
-      playing=false; paused=false; document.body.classList.remove('playing'); statsPanel.classList.add('hidden'); cancelAnimationFrame(rafId);
-    }
-    function endSession(){
-      playing=false; paused=false; document.body.classList.remove('playing'); statsPanel.classList.add('hidden'); cancelAnimationFrame(rafId);
-      finalShapes.textContent=String(shapesCompleted); finalPerfect.textContent=String(perfectTraces); finalCoverage.textContent=Math.round(bestCoverage)+'%';
-      resultsDialog.showModal();
-    }
+/* Buttons & keys */
+startBtn.addEventListener('click', start);
+pauseBtn.addEventListener('click', pause);
+exitBtn.addEventListener('click', exit);
+againBtn.addEventListener('click', ()=>{ donePane.classList.add('hidden'); start(); });
+closeBtn.addEventListener('click', ()=> donePane.classList.add('hidden'));
+addEventListener('keydown', (e)=>{ if(!playing) return; if(e.key===' '){ e.preventDefault(); pause(); } if(e.key==='Escape'){ e.preventDefault(); exit(); }});
 
-    // Buttons & keys
-    startBtn.addEventListener('click', startSession);
-    pauseBtn.addEventListener('click', pauseSession);
-    exitBtn.addEventListener('click', exitSession);
-    newSessionBtn.addEventListener('click', ()=>{ resultsDialog.close(); startSession(); });
-    closeDialogBtn.addEventListener('click', ()=> resultsDialog.close());
-    addEventListener('keydown', (e)=>{ if(!playing) return; if(e.key===' '){ e.preventDefault(); pauseSession(); } if(e.key==='Escape'){ e.preventDefault(); exitSession(); }});
-
-    // Init
-    requestAnimationFrame(resizeCanvases);
-  </script>
+/* Init */
+drawIdleGuide();
+</script>
 </body>
 </html>
