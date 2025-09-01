@@ -4,175 +4,136 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Rhythm Reach — Comet Look (Immersive)</title>
-  <meta name="description" content="Rhythm Reach with Comet-style settings and immersive start." />
-
-  <!-- Base href for consistent imports -->
-  <base href="/">
-
-  <!-- Global styles -->
+  <base href="/" />
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
-
   <style>
-    dialog::backdrop{background:rgba(0,0,0,.5);}
-    :root {
-      --hud-height: 64px;
-      --pad-gap: 12px;
-      --pad-radius: 14px;
-    }
+    /* Backdrop for summary dialog */
+    dialog::backdrop { background: rgba(0,0,0,.5); }
+
+    /* Basic app background */
     body {
-      background: radial-gradient(1200px 800px at 10% 10%, rgba(255,255,255,0.05), transparent 60%),
-                  radial-gradient(1000px 600px at 90% 30%, rgba(255,255,255,0.06), transparent 60%),
-                  var(--bg, #0b1020);
+      background:
+        radial-gradient(1200px 800px at 10% 10%, rgba(255,255,255,0.05), transparent 60%),
+        radial-gradient(1000px 600px at 90% 30%, rgba(255,255,255,0.06), transparent 60%),
+        #0b1020;
       min-height: 100svh;
-      overflow: hidden;
+      overflow: hidden; /* prevent double-scrolling in immersive play */
     }
+
+    /* Screen switching */
     .screen { display: none; }
     .screen.active { display: block; }
 
+    /* Header */
     header.site-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
+      position: sticky; top: 0; z-index: 30;
       backdrop-filter: blur(6px);
-      background: color-mix(in oklab, var(--panel-bg, rgba(255,255,255,0.06)) 90%, transparent);
+      background: rgba(255,255,255,0.06);
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
     header .wrap {
       display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem;
     }
     .home-link { text-decoration: none; }
-    .home-link .chev { margin-right: .25rem; }
-    .title { font-size: clamp(18px, 2.2vw, 22px); font-weight: 600; }
+    .title { font-size: 20px; font-weight: 600; }
 
+    /* Settings shell */
     .settings-wrap {
-      display: grid;
-      grid-template-columns: minmax(280px, 360px) 1fr;
-      gap: 16px;
-      padding: 16px;
-      max-width: 1200px;
-      margin: 0 auto;
+      display: grid; grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 16px; padding: 16px; max-width: 1200px; margin: 0 auto;
     }
     @media (max-width: 860px) {
       .settings-wrap { grid-template-columns: 1fr; }
     }
     .panel {
       border: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 10px 24px rgba(0,0,0,.35);
+      background: rgba(255,255,255,.04);
+      border-radius: 16px; padding: 16px;
     }
-    .panel h2 { margin: 0 0 10px 0; font-size: 1.1rem; }
-    .panel p { opacity: .9; }
     .fieldset { display: grid; gap: 12px; }
     .field { display: grid; gap: 6px; }
-    .field label { font-weight: 600; font-size: .95rem; }
-    .field .hint { font-size: .85rem; opacity: .8; }
 
     .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center;
       padding: .7rem 1rem; border-radius: 999px;
       border: 1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
-      cursor: pointer; user-select: none; text-decoration: none;
-      font-weight: 600;
+      background: rgba(255,255,255,.08);
+      cursor: pointer; font-weight: 600;
     }
-    .btn:hover { filter: brightness(1.05); }
-    .btn-primary {
-      border-color: color-mix(in oklab, var(--brand-blue, #8ab4f8) 60%, white 0%);
-      background: linear-gradient(180deg, color-mix(in oklab, var(--brand-blue, #8ab4f8) 24%, transparent), rgba(255,255,255,.02));
-    }
+    .btn-primary { background: rgba(138,180,248,.2); }
     .btn-ghost { background: transparent; }
 
+    /* Game screen container — IMPORTANT: do NOT force display here */
     #gameScreen {
       position: fixed; inset: 0;
-      display: grid; grid-template-rows: var(--hud-height) 1fr;
-      background: inherit;
-      z-index: 100;
+      grid-template-rows: 64px 1fr;
+      background: inherit; z-index: 100;
     }
+    /* Only display the game grid when the game screen is active */
+    .screen.active#gameScreen { display: grid; }
+
+    /* HUD */
     .hud {
       display: grid; grid-template-columns: 1fr auto; align-items: center;
       padding: 8px 12px; gap: 12px;
       border-bottom: 1px solid rgba(255,255,255,.08);
-      background: color-mix(in oklab, rgba(10,16,32,0.6) 70%, transparent);
+      background: rgba(10,16,32,.6);
       backdrop-filter: blur(6px);
+      font-variant-numeric: tabular-nums;
     }
-    .stats { display: flex; gap: 16px; align-items: center; font-variant-numeric: tabular-nums; }
-    .stat { opacity: .95; }
-    .hud-actions { display: flex; gap: 10px; }
+    .stats { display: flex; gap: 16px; align-items: center; }
 
-    .play-area {
-      position: relative; display: grid; place-items: center;
-      padding: 14px;
-    }
+    /* Play area */
+    .play-area { position: relative; display: grid; place-items: center; padding: 14px; }
     .grid9 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--pad-gap);
-      width: min(90vw, 720px);
-      aspect-ratio: 1 / 1;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; width: min(90vw, 720px); aspect-ratio: 1 / 1;
       touch-action: manipulation;
     }
     .pad {
-      border-radius: var(--pad-radius);
-      border: 1px solid rgba(255,255,255,.1);
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      box-shadow: inset 0 2px 8px rgba(0,0,0,.3);
+      border-radius: 14px; border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05);
       display: grid; place-items: center;
-      font-size: clamp(18px, 5.2vw, 32px);
-      font-weight: 700;
-      user-select: none;
+      font-size: 28px; font-weight: 700;
       -webkit-tap-highlight-color: transparent;
-      position: relative;
+      user-select: none;
     }
-    .pad:active { filter: brightness(1.15); }
     .pad.show {
-      outline: 3px solid color-mix(in oklab, var(--brand-aqua, #80e6ff) 70%, white 0%);
-      box-shadow: 0 0 22px rgba(128,230,255,.45), inset 0 2px 10px rgba(0,0,0,.35);
+      outline: 3px solid #80e6ff;
+      box-shadow: 0 0 22px rgba(128,230,255,.45);
     }
+
+    /* Pause overlay */
     .pause-overlay {
       position: absolute; inset: 0; display: grid; place-items: center;
-      background: color-mix(in oklab, #000 55%, transparent);
+      background: rgba(0,0,0,.55);
       opacity: 0; pointer-events: none; transition: opacity .2s ease;
     }
     .pause-overlay.active { opacity: 1; pointer-events: auto; }
-    .pause-card {
-      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 16px; padding: 18px; text-align: center; min-width: 260px;
-      box-shadow: 0 14px 24px rgba(0,0,0,.4);
-    }
-    .sr-only {
-      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-      overflow: hidden; clip: rect(0,0,0,0); border: 0;
-    }
-    .size-large .grid9 { width: min(92vw, 820px); }
-    .size-medium .grid9 { width: min(90vw, 680px); }
-    .size-small .grid9 { width: min(88vw, 560px); }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="home-link btn btn-ghost" href="/" aria-label="Back to home"><span class="chev">←</span> Home</a>
+      <a class="home-link btn btn-ghost" href="/">← Home</a>
       <div class="title">Rhythm Reach</div>
       <div style="margin-left:auto;opacity:.8;font-size:.9rem">Comet-style settings • Immersive start</div>
     </div>
   </header>
 
-  <!-- SETTINGS SCREEN -->
-  <main id="settingsScreen" class="screen active">
+  <!-- SETTINGS (visible by default) -->
+  <main id="settingsScreen" class="screen active" aria-hidden="false">
     <div class="settings-wrap">
-      <section class="panel" aria-labelledby="settings-title">
-        <h2 id="settings-title">Settings</h2>
+      <section class="panel">
+        <h2>Settings</h2>
         <div class="fieldset">
           <div class="field">
             <label for="duration">Session Duration (minutes)</label>
             <input id="duration" type="number" min="1" max="30" value="2" />
-            <div class="hint">How long the session runs.</div>
+            <small>Timer shows as mm:ss in the HUD.</small>
           </div>
           <div class="field">
             <label for="size">Comet Size</label>
@@ -202,32 +163,37 @@
         </div>
         <div class="actions">
           <button id="startBtn" class="btn btn-primary" type="button">Start</button>
-          <button id="pauseBtnSettings" class="btn btn-ghost" type="button" disabled>Pause</button>
-          <button id="restartBtnSettings" class="btn btn-ghost" type="button" disabled>Restart</button>
         </div>
       </section>
-      <section class="panel" aria-labelledby="howto-title">
-        <h2 id="howto-title">How to play</h2>
-        <p>Watch the pads light up in a sequence, then repeat the pattern.</p>
+
+      <section class="panel">
+        <h2>How to play</h2>
+        <p>Watch pads light up in a sequence, then repeat the pattern. Each round adds one more step. Keep a long streak and finish quickly to boost your score.</p>
+        <ul>
+          <li>Tap 1–9 (or press keys 1–9 on desktop).</li>
+          <li>Use <strong>Pause</strong> to take a break; <strong>Exit</strong> returns you to this screen.</li>
+          <li>Session ends when the timer reaches 0.</li>
+        </ul>
       </section>
     </div>
   </main>
 
-  <!-- GAME SCREEN -->
+  <!-- GAME (immersive screen) -->
   <section id="gameScreen" class="screen" aria-hidden="true">
     <div class="hud">
       <div class="stats">
-        <div class="stat">Score: <span id="score">0</span></div>
-        <div class="stat">Personal Best: <span id="best">0</span></div>
-        <div class="stat">Time: <span id="time">00:00</span></div>
+        <div>Score: <span id="score">0</span></div>
+        <div>Personal Best: <span id="best">0</span></div>
+        <div>Time: <span id="time">00:00</span></div>
       </div>
-      <div class="hud-actions">
-        <button id="pauseBtn" class="btn btn-ghost" type="button">Pause</button>
+      <div>
+        <button id="pauseBtn" class="btn btn-ghost" type="button" aria-pressed="false">Pause</button>
         <button id="exitBtn" class="btn btn-ghost" type="button">Exit</button>
       </div>
     </div>
+
     <div class="play-area size-medium" id="playArea">
-      <div class="grid9" id="grid">
+      <div class="grid9" id="grid" aria-label="Rhythm grid" role="application">
         <button class="pad" data-id="1">1</button>
         <button class="pad" data-id="2">2</button>
         <button class="pad" data-id="3">3</button>
@@ -238,63 +204,247 @@
         <button class="pad" data-id="8">8</button>
         <button class="pad" data-id="9">9</button>
       </div>
-      <div id="pauseOverlay" class="pause-overlay"><div class="pause-card"><h3>Paused</h3><button id="resumeBtn" class="btn btn-primary">Resume</button></div></div>
+
+      <div id="pauseOverlay" class="pause-overlay" aria-hidden="true">
+        <div class="panel" style="text-align:center;min-width:260px">
+          <h3>Paused</h3>
+          <p>Tap Resume to continue.</p>
+          <div class="actions" style="justify-content:center;">
+            <button id="resumeBtn" class="btn btn-primary" type="button">Resume</button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <dialog id="endModal">
-    <form method="dialog" class="panel">
-      <h2>Session Complete</h2>
-      <div id="finalScore">Final Score: 0</div>
-      <button id="newSessionBtn" class="btn btn-primary">Start New Session</button>
-      <button id="closeSummaryBtn" class="btn btn-ghost">Close</button>
+  <!-- End Summary -->
+  <dialog id="endModal" aria-labelledby="endTitle">
+    <form method="dialog" class="panel" style="min-width:min(520px,92vw)">
+      <h2 id="endTitle">Session Complete</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-block:10px;">
+        <div class="field"><label>Final Score</label><div id="finalScore"><strong>0</strong></div></div>
+        <div class="field"><label>Level Reached</label><div id="finalLevel"><strong>0</strong></div></div>
+        <div class="field"><label>Best Streak</label><div id="finalStreak"><strong>0</strong></div></div>
+        <div class="field"><label>Time Played</label><div id="finalTime"><strong>00:00</strong></div></div>
+      </div>
+      <div class="actions" style="justify-content:flex-end;">
+        <button id="newSessionBtn" class="btn btn-primary">Start New Session</button>
+        <button id="closeSummaryBtn" class="btn btn-ghost">Close</button>
+      </div>
     </form>
   </dialog>
 
   <script>
-    const qs=(s,e=document)=>e.querySelector(s);
-    const qsa=(s,e=document)=>[...e.querySelectorAll(s)];
-    function fmtTime(ms){const t=Math.max(0,Math.floor(ms/1000));const m=String(Math.floor(t/60)).padStart(2,'0');const s=String(t%60).padStart(2,'0');return m+':'+s;}
+    // ===== Helpers =====
+    const qs  = (s, el=document) => el.querySelector(s);
+    const qsa = (s, el=document) => [...el.querySelectorAll(s)];
+    const clamp = (n,a,b) => Math.max(a, Math.min(b, n));
+    const fmtTime = (ms) => {
+      const total = Math.max(0, Math.floor(ms/1000));
+      const m = String(Math.floor(total/60)).padStart(2,'0');
+      const s = String(total % 60).padStart(2,'0');
+      return `${m}:${s}`;
+    };
 
-    const screens={settings:qs('#settingsScreen'),game:qs('#gameScreen')};
-    function showScreen(which){
-      Object.values(screens).forEach(s=>s.classList.remove('active'));
-      if(which==='settings'){
+    // ===== Elements =====
+    const screens = { settings: qs('#settingsScreen'), game: qs('#gameScreen') };
+    const startBtn = qs('#startBtn');
+    const exitBtn  = qs('#exitBtn');
+    const pauseBtn = qs('#pauseBtn');
+    const resumeBtn = qs('#resumeBtn');
+    const pauseOverlay = qs('#pauseOverlay');
+
+    const durationEl = qs('#duration');
+    const sizeEl = qs('#size');
+    const speedEl = qs('#speed');
+    const spawnEl = qs('#spawn');
+    const playArea = qs('#playArea');
+
+    const scoreEl = qs('#score');
+    const bestEl  = qs('#best');
+    const timeEl  = qs('#time');
+
+    const gridEl  = qs('#grid');
+    const pads    = qsa('.pad', gridEl);
+
+    const endModal = qs('#endModal');
+    const finalScore = qs('#finalScore');
+    const finalLevel = qs('#finalLevel');
+    const finalStreak = qs('#finalStreak');
+    const finalTime = qs('#finalTime');
+    const newSessionBtn = qs('#newSessionBtn');
+    const closeSummaryBtn = qs('#closeSummaryBtn');
+
+    // ===== State =====
+    let running = false;
+    let paused  = false;
+    let level = 0;
+    let score = 0;
+    let best = Number(localStorage.getItem('RR_best') || 0);
+    bestEl.textContent = String(best);
+
+    let sessionEndAt = 0;
+    let timerHandle = null;
+
+    // ===== Screen switching (with Start guard reset) =====
+    function showScreen(which) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      if (which === 'settings') {
         screens.settings.classList.add('active');
-        screens.settings.removeAttribute('aria-hidden');
-        screens.game.setAttribute('aria-hidden','true');
-        startBtn.disabled=false; // FIX: always re-enable Start here
-      }else{
+        screens.settings.setAttribute('aria-hidden', 'false');
+        screens.game.setAttribute('aria-hidden', 'true');
+        startBtn.disabled = false; // ensure Start is usable whenever settings show
+      } else {
         screens.game.classList.add('active');
-        screens.game.removeAttribute('aria-hidden');
-        screens.settings.setAttribute('aria-hidden','true');
+        screens.game.setAttribute('aria-hidden', 'false');
+        screens.settings.setAttribute('aria-hidden', 'true');
       }
     }
 
-    const startBtn=qs('#startBtn');
-    const scoreEl=qs('#score'); const bestEl=qs('#best'); const timeEl=qs('#time');
-    const pauseBtn=qs('#pauseBtn'); const exitBtn=qs('#exitBtn'); const resumeBtn=qs('#resumeBtn');
-    const endModal=qs('#endModal'); const finalScore=qs('#finalScore');
-    let running=false,score=0,best=0,sessionEndAt=0,timeTimer;
-
-    function updateTimer(){const r=sessionEndAt-Date.now();timeEl.textContent=fmtTime(r);if(r<=0){clearInterval(timeTimer);endSession();}}
-    async function startSession(){
-      running=true;score=0;scoreEl.textContent='0';
-      sessionEndAt=Date.now()+2*60*1000;
-      timeTimer=setInterval(updateTimer,250);
-      showScreen('game');
-      try{await document.documentElement.requestFullscreen();}catch{}
+    // ===== Fullscreen helpers =====
+    async function goFullscreen() {
+      try {
+        await document.documentElement.requestFullscreen();
+        if (screen.orientation && screen.orientation.lock) {
+          try { await screen.orientation.lock('portrait-primary'); } catch {}
+        }
+      } catch {}
     }
-    function endSession(){running=false;clearInterval(timeTimer);finalScore.textContent='Final Score: '+score;try{endModal.showModal();}catch{alert('Final Score: '+score);exitToSettings();}}
-    function exitToSettings(){running=false;clearInterval(timeTimer);endModal.close?.();showScreen('settings');}
-    function pauseToggle(){if(!running)return;}
+    async function exitFullscreen() {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+      } catch {}
+    }
 
-    startBtn.addEventListener('click',startSession);
-    exitBtn.addEventListener('click',exitToSettings);
-    resumeBtn.addEventListener('click',()=>pauseToggle(false));
-    document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&screens.game.classList.contains('active'))exitToSettings();});
-    newSessionBtn.addEventListener('click',()=>{endModal.close();startSession();});
-    closeSummaryBtn.addEventListener('click',()=>{endModal.close();exitToSettings();});
+    // ===== Timer =====
+    function tickTimer() {
+      const remaining = sessionEndAt - Date.now();
+      timeEl.textContent = fmtTime(remaining);
+      if (remaining <= 0) {
+        clearInterval(timerHandle);
+        endSession();
+      }
+    }
+
+    // ===== Game flow =====
+    function resetGameState() {
+      running = false;
+      paused = false;
+      level = 0;
+      score = 0;
+      scoreEl.textContent = '0';
+      timeEl.textContent = '00:00';
+      pauseOverlay.classList.remove('active');
+      pauseOverlay.setAttribute('aria-hidden','true');
+      pauseBtn.setAttribute('aria-pressed','false');
+    }
+
+    function applySizeClass(size) {
+      playArea.classList.remove('size-large','size-medium','size-small');
+      playArea.classList.add(`size-${size}`);
+    }
+
+    async function startSession() {
+      if (startBtn.disabled) return;
+      startBtn.disabled = true;
+
+      // read settings
+      const mins = clamp(parseInt(durationEl.value || '2', 10), 1, 30);
+      applySizeClass(sizeEl.value);
+
+      resetGameState();
+      running = true;
+
+      // switch to game screen and go immersive
+      showScreen('game');
+      await goFullscreen();
+
+      // start countdown
+      sessionEndAt = Date.now() + mins * 60 * 1000;
+      timerHandle = setInterval(tickTimer, 250);
+      tickTimer();
+
+      // (Your sequence logic would start here; this file focuses on UI/flow)
+    }
+
+    function endSession() {
+      running = false;
+      paused = false;
+      clearInterval(timerHandle);
+
+      // Update personal best
+      if (score > best) {
+        best = score;
+        localStorage.setItem('RR_best', String(best));
+        bestEl.textContent = String(best);
+      }
+
+      // Fill summary
+      finalScore.innerHTML = `<strong>${score}</strong>`;
+      finalLevel.innerHTML = `<strong>${level}</strong>`;
+      finalStreak.innerHTML = `<strong>${Math.max(0, level - 1)}</strong>`;
+      const playedMs = Math.max(0, (parseInt(durationEl.value||'2',10)*60*1000) - Math.max(0, sessionEndAt - Date.now()));
+      finalTime.innerHTML = `<strong>${fmtTime(playedMs)}</strong>`;
+
+      // Show modal with fallback
+      try { endModal.showModal(); } catch {
+        alert(`Session Complete\nScore: ${score}\nLevel: ${level}`);
+        exitToSettings();
+      }
+    }
+
+    function pauseToggle(force) {
+      if (!running) return;
+      paused = (typeof force === 'boolean') ? force : !paused;
+      pauseOverlay.classList.toggle('active', paused);
+      pauseOverlay.setAttribute('aria-hidden', String(!paused));
+      pauseBtn.setAttribute('aria-pressed', String(paused));
+    }
+
+    async function exitToSettings() {
+      running = false;
+      paused = false;
+      clearInterval(timerHandle);
+      try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch {}
+      await exitFullscreen();
+      endModal.close?.();
+      showScreen('settings');
+    }
+
+    // ===== Events =====
+    startBtn.addEventListener('click', startSession);
+    pauseBtn.addEventListener('click', () => pauseToggle());
+    resumeBtn.addEventListener('click', () => pauseToggle(false));
+    exitBtn.addEventListener('click', exitToSettings);
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (endModal.open) return; // ignore while summary is open
+      if (e.key === 'p' || e.key === 'P') pauseToggle();
+      else if (e.key === 'Escape') exitToSettings();
+      else if (/^[1-9]$/.test(e.key)) {
+        // placeholder for pad input; not necessary for UI fix
+      }
+    });
+
+    // End modal actions
+    newSessionBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      endModal.close();
+      startSession();
+    });
+    closeSummaryBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      endModal.close();
+      exitToSettings();
+    });
+
+    // If user dismisses fullscreen (Android back, iOS gesture), return to settings to avoid “stuck” state
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && screens.game.classList.contains('active')) {
+        exitToSettings();
+      }
+    });
   </script>
 </body>
 </html>
