@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
-  <title>Trace & Reveal — Comet-style (Fixed Reveal + Ask Duration)</title>
-  <meta name="description" content="Trace & Reveal with Comet-style flow, fixed reveal mask, numeric timer, and simplified settings." />
+  <title>Trace & Reveal — Comet-style Cohesive</title>
+  <meta name="description" content="Trace & Reveal with Comet-style settings, numeric timer, visible guide, and simplified flow." />
   <style>
     :root { --vh: 1vh; --bg:#121d33; --panel:#0b132b; --panel2:#122148; --border:rgba(255,255,255,.14); --text:#eaf6ff; --accent:#6fd3f5; }
     * { box-sizing: border-box; }
@@ -30,6 +30,7 @@
     .group { margin:14px 0; display:grid; gap:8px; }
     .muted { opacity:.8; font-size:12px; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .instr { font-size:13px; opacity:.9; background:#0b132b; border:1px dashed var(--border); border-radius:10px; padding:10px; }
     .game { position:relative; padding:12px; display:flex; flex-direction:column; align-items:center; }
     .hud { width:100%; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px; }
     .hud-left, .hud-right { display:flex; gap:8px; align-items:center; }
@@ -53,12 +54,6 @@
     body.playing .settings{ display:none; }
     body.playing .game{ min-height: calc(var(--vh) * 100 - 12px); }
     :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:10px; }
-    /* Duration dialog */
-    dialog#durationDlg { border:1px solid var(--border); background:rgba(8,15,35,.96); color:var(--text); border-radius:16px; max-width:520px; width:clamp(320px, 70vw, 520px); }
-    dialog#durationDlg::backdrop{ background:rgba(0,0,0,.55); backdrop-filter: blur(2px); }
-    .dlg-content{ padding:16px; display:grid; gap:12px; }
-    .dlg-row{ display:flex; gap:8px; flex-wrap:wrap; }
-    .dlg-actions{ display:flex; justify-content:flex-end; gap:8px; padding:0 16px 16px; }
     input[type="number"]{ width:100px; }
   </style>
 </head>
@@ -75,6 +70,25 @@
     <section class="panel settings" aria-labelledby="settingsTitle">
       <h2 id="settingsTitle">Settings</h2>
 
+      <div class="instr">
+        Trace along the dotted line to reveal the shape. Aim to reach the coverage target before time runs out.<br/>
+        <b>Tip:</b> Steady, continuous strokes work best. Press <b>Space</b> to pause, <b>Esc</b> to exit.
+      </div>
+
+      <div class="group" role="group" aria-labelledby="lenLbl">
+        <label id="lenLbl">Session length</label>
+        <div class="row">
+          <button class="pill" data-mins="1" aria-pressed="false">1 min</button>
+          <button class="pill" data-mins="2" aria-pressed="true">2 min</button>
+          <button class="pill" data-mins="3" aria-pressed="false">3 min</button>
+          <button class="pill" data-mins="5" aria-pressed="false">5 min</button>
+          <div style="flex:1"></div>
+          <label for="customMins" class="muted">Or enter:</label>
+          <input id="customMins" type="number" min="1" max="30" step="1" value="2" />
+          <span class="muted">min</span>
+        </div>
+      </div>
+
       <div class="group" role="group" aria-labelledby="diffLbl">
         <label id="diffLbl">Difficulty</label>
         <div class="row">
@@ -82,22 +96,19 @@
           <button class="pill" data-diff="medium" aria-pressed="true">Medium</button>
           <button class="pill" data-diff="hard" aria-pressed="false">Hard</button>
         </div>
-        <span class="muted">Changes the shape complexity.</span>
       </div>
 
       <div class="group" role="group" aria-labelledby="covLbl">
-        <label id="covLbl">Coverage required</label>
+        <label id="covLbl">Coverage target</label>
         <div class="row">
           <button class="pill" data-cov="75" aria-pressed="false">75%</button>
           <button class="pill" data-cov="85" aria-pressed="true">85%</button>
           <button class="pill" data-cov="95" aria-pressed="false">95%</button>
         </div>
-        <span class="muted">How much of the dotted line to cover.</span>
       </div>
 
       <div class="group">
         <button id="startBtn" class="btn btn-primary">Start</button>
-        <span class="muted">Brush size is set for you.</span>
       </div>
     </section>
 
@@ -145,27 +156,6 @@
     </div>
   </dialog>
 
-  <!-- Duration ask dialog -->
-  <dialog id="durationDlg" aria-labelledby="dlgTitle">
-    <div class="dlg-content">
-      <h3 id="dlgTitle" style="margin:0">How long do you want to play?</h3>
-      <div class="dlg-row">
-        <button class="pill" data-mins="1" aria-pressed="false">1 min</button>
-        <button class="pill" data-mins="2" aria-pressed="true">2 min</button>
-        <button class="pill" data-mins="3" aria-pressed="false">3 min</button>
-        <button class="pill" data-mins="5" aria-pressed="false">5 min</button>
-      </div>
-      <div class="dlg-row" style="align-items:center;">
-        <label for="customMins">Or enter minutes:</label>
-        <input id="customMins" type="number" min="1" max="30" step="1" value="2" />
-      </div>
-    </div>
-    <div class="dlg-actions">
-      <button id="dlgCancel" class="btn btn-ghost">Cancel</button>
-      <button id="dlgOk" class="btn btn-primary">Start</button>
-    </div>
-  </dialog>
-
   <script>
     const setVH = () => { const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', vh + 'px'); };
     setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', () => setTimeout(setVH, 100));
@@ -173,27 +163,30 @@
     const $ = (id) => document.getElementById(id);
     const fmtTime = (ms) => { ms = Math.max(0, ms|0); const s = Math.ceil(ms/1000); const m = Math.floor(s/60).toString().padStart(2,'0'); const ss=(s%60).toString().padStart(2,'0'); return m+':'+ss; };
 
-    // HUD / controls
+    // Controls
     const startBtn = $('startBtn'), pauseBtn = $('pauseBtn'), exitBtn = $('exitBtn');
     const scoreEl = $('score'), shapesDoneEl = $('shapesDone'), coverageChip = $('coverageChip'), timeChip = $('timeChip');
     const statsPanel = $('stats-panel'), shapesCompletedEl = $('shapes-completed'), coverageEl = $('coverage'), timeLeftEl = $('time-left'), completionsEl = $('completions');
     const resultsDialog = $('resultsDialog'), finalShapes = $('finalShapes'), finalPerfect = $('finalPerfect'), finalCoverage = $('finalCoverage');
     const newSessionBtn = $('newSessionBtn'), closeDialogBtn = $('closeDialogBtn');
 
-    // Duration dialog
-    const durationDlg = $('durationDlg'), customMins = $('customMins'), dlgOk = $('dlgOk'), dlgCancel = $('dlgCancel');
-    const durationPills = Array.from(durationDlg.querySelectorAll('button.pill[data-mins]'));
+    // Session length (presets + custom)
+    const customMins = $('customMins');
+    const durationPills = Array.from(document.querySelectorAll('.pill[data-mins]'));
     let chosenLen = 120000; // default 2 minutes
     function selectDuration(mins){
       durationPills.forEach(p => p.setAttribute('aria-pressed', String(Number(p.dataset.mins)===mins)));
       customMins.value = String(mins);
+      chosenLen = mins * 60 * 1000;
     }
     durationPills.forEach(p => p.addEventListener('click', () => selectDuration(Number(p.dataset.mins)) ));
+    customMins.addEventListener('input', () => {
+      const mins = Math.max(1, Math.min(30, Number(customMins.value||2)));
+      selectDuration(mins);
+    });
     selectDuration(2);
-    dlgOk.addEventListener('click', () => { const mins = Math.max(1, Number(customMins.value||2)); chosenLen = mins*60*1000; durationDlg.close(); beginSession(); });
-    dlgCancel.addEventListener('click', () => durationDlg.close());
 
-    // Settings pills
+    // Difficulty & Coverage
     const pillsDiff = Array.from(document.querySelectorAll('.pill[data-diff]'));
     const pillsCov  = Array.from(document.querySelectorAll('.pill[data-cov]'));
     let difficulty='medium', requiredCoverage=85;
@@ -212,7 +205,7 @@
     // Hidden image + mask
     const hiddenImage = document.createElement('canvas'), hiddenCtx = hiddenImage.getContext('2d');
     const maskCanvas = document.createElement('canvas'), maskCtx = maskCanvas.getContext('2d');
-    // Brush is standardized
+    // Standardized brush
     const brushSize = 28;
 
     // State
@@ -225,21 +218,22 @@
       const size = Math.min(rect.width, rect.height);
       [canvas, guideCanvas, completionCanvas].forEach(c => { c.width = size; c.height = size; c.style.width = size+'px'; c.style.height = size+'px'; });
       hiddenImage.width = size; hiddenImage.height = size; maskCanvas.width = size; maskCanvas.height = size;
-      if(playing && !isCompleting){ loadNewShape(); } else { drawWaitingGuide(); }
+      if(playing && !isCompleting){ loadNewShape(); }
+      else { drawWaitingGuide(); }
     }
     addEventListener('resize', () => setTimeout(resizeCanvases, 80));
 
     function drawWaitingGuide(){
       guideCtx.clearRect(0,0,guideCanvas.width,guideCanvas.height);
-      guideCtx.fillStyle = 'rgba(255,255,255,.08)';
+      guideCtx.fillStyle = 'rgba(255,255,255,.06)';
       guideCtx.fillRect(0,0,guideCanvas.width,guideCanvas.height);
-      guideCtx.fillStyle = 'rgba(255,255,255,.7)';
-      guideCtx.font = 'bold 18px system-ui, sans-serif';
+      guideCtx.fillStyle = 'rgba(255,255,255,.8)';
+      guideCtx.font = '600 16px system-ui, sans-serif';
       guideCtx.textAlign='center';
-      guideCtx.fillText('Click Start to begin', guideCanvas.width/2, guideCanvas.height/2);
+      guideCtx.fillText('Choose time, then Start', guideCanvas.width/2, guideCanvas.height/2);
     }
 
-    // Shapes
+    // Shapes (subset, scalable)
     function circlePoints(){ const cx=canvas.width/2, cy=canvas.height/2, r=Math.min(canvas.width,canvas.height)*0.3, pts=[]; for(let i=0;i<=100;i++){ const a=i/100*Math.PI*2; pts.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}); } return pts; }
     function squarePoints(){ const s=Math.min(canvas.width,canvas.height)*0.6, x=(canvas.width-s)/2, y=(canvas.height-s)/2; return [{x,y},{x:x+s,y},{x:x+s,y:y+s},{x,y:y+s},{x,y}]; }
     function triPoints(){ const s=Math.min(canvas.width,canvas.height)*0.6, cx=canvas.width/2, cy=canvas.height/2; return [{x:cx,y:cy-s/2},{x:cx-s/2,y:cy+s/2},{x:cx+s/2,y:cy+s/2},{x:cx,y:cy-s/2}]; }
@@ -268,7 +262,7 @@
       const hue = Math.random()*360; grad.addColorStop(0, `hsl(${hue},70%,60%)`); grad.addColorStop(1, `hsl(${hue+30},80%,40%)`);
       hiddenCtx.beginPath(); hiddenCtx.moveTo(pathPoints[0].x,pathPoints[0].y); for(let i=1;i<pathPoints.length;i++){ hiddenCtx.lineTo(pathPoints[i].x, pathPoints[i].y); }
       hiddenCtx.fillStyle=grad; hiddenCtx.fill();
-      // FIX: mask starts fully transparent, we add white where user draws to REVEAL
+      // Mask starts clear; drawing adds white to reveal
       maskCtx.clearRect(0,0,maskCanvas.width,maskCanvas.height);
     }
 
@@ -281,11 +275,7 @@
     function updateCanvas(){
       ctx.clearRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(hiddenImage,0,0);
-      ctx.save();
-      // Keep hidden image only where mask alpha > 0
-      ctx.globalCompositeOperation='destination-in';
-      ctx.drawImage(maskCanvas,0,0);
-      ctx.restore();
+      ctx.save(); ctx.globalCompositeOperation='destination-in'; ctx.drawImage(maskCanvas,0,0); ctx.restore();
     }
 
     function getPos(e){ const r=canvas.getBoundingClientRect(); const x=((e.clientX||e.pageX)-r.left)*(canvas.width/r.width); const y=((e.clientY||e.pageY)-r.top)*(canvas.height/r.height); return {x,y}; }
@@ -294,7 +284,6 @@
     function stopDrawing(){ isDrawing=false; }
     function drawStroke(e){
       const {x,y}=getPos(e);
-      // FIX: add white on mask to reveal
       maskCtx.globalCompositeOperation='source-over';
       maskCtx.fillStyle='white'; maskCtx.beginPath(); maskCtx.arc(x, y, brushSize/2, 0, Math.PI*2); maskCtx.fill();
       checkCoverage({x,y}); updateCanvas();
@@ -342,16 +331,19 @@
     }
 
     // Session lifecycle
-    let rafId = 0;
+    function startSession(){
+      // Read final duration from custom input (keeps in sync with pills)
+      const mins = Math.max(1, Math.min(30, Number(customMins.value||2)));
+      chosenLen = mins*60*1000;
+      beginSession();
+    }
     function beginSession(){
-      // reset values and start timer
       score=0; shapesCompleted=0; perfectTraces=0; bestCoverage=0;
       shapesDoneEl.textContent='0'; coverageChip.textContent='0%'; shapesCompletedEl.textContent='0'; completionsEl.textContent='0'; coverageEl.textContent='0%';
       totalMs = chosenLen; remainingMs = totalMs; timeChip.textContent=fmtTime(remainingMs); timeLeftEl.textContent=fmtTime(remainingMs);
       document.body.classList.add('playing'); statsPanel.classList.remove('hidden');
       resizeCanvases(); playing=true; paused=false; startTs=performance.now(); loop(); loadNewShape();
     }
-    function startSession(){ durationDlg.showModal(); }
     function loop(){
       if(!playing){ cancelAnimationFrame(rafId); return; }
       rafId = requestAnimationFrame(loop);
