@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Rhythm Reach — Settings</title>
   <base href="/" />
-  <!-- Keep your design system order -->
+  <!-- Design system (same order as Comet) -->
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
   <link rel="stylesheet" href="/css/exercises.css" />
 
   <style>
-    /* Starry background to match exercises */
+    /* Starry background like other exercises */
     body{
       color: var(--text-primary);
       background:
@@ -22,24 +22,22 @@
         linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
     }
 
-    /* Screen toggling */
+    /* Screen toggle */
     .screen{display:none} .screen.active{display:block}
 
     /* Header: translucent bar + Comet-style Home pill */
-    header.site-header{
+    .app-header{
       position: sticky; top: 0; z-index: 30;
-      background: rgba(8, 15, 35, 0.75);
-      border-bottom: 1px solid var(--hud-border, rgba(255,255,255,.14));
-      backdrop-filter: blur(10px);
-    }
-    header .wrap{
       display:flex; align-items:center; gap: var(--space-3);
       padding: var(--space-3) var(--space-4);
-    }
-    /* Home pill (capsule, subtle border & glow) */
+      background: linear-gradient(180deg, rgba(8,15,35,.85), rgba(8,15,35,.60));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(8px);
+    } /* base rhythm header matches Comet shell :contentReference[oaicite:4]{index=4} */
+
     .home-pill{
       display:inline-flex; align-items:center; gap:.5rem;
-      padding:.55rem .95rem;
+      padding:.56rem .95rem;
       border-radius: var(--radius-full);
       text-decoration:none;
       color: var(--text-primary);
@@ -51,74 +49,49 @@
     .home-pill:hover{ background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.22); transform: translateY(-1px); }
     .home-pill:active{ transform: translateY(0); }
 
-    /* Settings layout & panel */
+    /* Settings layout + panel shell */
     .settings-wrap{
       display:grid; grid-template-columns:minmax(300px,380px) 1fr;
-      gap: var(--space-4); padding: var(--space-4);
-      max-width: 1200px; margin: 0 auto;
+      gap:var(--space-4); padding:var(--space-4); max-width:1200px; margin:0 auto;
     }
-    @media (max-width:860px){ .settings-wrap{ grid-template-columns:1fr } }
+    @media (max-width:860px){.settings-wrap{grid-template-columns:1fr}}
     .panel{
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
+      background: var(--panel-bg, var(--bg-secondary));
+      border: 1px solid var(--panel-border, var(--border));
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-sm);
       padding: var(--space-6);
     }
 
-    /* How to play pill (dark chip with brand-blue left accent) */
-    .howto-pill{
-      display:block;
-      padding: .85rem 1rem;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-left: 6px solid var(--brand-blue);
-      border-radius: 14px;
-      box-shadow: 0 10px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
-      margin-bottom: var(--space-4);
-    }
-    .howto-pill strong{ color: var(--text-primary); }
+    /* Use your Comet “How to play” style (blue-accent card) */
+    /* (class defined in exercises.css) .game-description { … }  */
 
-    /* Personal Best compact pill */
+    /* Personal Best compact centered pill */
     .pb-pill{
       display:inline-grid; place-items:center;
-      padding: .6rem .9rem;
-      border: 1px solid var(--border);
+      padding:.6rem .9rem;
+      border:1px solid var(--border);
       background: var(--bg-secondary);
-      border-radius: 14px;
+      border-radius:14px;
       box-shadow: 0 10px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
-      width: max-content;
-      margin: 0 auto var(--space-4);
-      text-align: center;
+      width:max-content; margin:0 auto var(--space-4);
+      text-align:center;
     }
     .pb-pill .value{
-      font-weight: 900;
-      font-size: 2rem;
-      letter-spacing: .25px;
-      color: #d9e7ff;
-      text-shadow: 0 1px 0 rgba(255,255,255,.08);
+      font-weight:900; font-size:2rem; letter-spacing:.25px;
+      color:#d9e7ff; text-shadow:0 1px 0 rgba(255,255,255,.08);
     }
-    .pb-pill .label{
-      margin-top: 2px;
-      color: var(--text-secondary);
-      font-size: var(--font-size-sm);
-    }
+    .pb-pill .label{ margin-top:2px; color:var(--text-secondary); font-size:var(--font-size-sm); }
 
-    /* Fields */
-    .fieldset{ display:grid; gap: var(--space-4); }
-    .settings-label{ font-weight: var(--font-weight-semibold); }
+    .fieldset{display:grid; gap: var(--space-4);}
 
-    /* Start button: use component library for high contrast */
-    #startBtn.btn{ margin-top: var(--space-4); }
-
-    /* HUD chips in game screen */
+    /* Game HUD + pads (unchanged) */
     .hud{
       display:grid; grid-template-columns:1fr auto; align-items:center;
       gap: var(--space-3); padding: var(--space-2) var(--space-3);
       background: rgba(8,15,35,.6);
-      border-bottom: 1px solid var(--hud-border, rgba(255,255,255,.14));
-      backdrop-filter: blur(8px);
-      font-variant-numeric: tabular-nums;
+      border-bottom: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(8px); font-variant-numeric: tabular-nums;
     }
     .hud-left{ display:flex; gap: var(--space-2); align-items:center; }
     .chip{
@@ -132,11 +105,9 @@
     }
     .chip .label{ color: var(--text-secondary); font-weight: var(--font-weight-medium); }
     .chip .value{ color: var(--text-primary); font-weight: var(--font-weight-bold); }
-    .hud-right .btn{ padding: var(--space-2) var(--space-4); }
 
-    /* Grid & pads */
-    .play-area{ position:relative; display:grid; place-items:center; padding: var(--space-4); }
-    .grid9{ display:grid; grid-template-columns:repeat(3,1fr); gap: var(--space-3); width:min(92vw,720px); aspect-ratio:1/1; touch-action:manipulation; }
+    .play-area{position:relative; display:grid; place-items:center; padding:var(--space-4)}
+    .grid9{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-3); width:min(92vw,720px); aspect-ratio:1/1; touch-action:manipulation; }
     .pad{
       border-radius: var(--radius-xl);
       border: 1px solid var(--border);
@@ -146,33 +117,22 @@
       transition: transform .06s ease, box-shadow .12s ease, outline-color .12s ease;
       font-size: 28px; font-weight: var(--font-weight-extrabold);
     }
-    .pad.show{
-      outline: 3px solid var(--focus, #7aa5ff);
-      box-shadow: 0 0 18px rgba(122,165,255,.25), inset 0 2px 10px rgba(0,0,0,.35);
-    }
-    .pad.pressed{
-      transform: scale(.985);
-      outline: 2px solid var(--brand-blue, #2563eb);
-      box-shadow: 0 0 12px rgba(37,99,235,.28), inset 0 2px 12px rgba(0,0,0,.38);
-    }
+    .pad.show{ outline:3px solid var(--focus, #7aa5ff); box-shadow: 0 0 18px rgba(122,165,255,.25), inset 0 2px 10px rgba(0,0,0,.35); }
+    .pad.pressed{ transform:scale(.985); outline:2px solid var(--brand-blue, #2563eb); box-shadow: 0 0 12px rgba(37,99,235,.28), inset 0 2px 12px rgba(0,0,0,.38); }
 
-    /* Pause overlay */
     .pause-overlay{ background: rgba(0,0,0,.55); position:absolute; inset:0; display:grid; place-items:center; opacity:0; pointer-events:none; transition:opacity .2s ease; }
     .pause-overlay.active{ opacity:1; pointer-events:auto; }
 
-    /* Game screen layout */
     #gameScreen{ position:fixed; inset:0; grid-template-rows:64px 1fr; background:inherit; z-index:100; }
-    .screen.active#gameScreen{ display:grid }
+    .screen.active#gameScreen{display:grid}
   </style>
 </head>
 
 <body>
-  <header class="site-header">
-    <div class="wrap">
-      <!-- Comet-style Home pill -->
-      <a class="home-pill" href="/" aria-label="Go to home">← Home</a>
-      <div style="margin-left:auto"></div>
-    </div>
+  <!-- Header (Comet-style) -->
+  <header class="app-header">
+    <a class="home-pill" href="/">← Home</a>
+    <div style="margin-left:auto"></div>
   </header>
 
   <!-- SETTINGS -->
@@ -181,8 +141,11 @@
       <section class="panel" aria-labelledby="settings-title">
         <h2 id="settings-title" class="text-center">Settings</h2>
 
-        <!-- How to play pill ABOVE PB -->
-        <p class="howto-pill"><strong>How to play:</strong> watch the pads light up in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9). Each round adds one new step.</p>
+        <!-- How to play (Comet chip with blue accent) -->
+        <div class="game-description">
+          <h3>How to play</h3>
+          <p>Watch the pads light in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9). Each round adds one new step; keep a long streak to grow your score.</p>
+        </div> <!-- uses .game-description from exercises.css :contentReference[oaicite:5]{index=5} -->
 
         <!-- Personal Best compact pill -->
         <div class="pb-pill" role="status" aria-live="polite">
@@ -190,6 +153,7 @@
           <div class="label">Personal Best</div>
         </div>
 
+        <!-- Rhythm-specific controls -->
         <div class="fieldset">
           <div class="field">
             <label class="settings-label" for="duration">Session Duration (minutes)</label>
@@ -222,14 +186,14 @@
           </div>
         </div>
 
-        <!-- Start: component button for higher contrast -->
+        <!-- Start: primary, full width, XL (matches Comet’s contrast/size) -->
         <button id="startBtn" class="btn btn-primary btn-full btn-xl" type="button">Start</button>
       </section>
 
       <section class="panel" aria-labelledby="tips-title">
         <h2 id="tips-title">Tips</h2>
         <ul class="option-explanations">
-          <li><strong>Keyboard:</strong> use 1–9 to tap pads.</li>
+          <li><strong>Keyboard:</strong> press 1–9 to tap pads.</li>
           <li><strong>Pause:</strong> press <kbd>P</kbd> or use the Pause button.</li>
           <li><strong>Exit:</strong> press <kbd>Esc</kbd> to leave the session.</li>
         </ul>
@@ -237,7 +201,7 @@
     </div>
   </main>
 
-  <!-- GAME (immersive) -->
+  <!-- GAME -->
   <section id="gameScreen" class="screen" aria-hidden="true">
     <div class="hud">
       <div class="hud-left">
@@ -276,23 +240,6 @@
     </div>
   </section>
 
-  <!-- End Summary -->
-  <dialog id="endModal" aria-labelledby="endTitle">
-    <form method="dialog" class="panel" style="min-width:min(520px,92vw)">
-      <h2 id="endTitle">Session Complete</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-block:10px">
-        <div class="field"><label>Final Score</label><div id="finalScore"><strong>0</strong></div></div>
-        <div class="field"><label>Level Reached</label><div id="finalLevel"><strong>0</strong></div></div>
-        <div class="field"><label>Best Streak</label><div id="finalStreak"><strong>0</strong></div></div>
-        <div class="field"><label>Time Played</label><div id="finalTime"><strong>00:00</strong></div></div>
-      </div>
-      <div class="actions" style="justify-content:flex-end">
-        <button id="newSessionBtn" class="btn btn-primary">Start New Session</button>
-        <button id="closeSummaryBtn" class="btn btn-ghost">Close</button>
-      </div>
-    </form>
-  </dialog>
-
   <script>
     // ===== Helpers =====
     const qs  = (s, el=document) => el.querySelector(s);
@@ -326,14 +273,6 @@
 
     const pads = qsa('.pad');
 
-    const endModal = qs('#endModal');
-    const finalScore = qs('#finalScore');
-    const finalLevel = qs('#finalLevel');
-    const finalStreak = qs('#finalStreak');
-    const finalTime = qs('#finalTime');
-    const newSessionBtn = qs('#newSessionBtn');
-    const closeSummaryBtn = qs('#closeSummaryBtn');
-
     // ===== State =====
     let running=false, paused=false, playback=false;
     let sequence=[], userIndex=0, level=0;
@@ -343,7 +282,7 @@
 
     let sessionEndAt=0, timerHandle=null;
     let padMs=500, roundGap=1500, startLen=2;
-    const showFeedback = true;
+    const showFeedback = true; // always on
 
     const padMsFromSpeed = (v)=> v==='slow'?700 : v==='fast'?350 : 500;
 
@@ -398,7 +337,7 @@
       playback = false;
     }
 
-    function randomPad(){ return Math.floor(Math.random()*9) + 1; }
+    const randomPad = () => Math.floor(Math.random()*9) + 1;
 
     async function startRound(first=false){
       if(first){
@@ -467,7 +406,6 @@
       bestEl.textContent = String(pb);
       pbSettingEl.textContent = String(pb);
 
-      // simple end info (you can keep your modal here if you prefer)
       alert(`Session Complete\nScore: ${score}\nLevel: ${level}`);
       exitToSettings();
     }
