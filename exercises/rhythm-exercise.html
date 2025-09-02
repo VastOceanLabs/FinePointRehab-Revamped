@@ -5,161 +5,138 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Rhythm Reach — Comet Look (Immersive)</title>
   <base href="/" />
-  <!-- Keep site-wide styles in this order to match Comet -->
+  <!-- Use site styles in this order (same as Comet) -->
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/components.css" />
   <link rel="stylesheet" href="/css/exercises.css" />
   <style>
-  /* Rhythm Reach — Comet-consistent overrides */
+    /* Minimal page-specific bits — do NOT override exercise button/link styles */
+    body{
+      /* starry gradient background like other exercises */
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.35) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.25) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.35) 0%, transparent 70%),
+        linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
+    }
 
-  /* Body + subtle stars (aligned to exercises theme) */
-  body{
-    color: var(--text-primary);
-    background:
-      radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.35) 0%, transparent 40%),
-      radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.25) 0%, transparent 40%),
-      radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.35) 0%, transparent 70%),
-      linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
-  }
+    /* Screen switching */
+    .screen{display:none} .screen.active{display:block}
 
-  .screen{display:none} .screen.active{display:block}
+    /* Header matches Comet: translucent bar, plain link */
+    header.site-header{
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(8, 15, 35, 0.75);
+      border-bottom: 1px solid var(--hud-border, rgba(255,255,255,.14));
+      backdrop-filter: blur(10px);
+    }
+    header .wrap{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4)}
+    .home-link{ text-decoration: none; font-weight: var(--font-weight-semibold); }
 
-  header.site-header{
-    position: sticky; top: 0; z-index: 30;
-    background: rgba(8, 15, 35, 0.75);
-    border-bottom: 1px solid var(--hud-border);
-    backdrop-filter: blur(10px);
-  }
-  header .wrap{ display:flex; align-items:center; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
-  .title{ font-weight: var(--font-weight-bold); }
+    /* Settings layout + panels use your component tokens */
+    .settings-wrap{
+      display:grid;grid-template-columns:minmax(300px,380px) 1fr;
+      gap:var(--space-4);padding:var(--space-4);max-width:1200px;margin:0 auto;
+    }
+    @media (max-width:860px){.settings-wrap{grid-template-columns:1fr}}
+    .panel{
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-4);
+    }
 
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
-    padding:.55rem .95rem;border-radius:var(--radius-full);
-    border:1px solid var(--button-border, var(--border));
-    background:var(--button-bg, var(--bg-elevated));
-    color:var(--button-fg, var(--text-primary));
-    font-weight: var(--font-weight-bold);
-    line-height:1;
-    transition: transform .05s ease, filter .15s ease, box-shadow .2s ease;
-    cursor:pointer;
-  }
-  .btn:hover{filter:brightness(1.06)}
-  .btn:active{transform:translateY(1px)}
-  .btn-ghost{
-    background:transparent;border-color:var(--ghost-border, var(--border));
-  }
-  .btn-primary{
-    border-color: var(--brand-blue-600, #4f7cf0);
-    background: linear-gradient(180deg, var(--brand-blue-500, #6c8ff5) 18%, rgba(255,255,255,.02));
-    box-shadow: var(--shadow-sm);
-  }
+    /* Stats card (Personal Best) */
+    .stats-card{
+      display:grid; grid-template-columns:1fr 1fr; gap: var(--space-3);
+      margin-top: var(--space-2); padding: var(--space-4);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .mini-stat{display:flex;flex-direction:column;gap:4px}
+    .mini-stat .label{ color: var(--text-secondary); font-size: var(--font-size-sm); }
+    .mini-stat .value{ font-weight: var(--font-weight-bold); font-size: var(--font-size-xl); }
 
-  .home-link{ text-decoration:none; }
+    /* HUD chips for game screen */
+    .hud{
+      display:grid; grid-template-columns:1fr auto; align-items:center;
+      gap: var(--space-3); padding: var(--space-2) var(--space-3);
+      background: rgba(8, 15, 35, 0.6);
+      border-bottom: 1px solid var(--hud-border, rgba(255,255,255,.14));
+      backdrop-filter: blur(8px);
+      font-variant-numeric: tabular-nums;
+    }
+    .hud-left{ display:flex; gap: var(--space-2); align-items:center; }
+    .chip{
+      display:inline-flex; align-items:center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-full);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      font-size: var(--font-size-sm);
+    }
+    .chip .label{ color: var(--text-secondary); font-weight: var(--font-weight-medium); }
+    .chip .value{ color: var(--text-primary); font-weight: var(--font-weight-bold); }
+    .hud-right button{ padding: var(--space-2) var(--space-4); }
 
-  .settings-wrap{
-    display:grid;grid-template-columns:minmax(300px,380px) 1fr;
-    gap:var(--space-4);padding:var(--space-4);max-width:1200px;margin:0 auto;
-  }
-  @media (max-width:860px){.settings-wrap{grid-template-columns:1fr}}
-  .panel{
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    padding: var(--space-4);
-  }
-  .panel h2{margin:0 0 var(--space-2) 0}
-  .panel p,.panel li{color: var(--text-secondary)}
-  .fieldset{display:grid;gap:var(--space-3)}
-  .field{display:grid;gap:var(--space-1)}
-  label{font-weight: var(--font-weight-bold);color: var(--text-primary)}
-  input,select{ border-radius: var(--radius-lg); }
-  .hint,small{color: var(--text-tertiary);font-size: var(--font-size-sm)}
+    /* Play area + pads */
+    .play-area{position:relative;display:grid;place-items:center;padding:var(--space-4)}
+    .grid9{ display:grid;grid-template-columns:repeat(3,1fr); gap:var(--space-3); width:min(92vw,720px); aspect-ratio:1/1; touch-action:manipulation; }
+    .pad{
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.25);
+      transition: transform .06s ease, box-shadow .12s ease, outline-color .12s ease;
+      font-size: 28px; font-weight: var(--font-weight-extrabold);
+    }
+    .pad.show{
+      outline: 3px solid var(--focus, #7aa5ff);
+      box-shadow: 0 0 18px rgba(122,165,255,.25), inset 0 2px 10px rgba(0,0,0,.35);
+    }
+    .pad.pressed{
+      transform: scale(.985);
+      outline: 2px solid var(--brand-blue, #2563eb);
+      box-shadow: 0 0 12px rgba(37,99,235,.28), inset 0 2px 12px rgba(0,0,0,.38);
+    }
 
-  .stats-card{
-    display:grid; grid-template-columns:1fr 1fr; gap: var(--space-3);
-    margin-top: var(--space-2); padding: var(--space-4);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-  }
-  .mini-stat{display:flex;flex-direction:column;gap:4px}
-  .mini-stat .label{ color: var(--text-secondary); font-size: var(--font-size-sm); }
-  .mini-stat .value{ font-weight: var(--font-weight-bold); font-size: var(--font-size-xl); }
+    /* Pause overlay */
+    .pause-overlay{ background: rgba(0,0,0,.55); position:absolute; inset:0; display:grid; place-items:center; opacity:0; pointer-events:none; transition:opacity .2s ease; }
+    .pause-overlay.active{ opacity:1; pointer-events:auto; }
 
-  .actions{display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-3)}
-  #startBtn{ padding:.7rem 1.2rem; font-size:1rem }
-
-  #gameScreen{ position:fixed; inset:0; grid-template-rows:64px 1fr; background:inherit; z-index:100; }
-  .screen.active#gameScreen{display:grid}
-
-  .hud{
-    display:grid; grid-template-columns:1fr auto; align-items:center;
-    gap: var(--space-3); padding: var(--space-2) var(--space-3);
-    background: rgba(8, 15, 35, 0.6);
-    border-bottom: 1px solid var(--hud-border);
-    backdrop-filter: blur(8px);
-    font-variant-numeric: tabular-nums;
-  }
-  .hud-left{ display:flex; gap: var(--space-2); align-items:center; }
-  .chip{
-    display:inline-flex; align-items:center; gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-full);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    font-size: var(--font-size-sm);
-  }
-  .chip .label{ color: var(--text-secondary); font-weight: var(--font-weight-medium); }
-  .chip .value{ color: var(--text-primary); font-weight: var(--font-weight-bold); }
-  .hud-right .btn{ padding: var(--space-2) var(--space-4); }
-
-  .play-area{position:relative;display:grid;place-items:center;padding:var(--space-4)}
-  .grid9{ display:grid;grid-template-columns:repeat(3,1fr); gap:var(--space-3); width:min(92vw,720px); aspect-ratio:1/1; touch-action:manipulation; }
-  .pad{
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--border);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    box-shadow: inset 0 2px 6px rgba(0,0,0,.25);
-    transition: transform .06s ease, box-shadow .12s ease, outline-color .12s ease;
-    font-size: 28px; font-weight: var(--font-weight-extrabold);
-  }
-  .pad.show{
-    outline: 3px solid var(--primary-color, #7aa5ff);
-    box-shadow: 0 0 18px rgba(122,165,255,.25), inset 0 2px 10px rgba(0,0,0,.35);
-  }
-  .pad.pressed{
-    transform: scale(.985);
-    outline: 2px solid var(--brand-blue, #2563eb);
-    box-shadow: 0 0 12px rgba(37,99,235,.28), inset 0 2px 12px rgba(0,0,0,.38);
-  }
-  .pad:focus-visible{ outline: 3px solid var(--focus, #8ab4f8); }
-
-  .pause-overlay{ background: rgba(0,0,0,.55); position:absolute; inset:0; display:grid; place-items:center; opacity:0; pointer-events:none; transition:opacity .2s ease; }
-  .pause-overlay.active{ opacity:1; pointer-events:auto; }
+    /* Game screen grid */
+    #gameScreen{ position:fixed; inset:0; grid-template-rows:64px 1fr; background:inherit; z-index:100; }
+    .screen.active#gameScreen{display:grid}
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="home-link btn btn-ghost" href="/">Home</a>
-      <div class="title">Rhythm Reach</div>
-      <div class="header-help chip" aria-label="Instructions">
-        <span class="label"><strong>How to play</strong></span><span>Watch the pattern, then tap it back (1–9). One step added each round.</span>
-      </div>
+      <!-- Plain link like Comet (not a pill button) -->
+      <a class="home-link" href="/">← Home</a>
+      <div style="margin-left:auto"></div>
     </div>
   </header>
 
   <!-- SETTINGS -->
-  <main id="settingsScreen" class="screen active">
+  <main id="settingsScreen" class="screen active" aria-hidden="false">
     <div class="settings-wrap">
-      <section class="panel">
-        <h2>Settings</h2>
-        <div class="stats-card">
+      <section class="panel" aria-labelledby="settings-title">
+        <h2 id="settings-title">Settings</h2>
+
+        <!-- MATCH COMET: How to play ABOVE Personal Best -->
+        <div class="game-description">
+          <h3>How to play</h3>
+          <p>Watch the pads light up in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9 on desktop). Each round adds one new step. Keep a long streak and avoid mistakes to build your score.</p>
+        </div>
+
+        <!-- Personal Best (below How to play, like Comet) -->
+        <div class="stats-card" role="group" aria-label="Session stats">
           <div class="mini-stat">
             <div class="label">Personal Best</div>
             <div class="value" id="pbSetting">0</div>
@@ -170,25 +147,29 @@
           </div>
         </div>
 
-        <div class="fieldset">
+        <!-- Form controls -->
+        <div class="fieldset" style="margin-top: var(--space-4)">
           <div class="field">
-            <label for="duration">Session Duration (minutes)</label>
+            <label class="settings-label" for="duration">Session Duration (minutes)</label>
             <input id="duration" type="number" min="1" max="30" value="2" />
           </div>
+
           <div class="field">
-            <label for="startLen">Starting Sequence Length</label>
+            <label class="settings-label" for="startLen">Starting Sequence Length</label>
             <input id="startLen" type="number" min="2" max="5" value="2" />
           </div>
+
           <div class="field">
-            <label for="speed">Playback Speed</label>
+            <label class="settings-label" for="speed">Playback Speed</label>
             <select id="speed">
-              <option value="slow">Slow</option>
-              <option value="medium" selected>Medium</option>
-              <option value="fast">Fast</option>
+              <option value="slow">Slow (Beginner)</option>
+              <option value="medium" selected>Medium (Balanced)</option>
+              <option value="fast">Fast (Challenging)</option>
             </select>
           </div>
+
           <div class="field">
-            <label for="gap">Round Gap</label>
+            <label class="settings-label" for="gap">Round Gap</label>
             <select id="gap">
               <option value="2000">2.0s</option>
               <option value="1500" selected>1.5s</option>
@@ -197,34 +178,41 @@
             </select>
           </div>
         </div>
-        <div class="actions">
-          <button id="startBtn" class="btn btn-primary" type="button">Start</button>
+
+        <!-- MATCH COMET: Start button uses exercise default high-contrast style -->
+        <div class="actions" style="margin-top: var(--space-4)">
+          <button id="startBtn" type="button">Start</button>
         </div>
       </section>
 
-      <section class="panel">
-        <h2>How to play</h2>
-        <p>Watch the pads light up in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9). Each round adds one new step. Keep a long streak, avoid mistakes, and finish quickly to build your score.</p>
+      <section class="panel" aria-labelledby="howto-extra-title">
+        <h2 id="howto-extra-title">Tips</h2>
+        <ul class="option-explanations">
+          <li><strong>Keyboard:</strong> press 1–9 to tap pads.</li>
+          <li><strong>Pause:</strong> press <kbd>P</kbd> or use the Pause button.</li>
+          <li><strong>Exit:</strong> press <kbd>Esc</kbd> to leave the session.</li>
+        </ul>
       </section>
     </div>
   </main>
 
   <!-- GAME -->
-  <section id="gameScreen" class="screen">
+  <section id="gameScreen" class="screen" aria-hidden="true">
     <div class="hud">
       <div class="hud-left">
         <div class="chip"><span class="label">Score</span><span class="value" id="score">0</span></div>
-        <div class="chip"><span class="label">Best</span><span class="value" id="best">0</span></div>
+        <div class="chip"><span class="label">Personal Best</span><span class="value" id="best">0</span></div>
         <div class="chip"><span class="label">Time</span><span class="value" id="time">00:00</span></div>
       </div>
       <div class="hud-right">
-        <button id="pauseBtn" class="btn btn-ghost" type="button">Pause</button>
-        <button id="exitBtn" class="btn btn-ghost" type="button">Exit</button>
+        <!-- Keep generic buttons here to pick up exercise defaults if desired -->
+        <button id="pauseBtn" type="button" aria-pressed="false">Pause</button>
+        <button id="exitBtn" type="button">Exit</button>
       </div>
     </div>
 
-    <div class="play-area">
-      <div class="grid9" id="grid">
+    <div class="play-area" id="playArea">
+      <div class="grid9" id="grid" aria-label="Rhythm grid" role="application">
         <button class="pad" data-id="1">1</button>
         <button class="pad" data-id="2">2</button>
         <button class="pad" data-id="3">3</button>
@@ -236,38 +224,264 @@
         <button class="pad" data-id="9">9</button>
       </div>
 
-      <div id="pauseOverlay" class="pause-overlay">
+      <div id="pauseOverlay" class="pause-overlay" aria-hidden="true">
         <div class="panel" style="text-align:center;min-width:260px">
           <h3>Paused</h3>
           <p class="hint">Tap Resume to continue.</p>
           <div class="actions" style="justify-content:center">
-            <button id="resumeBtn" class="btn btn-primary" type="button">Resume</button>
+            <!-- Generic button for consistent styling -->
+            <button id="resumeBtn" type="button">Resume</button>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <dialog id="endModal">
-    <form method="dialog" class="panel">
-      <h2>Session Complete</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+  <!-- End Summary -->
+  <dialog id="endModal" aria-labelledby="endTitle">
+    <form method="dialog" class="panel" style="min-width:min(520px,92vw)">
+      <h2 id="endTitle">Session Complete</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-block:10px">
         <div class="field"><label>Final Score</label><div id="finalScore"><strong>0</strong></div></div>
         <div class="field"><label>Level Reached</label><div id="finalLevel"><strong>0</strong></div></div>
         <div class="field"><label>Best Streak</label><div id="finalStreak"><strong>0</strong></div></div>
         <div class="field"><label>Time Played</label><div id="finalTime"><strong>00:00</strong></div></div>
       </div>
       <div class="actions" style="justify-content:flex-end">
-        <button id="newSessionBtn" class="btn btn-primary">Start New Session</button>
-        <button id="closeSummaryBtn" class="btn btn-ghost">Close</button>
+        <button id="newSessionBtn">Start New Session</button>
+        <button id="closeSummaryBtn">Close</button>
       </div>
     </form>
   </dialog>
 
   <script>
-    /* JS unchanged from previous working version — gameplay intact */
-    // (shortened here for space, keep full script from your last working file)
+    // ===== Helpers =====
+    const qs  = (s, el=document) => el.querySelector(s);
+    const qsa = (s, el=document) => [...el.querySelectorAll(s)];
+    const clamp = (n,a,b) => Math.max(a, Math.min(b, n));
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const fmtTime = (ms) => {
+      const total = Math.max(0, Math.floor(ms/1000));
+      const m = String(Math.floor(total/60)).padStart(2,'0');
+      const s = String(total % 60).padStart(2,'0');
+      return `${m}:${s}`;
+    };
+
+    // ===== Elements =====
+    const screens = { settings: qs('#settingsScreen'), game: qs('#gameScreen') };
+    const startBtn = qs('#startBtn');
+    const exitBtn  = qs('#exitBtn');
+    const pauseBtn = qs('#pauseBtn');
+    const resumeBtn = qs('#resumeBtn');
+    const pauseOverlay = qs('#pauseOverlay');
+
+    const durationEl = qs('#duration');
+    const startLenEl = qs('#startLen');
+    const speedEl    = qs('#speed');
+    const gapEl      = qs('#gap');
+
+    const pbSettingEl = qs('#pbSetting');
+    const startLenEcho = qs('#startLenEcho');
+
+    const scoreEl = qs('#score');
+    const bestEl  = qs('#best');
+    const timeEl  = qs('#time');
+
+    const pads    = qsa('.pad');
+
+    const endModal = qs('#endModal');
+    const finalScore = qs('#finalScore');
+    const finalLevel = qs('#finalLevel');
+    const finalStreak = qs('#finalStreak');
+    const finalTime = qs('#finalTime');
+    const newSessionBtn = qs('#newSessionBtn');
+    const closeSummaryBtn = qs('#closeSummaryBtn');
+
+    // ===== State =====
+    let running=false, paused=false, playback=false;
+    let sequence=[], userIndex=0, level=0;
+    let score=0, best = Number(localStorage.getItem('RR_best') || 0);
+    bestEl.textContent = String(best);
+    pbSettingEl.textContent = String(best);
+
+    let sessionEndAt=0, timerHandle=null;
+    let padMs=500, roundGap=1500, startLen=2;
+    const showFeedback = true; // always on
+
+    const padMsFromSpeed = (v)=> v==='slow'?700 : v==='fast'?350 : 500;
+    startLenEl.addEventListener('input',()=>{ startLenEcho.textContent = String(clamp(parseInt(startLenEl.value||'2',10),2,5)); });
+
+    function showScreen(which){
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      if(which==='settings'){
+        screens.settings.classList.add('active');
+        screens.settings.setAttribute('aria-hidden','false');
+        screens.game.setAttribute('aria-hidden','true');
+        startBtn.disabled = false;
+        const pb = Number(localStorage.getItem('RR_best') || 0);
+        bestEl.textContent = String(pb);
+        pbSettingEl.textContent = String(pb);
+      }else{
+        screens.game.classList.add('active');
+        screens.game.setAttribute('aria-hidden','false');
+        screens.settings.setAttribute('aria-hidden','true');
+      }
+    }
+
+    async function goFullscreen(){ try{ await document.documentElement.requestFullscreen(); }catch{} }
+    async function exitFullscreen(){ try{ if(document.fullscreenElement) await document.exitFullscreen(); }catch{} }
+
+    function tickTimer(){
+      const remaining = sessionEndAt - Date.now();
+      timeEl.textContent = fmtTime(remaining);
+      if(remaining <= 0){ clearInterval(timerHandle); endSession(); }
+    }
+
+    function flashPad(id, ms){
+      const p = pads.find(x => x.dataset.id === String(id));
+      if(!p) return;
+      p.classList.add('show');
+      setTimeout(()=> p.classList.remove('show'), Math.max(120, ms*0.8));
+    }
+    function pressPadVisual(id){
+      if(!showFeedback) return;
+      const p = pads.find(x => x.dataset.id === String(id));
+      if(!p) return;
+      p.classList.add('pressed');
+      setTimeout(()=> p.classList.remove('pressed'), 120);
+    }
+
+    async function playSequence(seq){
+      playback = true;
+      for(const id of seq){
+        if(!running) return;
+        while(paused){ await sleep(60); }
+        flashPad(id, padMs);
+        await sleep(padMs);
+      }
+      playback = false;
+    }
+
+    function randomPad(){ return Math.floor(Math.random()*9) + 1; }
+
+    async function startRound(first=false){
+      if(first){
+        sequence = [];
+        for(let i=0;i<startLen;i++) sequence.push(randomPad());
+        level = 1;
+      }else{
+        sequence.push(randomPad());
+        level += 1;
+      }
+      userIndex = 0;
+      await playSequence(sequence);
+    }
+
+    function handleInput(id){
+      if(!running || paused || playback) return;
+      pressPadVisual(id);
+      const expect = sequence[userIndex];
+      if(id === expect){
+        userIndex += 1;
+        score += 10; scoreEl.textContent = String(score);
+        if(userIndex >= sequence.length){
+          playback = true; // block inputs while we queue next round
+          setTimeout(()=> startRound(false), roundGap);
+        }
+      }else{
+        score = Math.max(0, score - 5); scoreEl.textContent = String(score);
+        userIndex = 0;
+        playback = true;
+        setTimeout(()=> playSequence(sequence), 400);
+      }
+    }
+
+    async function startSession(){
+      if(startBtn.disabled) return;
+      startBtn.disabled = true;
+
+      const mins = clamp(parseInt(durationEl.value||'2',10), 1, 30);
+      startLen = clamp(parseInt(startLenEl.value||'2',10), 2, 5);
+      padMs    = padMsFromSpeed(speedEl.value);
+      roundGap = parseInt(gapEl.value, 10);
+
+      running=true; paused=false; playback=false;
+      score=0; scoreEl.textContent='0';
+      level=0; sequence=[]; userIndex=0;
+
+      showScreen('game'); await goFullscreen();
+
+      sessionEndAt = Date.now() + mins*60*1000;
+      clearInterval(timerHandle);
+      timerHandle = setInterval(tickTimer, 250);
+      tickTimer();
+
+      setTimeout(()=> startRound(true), 400);
+    }
+
+    function endSession(){
+      running=false; paused=false; playback=false;
+      clearInterval(timerHandle);
+
+      let pb = Number(localStorage.getItem('RR_best') || 0);
+      if(score > pb){
+        pb = score;
+        localStorage.setItem('RR_best', String(pb));
+      }
+      bestEl.textContent = String(pb);
+      pbSettingEl.textContent = String(pb);
+
+      finalScore.innerHTML = `<strong>${score}</strong>`;
+      finalLevel.innerHTML = `<strong>${level}</strong>`;
+      finalStreak.innerHTML = `<strong>${Math.max(0, level-1)}</strong>`;
+      const playedMs = Math.max(0, (parseInt(durationEl.value||'2',10)*60*1000) - Math.max(0, sessionEndAt - Date.now()));
+      finalTime.innerHTML = `<strong>${fmtTime(playedMs)}</strong>`;
+
+      try{ endModal.showModal(); }catch{ alert(\`Session Complete\nScore: ${score}\nLevel: ${level}\`); exitToSettings(); }
+    }
+
+    function pauseToggle(force){
+      if(!running) return;
+      paused = (typeof force === 'boolean') ? force : !paused;
+      pauseOverlay.classList.toggle('active', paused);
+      pauseOverlay.setAttribute('aria-hidden', String(!paused));
+      pauseBtn.setAttribute('aria-pressed', String(paused));
+    }
+
+    async function exitToSettings(){
+      running=false; paused=false; playback=false;
+      clearInterval(timerHandle);
+      try{ screen.orientation?.unlock?.(); }catch{}
+      await exitFullscreen();
+      endModal.close?.();
+      showScreen('settings');
+    }
+
+    // Events
+    startBtn.addEventListener('click', startSession);
+    pauseBtn.addEventListener('click', () => pauseToggle());
+    resumeBtn.addEventListener('click', () => pauseToggle(false));
+    exitBtn.addEventListener('click', exitToSettings);
+
+    // Pointer input
+    qsa('.pad').forEach(p=>{
+      p.addEventListener('pointerdown',(e)=>{ e.preventDefault(); handleInput(parseInt(p.dataset.id,10)); }, {passive:false});
+    });
+
+    // Keyboard input
+    window.addEventListener('keydown',(e)=>{
+      if(endModal.open) return;
+      if(e.key==='p' || e.key==='P'){ pauseToggle(); return; }
+      if(e.key==='Escape'){ exitToSettings(); return; }
+      if(/^[1-9]$/.test(e.key)){ handleInput(parseInt(e.key,10)); }
+    });
+
+    // Summary actions
+    newSessionBtn.addEventListener('click',(e)=>{ e.preventDefault(); endModal.close(); startSession(); });
+    closeSummaryBtn.addEventListener('click',(e)=>{ e.preventDefault(); endModal.close(); exitToSettings(); });
+
+    // If fullscreen drops, return to settings
+    document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement && screens.game.classList.contains('active')) exitToSettings(); });
   </script>
 </body>
 </html>
-
