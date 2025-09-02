@@ -13,6 +13,7 @@
       --bg:#0b1020; --text:#e9eef7; --muted:#b9c3d9; --hint:#9fb0cc;
       --panel-bg:rgba(255,255,255,.06); --panel-soft:rgba(255,255,255,.04); --panel-border:rgba(255,255,255,.12);
       --accent:#8ab4f8; --aqua:#80e6ff; --btn-bg:rgba(255,255,255,.10); --btn-border:rgba(255,255,255,.20);
+      --chip-bg:rgba(255,255,255,.08); --chip-border:rgba(255,255,255,.18);
     }
     dialog::backdrop{background:rgba(0,0,0,.55)}
     body{
@@ -20,8 +21,7 @@
         radial-gradient(1200px 800px at 10% 10%, rgba(255,255,255,.05), transparent 60%),
         radial-gradient(1000px 600px at 90% 30%, rgba(255,255,255,.06), transparent 60%),
         var(--bg);
-      color:var(--text); min-height:100svh; overflow:hidden;
-      font-synthesis-weight:none;
+      color:var(--text); min-height:100svh; overflow:hidden; font-synthesis-weight:none;
     }
     .screen{display:none} .screen.active{display:block}
 
@@ -33,6 +33,14 @@
     header .wrap{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem}
     .home-link{color:var(--text);text-decoration:none}
     .title{font-size:20px;font-weight:700}
+    .header-help{
+      margin-left:auto; font-size:.9rem; opacity:.95;
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:.4rem .7rem; border-radius:999px;
+      background:var(--chip-bg); border:1px solid var(--chip-border);
+      line-height:1.2;
+    }
+    .header-help b{font-weight:800}
 
     .settings-wrap{
       display:grid;grid-template-columns:minmax(300px,380px) 1fr;
@@ -53,8 +61,17 @@
       background:rgba(255,255,255,.08); color:var(--text);
       border:1px solid var(--panel-border); border-radius:10px;padding:.55rem .7rem;
     }
-    .toggle{display:flex;align-items:center;gap:.5rem}
     .hint,small{color:var(--hint);font-size:.875rem}
+
+    /* Settings stat (Personal Best) */
+    .stats-card{
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+      margin-top:12px; padding:12px; border-radius:12px;
+      background:rgba(255,255,255,.05); border:1px solid var(--panel-border);
+    }
+    .mini-stat{display:flex;flex-direction:column;gap:4px}
+    .mini-stat .label{color:var(--hint); font-size:.85rem}
+    .mini-stat .value{font-size:1.25rem; font-weight:800; letter-spacing:.2px}
 
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     .btn{
@@ -70,8 +87,7 @@
     .btn-ghost{background:transparent}
 
     #gameScreen{
-      position:fixed; inset:0;
-      grid-template-rows:64px 1fr; background:inherit; z-index:100;
+      position:fixed; inset:0; grid-template-rows:64px 1fr; background:inherit; z-index:100;
     }
     .screen.active#gameScreen{display:grid}
 
@@ -99,7 +115,6 @@
     }
     .pad.show{outline:3px solid var(--aqua); box-shadow:0 0 22px color-mix(in oklab, var(--aqua) 60%, transparent), inset 0 2px 10px rgba(0,0,0,.35)}
     .pad.pressed{transform:scale(.98); outline:2px solid color-mix(in oklab, var(--accent) 65%, white 0%);}
-    /* accessibility */
     .pad:focus-visible{outline:3px solid #8ab4f8}
 
     .pause-overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s ease}
@@ -111,7 +126,10 @@
     <div class="wrap">
       <a class="home-link btn btn-ghost" href="/">← Home</a>
       <div class="title">Rhythm Reach</div>
-      <div style="margin-left:auto;opacity:.85;font-size:.9rem">Comet-style shell • Rhythm controls</div>
+      <!-- Instruction chip (Comet-like placement) -->
+      <div class="header-help" aria-label="Instructions">
+        <b>How to play:</b> watch the pattern, then tap it back (1–9). One step added each round.
+      </div>
     </div>
   </header>
 
@@ -120,6 +138,19 @@
     <div class="settings-wrap">
       <section class="panel" aria-labelledby="settings-title">
         <h2 id="settings-title">Settings</h2>
+
+        <!-- Personal Best stat inline (Comet-like mini stat) -->
+        <div class="stats-card" role="group" aria-label="Session stats">
+          <div class="mini-stat">
+            <div class="label">Personal Best</div>
+            <div class="value" id="pbSetting">0</div>
+          </div>
+          <div class="mini-stat">
+            <div class="label">Starting Length</div>
+            <div class="value"><span id="startLenEcho">2</span> steps</div>
+          </div>
+        </div>
+
         <div class="fieldset">
           <div class="field">
             <label for="duration">Session Duration (minutes)</label>
@@ -153,16 +184,6 @@
             </select>
             <div class="hint">Delay before the next round begins after you finish one.</div>
           </div>
-
-          <div class="field toggle">
-            <input id="feedback" type="checkbox" checked />
-            <label for="feedback">Input Feedback (flash when I tap)</label>
-          </div>
-
-          <div class="field toggle">
-            <input id="mistakes" type="checkbox" checked />
-            <label for="mistakes">Mistakes Allowed (penalty −5, retry sequence)</label>
-          </div>
         </div>
 
         <div class="actions">
@@ -174,7 +195,7 @@
         <h2 id="howto-title">How to play</h2>
         <p>Watch the pads light up in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9 on desktop). Each round adds one new step. Keep a long streak, avoid mistakes, and finish quickly to build your score.</p>
         <ul>
-          <li><strong>Score:</strong> +10 per correct tap, −5 on mistakes (if allowed).</li>
+          <li><strong>Score:</strong> +10 per correct tap, −5 on mistakes (retry sequence).</li>
           <li><strong>Personal Best:</strong> saved locally in your browser.</li>
           <li><strong>Controls:</strong> Pause / Exit at the top; P to pause, Esc to exit.</li>
         </ul>
@@ -263,8 +284,9 @@
     const startLenEl = qs('#startLen');
     const speedEl    = qs('#speed');
     const gapEl      = qs('#gap');
-    const feedbackEl = qs('#feedback');
-    const mistakesEl = qs('#mistakes');
+
+    const pbSettingEl = qs('#pbSetting');
+    const startLenEcho = qs('#startLenEcho');
 
     const scoreEl = qs('#score');
     const bestEl  = qs('#best');
@@ -286,12 +308,17 @@
     let sequence=[], userIndex=0, level=0;
     let score=0, best = Number(localStorage.getItem('RR_best') || 0);
     bestEl.textContent = String(best);
+    pbSettingEl.textContent = String(best);
 
     let sessionEndAt=0, timerHandle=null;
-    let padMs=500, roundGap=1500, startLen=2, showFeedback=true, mistakesAllowed=true;
+    let padMs=500, roundGap=1500, startLen=2;
+    const showFeedback = true; // always on (no toggle)
 
     // ===== Mappings =====
     const padMsFromSpeed = (v)=> v==='slow'?700 : v==='fast'?350 : 500;
+
+    // Reflect start length near the stat card
+    startLenEl.addEventListener('input',()=>{ startLenEcho.textContent = String(clamp(parseInt(startLenEl.value||'2',10),2,5)); });
 
     // ===== Screen switching =====
     function showScreen(which){
@@ -301,6 +328,9 @@
         screens.settings.setAttribute('aria-hidden','false');
         screens.game.setAttribute('aria-hidden','true');
         startBtn.disabled = false;
+        // keep the Personal Best stat fresh if they exited mid-session
+        const pb = Number(localStorage.getItem('RR_best') || 0);
+        pbSettingEl.textContent = String(pb);
       }else{
         screens.game.classList.add('active');
         screens.game.setAttribute('aria-hidden','false');
@@ -370,19 +400,15 @@
         score += 10; scoreEl.textContent = String(score);
         if(userIndex >= sequence.length){
           // completed round: block input until next round begins
-          playback = true;                         // <— added to block mid-gap input
+          playback = true;
           setTimeout(()=> startRound(false), roundGap);
         }
       }else{
-        // mistake
+        // mistake -> penalty and replay current sequence
         score = Math.max(0, score - 5); scoreEl.textContent = String(score);
-        if(mistakesAllowed){
-          userIndex = 0;
-          playback = true;                         // <— added to block input during replay
-          setTimeout(()=> playSequence(sequence), 400);
-        }else{
-          endSession();
-        }
+        userIndex = 0;
+        playback = true;
+        setTimeout(()=> playSequence(sequence), 400);
       }
     }
 
@@ -396,8 +422,6 @@
       startLen = clamp(parseInt(startLenEl.value||'2',10), 2, 5);
       padMs    = padMsFromSpeed(speedEl.value);
       roundGap = parseInt(gapEl.value, 10);
-      showFeedback    = !!feedbackEl.checked;
-      mistakesAllowed = !!mistakesEl.checked;
 
       // reset
       running=true; paused=false; playback=false;
@@ -421,7 +445,12 @@
       clearInterval(timerHandle);
 
       // update PB
-      if(score > best){ best = score; localStorage.setItem('RR_best', String(best)); bestEl.textContent = String(best); }
+      if(score > best){
+        best = score;
+        localStorage.setItem('RR_best', String(best));
+        bestEl.textContent = String(best);
+        pbSettingEl.textContent = String(best); // reflect in settings stat too
+      }
 
       finalScore.innerHTML = `<strong>${score}</strong>`;
       finalLevel.innerHTML = `<strong>${level}</strong>`;
@@ -465,9 +494,7 @@
       if(endModal.open) return;
       if(e.key==='p' || e.key==='P'){ pauseToggle(); return; }
       if(e.key==='Escape'){ exitToSettings(); return; }
-      if(/^[1-9]$/.test(e.key)){
-        handleInput(parseInt(e.key,10));
-      }
+      if(/^[1-9]$/.test(e.key)){ handleInput(parseInt(e.key,10)); }
     });
 
     // Summary actions
