@@ -543,6 +543,7 @@
     }
 
     
+
 // ----- Session control
     function resetSessionState(){
       running = false;
@@ -600,7 +601,10 @@
     if (el) {
       clearGlow(idx);
       el.classList.add('glow');
-      setTimeout(() => { try { if (el) el.classList.remove('glow'); } catch(e){} }, 180);
+      {
+        const _t = setTimeout(() => { try { if (el) el.classList.remove('glow'); } finally { activeTimeouts.delete(_t); } }, 180);
+        activeTimeouts.add(_t);
+      }
     }
 
         score += 10;
