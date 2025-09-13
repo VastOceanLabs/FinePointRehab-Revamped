@@ -51,7 +51,7 @@
     .home-pill:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
     header.app-header h1 { color: #e6f2ff; font-size: var(--font-size-2xl); margin: 0; }
 
-    /* Hide header while playing (immersive) */
+    /* Hide header while playing to mirror Comet’s immersive mode */
     body.playing header.app-header { display: none; }
 
     /* ---- Screens ---- */
@@ -60,8 +60,7 @@
     .screen.active { display: block; animation: fadeIn .24s ease-out; }
     @keyframes fadeIn { from {opacity:0; transform: translateY(8px)} to {opacity:1; transform: none} }
 
-    /* ---- Cards & layout ---- */
-    .settings-wrap { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
+    /* Settings layout (match Comet spacing/structure) */
     .settings-card {
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.10);
@@ -71,72 +70,93 @@
       -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
     }
-    .settings-card h2 {
-      color: #dbe9ff; font-size: clamp(1.15rem, 2.2vw, 1.35rem);
-      font-weight: 800; letter-spacing: .2px; margin: 0 0 .75rem; opacity: .95;
-      text-shadow: 0 1px 0 rgba(0,0,0,.35);
+    .settings-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+    }
+    @media (max-width: 860px) {
+      .settings-wrap { grid-template-columns: 1fr; }
+    }
+    .settings-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
     }
 
-    /* Info panels (How to / Tips) */
-    .game-description {
-      background: linear-gradient(145deg, rgba(111,211,245,0.22), rgba(111,211,245,0.10));
-      border-left: 4px solid rgba(111,211,245,0.85);
-      color: #f4fbff; padding: 18px 18px 14px; border-radius: 12px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 18px rgba(0,0,0,0.25);
-      margin-bottom: 1rem;
-    }
-    .game-description h3 { color: #d7f2ff; margin: 0 0 10px; font-weight: 800; }
-    .game-description p, .game-description li { color: #e9f6ff; font-size: .98rem; line-height: 1.6; }
-    .game-description ul { margin: .25rem 0 0; padding-left: 1.25rem; }
-    .game-description kbd {
-      font: inherit; font-size: 0.85em; padding: 0.1em 0.35em; border-radius: 6px;
-      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
-    }
-
-    /* Metric (PB) */
+    /* Metric (match Comet’s HUD metric look for PB on settings) */
     .metric {
-      display: grid; justify-items: center; gap: .25rem; padding: .75rem 1rem; min-width: 120px;
-      border-radius: .75rem; border: 1px solid rgba(255,255,255,.14);
-      background: rgba(8,14,36,.35); box-shadow: 0 6px 16px rgba(0,0,0,.35);
+      display: grid;
+      justify-items: center;
+      gap: .25rem;
+      padding: .75rem 1rem;
+      min-width: 110px;
+      border-radius: .75rem;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(8,14,36,.35);
+      box-shadow: 0 6px 16px rgba(0,0,0,.35);
     }
-    .metric .v { font-size: 1.25rem; color: #d7f2ff; text-shadow: 0 0 8px rgba(160,220,255,.7); font-weight: 800; }
-    .metric .t { font-size: .78rem; opacity: .9; color: #cfe8ff; }
-    .metrics-row { display: flex; justify-content: center; padding: .25rem 0 .25rem; }
+    .metric .v { font-size: 1.125rem; color: #d7f2ff; text-shadow: 0 0 8px rgba(160,220,255,.7); font-weight: 700; }
+    .metric .t { font-size: .75rem; opacity: .9; color: #cfe8ff; }
 
-    /* Start button block */
-    .settings-actions { display: grid; grid-template-columns: 1fr; gap: var(--space-4); margin-top: var(--space-5); }
-
-    /* HUD */
+    /* HUD (top bar in game) – flex & wrap like Comet */
     .hud {
-      position: sticky; top: 0; z-index: 40; display: flex; flex-wrap: wrap; align-items: center;
-      gap: .75rem; padding: .5rem .75rem; margin: 0 auto var(--space-3);
-      border-radius: 0 0 .75rem .75rem; background: rgba(8,14,36,.85);
-      border: 1px solid rgba(255,255,255,.08); box-shadow: 0 6px 16px rgba(0,0,0,.35);
-      -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .75rem;
+      padding: .5rem .75rem;
+      margin: 0 auto var(--space-3);
+      border-radius: 0 0 .75rem .75rem;
+      background: rgba(8,14,36,.85);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 6px 16px rgba(0,0,0,.35);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
     }
     .hud .spacer { flex: 1; }
     .hud .metric .v { font-size: 1.25rem; }
 
-    /* Ghost buttons */
+    /* Ghost buttons consistent with DS */
     .btn-ghost { border-radius: 999px; }
     .btn-ghost + .btn-ghost { margin-left: .5rem; }
 
-    /* Game area (3x3) */
+    /* Game area */
     #gameArea {
-      position: relative; width: 100%; margin: 0 auto; max-width: 700px; aspect-ratio: 1/1;
-      display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
-      gap: .75rem; padding: .75rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.09);
-      background: linear-gradient(180deg, rgba(8,14,36,0.35), rgba(8,14,36,0.25)); box-shadow: 0 10px 24px rgba(0,0,0,.35);
+      position: relative;
+      width: 100%;
+      margin: 0 auto;
+      max-width: 700px;
+      aspect-ratio: 1/1; /* Square grid area */
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: .75rem;
+      padding: .75rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: linear-gradient(180deg, rgba(8,14,36,0.35), rgba(8,14,36,0.25));
+      box-shadow: 0 10px 24px rgba(0,0,0,.35);
     }
 
     .pad {
-      display: grid; place-items: center; user-select: none; touch-action: manipulation;
-      border-radius: 1rem; border: 1px solid rgba(255,255,255,0.10);
+      display: grid;
+      place-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.10);
       background: radial-gradient(circle at 30% 30%, rgba(111,211,245,.25), rgba(111,211,245,.10) 60%, rgba(255,255,255,.04) 100%);
       box-shadow: inset 0 8px 18px rgba(0,0,0,.35), 0 8px 16px rgba(0,0,0,.35);
-      color: #e9fbff; font-size: 1.25rem; font-weight: 700;
-      /* IMPORTANT: transform-only transition for crisp glow timing */
-      transition: transform .08s var(--easing);
+      color: #e9fbff;
+      font-size: 1.25rem;
+      font-weight: 700;
+      transition: transform .08s var(--easing), box-shadow .12s var(--easing), background .12s var(--easing), border-color .12s;
       min-height: 64px;
     }
     .pad:active { transform: translateY(1px) scale(0.99); }
@@ -160,38 +180,71 @@
 
     /* Pause overlay */
     #pauseOverlay {
-      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.55); z-index: var(--z-modal, 1050);
-      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.55);
+      z-index: var(--z-modal, 1050);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
     }
     #pauseOverlay.open { display: flex; }
     .pause-card {
-      width: min(520px, 92vw); background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12); border-radius: 1rem; padding: 1.25rem; box-shadow: var(--shadow-lg);
+      width: min(520px, 92vw);
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: var(--shadow-lg);
     }
     .pause-card h3 { margin-bottom: .5rem; color: #fff; text-align: center; }
     .pause-card p { text-align: center; color: rgba(255,255,255,.92); }
 
-    /* Done dialog (summary) */
+    /* Done dialog (session summary) */
     #doneDialog {
-      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.55); z-index: var(--z-modal, 1050);
-      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.55);
+      z-index: var(--z-modal, 1050);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
     }
     #doneDialog.open { display: flex; }
     .done-card {
-      width: min(560px, 94vw); background: rgba(8,14,36,.92);
-      border: 1px solid rgba(255,255,255,.10); border-radius: 1rem; padding: 1.25rem 1.25rem 1rem;
-      box-shadow: var(--shadow-lg); color: #e8f6ff;
+      width: min(560px, 94vw);
+      background: rgba(8,14,36,.92);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 1rem;
+      padding: 1.25rem 1.25rem 1rem;
+      box-shadow: var(--shadow-lg);
+      color: #e8f6ff;
     }
-    .done-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: .5rem 0 1rem; }
+    .done-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem;
+      margin: .5rem 0 1rem;
+    }
     @media (max-width:620px){ .done-grid { grid-template-columns: 1fr; } }
     .done-stat {
-      padding: .75rem 1rem; border-radius: .75rem; border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04); text-align: center;
+      padding: .75rem 1rem;
+      border-radius: .75rem;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      text-align: center;
     }
     .done-stat .v { font-weight: 700; font-size: 1.125rem; color: #d7f2ff; text-shadow: 0 0 8px rgba(160,220,255,.7); }
-    .done-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: .75rem; }
+    .done-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem;
+      margin-top: .75rem;
+    }
     @media (max-width:480px){ .done-actions { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -207,17 +260,15 @@
     <!-- SETTINGS SCREEN -->
     <section id="settingsScreen" class="screen active" aria-labelledby="settingsTitle">
       <h2 id="settingsTitle" class="sr-only">Settings</h2>
-
       <div class="settings-wrap">
-        <!-- Card 1: Intro + PB + Start -->
-        <section class="settings-card" aria-labelledby="introTitle">
-          <div class="game-description" id="introTitle">
-            <h3>How to play</h3>
-            <p>Watch the pads light in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9). Each round adds one new step; keep a streak to grow your score.</p>
+        <section class="settings-card" aria-labelledby="howtoTitle">
+          <div class="game-description">
+            <h3 id="howtoTitle">How to play</h3>
+            <p>Watch the pads light in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9). Each round adds one new step; keep a long streak to grow your score.</p>
           </div>
 
-          <div class="metrics-row">
-            <div class="metric" role="status" aria-live="polite">
+          <div class="grid grid-cols-1 sm:grid-cols-3">
+            <div class="metric" aria-live="polite">
               <div id="pbSetting" class="v">0</div>
               <div class="t">Personal Best</div>
             </div>
@@ -229,9 +280,8 @@
           </div>
         </section>
 
-        <!-- Card 2: Settings -->
         <section class="settings-card" aria-labelledby="optionsTitle">
-          <h2 id="optionsTitle">Settings</h2>
+          <h3 id="optionsTitle" class="mb-4">Session Options</h3>
 
           <div class="mb-4">
             <label for="minutes" class="settings-label">Session Duration (minutes)</label>
@@ -257,7 +307,7 @@
             </ul>
           </div>
 
-          <div class="mb-0">
+          <div class="mb-4">
             <label for="roundGap" class="settings-label">Round Gap</label>
             <select id="roundGap">
               <option value="2000">2.0s</option>
@@ -267,10 +317,10 @@
             </select>
           </div>
 
-          <div class="game-description" style="margin-top:1rem">
+          <div class="game-description">
             <h3>Tips</h3>
             <ul>
-              <li>Keyboard: press <kbd>1</kbd>–<kbd>9</kbd> to tap pads.</li>
+              <li>Keyboard: press 1–9 to tap pads.</li>
               <li>Pause: press <kbd>P</kbd> or use the Pause button.</li>
               <li>Exit: press <kbd>Esc</kbd> to leave the session.</li>
             </ul>
@@ -390,52 +440,6 @@
 
     const LS_KEY = 'FPR_v1_RhythmReach_PB';
 
-    // ---- Robust glow tracking/clearing ----
-    const glowTimers = new Map();
-    function clearGlow(idx) {
-      const t = glowTimers.get(idx);
-      if (t) { clearTimeout(t); glowTimers.delete(idx); }
-      const el = pads[idx - 1];
-      if (el) el.classList.remove('glow');
-    }
-    function clearAllPadStates() {
-      glowTimers.forEach(t => clearTimeout(t));
-      glowTimers.clear();
-      pads.forEach(p => p.classList.remove('glow', 'wrong'));
-    }
-
-    // ---- Global timeout tracking to cancel any pending sleeps/glows
-    const activeTimeouts = new Set();
-    function sleep(ms) {
-      return new Promise(res => {
-        const t = setTimeout(() => { activeTimeouts.delete(t); res(); }, ms);
-        activeTimeouts.add(t);
-      });
-    }
-    function clearAllTimers() {
-      activeTimeouts.forEach(t => clearTimeout(t));
-      activeTimeouts.clear();
-    }
-
-    
-
-// Transient press feedback with WAAPI (no classes/timeouts)
-function pressPulse(el){
-  try {
-    el.animate(
-      [
-        { transform: 'scale(1)' },
-        { transform: 'scale(1.06)' },
-        { transform: 'scale(1)' }
-      ],
-      { duration: 180, easing: 'ease-out' }
-    );
-  } catch(e){ /* no-op */ }
-  if (navigator.vibrate) { try { navigator.vibrate(12); } catch(e){} }
-}
-// ---- Cancellable playback token
-    let playbackToken = 0;
-
     // ----- Helpers
     const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
     function setScreen(which){
@@ -457,31 +461,17 @@ function pressPulse(el){
       return (m < 10 ? '0'+m : ''+m) + ':' + (secs < 10 ? '0'+secs : ''+secs);
     }
     function randPad(){ return 1 + Math.floor(Math.random()*9); }
-
-    function glowPad(idx, dur) {
-      const el = pads[idx - 1];
-      if (!el) return;
-      // ensure no overlapping glow
-      clearGlow(idx);
+    function glowPad(idx, dur){
+      const el = pads[idx-1];
+      if(!el) return;
       el.classList.add('glow');
-      const to = setTimeout(() => {
-        el.classList.remove('glow');
-        glowTimers.delete(idx);
-        activeTimeouts.delete(to);
-      }, dur);
-      glowTimers.set(idx, to);
-      activeTimeouts.add(to);
+      setTimeout(()=> el.classList.remove('glow'), dur);
     }
     function wrongPad(idx){
-      clearGlow(idx);
       const el = pads[idx-1];
       if(!el) return;
       el.classList.add('wrong');
-      const to = setTimeout(() => {
-        el.classList.remove('wrong');
-        activeTimeouts.delete(to);
-      }, 280);
-      activeTimeouts.add(to);
+      setTimeout(()=> el.classList.remove('wrong'), 280);
     }
 
     function readPB(){
@@ -509,7 +499,7 @@ function pressPulse(el){
         const left = endTime - Date.now();
         timeEl.textContent = formatTimeLeft(left);
         if(left <= 0){
-          endSession();
+          endSession(true);
         }
       }, 200);
     }
@@ -527,50 +517,33 @@ function pressPulse(el){
       if(speed === 'fast'){ glow = 380; gap = 160; }
       return { glow, gap };
     }
-
     async function playSequence(){
-      const myToken = ++playbackToken;
       playback = true;
-
-      clearAllPadStates(); // ensure clean slate
       const { glow, gap } = playbackTimings();
-      const roundDelay = Number(roundGapSelect.value) || 1500;
-
-      await sleep(roundDelay);
-      if (myToken !== playbackToken || !running) { playback = false; return; }
-
-      for (let i = 0; i < seq.length; i++) {
-        while (paused && myToken === playbackToken && running) { await sleep(50); }
-        if (myToken !== playbackToken || !running) break;
-
+      // brief delay before each playback round
+      await new Promise(r => setTimeout(r, Number(roundGapSelect.value) || 1500));
+      for(let i=0;i<seq.length;i++){
+        if(!running) break;
+        // Allow pause mid-playback
+        while(paused){ await new Promise(r => setTimeout(r, 50)); }
         const idx = seq[i];
         glowPad(idx, glow);
-        await sleep(glow + gap);
-        if (myToken !== playbackToken || !running) break;
+        await new Promise(r => setTimeout(r, glow + gap));
       }
-
-      // NEW: hard-clear any lingering glow at the exact end of playback
-      if (myToken === playbackToken && running) {
-        clearAllPadStates();
-      }
-
       playback = false;
       userIndex = 0;
     }
 
-    
-
-
-// ----- Session control
+    // ----- Session control
     function resetSessionState(){
       running = false;
       paused = false;
       playback = false;
-      ++playbackToken;      // cancel any pending playback loop
+      score = 0;
+      rounds = 0;
+      seq = [];
+      userIndex = 0;
       stopTimer();
-      clearAllTimers();     // kill ALL timeouts (sleeps/glows)
-      clearAllPadStates();
-      score = 0; rounds = 0; seq = []; userIndex = 0;
       scoreEl.textContent = '0';
       timeEl.textContent = '00:00';
     }
@@ -588,19 +561,18 @@ function pressPulse(el){
       await playSequence();
     }
 
-    function endSession(){
+    function endSession(timeUp=false){
       if(!running && !paused) return;
       running = false;
       paused = false;
       playback = false;
-      ++playbackToken;  // cancel sequence loop
       stopTimer();
-      clearAllTimers();
-      clearAllPadStates();
       maybeUpdatePB();
       finalScoreEl.textContent = String(score);
       finalRoundsEl.textContent = String(rounds);
+      // Show modal summary
       doneDialog.classList.add('open');
+      // Keep game screen visible behind; header hidden for focus
     }
 
     function closeDone(){
@@ -613,29 +585,22 @@ function pressPulse(el){
       if(!running || paused || playback) return;
       const expected = seq[userIndex];
       if(idx === expected){
-            // Manual glow (avoid auto-timeout races)
-    const el = pads[idx - 1];
-    if (el) {
-      clearGlow(idx);
-      el.classList.add('glow');
-      {
-        const _t = setTimeout(() => { try { if (el) el.classList.remove('glow'); } finally { activeTimeouts.delete(_t); } }, 180);
-        activeTimeouts.add(_t);
-      }
-    }
-
+        glowPad(idx, 180);
         score += 10;
         scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
+          // Round complete
           rounds++;
           seq.push(randPad());
-          playSequence(); // new round; old playback (if any) is canceled by token
+          playSequence();
         }
       } else {
         wrongPad(idx);
+        // mild penalty, keep practicing
         score = Math.max(0, score - 5);
         scoreEl.textContent = String(score);
+        // reset user input for this round
         userIndex = 0;
       }
     }
@@ -645,17 +610,17 @@ function pressPulse(el){
       if(!running) return;
       paused = !!v;
       if(paused){
-        clearAllPadStates(); // no glows under overlay
+        pauseOverlay.classList.add('open');
+      }else{
+        pauseOverlay.classList.remove('open');
       }
-      pauseOverlay.classList.toggle('open', paused);
     }
 
+    // Exit flow: always shows the summary modal if a session is/was active
     function exitFlow(){
       if(running || paused){
-        endSession();   // includes full cleanup
+        endSession(false);
       } else {
-        clearAllTimers();
-        clearAllPadStates();
         setScreen('settings');
       }
     }
