@@ -529,21 +529,13 @@
 
         const idx = seq[i];
         glowPad(idx, glow);
-        // Wait exactly for the glow duration, then clear the specific pad
+        // Explicit timing: glow duration, then clear, then inter-note gap
         await sleep(glow);
         clearGlow(idx);
         if (myToken !== playbackToken || !running) break;
-        // Now wait the gap between notes
         await sleep(gap);
         if (myToken !== playbackToken || !running) break;
 }
-        if (myToken !== playbackToken || !running) break;
-
-        const idx = seq[i];
-        glowPad(idx, glow);
-        await sleep(glow + gap);
-        if (myToken !== playbackToken || !running) break;
-      }
 
       // NEW: hard-clear any lingering glow at the exact end of playback
       if (myToken === playbackToken && running) {
@@ -611,7 +603,6 @@
         scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
-          // Ensure no pad remains lit between rounds
           clearAllPadStates();
           rounds++;
           seq.push(randPad());
