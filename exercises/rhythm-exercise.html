@@ -417,7 +417,23 @@
       activeTimeouts.clear();
     }
 
-    // ---- Cancellable playback token
+    
+
+// Transient press feedback with WAAPI (no classes/timeouts)
+function pressPulse(el){
+  try {
+    el.animate(
+      [
+        { transform: 'scale(1)' },
+        { transform: 'scale(1.06)' },
+        { transform: 'scale(1)' }
+      ],
+      { duration: 180, easing: 'ease-out' }
+    );
+  } catch(e){ /* no-op */ }
+  if (navigator.vibrate) { try { navigator.vibrate(12); } catch(e){} }
+}
+// ---- Cancellable playback token
     let playbackToken = 0;
 
     // ----- Helpers
@@ -543,6 +559,7 @@
     }
 
     
+
 
 // ----- Session control
     function resetSessionState(){
