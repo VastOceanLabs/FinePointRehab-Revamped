@@ -186,7 +186,8 @@
       color: #e9fbff;
       font-size: 1.25rem;
       font-weight: 700;
-      transition: transform .08s var(--easing), box-shadow .12s var(--easing), background .12s var(--easing), border-color .12s;
+      /* IMPORTANT: transform-only transition for crisp glow timing */
+      transition: transform .08s var(--easing);
       min-height: 64px;
     }
     .pad:active { transform: translateY(1px) scale(0.99); }
@@ -487,6 +488,22 @@
       pads.forEach(p => p.classList.remove('glow', 'wrong'));
     }
 
+    // ---- Global timeout tracking to cancel any pending sleeps/glows
+    const activeTimeouts = new Set();
+    function sleep(ms) {
+      return new Promise(res => {
+        const t = setTimeout(() => { activeTimeouts.delete(t); res(); }, ms);
+        activeTimeouts.add(t);
+      });
+    }
+    function clearAllTimers() {
+      activeTimeouts.forEach(t => clearTimeout(t));
+      activeTimeouts.clear();
+    }
+
+    // ---- Cancellable playback token
+    let playbackToken = 0;
+
     // ----- Helpers
     const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
     function setScreen(which){
@@ -508,6 +525,7 @@
       return (m < 10 ? '0'+m : ''+m) + ':' + (secs < 10 ? '0'+secs : ''+secs);
     }
     function randPad(){ return 1 + Math.floor(Math.random()*9); }
+
     function glowPad(idx, dur) {
       const el = pads[idx - 1];
       if (!el) return;
@@ -517,15 +535,21 @@
       const to = setTimeout(() => {
         el.classList.remove('glow');
         glowTimers.delete(idx);
+        activeTimeouts.delete(to);
       }, dur);
       glowTimers.set(idx, to);
+      activeTimeouts.add(to);
     }
     function wrongPad(idx){
       clearGlow(idx);
       const el = pads[idx-1];
       if(!el) return;
       el.classList.add('wrong');
-      setTimeout(() => el.classList.remove('wrong'), 280);
+      const to = setTimeout(() => {
+        el.classList.remove('wrong');
+        activeTimeouts.delete(to);
+      }, 280);
+      activeTimeouts.add(to);
     }
 
     function readPB(){
@@ -553,7 +577,7 @@
         const left = endTime - Date.now();
         timeEl.textContent = formatTimeLeft(left);
         if(left <= 0){
-          endSession(true);
+          endSession();
         }
       }, 200);
     }
@@ -571,20 +595,28 @@
       if(speed === 'fast'){ glow = 380; gap = 160; }
       return { glow, gap };
     }
+
     async function playSequence(){
+      const myToken = ++playbackToken;
       playback = true;
+
       clearAllPadStates(); // ensure clean slate
       const { glow, gap } = playbackTimings();
-      // brief delay before each playback round
-      await new Promise(r => setTimeout(r, Number(roundGapSelect.value) || 1500));
-      for(let i=0;i<seq.length;i++){
-        if(!running) break;
-        // Allow pause mid-playback
-        while(paused){ await new Promise(r => setTimeout(r, 50)); }
+      const roundDelay = Number(roundGapSelect.value) || 1500;
+
+      await sleep(roundDelay);
+      if (myToken !== playbackToken || !running) { playback = false; return; }
+
+      for (let i = 0; i < seq.length; i++) {
+        while (paused && myToken === playbackToken && running) { await sleep(50); }
+        if (myToken !== playbackToken || !running) break;
+
         const idx = seq[i];
         glowPad(idx, glow);
-        await new Promise(r => setTimeout(r, glow + gap));
+        await sleep(glow + gap);
+        if (myToken !== playbackToken || !running) break;
       }
+
       playback = false;
       userIndex = 0;
     }
@@ -594,12 +626,11 @@
       running = false;
       paused = false;
       playback = false;
-      score = 0;
-      rounds = 0;
-      seq = [];
-      userIndex = 0;
+      ++playbackToken;      // cancel any pending playback loop
       stopTimer();
+      clearAllTimers();     // kill ALL timeouts (sleeps/glows)
       clearAllPadStates();
+      score = 0; rounds = 0; seq = []; userIndex = 0;
       scoreEl.textContent = '0';
       timeEl.textContent = '00:00';
     }
@@ -622,7 +653,9 @@
       running = false;
       paused = false;
       playback = false;
+      ++playbackToken;  // cancel sequence loop
       stopTimer();
+      clearAllTimers();
       clearAllPadStates();
       maybeUpdatePB();
       finalScoreEl.textContent = String(score);
@@ -645,10 +678,9 @@
         scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
-          // Round complete
           rounds++;
           seq.push(randPad());
-          playSequence();
+          playSequence(); // new round; old playback (if any) is canceled by token
         }
       } else {
         wrongPad(idx);
@@ -663,17 +695,16 @@
       if(!running) return;
       paused = !!v;
       if(paused){
-        clearAllPadStates();
-        pauseOverlay.classList.add('open');
-      }else{
-        pauseOverlay.classList.remove('open');
+        clearAllPadStates(); // no glows under overlay
       }
+      pauseOverlay.classList.toggle('open', paused);
     }
 
     function exitFlow(){
       if(running || paused){
-        endSession();
+        endSession();   // includes full cleanup
       } else {
+        clearAllTimers();
         clearAllPadStates();
         setScreen('settings');
       }
