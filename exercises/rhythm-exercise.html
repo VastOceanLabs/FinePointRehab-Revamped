@@ -529,6 +529,18 @@
 
         const idx = seq[i];
         glowPad(idx, glow);
+        // Wait exactly for the glow duration, then clear the specific pad
+        await sleep(glow);
+        clearGlow(idx);
+        if (myToken !== playbackToken || !running) break;
+        // Now wait the gap between notes
+        await sleep(gap);
+        if (myToken !== playbackToken || !running) break;
+}
+        if (myToken !== playbackToken || !running) break;
+
+        const idx = seq[i];
+        glowPad(idx, glow);
         await sleep(glow + gap);
         if (myToken !== playbackToken || !running) break;
       }
@@ -592,8 +604,6 @@
     // ----- Pad input
     function onUserPad(idx){
       if(!running || paused || playback) return;
-      // Safety: ensure no leftover glow at the start of user input for a round
-      if (userIndex === 0) clearAllPadStates();
       const expected = seq[userIndex];
       if(idx === expected){
         glowPad(idx, 180);
@@ -601,7 +611,7 @@
         scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
-          // Defensive: ensure no pad remains lit between rounds
+          // Ensure no pad remains lit between rounds
           clearAllPadStates();
           rounds++;
           seq.push(randPad());
@@ -661,10 +671,6 @@
     });
 
     window.addEventListener('keydown', onKey);
-
-    // Failsafe: if any pad glow ever sticks after a press, clear it on pointerup when not in playback
-    window.addEventListener('pointerup', () => { if (running && !paused && !playback) clearAllPadStates(); }, true);
-
 
     // ----- Init
     readPB();
