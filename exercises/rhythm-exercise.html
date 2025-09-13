@@ -592,6 +592,8 @@
     // ----- Pad input
     function onUserPad(idx){
       if(!running || paused || playback) return;
+      // Safety: ensure no leftover glow at the start of user input for a round
+      if (userIndex === 0) clearAllPadStates();
       const expected = seq[userIndex];
       if(idx === expected){
         glowPad(idx, 180);
@@ -659,6 +661,10 @@
     });
 
     window.addEventListener('keydown', onKey);
+
+    // Failsafe: if any pad glow ever sticks after a press, clear it on pointerup when not in playback
+    window.addEventListener('pointerup', () => { if (running && !paused && !playback) clearAllPadStates(); }, true);
+
 
     // ----- Init
     readPB();
