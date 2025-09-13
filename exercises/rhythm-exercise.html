@@ -443,6 +443,9 @@
     function randPad(){ return 1 + Math.floor(Math.random()*9); }
 
     function glowPad(idx, dur) {
+  // Playback-safe: when ms <= 0, set glow without auto-timeout to avoid races
+  try { if (ms <= 0) { const el = pads[idx - 1]; if (el) { clearGlow(idx); el.classList.add('glow'); } return; } } catch(e) {}
+
       const el = pads[idx - 1];
       if (!el) return;
       // ensure no overlapping glow
@@ -528,14 +531,15 @@
         if (myToken !== playbackToken || !running) break;
 
         const idx = seq[i];
-        glowPad(idx, glow);
-        // Explicit timing: glow duration, then clear, then inter-note gap
+        // Set glow without auto-timeout to avoid conflicts with manual clear
+        glowPad(idx, 0);
         await sleep(glow);
-        clearGlow(idx);
         if (myToken !== playbackToken || !running) break;
+        clearGlow(idx);
+
         await sleep(gap);
         if (myToken !== playbackToken || !running) break;
-}
+        }
 
       // NEW: hard-clear any lingering glow at the exact end of playback
       if (myToken === playbackToken && running) {
