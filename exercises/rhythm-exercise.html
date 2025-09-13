@@ -443,9 +443,6 @@
     function randPad(){ return 1 + Math.floor(Math.random()*9); }
 
     function glowPad(idx, dur) {
-  // Playback-safe: when ms <= 0, set glow without auto-timeout to avoid races
-  try { if (ms <= 0) { const el = pads[idx - 1]; if (el) { clearGlow(idx); el.classList.add('glow'); } return; } } catch(e) {}
-
       const el = pads[idx - 1];
       if (!el) return;
       // ensure no overlapping glow
@@ -515,7 +512,7 @@
       return { glow, gap };
     }
 
-    async function playSequence(){
+    async async function playSequence(){
       const myToken = ++playbackToken;
       playback = true;
 
@@ -531,15 +528,10 @@
         if (myToken !== playbackToken || !running) break;
 
         const idx = seq[i];
-        // Set glow without auto-timeout to avoid conflicts with manual clear
-        glowPad(idx, 0);
-        await sleep(glow);
+        glowPad(idx, glow);
+        await sleep(glow + gap);
         if (myToken !== playbackToken || !running) break;
-        clearGlow(idx);
-
-        await sleep(gap);
-        if (myToken !== playbackToken || !running) break;
-        }
+      }
 
       // NEW: hard-clear any lingering glow at the exact end of playback
       if (myToken === playbackToken && running) {
@@ -564,7 +556,7 @@
       timeEl.textContent = '00:00';
     }
 
-    async function startSession(){
+    async async function startSession(){
       resetSessionState();
       readPB();
 
