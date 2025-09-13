@@ -392,7 +392,16 @@
 
     // ---- Robust glow tracking/clearing ----
     const glowTimers = new Map();
-    function clearGlow(idx) {
+    function clearGlow(
+function setGlowNoTimeout(idx){
+  try{
+    const el = pads[idx - 1];
+    if(!el) return;
+    clearGlow(idx); // cancel any prior glow on this pad
+    el.classList.add('glow'); // no auto-timeout here; playback controls timing
+  }catch(e){ /* no-op */ }
+}
+idx) {
       const t = glowTimers.get(idx);
       if (t) { clearTimeout(t); glowTimers.delete(idx); }
       const el = pads[idx - 1];
@@ -512,7 +521,7 @@
       return { glow, gap };
     }
 
-    async async function playSequence(){
+    async function playSequence(){
       const myToken = ++playbackToken;
       playback = true;
 
@@ -528,10 +537,14 @@
         if (myToken !== playbackToken || !running) break;
 
         const idx = seq[i];
-        glowPad(idx, glow);
-        await sleep(glow + gap);
+        // Deterministic timing: playback owns glow start/end
+        setGlowNoTimeout(idx);
+        await sleep(glow);
         if (myToken !== playbackToken || !running) break;
-      }
+        clearGlow(idx);
+        await sleep(gap);
+        if (myToken !== playbackToken || !running) break;
+}
 
       // NEW: hard-clear any lingering glow at the exact end of playback
       if (myToken === playbackToken && running) {
@@ -556,7 +569,7 @@
       timeEl.textContent = '00:00';
     }
 
-    async async function startSession(){
+    async function startSession(){
       resetSessionState();
       readPB();
 
