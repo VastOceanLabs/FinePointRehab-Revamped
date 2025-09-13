@@ -550,33 +550,7 @@ async function playSequence(){
 
   playback = false;
   userIndex = 0;
-}
-= playbackTimings();
-      const roundDelay = Number(roundGapSelect.value) || 1500;
-
-      await sleep(roundDelay);
-      if (myToken !== playbackToken || !running) { playback = false; return; }
-
-      for (let i = 0; i < seq.length; i++) {
-        while (paused && myToken === playbackToken && running) { await sleep(50); }
-        if (myToken !== playbackToken || !running) break;
-
-        const idx = seq[i];
-        glowPad(idx, glow);
-        await sleep(glow + gap);
-        if (myToken !== playbackToken || !running) break;
-      }
-
-      // NEW: hard-clear any lingering glow at the exact end of playback
-      if (myToken === playbackToken && running) {
-        clearAllPadStates();
-      }
-
-      playback = false;
-      userIndex = 0;
-    }
-
-    // ----- Session control
+}// ----- Session control
     function resetSessionState(){
       running = false;
       paused = false;
