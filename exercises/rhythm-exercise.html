@@ -392,16 +392,7 @@
 
     // ---- Robust glow tracking/clearing ----
     const glowTimers = new Map();
-    function clearGlow(
-function setGlowNoTimeout(idx){
-  try{
-    const el = pads[idx - 1];
-    if(!el) return;
-    clearGlow(idx); // cancel any prior glow on this pad
-    el.classList.add('glow'); // no auto-timeout here; playback controls timing
-  }catch(e){ /* no-op */ }
-}
-idx) {
+    function clearGlow(idx) {
       const t = glowTimers.get(idx);
       if (t) { clearTimeout(t); glowTimers.delete(idx); }
       const el = pads[idx - 1];
@@ -537,14 +528,10 @@ idx) {
         if (myToken !== playbackToken || !running) break;
 
         const idx = seq[i];
-        // Deterministic timing: playback owns glow start/end
-        setGlowNoTimeout(idx);
-        await sleep(glow);
+        glowPad(idx, glow);
+        await sleep(glow + gap);
         if (myToken !== playbackToken || !running) break;
-        clearGlow(idx);
-        await sleep(gap);
-        if (myToken !== playbackToken || !running) break;
-}
+      }
 
       // NEW: hard-clear any lingering glow at the exact end of playback
       if (myToken === playbackToken && running) {
@@ -612,6 +599,7 @@ idx) {
         scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
+          // Ensure no pad remains lit between rounds
           clearAllPadStates();
           rounds++;
           seq.push(randPad());
