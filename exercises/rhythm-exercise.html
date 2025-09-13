@@ -512,12 +512,46 @@
       return { glow, gap };
     }
 
-    async function playSequence(){
-      const myToken = ++playbackToken;
-      playback = true;
+    
+async function playSequence(){
+  const myToken = ++playbackToken;
+  playback = true;
 
-      clearAllPadStates(); // ensure clean slate
-      const { glow, gap } = playbackTimings();
+  clearAllPadStates();
+  const { glow, gap } = playbackTimings();
+  const roundDelay = Number(roundGapSelect.value) || 1500;
+
+  await sleep(roundDelay);
+  if (myToken !== playbackToken || !running) { playback = false; return; }
+
+  for (let i = 0; i < seq.length; i++) {
+    while (paused && myToken === playbackToken && running) { await sleep(50); }
+    if (myToken !== playbackToken || !running) break;
+
+    const idx = seq[i];
+    // Light it up without automatic clearing
+    const el = pads[idx - 1];
+    if (el) {
+      clearGlow(idx); // Clear any existing state
+      el.classList.add('glow');
+    }
+
+    // Wait for glow duration
+    await sleep(glow);
+    if (myToken !== playbackToken || !running) break;
+
+    // Manually clear it
+    if (el) el.classList.remove('glow');
+
+    // Wait for gap
+    await sleep(gap);
+    if (myToken !== playbackToken || !running) break;
+  }
+
+  playback = false;
+  userIndex = 0;
+}
+= playbackTimings();
       const roundDelay = Number(roundGapSelect.value) || 1500;
 
       await sleep(roundDelay);
@@ -599,7 +633,6 @@
         scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
-          // Ensure no pad remains lit between rounds
           clearAllPadStates();
           rounds++;
           seq.push(randPad());
