@@ -599,6 +599,8 @@
         scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
+          // Defensive: ensure no pad remains lit between rounds
+          clearAllPadStates();
           rounds++;
           seq.push(randPad());
           playSequence(); // new round; old playback (if any) is canceled by token
