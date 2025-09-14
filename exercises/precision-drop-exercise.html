@@ -367,6 +367,7 @@
     ];
 
     // Starfield fallback
+    window.addEventListener('resize', () => { if(isSessionActive){ ensureParity(); } }, {passive:true});
     (function initTwinkle(){
       const count = 80;
       for (let i=0;i<count;i++){
@@ -480,6 +481,7 @@
       roundStartTime = Date.now();
 
       clearInterval(timerInterval);
+      let parityInterval = setInterval(() => { if(isSessionActive && !isPaused){ ensureParity(); } }, 2000);
       timerInterval = setInterval(() => {
         if(!isPaused){
           timeRemaining -= 100;
@@ -498,13 +500,14 @@
 
     function restartSession(){
       fromImmersive();
-      clearInterval(timerInterval); isSessionActive=false; isPaused=false;
+      clearInterval(timerInterval); try{clearInterval(parityInterval);}catch{}; isSessionActive=false; isPaused=false;
       timeRemaining = 0; updateTimeUI();
       clearGameElements();
     }
 
     function finishSession(){
       clearInterval(timerInterval);
+      try{clearInterval(parityInterval);}catch{};
       isSessionActive = false; isPaused = false;
       clearGameElements();
 
@@ -606,6 +609,7 @@
       if (statusMessage) statusMessage.textContent = 'Drag objects to their matching targets';
       roundStartTime = Date.now();
       updateHUD();
+      ensureParity();
     }
 
     function randomEdgeX(rect, size){
@@ -642,6 +646,36 @@
       };
     }
     function dist(x1,y1,x2,y2){ return Math.hypot(x2-x1,y2-y1); }
+
+    // === Parity watchdog: ensure every target has a matching ball ===
+    function ensureParity() {
+      // Build sets of ids present
+      const targetIds = new Set(activeTargets.map(t => String(t.dataset.targetId)));
+      const ballIds = new Set(activeDroppables.map(d => String(d.dataset.targetId)));
+
+      // For any target id without a ball, spawn one
+      const missing = [...targetIds].filter(id => !ballIds.has(id));
+      if (missing.length) {
+        const diff = DIFF[difficultySelect?.value || 'easy'] || DIFF.easy;
+        const gameRect = gameArea.getBoundingClientRect();
+        missing.forEach(id => {
+          const i = parseInt(id, 10) || 0;
+          const d = document.createElement('div');
+          d.className = 'draggable';
+          d.dataset.targetId = id;
+          const col = palette[i % palette.length];
+          d.style.width = `${diff.objectSize}px`; d.style.height = `${diff.objectSize}px`;
+          d.style.background = col.grad; d.style.boxShadow = `0 4px 15px ${col.solid}66`;
+          d.style.left = `${randomEdgeX(gameRect, diff.objectSize)}px`;
+          d.style.top = `${randomEdgeY(gameRect, diff.objectSize)}px`;
+          d.setAttribute('tabindex','0');
+          if ((showNumbersSelect?.value || 'no') === 'yes'){ d.textContent = String(i+1); }
+          addDragListeners(d);
+          gameArea.appendChild(d); activeDroppables.push(d);
+        });
+      }
+    }
+
 
     function addDragListeners(el){
       el.addEventListener('mousedown', startDrag);
@@ -744,6 +778,7 @@
         }
       }
 
+      ensureParity();
       if (activeDroppables.length === 0 && activeTargets.length === 0){
         currentRound++;
         if (currentRound <= maxRounds){ createRound(); }
