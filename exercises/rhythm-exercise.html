@@ -206,9 +206,9 @@
       <h2 id="gameTitle" class="sr-only">Game</h2>
 
       <div class="hud" role="region" aria-label="Session status">
-        <div class="metric" aria-live="polite"><div id="score" class="v">0</div><div class="t">Score</div></div>
-        <div class="metric" aria-live="polite"><div id="best" class="v">0</div><div class="t">Personal Best</div></div>
-        <div class="metric" aria-live="polite"><div id="time" class="v">00:00</div><div class="t">Time</div></div>
+        <div class="metric"><div id="score" class="v" aria-live="polite" aria-atomic="true">0</div><div class="t">Score</div></div>
+        <div class="metric"><div id="best" class="v">0</div><div class="t">Personal Best</div></div>
+        <div class="metric"><div id="time" class="v" aria-live="polite" aria-atomic="true">00:00</div><div class="t">Time</div></div>
         <div class="spacer"></div>
         <div class="actions">
           <button id="pauseBtn" class="btn btn-ghost" type="button">Pause</button>
