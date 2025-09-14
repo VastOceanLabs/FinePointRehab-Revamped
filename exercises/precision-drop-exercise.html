@@ -300,6 +300,21 @@
     const finalAccuracyEl = document.getElementById('final-accuracy');
     const finalAvgTimeEl = document.getElementById('final-avg-time');
     const finalXpEl = document.getElementById('final-xp');
+    // === Keep balls/targets out of HUD / off-screen ===
+    function getPlayableRect() {
+      const areaRect = gameArea.getBoundingClientRect();
+      const hud = document.querySelector('.hud');
+      const hudRect = hud ? hud.getBoundingClientRect() : { height: 0, top: 0, bottom: 0 };
+      const overlapTop = Math.max(0, Math.min(hudRect.bottom - areaRect.top, hudRect.height));
+      const padTop = parseFloat(getComputedStyle(gameArea).paddingTop || '0') || 0;
+      const reserve = Math.max(overlapTop, padTop) + 12; // small buffer
+      const minX = 12;
+      const minY = reserve;
+      const maxX = areaRect.width - 12;
+      const maxY = areaRect.height - 12;
+      return { minX, minY, maxX, maxY, width: areaRect.width, height: areaRect.height, reserve };
+    }
+
 
     // Game state
     let isSessionActive = false;
@@ -449,6 +464,10 @@
       completionModal.style.display='none';
 
       toImmersive();
+      // Reserve vertical space so nothing spawns under the HUD
+      const __hud = document.querySelector('.hud');
+      const __hudH = __hud ? Math.ceil(__hud.getBoundingClientRect().height) : 0;
+      gameArea.style.paddingTop = (__hudH + 12) + 'px';
       clearGameElements();
       createRound();
       roundStartTime = Date.now();
@@ -590,28 +609,38 @@
     }
 
     function randomEdgeX(rect, size){
-      const m=30;
+      const B = getPlayableRect();
       const edge = Math.floor(Math.random()*4);
-      if (edge===0) return m;
-      if (edge===1) return rect.width - size - m;
-      return m + Math.random()*(rect.width - size - 2*m);
+      if (edge === 1) return Math.max(B.minX, B.maxX - size); // right
+      return Math.max(B.minX, Math.min(B.maxX - size, B.minX + 12 + Math.random()*(B.maxX - B.minX - size - 24)));
     }
     function randomEdgeY(rect, size){
-      const m=30;
+      const B = getPlayableRect();
       const edge = Math.floor(Math.random()*4);
-      if (edge===2) return m;
-      if (edge===3) return rect.height - size - m;
-      return m + Math.random()*(rect.height - size - 2*m);
+      if (edge === 2) return Math.max(B.minY, B.minY + 0); // top within safe zone
+      if (edge === 3) return Math.max(B.minY, B.maxY - size); // bottom
+      return Math.max(B.minY, Math.min(B.maxY - size, B.minY + 12 + Math.random()*(B.maxY - B.minY - size - 24)));
     }
 
     function findOpenPos(size, taken, rect, spacing){
-      const pad = 40; const max=100;
-      for(let a=0;a<max;a++){
-        const x = pad + Math.random()*(rect.width - size - 2*pad);
-        const y = pad + Math.random()*(rect.height - size - 2*pad);
-        let clash=false;
-        for(const p of taken){
-          if (dist(x+size/2,y+size/2,p.x+p.size/2,p.y+p.size/2) < (size/2 + p.size/2 + spacing)){ clash=true; break; }
+      const B = getPlayableRect();
+      const pad = 12; 
+      const max = 100;
+      for (let a=0; a<max; a++){
+        const x = B.minX + pad + Math.random()*Math.max(0, (B.maxX - size) - (B.minX + pad));
+        const y = B.minY + pad + Math.random()*Math.max(0, (B.maxY - size) - (B.minY + pad));
+        let clash = false;
+        for (const p of taken){
+          if (dist(x+size/2,y+size/2,p.x+p.size/2,p.y+p.size/2) < (size/2 + p.size/2 + spacing)){ clash = true; break; }
+        }
+        if (!clash) return { x, y, size };
+      }
+      return {
+        x: Math.max(B.minX + pad, Math.min(B.maxX - size - pad, (B.minX + B.maxX - size)/2)),
+        y: Math.max(B.minY + pad, Math.min(B.maxY - size - pad, (B.minY + B.maxY - size)/2)),
+        size
+      };
+    }
         }
         if(!clash) return {x,y,size};
       }
@@ -654,6 +683,9 @@
       let y = clientY - rect.top - dragOffsetY;
       x = Math.max(0, Math.min(rect.width - currentDragging.offsetWidth, x));
       y = Math.max(0, Math.min(rect.height - currentDragging.offsetHeight, y));
+      const __B = getPlayableRect();
+      y = Math.max(__B.minY, Math.min(__B.maxY - currentDragging.offsetHeight, y));
+      x = Math.max(__B.minX, Math.min(__B.maxX - currentDragging.offsetWidth, x));
 
       currentDragging.style.left = `${x}px`;
       currentDragging.style.top = `${y}px`;
