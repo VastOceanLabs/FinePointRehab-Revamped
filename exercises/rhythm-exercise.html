@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- BUILD: Rhythm Reach pulse+glow (safe controller) — 2025-09-14 -->
+  <!-- BUILD: Rhythm Reach unified lighting (fixed) — 2025-09-14 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Rhythm Reach | Fine Point Rehab</title>
@@ -79,10 +79,23 @@
       box-shadow: inset 0 8px 18px rgba(0,0,0,.35), 0 8px 16px rgba(0,0,0,.35);
       color:#e9fbff; font-size:1.25rem; font-weight:700; transition: transform .08s var(--easing);
       min-height:64px;
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
     }
-    .pad:active { transform: translateY(1px) scale(0.99); }
+    
+    /* Kill ALL native button states to prevent solid blue */
+    .pad:active,
+    .pad:focus,
+    .pad:focus-visible {
+      transform: translateY(1px) scale(0.99);
+      background: radial-gradient(circle at 30% 30%, rgba(111,211,245,.25), rgba(111,211,245,.10) 60%, rgba(255,255,255,.04) 100%) !important;
+      outline: none !important;
+      box-shadow: inset 0 8px 18px rgba(0,0,0,.35), 0 8px 16px rgba(0,0,0,.35) !important;
+      border-color: rgba(255,255,255,0.10) !important;
+    }
 
-    /* Playback highlight */
+    /* Playback and user highlight - same style */
     .pad.glow {
       border-color: rgba(111,211,245,.65);
       background: radial-gradient(circle at 30% 30%, rgba(111,211,245,.55), rgba(111,211,245,.18) 65%, rgba(255,255,255,.08) 100%);
@@ -303,7 +316,7 @@
     }
     function randPad(){ return 1 + Math.floor(Math.random()*9); }
 
-    // ---- Single-source-of-truth light controller (prevents sticky final light)
+    // ---- Single-source-of-truth light controller (prevents sticky lights)
     const Light = (() => {
       let lit = null;       // current lit pad index (1..9) or null
       let to = null;        // single timeout for auto-off
@@ -360,20 +373,7 @@
       return { glow, gap };
     }
 
-    // Classless pulse for taps (no class to stick)
-    function pulsePad(el, durationMs){
-      if(!el) return;
-      try {
-        el.getAnimations().forEach(a => { try { a.cancel(); } catch(_){} });
-        el.animate(
-          [{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }],
-          { duration: Math.max(120, Number(durationMs)||180), easing: 'ease-out' }
-        );
-      } catch(e){}
-      if(navigator.vibrate){ try{ navigator.vibrate(12); }catch(e){} }
-    }
-
-    // Playback loop — ONLY this controls .glow
+    // Playback loop – ONLY this controls .glow during sequence
     async function playSequence(){
       const myToken = ++playbackToken; playback = true;
 
@@ -430,12 +430,15 @@
     }
     function closeDone(){ doneDialog.classList.remove('open'); setScreen('settings'); }
 
-    // User input — pulses only; does NOT touch .glow
+    // User input – now uses the same Light system as playback
     function onUserPad(idx){
       if(!running || paused || playback) return;
       const expected = seq[userIndex];
       if(idx === expected){
-        const el = pads[idx - 1]; if(el) pulsePad(el);
+        // Use the same Light system with a short duration for user feedback
+        Light.on(idx, 200); // Brief flash using the same glow class
+        if(navigator.vibrate){ try{ navigator.vibrate(12); }catch(e){} }
+        
         score += 10; scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
@@ -488,7 +491,7 @@
     window.addEventListener('keydown', onKey);
 
     // Init
-    console.log('Rhythm Reach build: pulse+glow controller');
+    console.log('Rhythm Reach build: unified lighting system');
     readPB();
   })();
   </script>
