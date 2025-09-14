@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- BUILD: Rhythm Reach pulse-only (no glow) — 2025-09-14T00:00Z -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Rhythm Reach | Fine Point Rehab</title>
@@ -13,7 +14,6 @@
   <link rel="stylesheet" href="/css/exercises.css">
 
   <style>
-    /* ---- Page background & header (match Comet Tap) ---- */
     body {
       background:
         radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.4) 0%, transparent 40%),
@@ -36,31 +36,18 @@
       backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .home-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: .5rem;
-      padding: .5rem .9rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.30);
-      color: #fff;
-      text-decoration: none;
-      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset;
-      transition: transform var(--duration-fast) var(--easing), box-shadow var(--duration-fast) var(--easing);
-    }
+    .home-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.30); color: #fff; text-decoration: none; box-shadow: 0 1px 0 rgba(255,255,255,.08) inset; transition: transform var(--duration-fast) var(--easing), box-shadow var(--duration-fast) var(--easing); }
     .home-pill:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
     header.app-header h1 { color: #e6f2ff; font-size: var(--font-size-2xl); margin: 0; }
 
-    /* Hide header while playing to mirror Comet’s immersive mode */
     body.playing header.app-header { display: none; }
 
-    /* ---- Screens ---- */
     main { max-width: 960px; margin: 0 auto; padding: var(--space-4); }
     .screen { display: none; }
     .screen.active { display: block; animation: fadeIn .24s ease-out; }
     @keyframes fadeIn { from {opacity:0; transform: translateY(8px)} to {opacity:1; transform: none} }
 
-    /* Settings layout (match Comet spacing/structure) */
+    .settings-wrap { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
     .settings-card {
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.10);
@@ -70,107 +57,50 @@
       -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
     }
-    .settings-wrap {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-6);
-    }
-    @media (max-width: 860px) {
-      .settings-wrap { grid-template-columns: 1fr; }
-    }
-    .settings-actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-4);
-      margin-top: var(--space-6);
-    }
+    .settings-card h2 { color: #dbe9ff; font-size: clamp(1.15rem, 2.2vw, 1.35rem); font-weight: 800; letter-spacing: .2px; margin: 0 0 .75rem; opacity: .95; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
 
-    /* Metric (match Comet’s HUD metric look for PB on settings) */
-    .metric {
-      display: grid;
-      justify-items: center;
-      gap: .25rem;
-      padding: .75rem 1rem;
-      min-width: 110px;
-      border-radius: .75rem;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(8,14,36,.35);
-      box-shadow: 0 6px 16px rgba(0,0,0,.35);
+    .game-description {
+      background: linear-gradient(145deg, rgba(111,211,245,0.22), rgba(111,211,245,0.10));
+      border-left: 4px solid rgba(111,211,245,0.85);
+      color: #f4fbff; padding: 18px 18px 14px; border-radius: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 18px rgba(0,0,0,0.25);
+      margin-bottom: 1rem;
     }
-    .metric .v { font-size: 1.125rem; color: #d7f2ff; text-shadow: 0 0 8px rgba(160,220,255,.7); font-weight: 700; }
-    .metric .t { font-size: .75rem; opacity: .9; color: #cfe8ff; }
+    .game-description h3 { color: #d7f2ff; margin: 0 0 10px; font-weight: 800; }
+    .game-description p, .game-description li { color: #e9f6ff; font-size: .98rem; line-height: 1.6; }
+    .game-description ul { margin: .25rem 0 0; padding-left: 1.25rem; }
+    .game-description kbd { font: inherit; font-size: 0.85em; padding: 0.1em 0.35em; border-radius: 6px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); }
 
-    /* HUD (top bar in game) – flex & wrap like Comet */
-    .hud {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: .75rem;
-      padding: .5rem .75rem;
-      margin: 0 auto var(--space-3);
-      border-radius: 0 0 .75rem .75rem;
-      background: rgba(8,14,36,.85);
-      border: 1px solid rgba(255,255,255,.08);
-      box-shadow: 0 6px 16px rgba(0,0,0,.35);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-    }
+    .metric { display: grid; justify-items: center; gap: .25rem; padding: .75rem 1rem; min-width: 120px; border-radius: .75rem; border: 1px solid rgba(255,255,255,.14); background: rgba(8,14,36,.35); box-shadow: 0 6px 16px rgba(0,0,0,.35); }
+    .metric .v { font-size: 1.25rem; color: #d7f2ff; text-shadow: 0 0 8px rgba(160,220,255,.7); font-weight: 800; }
+    .metric .t { font-size: .78rem; opacity: .9; color: #cfe8ff; }
+
+    .hud { position: sticky; top: 0; z-index: 40; display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; padding: .5rem .75rem; margin: 0 auto var(--space-3); border-radius: 0 0 .75rem .75rem; background: rgba(8,14,36,.85); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 6px 16px rgba(0,0,0,.35); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
     .hud .spacer { flex: 1; }
     .hud .metric .v { font-size: 1.25rem; }
 
-    /* Ghost buttons consistent with DS */
     .btn-ghost { border-radius: 999px; }
     .btn-ghost + .btn-ghost { margin-left: .5rem; }
 
-    /* Game area */
     #gameArea {
-      position: relative;
-      width: 100%;
-      margin: 0 auto;
-      max-width: 700px;
-      aspect-ratio: 1/1; /* Square grid area */
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: .75rem;
-      padding: .75rem;
-      border-radius: 1rem;
-      border: 1px solid rgba(255,255,255,0.09);
-      background: linear-gradient(180deg, rgba(8,14,36,0.35), rgba(8,14,36,0.25));
-      box-shadow: 0 10px 24px rgba(0,0,0,.35);
+      position: relative; width: 100%; margin: 0 auto; max-width: 700px; aspect-ratio: 1/1;
+      display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+      gap: .75rem; padding: .75rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.09);
+      background: linear-gradient(180deg, rgba(8,14,36,0.35), rgba(8,14,36,0.25)); box-shadow: 0 10px 24px rgba(0,0,0,.35);
     }
 
     .pad {
-      display: grid;
-      place-items: center;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-      border-radius: 1rem;
-      border: 1px solid rgba(255,255,255,0.10);
+      display: grid; place-items: center; user-select: none; touch-action: manipulation;
+      border-radius: 1rem; border: 1px solid rgba(255,255,255,0.10);
       background: radial-gradient(circle at 30% 30%, rgba(111,211,245,.25), rgba(111,211,245,.10) 60%, rgba(255,255,255,.04) 100%);
       box-shadow: inset 0 8px 18px rgba(0,0,0,.35), 0 8px 16px rgba(0,0,0,.35);
-      color: #e9fbff;
-      font-size: 1.25rem;
-      font-weight: 700;
-      transition: transform .08s var(--easing), box-shadow .12s var(--easing), background .12s var(--easing), border-color .12s;
+      color: #e9fbff; font-size: 1.25rem; font-weight: 700;
+      transition: transform .08s var(--easing);
       min-height: 64px;
     }
     .pad:active { transform: translateY(1px) scale(0.99); }
-    .pad.glow {
-      border-color: rgba(111,211,245,.65);
-      background: radial-gradient(circle at 30% 30%, rgba(111,211,245,.55), rgba(111,211,245,.18) 65%, rgba(255,255,255,.08) 100%);
-      box-shadow: 0 0 24px rgba(111,211,245,.6), inset 0 8px 18px rgba(0,0,0,.35);
-      transform: scale(1.02);
-    }
-    .pad.wrong {
-      animation: shake .28s var(--easing);
-      border-color: rgba(239,68,68,.75);
-      box-shadow: 0 0 18px rgba(239,68,68,.6), inset 0 8px 18px rgba(0,0,0,.35);
-    }
+    /* NOTE: .pad.glow intentionally unused in pulse-only build */
+    .pad.wrong { animation: shake .28s var(--easing); border-color: rgba(239,68,68,.75); box-shadow: 0 0 18px rgba(239,68,68,.6), inset 0 8px 18px rgba(0,0,0,.35); }
     @keyframes shake {
       10%, 90% { transform: translateX(-1px); }
       20%, 80% { transform: translateX(2px); }
@@ -178,73 +108,20 @@
       40%, 60% { transform: translateX(4px); }
     }
 
-    /* Pause overlay */
-    #pauseOverlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,.55);
-      z-index: var(--z-modal, 1050);
-      -webkit-backdrop-filter: blur(8px);
-      backdrop-filter: blur(8px);
-    }
+    #pauseOverlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); z-index: var(--z-modal, 1050); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
     #pauseOverlay.open { display: flex; }
-    .pause-card {
-      width: min(520px, 92vw);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 1rem;
-      padding: 1.25rem;
-      box-shadow: var(--shadow-lg);
-    }
+    .pause-card { width: min(520px, 92vw); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 1rem; padding: 1.25rem; box-shadow: var(--shadow-lg); }
     .pause-card h3 { margin-bottom: .5rem; color: #fff; text-align: center; }
     .pause-card p { text-align: center; color: rgba(255,255,255,.92); }
 
-    /* Done dialog (session summary) */
-    #doneDialog {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,.55);
-      z-index: var(--z-modal, 1050);
-      -webkit-backdrop-filter: blur(8px);
-      backdrop-filter: blur(8px);
-    }
+    #doneDialog { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.55); z-index: var(--z-modal, 1050); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
     #doneDialog.open { display: flex; }
-    .done-card {
-      width: min(560px, 94vw);
-      background: rgba(8,14,36,.92);
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: 1rem;
-      padding: 1.25rem 1.25rem 1rem;
-      box-shadow: var(--shadow-lg);
-      color: #e8f6ff;
-    }
-    .done-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .75rem;
-      margin: .5rem 0 1rem;
-    }
+    .done-card { width: min(560px, 94vw); background: rgba(8,14,36,.92); border: 1px solid rgba(255,255,255,.10); border-radius: 1rem; padding: 1.25rem 1.25rem 1rem; box-shadow: var(--shadow-lg); color: #e8f6ff; }
+    .done-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: .5rem 0 1rem; }
     @media (max-width:620px){ .done-grid { grid-template-columns: 1fr; } }
-    .done-stat {
-      padding: .75rem 1rem;
-      border-radius: .75rem;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      text-align: center;
-    }
+    .done-stat { padding: .75rem 1rem; border-radius: .75rem; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); text-align: center; }
     .done-stat .v { font-weight: 700; font-size: 1.125rem; color: #d7f2ff; text-shadow: 0 0 8px rgba(160,220,255,.7); }
-    .done-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .75rem;
-      margin-top: .75rem;
-    }
+    .done-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: .75rem; }
     @media (max-width:480px){ .done-actions { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -257,31 +134,31 @@
   </header>
 
   <main id="main">
-    <!-- SETTINGS SCREEN -->
     <section id="settingsScreen" class="screen active" aria-labelledby="settingsTitle">
       <h2 id="settingsTitle" class="sr-only">Settings</h2>
+
       <div class="settings-wrap">
-        <section class="settings-card" aria-labelledby="howtoTitle">
-          <div class="game-description">
-            <h3 id="howtoTitle">How to play</h3>
-            <p>Watch the pads light in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9). Each round adds one new step; keep a long streak to grow your score.</p>
+        <section class="settings-card" aria-labelledby="introTitle">
+          <div class="game-description" id="introTitle">
+            <h3>How to play</h3>
+            <p>Watch the pads <strong>pulse</strong> in a sequence, then repeat the pattern by tapping the pads (or pressing 1–9). Each round adds one new step; keep a streak to grow your score.</p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3">
-            <div class="metric" aria-live="polite">
-              <div id="pbSetting" class="v">0</div>
-              <div class="t">Personal Best</div>
-            </div>
+        <div class="metrics-row" style="display:flex;justify-content:center;padding:.25rem 0 .25rem;">
+          <div class="metric" role="status" aria-live="polite">
+            <div id="pbSetting" class="v">0</div>
+            <div class="t">Personal Best</div>
           </div>
+        </div>
 
-          <div class="settings-actions">
-            <button id="startBtn" class="btn btn-primary btn-full btn-xl" type="button" aria-describedby="startDesc">Start</button>
-            <p id="startDesc" class="text-sm text-secondary">Start a new session with the options you select.</p>
-          </div>
+        <div class="settings-actions">
+          <button id="startBtn" class="btn btn-primary btn-full btn-xl" type="button" aria-describedby="startDesc">Start</button>
+          <p id="startDesc" class="text-sm text-secondary">Start a new session with the options you select.</p>
+        </div>
         </section>
 
         <section class="settings-card" aria-labelledby="optionsTitle">
-          <h3 id="optionsTitle" class="mb-4">Session Options</h3>
+          <h2 id="optionsTitle">Settings</h2>
 
           <div class="mb-4">
             <label for="minutes" class="settings-label">Session Duration (minutes)</label>
@@ -302,12 +179,12 @@
               <option value="fast">Fast (Challenging)</option>
             </select>
             <ul class="option-explanations">
-              <li>Slow: longer glow & gap for learning.</li>
-              <li>Fast: short glow & gap for advanced practice.</li>
+              <li>Slow: longer pulse & gap for learning.</li>
+              <li>Fast: short pulse & gap for advanced practice.</li>
             </ul>
           </div>
 
-          <div class="mb-4">
+          <div class="mb-0">
             <label for="roundGap" class="settings-label">Round Gap</label>
             <select id="roundGap">
               <option value="2000">2.0s</option>
@@ -316,36 +193,17 @@
               <option value="500">0.5s</option>
             </select>
           </div>
-
-          <div class="game-description">
-            <h3>Tips</h3>
-            <ul>
-              <li>Keyboard: press 1–9 to tap pads.</li>
-              <li>Pause: press <kbd>P</kbd> or use the Pause button.</li>
-              <li>Exit: press <kbd>Esc</kbd> to leave the session.</li>
-            </ul>
-          </div>
         </section>
       </div>
     </section>
 
-    <!-- GAME SCREEN -->
     <section id="gameScreen" class="screen" aria-labelledby="gameTitle">
       <h2 id="gameTitle" class="sr-only">Game</h2>
 
       <div class="hud" role="region" aria-label="Session status">
-        <div class="metric" aria-live="polite">
-          <div id="score" class="v">0</div>
-          <div class="t">Score</div>
-        </div>
-        <div class="metric" aria-live="polite">
-          <div id="best" class="v">0</div>
-          <div class="t">Personal Best</div>
-        </div>
-        <div class="metric" aria-live="polite">
-          <div id="time" class="v">00:00</div>
-          <div class="t">Time</div>
-        </div>
+        <div class="metric" aria-live="polite"><div id="score" class="v">0</div><div class="t">Score</div></div>
+        <div class="metric" aria-live="polite"><div id="best" class="v">0</div><div class="t">Personal Best</div></div>
+        <div class="metric" aria-live="polite"><div id="time" class="v">00:00</div><div class="t">Time</div></div>
         <div class="spacer"></div>
         <div class="actions">
           <button id="pauseBtn" class="btn btn-ghost" type="button">Pause</button>
@@ -354,7 +212,6 @@
       </div>
 
       <div id="gameArea" aria-label="Pad grid">
-        <!-- 3x3 pads -->
         <button class="pad" data-idx="1" aria-label="Pad 1">1</button>
         <button class="pad" data-idx="2" aria-label="Pad 2">2</button>
         <button class="pad" data-idx="3" aria-label="Pad 3">3</button>
@@ -368,7 +225,6 @@
     </section>
   </main>
 
-  <!-- Pause Overlay -->
   <div id="pauseOverlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
     <div class="pause-card">
       <h3 id="pauseTitle">Paused</h3>
@@ -380,7 +236,6 @@
     </div>
   </div>
 
-  <!-- Done Dialog (Session Summary) -->
   <div id="doneDialog" role="dialog" aria-modal="true" aria-labelledby="doneTitle">
     <div class="done-card">
       <h2 id="doneTitle">Session Complete!</h2>
@@ -397,7 +252,6 @@
 
   <script>
   (function(){
-    // ----- DOM refs
     const body = document.body;
     const settingsScreen = document.getElementById('settingsScreen');
     const gameScreen = document.getElementById('gameScreen');
@@ -425,220 +279,153 @@
 
     const pads = Array.from(document.querySelectorAll('.pad'));
 
-    // ----- State
-    let running = false;
-    let paused = false;
-    let playback = false;
-    let score = 0;
-    let best = 0;
-    let rounds = 0;
-    let timerHandle = null;
-    let endTime = 0;
+    let running = false, paused = false, playback = false;
+    let score = 0, best = 0, rounds = 0;
+    let timerHandle = null, endTime = 0;
 
     let seq = [];
     let userIndex = 0;
 
     const LS_KEY = 'FPR_v1_RhythmReach_PB';
 
-    // ----- Helpers
+    function clearAllPadStates(){ pads.forEach(p => p.classList.remove('wrong')); }
+
+    const activeTimeouts = new Set();
+    function sleep(ms){ return new Promise(res => { const t = setTimeout(()=>{activeTimeouts.delete(t); res();}, ms); activeTimeouts.add(t); }); }
+    function clearAllTimers(){ activeTimeouts.forEach(t=>clearTimeout(t)); activeTimeouts.clear(); }
+
+    let playbackToken = 0;
+
     const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
     function setScreen(which){
-      if(which === 'game'){
-        settingsScreen.classList.remove('active');
-        gameScreen.classList.add('active');
-        body.classList.add('playing');
-      }else{
-        gameScreen.classList.remove('active');
-        settingsScreen.classList.add('active');
-        body.classList.remove('playing');
-      }
+      if(which === 'game'){ settingsScreen.classList.remove('active'); gameScreen.classList.add('active'); body.classList.add('playing'); }
+      else { gameScreen.classList.remove('active'); settingsScreen.classList.add('active'); body.classList.remove('playing'); }
     }
     function formatTimeLeft(ms){
-      ms = Math.max(0, ms);
-      const s = Math.floor(ms/1000);
-      const m = Math.floor(s/60);
-      const secs = s % 60;
-      return (m < 10 ? '0'+m : ''+m) + ':' + (secs < 10 ? '0'+secs : ''+secs);
+      ms = Math.max(0, ms); const s = Math.floor(ms/1000); const m = Math.floor(s/60); const secs = s % 60;
+      return (m<10?'0'+m:m)+':'+(secs<10?'0'+secs:secs);
     }
     function randPad(){ return 1 + Math.floor(Math.random()*9); }
-    function glowPad(idx, dur){
-      const el = pads[idx-1];
-      if(!el) return;
-      el.classList.add('glow');
-      setTimeout(()=> el.classList.remove('glow'), dur);
-    }
+
     function wrongPad(idx){
-      const el = pads[idx-1];
-      if(!el) return;
+      const el = pads[idx-1]; if(!el) return;
       el.classList.add('wrong');
-      setTimeout(()=> el.classList.remove('wrong'), 280);
+      const to = setTimeout(()=>{ el.classList.remove('wrong'); activeTimeouts.delete(to); }, 280);
+      activeTimeouts.add(to);
     }
 
     function readPB(){
       const v = Number(localStorage.getItem(LS_KEY) || '0');
-      best = isFinite(v) ? v : 0;
-      bestEl.textContent = best;
-      pbSettingEl.textContent = best;
+      best = isFinite(v) ? v : 0; bestEl.textContent = best; pbSettingEl.textContent = best;
     }
     function maybeUpdatePB(){
-      if(score > best){
-        best = score;
-        localStorage.setItem(LS_KEY, String(best));
-        bestEl.textContent = best;
-        pbSettingEl.textContent = best;
-      }
+      if(score > best){ best = score; localStorage.setItem(LS_KEY, String(best)); bestEl.textContent = best; pbSettingEl.textContent = best; }
     }
 
-    // ----- Timer
     function startTimer(minutes){
       const dur = clamp(Number(minutes) || 2, 1, 60) * 60 * 1000;
-      endTime = Date.now() + dur;
-      timeEl.textContent = formatTimeLeft(dur);
-      timerHandle = setInterval(()=>{
-        if(!running || paused) return;
-        const left = endTime - Date.now();
-        timeEl.textContent = formatTimeLeft(left);
-        if(left <= 0){
-          endSession(true);
-        }
-      }, 200);
+      endTime = Date.now() + dur; timeEl.textContent = formatTimeLeft(dur);
+      timerHandle = setInterval(()=>{ if(!running || paused) return; const left = endTime - Date.now(); timeEl.textContent = formatTimeLeft(left); if(left <= 0){ endSession(); } }, 200);
     }
-    function stopTimer(){
-      clearInterval(timerHandle);
-      timerHandle = null;
-    }
+    function stopTimer(){ clearInterval(timerHandle); timerHandle = null; }
 
-    // ----- Playback
     function playbackTimings(){
-      const speed = speedSelect.value;
-      let glow = 550, gap = 220;
+      const speed = speedSelect.value; let glow = 550, gap = 220;
       if(speed === 'slow'){ glow = 700; gap = 300; }
       if(speed === 'med'){ glow = 550; gap = 220; }
       if(speed === 'fast'){ glow = 380; gap = 160; }
       return { glow, gap };
     }
-    async function playSequence(){
-      playback = true;
-      const { glow, gap } = playbackTimings();
-      // brief delay before each playback round
-      await new Promise(r => setTimeout(r, Number(roundGapSelect.value) || 1500));
-      for(let i=0;i<seq.length;i++){
-        if(!running) break;
-        // Allow pause mid-playback
-        while(paused){ await new Promise(r => setTimeout(r, 50)); }
-        const idx = seq[i];
-        glowPad(idx, glow);
-        await new Promise(r => setTimeout(r, glow + gap));
-      }
-      playback = false;
-      userIndex = 0;
+
+    // Classless pulse (no sticky state)
+    function pulsePad(el, durationMs){
+      if(!el) return;
+      try {
+        el.getAnimations().forEach(a => { try { a.cancel(); } catch(_){} });
+        el.animate(
+          [{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }],
+          { duration: Math.max(120, Number(durationMs)||180), easing: 'ease-out' }
+        );
+      } catch(e){}
+      if(navigator.vibrate){ try{ navigator.vibrate(12); }catch(e){} }
     }
 
-    // ----- Session control
+    async function playSequence(){
+      const myToken = ++playbackToken; playback = true;
+      clearAllPadStates();
+      const { glow, gap } = playbackTimings();
+      const roundDelay = Number(roundGapSelect.value) || 1500;
+
+      await sleep(roundDelay);
+      if(myToken !== playbackToken || !running){ playback = false; return; }
+
+      for(let i=0;i<seq.length;i++){
+        while(paused && myToken === playbackToken && running){ await sleep(50); }
+        if(myToken !== playbackToken || !running) break;
+
+        const idx = seq[i];
+        const el = pads[idx - 1];
+        if(el) pulsePad(el, glow);
+
+        await sleep(glow + gap);
+        if(myToken !== playbackToken || !running) break;
+      }
+
+      playback = false; userIndex = 0;
+    }
+
     function resetSessionState(){
-      running = false;
-      paused = false;
-      playback = false;
-      score = 0;
-      rounds = 0;
-      seq = [];
-      userIndex = 0;
-      stopTimer();
-      scoreEl.textContent = '0';
-      timeEl.textContent = '00:00';
+      running = false; paused = false; playback = false; ++playbackToken;
+      stopTimer(); clearAllTimers(); clearAllPadStates();
+      score = 0; rounds = 0; seq = []; userIndex = 0;
+      scoreEl.textContent = '0'; timeEl.textContent = '00:00';
     }
 
     async function startSession(){
-      resetSessionState();
-      readPB();
-
+      resetSessionState(); readPB();
       const startLen = clamp(Number(startLenInput.value)||3, 1, 9);
       for(let i=0;i<startLen;i++) seq.push(randPad());
-
-      running = true;
-      setScreen('game');
-      startTimer(minutesInput.value);
+      running = true; setScreen('game'); startTimer(minutesInput.value);
       await playSequence();
     }
 
-    function endSession(timeUp=false){
+    function endSession(){
       if(!running && !paused) return;
-      running = false;
-      paused = false;
-      playback = false;
-      stopTimer();
-      maybeUpdatePB();
-      finalScoreEl.textContent = String(score);
-      finalRoundsEl.textContent = String(rounds);
-      // Show modal summary
+      running = false; paused = false; playback = false; ++playbackToken;
+      stopTimer(); clearAllTimers(); clearAllPadStates(); maybeUpdatePB();
+      finalScoreEl.textContent = String(score); finalRoundsEl.textContent = String(rounds);
       doneDialog.classList.add('open');
-      // Keep game screen visible behind; header hidden for focus
     }
+    function closeDone(){ doneDialog.classList.remove('open'); setScreen('settings'); }
 
-    function closeDone(){
-      doneDialog.classList.remove('open');
-      setScreen('settings');
-    }
-
-    // ----- Pad input
     function onUserPad(idx){
       if(!running || paused || playback) return;
       const expected = seq[userIndex];
       if(idx === expected){
-        glowPad(idx, 180);
-        score += 10;
-        scoreEl.textContent = String(score);
+        const el = pads[idx - 1]; if(el) pulsePad(el); // pulse instead of glow
+        score += 10; scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
-          // Round complete
-          rounds++;
-          seq.push(randPad());
+          clearAllTimers(); clearAllPadStates(); rounds++; seq.push(randPad());
           playSequence();
         }
       } else {
         wrongPad(idx);
-        // mild penalty, keep practicing
-        score = Math.max(0, score - 5);
-        scoreEl.textContent = String(score);
-        // reset user input for this round
+        score = Math.max(0, score - 5); scoreEl.textContent = String(score);
         userIndex = 0;
       }
     }
 
-    // ----- Pause / Resume / Exit
-    function setPaused(v){
-      if(!running) return;
-      paused = !!v;
-      if(paused){
-        pauseOverlay.classList.add('open');
-      }else{
-        pauseOverlay.classList.remove('open');
-      }
-    }
+    function setPaused(v){ if(!running) return; paused = !!v; if(paused){ clearAllPadStates(); } pauseOverlay.classList.toggle('open', paused); }
+    function exitFlow(){ if(running || paused){ endSession(); } else { clearAllTimers(); clearAllPadStates(); setScreen('settings'); } }
 
-    // Exit flow: always shows the summary modal if a session is/was active
-    function exitFlow(){
-      if(running || paused){
-        endSession(false);
-      } else {
-        setScreen('settings');
-      }
-    }
-
-    // ----- Keyboard support
     function onKey(e){
-      if(e.repeat) return;
-      const k = e.key;
-      if(k >= '1' && k <= '9'){
-        onUserPad(Number(k));
-      } else if(k === 'p' || k === 'P'){
-        setPaused(!paused);
-      } else if(k === 'Escape'){
-        exitFlow();
-      }
+      if(e.repeat) return; const k = e.key;
+      if(k>='1' && k<='9'){ onUserPad(Number(k)); }
+      else if(k==='p' || k==='P'){ setPaused(!paused); }
+      else if(k==='Escape'){ exitFlow(); }
     }
 
-    // ----- Events
     startBtn.addEventListener('click', startSession);
     pauseBtn.addEventListener('click', ()=> setPaused(true));
     resumeBtn.addEventListener('click', ()=> setPaused(false));
@@ -646,13 +433,9 @@
     exitBtn.addEventListener('click', exitFlow);
     newSessionBtn.addEventListener('click', ()=> { closeDone(); });
 
-    pads.forEach(btn => {
-      btn.addEventListener('click', () => onUserPad(Number(btn.dataset.idx)));
-    });
-
+    pads.forEach(btn => { btn.addEventListener('click', () => onUserPad(Number(btn.dataset.idx))); });
     window.addEventListener('keydown', onKey);
 
-    // ----- Init
     readPB();
   })();
   </script>
