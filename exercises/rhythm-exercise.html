@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- BUILD: Rhythm Reach — unified glow for playback & taps (no solid fill) — 2025-09-14 -->
+  <!-- BUILD: Rhythm Reach — final fix: cancel global button backgrounds; identical glow for playback & taps — 2025-09-14 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Rhythm Reach | Fine Point Rehab</title>
@@ -18,6 +18,7 @@
       --pad-radius: 16px;
       --halo-fast: 160ms;
       --shadow: 0 8px 24px rgba(0,0,0,0.35);
+      --ease: cubic-bezier(.2,.7,.2,1);
     }
 
     body {
@@ -36,7 +37,7 @@
       -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .home-pill { display:inline-flex; align-items:center; gap:.5rem; border:1px solid rgba(255,255,255,0.08); padding:.5rem .75rem; border-radius:999px; background: rgba(20,30,50,0.6); color:#cfe3ff; text-decoration:none; font-weight:600; transition: transform var(--duration-fast) var(--easing), box-shadow var(--duration-fast) var(--easing); }
+    .home-pill { display:inline-flex; align-items:center; gap:.5rem; border:1px solid rgba(255,255,255,0.08); padding:.5rem .75rem; border-radius:999px; background: rgba(20,30,50,0.6); color:#cfe3ff; text-decoration:none; font-weight:600; transition: transform 160ms var(--ease), box-shadow 160ms var(--ease); }
     .home-pill:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
     header.app-header h1 { color:#e6f2ff; font-size: var(--font-size-2xl); margin:0; letter-spacing:.2px; }
     .spacer { flex:1; }
@@ -59,21 +60,41 @@
 
     .grid { display:grid; grid-template-columns: repeat(3, minmax(72px, 1fr)); gap: clamp(10px, 3vw, 16px); justify-items: center; align-items: center; max-width: 520px; margin: 0 auto; }
 
-    /* Base pad look: NO solid highlight here */
+    /* --------- Pads (critical overrides) --------- */
+
+    /* Cancel UA and global button backgrounds across all states */
+    button.pad,
+    .pad,
+    .pad:active,
+    .pad:focus,
+    .pad:focus-visible,
+    .pad.glow,
+    .pad.glow:active,
+    .pad.glow:focus,
+    .pad.glow:focus-visible {
+      background: none !important;
+      background-image: none !important;
+      background-color: transparent !important;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    /* Base pad look (no solid fill) */
     .pad {
-      width: 100%; aspect-ratio: 1; border-radius: var(--pad-radius); border:1px solid rgba(255,255,255,0.10);
+      width: 100%; aspect-ratio: 1; border-radius: var(--pad-radius);
+      border:1px solid rgba(255,255,255,0.10);
       background:
         radial-gradient(120% 120% at 30% 30%, rgba(120,150,255,0.16) 0%, rgba(120,150,255,0.06) 40%, rgba(20,26,46,0.88) 70%),
         linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
       box-shadow: inset 0 0 0 1px rgba(140,170,255,0.15), 0 8px 18px rgba(0,0,0,0.35);
       position: relative; overflow:hidden; cursor:pointer; display:grid; place-items:center;
       color:#cfe3ff; font-weight:700; letter-spacing:.4px;
-      transition: transform var(--duration-fast) var(--easing), box-shadow var(--duration-fast) var(--easing), border-color var(--duration-fast) var(--easing);
+      transition: transform 120ms var(--ease), box-shadow 160ms var(--ease), border-color 160ms var(--ease);
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
 
-    /* Soft halo lives entirely in ::after — NO background fill in .glow */
+    /* Soft halo lives entirely in ::after */
     .pad::after {
       content:""; position:absolute; inset:-20%; opacity:0; pointer-events:none;
       background: radial-gradient(120% 120% at 50% 50%,
@@ -82,19 +103,19 @@
                   rgba(120,170,255,0.06) 65%,
                   transparent 75%);
       filter: blur(10px); transform: scale(0.92);
-      transition: opacity var(--halo-fast) var(--easing), transform var(--halo-fast) var(--easing);
+      transition: opacity var(--halo-fast) var(--ease), transform var(--halo-fast) var(--ease);
     }
-    .pad.glow { border-color: rgba(150,190,255,0.85) !important;
+    .pad.glow {
+      border-color: rgba(150,190,255,0.85) !important;
       box-shadow: inset 0 0 0 1px rgba(160,190,255,0.45), 0 0 0 2px rgba(120,170,255,0.12), 0 10px 24px rgba(60,100,200,0.55) !important;
     }
     .pad.glow::after { opacity:1; transform: scale(1); }
 
-    /* Prevent platform :active/focus from painting a solid background */
-    .pad:active { background: none !important; }
+    /* Remove any platform focus styling that paints backgrounds */
     .pad:focus { outline: none; }
+    .pad:active { transform: translateY(1px); }
 
     .pad.wrong { box-shadow: inset 0 0 0 1px rgba(255,120,120,0.7), 0 10px 22px rgba(255,60,60,0.45); border-color: rgba(255,140,140,0.9); }
-    .pad:active { transform: translateY(1px); }
 
     .controls { display:grid; gap: var(--space-3); }
     .controls label { display:grid; gap:.5rem; color:#cfe3ff; }
@@ -102,7 +123,7 @@
 
     .btn-primary { appearance:none; border:none; border-radius: 12px; padding: .8rem 1rem; font-weight: 800; letter-spacing:.3px; cursor:pointer;
       background: linear-gradient(180deg, #4cc0ff, #1a7fd0); color:#001225; box-shadow: 0 10px 22px rgba(0,80,160,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
-      transition: transform var(--duration-fast) var(--easing), filter var(--duration-fast) var(--easing);
+      transition: transform 160ms var(--ease), filter 160ms var(--ease);
     }
     .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.03); }
     .btn-ghost { background: transparent; color:#d7e4ff; border:1px solid rgba(255,255,255,0.12); border-radius: 12px; padding:.7rem 1rem; font-weight:700; }
@@ -202,7 +223,6 @@
 
     // ---------- Elements ----------
     const pads = Array.from(document.querySelectorAll('.pad'));
-    const grid = document.getElementById('grid');
 
     const startBtn = document.getElementById('start');
     const pauseBtn = document.getElementById('pause');
@@ -237,7 +257,6 @@
       }
 
       function flash(idx, duration=500){
-        // on -> wait -> off -> resolve
         return new Promise(res=>{
           hardOff();
           pads[idx-1]?.classList.add('glow');
@@ -305,7 +324,6 @@
       if(myToken !== playbackToken || !running){ playingBack=false; return; }
 
       for(const idx of seq){
-        // pause handling
         while(paused && myToken===playbackToken && running){ await sleep(40); }
         if(myToken !== playbackToken || !running) break;
 
@@ -319,7 +337,7 @@
     }
 
     // ---------- User input (identical visual to playback) ----------
-    function onUserPad(idx){
+    function onUserPad(idx, pointerType='mouse'){
       if(!running || paused || playingBack) return;
 
       const expected = seq[userIndex];
@@ -328,10 +346,16 @@
         Light.flash(idx, glow);                 // exact same glow as playback
         if(navigator.vibrate){ try{ navigator.vibrate(15); }catch(_){} }
 
+        // If the page's global CSS paints focused buttons, blur after tap to avoid sticky focus styles.
+        if (pointerType !== 'keyboard') {
+          const el = pads[idx-1];
+          // blur shortly after so screen readers still announce the press
+          setTimeout(()=> el?.blur(), glow + 10);
+        }
+
         score += 10; scoreEl.textContent = String(score);
         userIndex++;
         if(userIndex >= seq.length){
-          // round complete
           setTimeout(() => {
             Light.off(); clearAllPadStates();
             rounds++; seq.push(randPad());
@@ -350,11 +374,18 @@
       }
     }
 
-    // Pointerdown -> prevents :active blue/background on mobile; feels snappier
+    // Pointerdown -> prevents native :active painting and feels snappy
     pads.forEach(p => {
       p.addEventListener('pointerdown', e => {
-        e.preventDefault(); // avoid native :active background
-        onUserPad(Number(p.dataset.idx));
+        e.preventDefault(); // avoid native :active focus/paint on some browsers
+        onUserPad(Number(p.dataset.idx), e.pointerType || 'mouse');
+      });
+      // Keyboard accessibility
+      p.addEventListener('keydown', e => {
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          onUserPad(Number(p.dataset.idx), 'keyboard');
+        }
       });
     });
 
@@ -390,7 +421,7 @@
       pauseBtn.textContent = paused ? 'Resume' : 'Pause';
     }
 
-    // Safety: if tab loses visibility, kill any lingering glow
+    // Safety: kill any lingering glow when tab hides
     document.addEventListener('visibilitychange', () => { if(document.hidden){ Light.off(); } });
 
     // ---------- Bindings ----------
