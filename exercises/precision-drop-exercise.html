@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Precision Drop — Fine Point Rehab</title>
 
-  <!-- Design system -->
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/components.css">
@@ -20,7 +19,6 @@
       --text: #eaf6ff;
       --radius: 14px;
     }
-    /* Background + global */
     body{ margin:0; color:var(--text);
       background:
         radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
@@ -32,7 +30,6 @@
     body.playing { overflow: hidden; }
     body.playing header.app { display: none; }
 
-    /* Header */
     header.app{
       position: sticky; top:0; z-index: 50;
       padding:12px 16px; display:flex; gap:12px; align-items:center;
@@ -44,18 +41,15 @@
       border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:8px 12px; }
     header h1{ margin:0; font-size: clamp(18px,3vw,24px); }
 
-    /* Layout & panels */
     .layout{ display:grid; grid-template-columns: 1fr; gap:16px; padding:16px; height:auto; }
     .panel{ background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
             box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05); }
 
-    /* Settings */
     #settings { padding:18px; overflow:auto; position:relative; z-index: 5; max-width: 720px; margin: 0 auto; }
     #settings h2{ margin:0 0 10px; font-size:20px; text-align:center; }
     .desc{ margin-bottom:12px; background: rgba(111,211,245,.08);
           border-left: 4px solid rgba(111,211,245,.7); padding:10px; border-radius:8px; font-size:14px; line-height:1.5; }
 
-    /* Stats on settings (shows PB) */
     .stats-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
     .metric{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center;
             text-align:center; padding:8px 12px; border:1px solid rgba(255,255,255,.12); border-radius:12px;
@@ -83,11 +77,9 @@
 
     .settings-actions { display:grid; grid-template-columns: 1fr; gap:10px; margin-top:12px; }
 
-    /* Game column – hidden until playing */
     .right{ display:none; position:relative; }
     body.playing .right{ display:block; }
 
-    /* HUD (compact & wrap-friendly) */
     .hud{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px 10px; margin-bottom:10px;
           background: linear-gradient(180deg, rgba(6,10,24,.65), rgba(6,10,24,.35));
           border: 1px solid var(--panel-border); border-radius: var(--radius);
@@ -98,7 +90,6 @@
     .btn-ghost:hover{ background: rgba(255,255,255,.12); }
     .metric .v.time { font-variant-numeric: tabular-nums; }
 
-    /* Frame & playfield */
     .frame{ position:relative; border-radius: var(--radius); overflow:hidden;
             border:1px solid var(--panel-border); box-shadow: inset 0 0 40px rgba(0,0,0,.35);
             background: radial-gradient(60% 45% at 50% 40%, rgba(80,160,200,.12), transparent 68%); }
@@ -106,7 +97,6 @@
     #stars-container{ position:absolute; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
     #game-area{ position: relative; width: 100%; height: 100%; }
 
-    /* Immersive */
     body.playing .layout{ grid-template-columns: 1fr; padding:0; height: calc(var(--vh) * 100); }
     body.playing #settings{ display:none; }
     body.playing .right{ height: calc(var(--vh) * 100); }
@@ -116,7 +106,6 @@
       position:absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 10px; right: 10px; margin:0;
     }
 
-    /* Targets & draggables */
     .draggable{
       position:absolute; border-radius:50%; cursor: grab; touch-action: none;
       display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff;
@@ -134,7 +123,6 @@
     .target.success{ animation: burst .6s ease; }
     @keyframes burst{ 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.25);opacity:.7} 100%{transform:scale(1);opacity:1} }
 
-    /* Status & progress chips */
     #status-message{
       position:absolute; top:14%; left:50%; transform:translateX(-50%);
       z-index:3; font-weight:800; text-shadow:0 2px 8px rgba(0,0,0,.5);
@@ -145,7 +133,6 @@
       font-weight:700; box-shadow:0 4px 10px rgba(0,0,0,.3);
     }
 
-    /* Completion modal (Comet-style) */
     #completion-modal{ position:absolute; inset:0; display:none; place-items:center; background: rgba(0,0,0,.65);
                        backdrop-filter: blur(4px); z-index:10; }
     #completion-card{ max-width:min(560px, 92vw); max-height:80vh; overflow:auto; padding:22px; }
@@ -167,12 +154,9 @@
   </header>
 
   <main class="layout">
-    <!-- SETTINGS -->
     <aside id="settings" class="panel" aria-label="Settings">
       <h2>Settings</h2>
       <div class="desc"><strong>How to play:</strong> drag each coloured circle to its matching target. Targets glow when you're close. Smaller targets and more objects = harder (more points).</div>
-
-      <!-- Stats (shows PB on settings) -->
       <div class="stats-row" role="region" aria-label="Player stats">
         <div class="metric" aria-live="polite">
           <div id="pbSettings" class="v">–</div>
@@ -208,13 +192,11 @@
         </select>
       </div>
 
-      <!-- Only Start here (Pause/Exit will live in HUD) -->
       <div class="settings-actions">
         <button id="start-button" class="btn btn-primary" type="button">Start</button>
       </div>
     </aside>
 
-    <!-- GAME (hidden until playing) -->
     <section class="right" aria-label="Game area">
       <div class="hud" role="region" aria-label="Session HUD">
         <div class="metric" aria-live="polite"><div id="score" class="v">0</div><div class="t">Score</div></div>
@@ -230,16 +212,13 @@
       <div class="frame panel">
         <div id="game-surface" role="application" aria-describedby="progress-display status-message">
           <div id="stars-container" aria-hidden="true"></div>
-
           <div id="progress-display" aria-live="polite">Round <span id="round-number">1</span> of <span id="total-rounds">10</span></div>
           <div id="status-message" aria-live="polite">Drag the object to the target</div>
-
           <div id="game-area" aria-label="Play field" tabindex="0"></div>
         </div>
       </div>
 
-      <!-- Completion (Comet-style, but with Drop stats) -->
-      <div id="completion-modal" class="" role="dialog" aria-modal="true" aria-labelledby="completion-title">
+      <div id="completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-title">
         <div id="completion-card" class="panel" tabindex="-1">
           <h2 id="completion-title">Session Complete!</h2>
           <p>Final Score: <span id="final-score" class="hi">0</span></p>
@@ -256,58 +235,93 @@
     </section>
   </main>
 
-  <!-- Progress/Achievements wiring -->
-  <script type="module">
-    import { recordSession } from '/js/progress.js';
-    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
-    import { storage, starfield, initUtils } from '/js/utils.js';
-    import { sessionEnhancement } from '/js/session-enhancement.js';
-
-    initUtils();
-    const EXERCISE_ID = 'precision-drop';
+  <!-- Robust JS: dynamic imports with fallbacks; guards around null elements -->
+  <script>
+  (function(){
+    const $ = (id)=>document.getElementById(id);
 
     // DOM
-    const difficultySelect = document.getElementById('difficulty-select');
-    const numTargetsSelect = document.getElementById('num-targets');
-    const sessionDurationInput = document.getElementById('session-duration');
-    const showNumbersSelect = document.getElementById('show-numbers');
+    const difficultySelect = $('difficulty-select');
+    const numTargetsSelect = $('num-targets');
+    const sessionDurationInput = $('session-duration');
+    const showNumbersSelect = $('show-numbers');
 
-    const startBtn = document.getElementById('start-button');
-    const pauseHudBtn = document.getElementById('pauseHud');
-    const exitHudBtn = document.getElementById('exitHud');
-    const doneBtn = document.getElementById('doneBtn');
-    const homeBtn = document.getElementById('homeBtn');
+    const startBtn = $('start-button');
+    const pauseHudBtn = $('pauseHud');
+    const exitHudBtn = $('exitHud');
+    const doneBtn = $('doneBtn');
+    const homeBtn = $('homeBtn');
 
-    const timeEl = document.getElementById('time');
-    const scoreEl = document.getElementById('score');
-    const personalBestEl = document.getElementById('pb');
-    const pbSettingsEl = document.getElementById('pbSettings');
-    const hudDifficultyEl = document.getElementById('hud-difficulty');
+    const timeEl = $('time');
+    const scoreEl = $('score');
+    const personalBestEl = $('pb');
+    const pbSettingsEl = $('pbSettings');
+    const hudDifficultyEl = $('hud-difficulty');
 
-    const gameArea = document.getElementById('game-area');
-    const gameSurface = document.getElementById('game-surface');
-    const starsContainer = document.getElementById('stars-container');
+    const gameArea = $('game-area');
+    const gameSurface = $('game-surface');
+    const starsContainer = $('stars-container');
 
-    const statusMessage = document.getElementById('status-message');
-    const progressDisplay = document.getElementById('progress-display');
-    const roundNumber = document.getElementById('round-number');
-    const totalRounds = document.getElementById('total-rounds');
+    const statusMessage = $('status-message');
+    const progressDisplay = $('progress-display');
+    const roundNumber = $('round-number');
+    const totalRounds = $('total-rounds');
 
-    const completionModal = document.getElementById('completion-modal');
-    const completionCard = document.getElementById('completion-card');
-    const finalScoreEl = document.getElementById('final-score');
-    const finalDropsEl = document.getElementById('final-drops');
-    const finalAccuracyEl = document.getElementById('final-accuracy');
-    const finalAvgTimeEl = document.getElementById('final-avg-time');
-    const finalXpEl = document.getElementById('final-xp');
-    // === Keep balls/targets out of HUD / off-screen ===
+    const completionModal = $('completion-modal');
+    const completionCard = $('completion-card');
+    const finalScoreEl = $('final-score');
+    const finalDropsEl = $('final-drops');
+    const finalAccuracyEl = $('final-accuracy');
+    const finalAvgTimeEl = $('final-avg-time');
+    const finalXpEl = $('final-xp');
+
+    // Fallbacks if imports fail
+    let recordSession = ()=>{};
+    let checkAndUnlockAchievements = ()=>[];
+    let markExerciseTried = ()=>{};
+    const storage = { get:(k)=>localStorage.getItem(k), set:(k,v)=>localStorage.setItem(k,v) };
+    const sessionEnhancement = {
+      initializeExercise: ()=>{},
+      personalBest: { getBest: ()=>Number(localStorage.getItem('pb:precision-drop')||0) },
+      handleSessionComplete: ()=>{}
+    };
+    const starfield = { init: ()=>{} };
+
+    (async function loadDeps(){
+      try {
+        const m1 = await import('/js/progress.js'); recordSession = m1.recordSession || recordSession;
+      } catch(e){}
+      try {
+        const m2 = await import('/js/achievements.js');
+        checkAndUnlockAchievements = m2.checkAndUnlockAchievements || checkAndUnlockAchievements;
+        markExerciseTried = m2.markExerciseTried || markExerciseTried;
+      } catch(e) {}
+      try {
+        const m3 = await import('/js/utils.js');
+        if (m3.storage) { storage.get = m3.storage.get; storage.set = m3.storage.set; }
+        if (m3.starfield) { starfield.init = m3.starfield.init || starfield.init; }
+        if (m3.initUtils) { try { m3.initUtils(); } catch(e){} }
+      } catch(e) {}
+      try {
+        const m4 = await import('/js/session-enhancement.js');
+        if (m4.sessionEnhancement) {
+          sessionEnhancement.initializeExercise = m4.sessionEnhancement.initializeExercise;
+          sessionEnhancement.personalBest = m4.sessionEnhancement.personalBest || sessionEnhancement.personalBest;
+          sessionEnhancement.handleSessionComplete = m4.sessionEnhancement.handleSessionComplete;
+        }
+      } catch(e) {}
+    })();
+
+    const EXERCISE_ID = 'precision-drop';
+
+    // ========= Safe area helpers =========
     function getPlayableRect() {
       const areaRect = gameArea.getBoundingClientRect();
       const hud = document.querySelector('.hud');
       const hudRect = hud ? hud.getBoundingClientRect() : { height: 0, top: 0, bottom: 0 };
       const overlapTop = Math.max(0, Math.min(hudRect.bottom - areaRect.top, hudRect.height));
       const padTop = parseFloat(getComputedStyle(gameArea).paddingTop || '0') || 0;
-      const reserve = Math.max(overlapTop, padTop) + 12; // small buffer
+      const reserve = Math.max(overlapTop, padTop) + 12;
       const minX = 12;
       const minY = reserve;
       const maxX = areaRect.width - 12;
@@ -315,11 +329,10 @@
       return { minX, minY, maxX, maxY, width: areaRect.width, height: areaRect.height, reserve };
     }
 
-
-    // Game state
+    // ========= Game state =========
     let isSessionActive = false;
     let isPaused = false;
-    let sessionDuration = 2 * 60 * 1000;
+    let sessionDuration = 120000;
     let timeRemaining = 0;
     let timerInterval = null;
 
@@ -353,8 +366,8 @@
       { solid:'#34495e', grad:'linear-gradient(135deg,#34495e,#2c3e50)' }
     ];
 
-    // Starfield fallback (if util not wiring a canvas)
-    if (!(starfield && typeof starfield.init === 'function' && document.getElementById('starfield'))) {
+    // Starfield fallback
+    (function initTwinkle(){
       const count = 80;
       for (let i=0;i<count;i++){
         const s=document.createElement('div');
@@ -364,52 +377,47 @@
         const sz = 1 + Math.random()*2.5;
         s.style.width = `${sz}px`; s.style.height = `${sz}px`;
         s.style.animation = `twinkle ${3+Math.random()*2}s ease-in-out ${Math.random()*3}s infinite`;
-        starsContainer.appendChild(s);
+        if (starsContainer) starsContainer.appendChild(s);
       }
       const tw = document.createElement('style');
       tw.textContent = `@keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.8;transform:scale(1.2)}}`;
       document.head.appendChild(tw);
-    }
+    })();
 
-    // Session enhancement / PB
+    // ========= PB =========
     function initializeSessionEnhancement() {
-      sessionEnhancement.initializeExercise(EXERCISE_ID, difficultySelect.value);
+      try { sessionEnhancement.initializeExercise(EXERCISE_ID, difficultySelect.value); } catch(e){}
       updatePersonalBestDisplay();
     }
     function updatePersonalBestDisplay() {
       try {
         const currentDifficulty = difficultySelect.value;
         const difficultyBest = sessionEnhancement.personalBest.getBest(EXERCISE_ID, currentDifficulty);
-        personalBestEl.textContent = difficultyBest > 0 ? difficultyBest : '–';
+        if (personalBestEl) personalBestEl.textContent = difficultyBest > 0 ? difficultyBest : '–';
         if (pbSettingsEl) pbSettingsEl.textContent = difficultyBest > 0 ? difficultyBest : '–';
       } catch(e) {
         const PB_KEY = 'pb:'+EXERCISE_ID;
-        try{
-          const pb = Number(storage.get(PB_KEY) ?? 0);
-          personalBestEl.textContent = pb > 0 ? pb : '–';
-          if (pbSettingsEl) pbSettingsEl.textContent = pb > 0 ? pb : '–';
-        } catch{
-          const pb = Number(localStorage.getItem(PB_KEY) || 0);
-          personalBestEl.textContent = pb > 0 ? pb : '–';
-          if (pbSettingsEl) pbSettingsEl.textContent = pb > 0 ? pb : '–';
-        }
+        const pb = Number(localStorage.getItem(PB_KEY) || 0);
+        if (personalBestEl) personalBestEl.textContent = pb > 0 ? pb : '–';
+        if (pbSettingsEl) pbSettingsEl.textContent = pb > 0 ? pb : '–';
       }
     }
     initializeSessionEnhancement();
-    difficultySelect.addEventListener('change', () => {
-      initializeSessionEnhancement();
-      hudDifficultyEl.textContent = labelForDifficulty(difficultySelect.value);
-    });
+    if (difficultySelect) {
+      difficultySelect.addEventListener('change', () => {
+        initializeSessionEnhancement();
+        if (hudDifficultyEl) hudDifficultyEl.textContent = labelForDifficulty(difficultySelect.value);
+      });
+    }
 
-    // Controls
-    startBtn.addEventListener('click', () => { if(!isSessionActive){ startSession(); } });
-    pauseHudBtn.addEventListener('click', () => { if(isSessionActive){ togglePause(); } });
-    exitHudBtn.addEventListener('click', () => { if(isSessionActive){ finishSession(); } });
-    doneBtn.addEventListener('click', () => { restartSession(); });
-    homeBtn.addEventListener('click', () => { window.location.href = '/'; });
+    // ========= Controls =========
+    if (startBtn) startBtn.addEventListener('click', () => { if(!isSessionActive){ startSession(); } });
+    if (pauseHudBtn) pauseHudBtn.addEventListener('click', () => { if(isSessionActive){ togglePause(); } });
+    if (exitHudBtn) exitHudBtn.addEventListener('click', () => { if(isSessionActive){ finishSession(); } });
+    if (doneBtn) doneBtn.addEventListener('click', () => { restartSession(); });
+    if (homeBtn) homeBtn.addEventListener('click', () => { window.location.href = '/'; });
 
-    // Keyboard access
-    gameArea.addEventListener('keydown', (e) => {
+    if (gameArea) gameArea.addEventListener('keydown', (e) => {
       const focusEl = document.activeElement;
       if(!focusEl?.classList?.contains('draggable')) return;
       const step = (e.shiftKey ? 10 : 4);
@@ -425,14 +433,13 @@
       if(e.key === 'Enter'){ e.preventDefault(); currentDragging = focusEl; checkDrop(); currentDragging=null; }
     });
 
-    // Timer/UI helpers
     function fmtTime(ms){
       const s = Math.max(0, Math.ceil(ms/1000));
       const m = Math.floor(s/60);
       const ss = String(s%60).padStart(2,'0');
       return `${String(m).padStart(2,'0')}:${ss}`;
     }
-    function updateTimeUI(){ timeEl.textContent = fmtTime(timeRemaining); }
+    function updateTimeUI(){ if (timeEl) timeEl.textContent = fmtTime(timeRemaining); }
 
     async function enterFullscreen(){
       try{
@@ -450,9 +457,8 @@
     function toImmersive(){ document.body.classList.add('playing'); window.scrollTo({ top: 0 }); enterFullscreen(); }
     function fromImmersive(){ document.body.classList.remove('playing'); exitFullscreen(); }
 
-    // Core flow
     function startSession(){
-      const minutes = Math.max(1, Math.min(10, Number.parseInt(sessionDurationInput.value, 10) || 2));
+      const minutes = Math.max(1, Math.min(10, parseInt(sessionDurationInput?.value || '2', 10) || 2));
       sessionDuration = minutes * 60 * 1000;
       timeRemaining = sessionDuration;
       score = 0; successfulDrops = 0; totalDrops = 0; totalDropTime = 0; currentRound = 1;
@@ -460,14 +466,15 @@
       updateHUD();
 
       isSessionActive = true; isPaused = false;
-      pauseHudBtn.textContent = 'Pause';
-      completionModal.style.display='none';
+      if (pauseHudBtn) pauseHudBtn.textContent = 'Pause';
+      if (completionModal) completionModal.style.display='none';
 
       toImmersive();
       // Reserve vertical space so nothing spawns under the HUD
       const __hud = document.querySelector('.hud');
       const __hudH = __hud ? Math.ceil(__hud.getBoundingClientRect().height) : 0;
-      gameArea.style.paddingTop = (__hudH + 12) + 'px';
+      if (gameArea) gameArea.style.paddingTop = (__hudH + 12) + 'px';
+
       clearGameElements();
       createRound();
       roundStartTime = Date.now();
@@ -485,8 +492,8 @@
     function togglePause(){
       if(!isSessionActive) return;
       isPaused = !isPaused;
-      pauseHudBtn.textContent = isPaused ? 'Resume' : 'Pause';
-      statusMessage.textContent = isPaused ? 'Paused' : 'Drag the object to the target';
+      if (pauseHudBtn) pauseHudBtn.textContent = isPaused ? 'Resume' : 'Pause';
+      if (statusMessage) statusMessage.textContent = isPaused ? 'Paused' : 'Drag the object to the target';
     }
 
     function restartSession(){
@@ -499,57 +506,50 @@
     function finishSession(){
       clearInterval(timerInterval);
       isSessionActive = false; isPaused = false;
-
       clearGameElements();
 
       const accuracy = totalDrops > 0 ? Math.round((successfulDrops / totalDrops) * 100) : 0;
       const avgDropTime = successfulDrops > 0 ? (totalDropTime / successfulDrops / 1000).toFixed(2) : '0.00';
 
-      // Session enhancement hook
-      sessionEnhancement.handleSessionComplete({
-        score, drops: successfulDrops, accuracy, avgDropTime: Number(avgDropTime)
-      });
+      try { sessionEnhancement.handleSessionComplete({ score, drops: successfulDrops, accuracy, avgDropTime: Number(avgDropTime) }); } catch(e){}
 
-      // Standard progress hook
       const difficulty = difficultySelect ? difficultySelect.value : 'easy';
-      try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
-      try { markExerciseTried(EXERCISE_ID); } catch {}
+      try { recordSession(EXERCISE_ID, difficulty, score); } catch(e){}
+      try {
+        markExerciseTried(EXERCISE_ID);
+        const unlocked = checkAndUnlockAchievements();
+        if (Array.isArray(unlocked) && unlocked.length && typeof window.showAchievementNotification === 'function') {
+          unlocked.forEach(id => window.showAchievementNotification(id));
+        }
+      } catch(e) {}
 
-      // Update PB
       updatePersonalBestDisplay();
 
-      // Stars/XP analogue for Drop
-      const xp = computeXP(score, accuracy, difficulty);
-      finalXpEl.textContent = `+${xp} XP`;
+      const base = Math.round(score / 10);
+      const accBonus = Math.round(base * ( (totalDrops>0?successfulDrops/totalDrops:0) ) * 0.2);
+      const diffMult = (difficulty === 'hard' ? 1.4 : difficulty === 'medium' ? 1.2 : 1.0);
+      const xp = Math.max(0, Math.round((base + accBonus) * diffMult));
+      if (finalXpEl) finalXpEl.textContent = `+${xp} XP`;
 
-      // Completion UI
-      finalScoreEl.textContent = String(score);
-      finalDropsEl.textContent = String(successfulDrops);
-      finalAccuracyEl.textContent = `${accuracy}%`;
-      finalAvgTimeEl.textContent = `${avgDropTime}s`;
+      if (finalScoreEl) finalScoreEl.textContent = String(score);
+      if (finalDropsEl) finalDropsEl.textContent = String(successfulDrops);
+      if (finalAccuracyEl) finalAccuracyEl.textContent = `${accuracy}%`;
+      if (finalAvgTimeEl) finalAvgTimeEl.textContent = `${avgDropTime}s`;
 
-      completionModal.style.display='grid';
-      requestAnimationFrame(() => completionCard.focus());
+      if (completionModal) completionModal.style.display='grid';
+      requestAnimationFrame(() => completionCard && completionCard.focus());
       fromImmersive();
     }
 
-    function computeXP(score, accuracy, diff){
-      const base = Math.round(score / 10);
-      const accBonus = Math.round(base * (accuracy/100) * 0.2);
-      const diffMult = (diff === 'hard' ? 1.4 : diff === 'medium' ? 1.2 : 1.0);
-      return Math.max(0, Math.round((base + accBonus) * diffMult));
-    }
-
     function updateHUD(){
-      scoreEl.textContent = String(score);
-      roundNumber.textContent = String(currentRound);
-      totalRounds.textContent = String(maxRounds);
-      hudDifficultyEl.textContent = labelForDifficulty(difficultySelect.value);
+      if (scoreEl) scoreEl.textContent = String(score);
+      if (roundNumber) roundNumber.textContent = String(currentRound);
+      if (totalRounds) totalRounds.textContent = String(maxRounds);
+      if (hudDifficultyEl) hudDifficultyEl.textContent = labelForDifficulty(difficultySelect?.value || 'easy');
       updateTimeUI();
     }
     function labelForDifficulty(v){ return v === 'hard' ? 'Hard' : v === 'medium' ? 'Medium' : 'Easy'; }
 
-    // Round & objects
     function clearGameElements(){
       activeDroppables.forEach(d => d.remove());
       activeTargets.forEach(t => t.remove());
@@ -558,9 +558,9 @@
 
     function createRound(){
       clearGameElements();
-      const diff = DIFF[difficultySelect.value] || DIFF.easy;
-      const numTargets = parseInt(numTargetsSelect.value, 10) || 1;
-      const showNumbers = showNumbersSelect.value === 'yes';
+      const diff = DIFF[difficultySelect?.value || 'easy'] || DIFF.easy;
+      const numTargets = parseInt(numTargetsSelect?.value || '1', 10) || 1;
+      const showNumbers = (showNumbersSelect?.value || 'no') === 'yes';
 
       const gameRect = gameArea.getBoundingClientRect();
       const positions = [];
@@ -597,13 +597,13 @@
         d.style.background = col.grad; d.style.boxShadow = `0 4px 15px ${col.solid}66`;
         d.style.left = `${randomEdgeX(gameRect, diff.objectSize)}px`;
         d.style.top = `${randomEdgeY(gameRect, diff.objectSize)}px`;
-        d.setAttribute('tabindex','0'); // focusable for keyboard
+        d.setAttribute('tabindex','0');
         if (showNumbers){ d.textContent = String(i+1); }
         addDragListeners(d);
         gameArea.appendChild(d); activeDroppables.push(d);
       }
 
-      statusMessage.textContent = 'Drag objects to their matching targets';
+      if (statusMessage) statusMessage.textContent = 'Drag objects to their matching targets';
       roundStartTime = Date.now();
       updateHUD();
     }
@@ -641,15 +641,8 @@
         size
       };
     }
-        }
-        if(!clash) return {x,y,size};
-      }
-      return { x: pad + Math.random()*(rect.width - size - 2*pad),
-               y: pad + Math.random()*(rect.height - size - 2*pad), size };
-    }
     function dist(x1,y1,x2,y2){ return Math.hypot(x2-x1,y2-y1); }
 
-    // Drag logic with full touch+mouse parity
     function addDragListeners(el){
       el.addEventListener('mousedown', startDrag);
       el.addEventListener('touchstart', startDrag, { passive:false });
@@ -692,7 +685,7 @@
 
       checkProximity();
     }
-    function endDrag(e){
+    function endDrag(){
       if (!currentDragging) return;
       checkDrop();
       currentDragging.classList.remove('dragging');
@@ -702,13 +695,11 @@
     }
 
     function checkProximity(){
-      // simple highlight when close
       for(const t of activeTargets){ t.classList.remove('active'); }
       if (!currentDragging) return;
       const dRect = currentDragging.getBoundingClientRect();
       const dCx = dRect.left + dRect.width/2;
       const dCy = dRect.top + dRect.height/2;
-
       for(const t of activeTargets){
         const tRect = t.getBoundingClientRect();
         const tCx = tRect.left + tRect.width/2;
@@ -738,7 +729,7 @@
         const hit = Math.hypot(dCx - tCx, dCy - tCy) <= radius * 0.8;
         if (hit){
           matched = true;
-          const diff = DIFF[difficultySelect.value] || DIFF.easy;
+          const diff = DIFF[difficultySelect?.value || 'easy'] || DIFF.easy;
           const elapsed = Date.now() - roundStartTime;
           totalDropTime += elapsed;
           successfulDrops++;
@@ -753,7 +744,6 @@
         }
       }
 
-      // Next round when all matched
       if (activeDroppables.length === 0 && activeTargets.length === 0){
         currentRound++;
         if (currentRound <= maxRounds){ createRound(); }
@@ -763,9 +753,9 @@
       }
     }
 
-    // EndSession hook (available globally if other modules call it)
+    // Global hook
     window.endSession = function(scoreFinal, difficulty = 'easy') {
-      try { recordSession(EXERCISE_ID, difficulty, scoreFinal); } catch {}
+      try { recordSession(EXERCISE_ID, difficulty, scoreFinal); } catch(e) {}
       try {
         const unlocked = checkAndUnlockAchievements();
         if (Array.isArray(unlocked) && unlocked.length && typeof window.showAchievementNotification === 'function') {
@@ -773,6 +763,7 @@
         }
       } catch(e) {}
     };
+  })();
   </script>
 </body>
 </html>
