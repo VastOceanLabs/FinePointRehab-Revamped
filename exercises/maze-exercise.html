@@ -5,7 +5,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);} 
+    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-RVKCCWBFKE', { 'anonymize_ip': true });
   </script>
@@ -14,15 +14,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Cosmic Maze — Fine Motor Skills Rehabilitation | Fine Point Rehab</title>
 
-  <!-- Preconnects -->
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-
-  <!-- Design System -->
+  <!-- Design System CSS -->
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/components.css">
-  <link rel="stylesheet" href="/css/exercises.css">
 
   <style>
     /* ===== Global background + starfield ===== */
@@ -52,125 +47,313 @@
       max-width: 1200px;
       margin: 0 auto;
     }
-    .home-link { text-decoration: none; }
+    .site-header h1 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+      line-height: 1.2;
+    }
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .5ch;
+      text-decoration: none;
+    }
 
-    /* ===== Page layout ===== */
+    /* ===== Two-column shared layout ===== */
     .page {
       max-width: 1200px;
       margin: 0 auto;
       padding: var(--space-4);
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 320px 1fr;
       gap: var(--space-4);
     }
-    @media (min-width: 980px) {
-      .page { grid-template-columns: 420px 1fr; align-items: start; }
+    @media (max-width: 920px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
     }
 
-    /* ===== Panels & HUD ===== */
-    .panel {
+    /* Left panel: settings (use .panel class) */
+    .settings-panel.panel {
+      position: relative;
+      padding-bottom: var(--space-6);
+    }
+    .settings-panel h2 {
+      margin: 0 0 var(--space-4);
+      font-size: var(--font-size-lg);
+      text-align: center;
+    }
+    .game-description {
       background: var(--bg-tertiary);
-      border: 1px solid var(--border);
       border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      border: 1px solid var(--border);
     }
-
-    .settings-panel { padding: var(--space-4); }
-    .settings-panel h2 { margin: 0 0 var(--space-4); font-size: var(--font-size-lg); text-align: center; }
-    .game-description { background: var(--bg-tertiary); border-radius: var(--radius); padding: var(--space-4); margin-bottom: var(--space-4); border: 1px solid var(--border); }
-
     .settings-group { margin-bottom: var(--space-4); }
-    .settings-label { display: block; margin-bottom: var(--space-2); font-weight: 700; }
-    select, input[type="number"] {
-      width: 100%; padding: var(--space-3); border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,.2); background: rgba(5,10,26,.8);
-      color: var(--text-primary); font-size: var(--font-size-base);
+    .settings-label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-weight: var(--font-weight-semibold);
+    }
+    .setting-help {
+      display: block;
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      margin-top: var(--space-1);
+      font-style: italic;
     }
 
-    .instructions { text-align: center; color: var(--text-secondary); margin: 0 0 var(--space-3); font-size: var(--font-size-base); }
+    /* Right panel: HUD + game area */
+    .right-col {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: var(--space-3);
+      min-height: 70vh;
+    }
 
-    .controls { display:flex; gap: var(--space-2); justify-content:center; flex-wrap:wrap; }
+    /* HUD row (use .panel) */
+    .hud.panel {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: var(--space-3);
+      align-items: center;
+      position: relative;
+      padding-top: calc(var(--space-3) + 8px);
+    }
+    .hud-group {
+      display: grid;
+      gap: var(--space-1);
+      text-align: center;
+    }
+    .hud-value {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+    }
+    .hud-label {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+    }
+    /* Timer bar (standardised) */
+    .timer-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 8px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--brand-aqua), rgba(111,211,245,.35));
+      transform-origin: left center;
+      transition: transform .1s linear;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+    }
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
 
-    .right-col { display:grid; grid-template-rows: auto 1fr; gap: var(--space-3); }
+    /* Instructions text */
+    .instructions {
+      text-align: center;
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-3);
+      font-size: var(--font-size-base);
+      padding: var(--space-3);
+      background-color: rgba(8, 15, 35, 0.7);
+      border-radius: var(--radius);
+    }
 
-    .hud { display:flex; flex-wrap:wrap; align-items:center; gap: var(--space-2); padding: var(--space-3); position:relative; }
-    .hud-group { text-align:center; padding: var(--space-2) var(--space-3); border:1px solid var(--border); border-radius: var(--radius); background: rgba(255,255,255,.05); min-width: 90px; }
-    .hud-value { font-weight:900; font-size: clamp(16px, 3vw, 20px); color:#bfe6ff; text-shadow: 0 0 6px rgba(150,220,255,.5); line-height:1.1; }
-    .hud-label { font-size: 11px; opacity: .9; margin-top: 4px; }
-
-    .timer-bar { position:absolute; top:0; left:0; height:8px; width:100%; background: linear-gradient(90deg, var(--brand-aqua), rgba(121,217,255,.3)); transform-origin:left center; border-top-left-radius: var(--radius); border-top-right-radius: var(--radius); }
-
-    .game-container { position: relative; display:grid; place-items:center; padding: var(--space-3); background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); overflow:hidden; }
+    /* Game container */
+    #game-container {
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: var(--space-3);
+      background: rgba(0,0,0,0.15);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
     #stars-container { position: absolute; inset: 0; pointer-events: none; }
-    #maze-container { position: relative; background-color: rgba(0, 0, 0, 0.3); border: 2px solid var(--brand-aqua); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 0 20px rgba(121,217,255,.2); outline: none; }
-
-    #error-message { color: #ffb3b3; padding: var(--space-2) var(--space-3); display:none; }
-    #error-message.show { display:block; }
-
-    /* Completion modal */
-    #completion-message { max-width: min(560px, 92vw); margin: var(--space-4) auto; padding: var(--space-4); text-align:center; }
-  </style>
-
-  <!-- Comet-style Skin (non-breaking overlay) -->
-  <style>
-    :root{ --vh: 1vh; }
-    /* Glass header like Comet */
-    .site-header{
-      backdrop-filter: blur(8px);
-      background: linear-gradient(180deg, rgba(8,12,26,.9), rgba(8,12,26,.55));
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    /* Panels + chips */
-    .panel, .hud, .settings-panel, #completion-message{
-      background: rgba(10,16,36,.9);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05);
-    }
-    .btn-ghost{ border:1px solid rgba(255,255,255,.22); border-radius:999px; background: rgba(255,255,255,.06); color: inherit; }
-    .btn-ghost:hover{ background: rgba(255,255,255,.12); }
-
-    /* Primary button like Comet */
-    .btn-primary, button#start-session{
-      border:1px solid rgba(111,211,245,.9);
-      background: rgba(111,211,245,.95);
-      color:#07101e;
-      font-weight:800;
-    }
-    .btn-primary:hover, button#start-session:hover{
-      background: rgba(111,211,245,1);
-      box-shadow: 0 6px 18px rgba(111,211,245,.45);
-    }
-
-    /* Maze frame glow */
-    #maze-container{
-      background-color: rgba(0,0,0,.25) !important;
-      border: 2px solid var(--brand-aqua, #6fd3f5);
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(111,211,245,.2);
+    #maze-container {
+      position: relative;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 2px solid var(--brand-aqua);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(111, 211, 245, 0.2);
+      touch-action: none;
       outline: none;
     }
 
-    /* Timer bar styling */
-    #timer-bar{
-      position:absolute; top:0; left:0; height:8px; width:100%;
-      background: linear-gradient(90deg, var(--brand-aqua, #6fd3f5), rgba(111,211,245,.35));
-      transform-origin:left center;
-      transition: transform .1s linear;
-      border-top-left-radius: 12px; border-top-right-radius: 12px;
+    .maze-wall {
+      position: absolute;
+      background: linear-gradient(135deg, rgba(7, 25, 59, 0.9), rgba(11, 42, 88, 0.9));
+      border: 1px solid var(--brand-aqua);
+      box-shadow: 0 0 8px rgba(111, 211, 245, 0.2);
+    }
+    .path-line { position: absolute; z-index: 2; opacity: .5; }
+    .path-line.horizontal {
+      height: 2px;
+      background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, var(--brand-aqua) 4px, var(--brand-aqua) 8px);
+    }
+    .path-line.vertical {
+      width: 2px;
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 4px, var(--brand-aqua) 4px, var(--brand-aqua) 8px);
+    }
+    .path-node {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: var(--brand-aqua);
+      border-radius: var(--radius-full);
+      z-index: 3;
+      transform: translate(-50%, -50%);
+      opacity: 0.7;
     }
 
-    /* Immersive mode (full-bleed) */
-    body.playing { overflow:hidden; }
-    body.playing .site-header{ display:none; }
-    body.playing .page { padding:0 !important; max-width: none; }
-    body.playing .hud { position:fixed; z-index:10; left:10px; right:10px; top: calc(env(safe-area-inset-top, 0px) + 10px); background: linear-gradient(180deg, rgba(6,10,24,.65), rgba(6,10,24,.35)); }
-    body.playing #maze-container{ width:100vw; height: calc(var(--vh) * 100); }
+    /* Player + goal */
+    #player {
+      position: absolute;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='bodyGrad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23e8eef5'/%3E%3Cstop offset='100%25' style='stop-color:%239fb5d4'/%3E%3C/linearGradient%3E%3ClinearGradient id='windowGrad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%236495ed'/%3E%3Cstop offset='100%25' style='stop-color:%232856a8'/%3E%3C/linearGradient%3E%3ClinearGradient id='flameGrad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ffef00'/%3E%3Cstop offset='50%25' style='stop-color:%23ff8c00'/%3E%3Cstop offset='100%25' style='stop-color:%23ff4500'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cellipse cx='20' cy='20' rx='12' ry='16' fill='url(%23bodyGrad)' stroke='%23364a69' stroke-width='1'/%3E%3Cellipse cx='20' cy='12' rx='6' ry='7' fill='url(%23windowGrad)' stroke='%231a3a6e' stroke-width='0.5'/%3E%3Cellipse cx='18' cy='10' rx='2' ry='3' fill='%23a8ccff' opacity='0.6'/%3E%3Cpath d='M8 18 L2 28 L8 26 Z' fill='%23536b8a' stroke='%23364a69' stroke-width='0.5'/%3E%3Cpath d='M32 18 L38 28 L32 26 Z' fill='%23536b8a' stroke='%23364a69' stroke-width='0.5'/%3E%3Crect x='14' y='32' width='4' height='3' rx='1' fill='%23434d5a'/%3E%3Crect x='22' y='32' width='4' height='3' rx='1' fill='%23434d5a'/%3E%3Cellipse cx='16' cy='36' rx='3' ry='5' fill='url(%23flameGrad)' opacity='0.9'/%3E%3Cellipse cx='24' cy='36' rx='3' ry='5' fill='url(%23flameGrad)' opacity='0.9'/%3E%3Cline x1='12' y1='20' x2='28' y2='20' stroke='%23536b8a' stroke-width='0.5'/%3E%3Cline x1='12' y1='24' x2='28' y2='24' stroke='%23536b8a' stroke-width='0.5'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      transform: translate(-50%, -50%) rotate(90deg);
+      box-shadow: 0 0 20px var(--brand-aqua);
+      z-index: 10;
+      cursor: pointer;
+      touch-action: none;
+      transition: box-shadow var(--duration-fast) var(--easing);
+      animation: hover 2s ease-in-out infinite;
+    }
+    @keyframes hover {
+      0%, 100% { transform: translate(-50%, -50%) rotate(90deg) translateY(0); }
+      50%      { transform: translate(-50%, -50%) rotate(90deg) translateY(-2px); }
+    }
+    #goal {
+      position: absolute;
+      width: 44px; height: 44px;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cdefs%3E%3CradialGradient id='earthGlow'%3E%3Cstop offset='70%25' style='stop-color:%2300ff00;stop-opacity:0'/%3E%3Cstop offset='100%25' style='stop-color:%2300ff00;stop-opacity:0.3'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='25' cy='25' r='24' fill='url(%23earthGlow)'/%3E%3Ccircle cx='25' cy='25' r='20' fill='%232E86AB' stroke='%231a5a7a' stroke-width='0.5'/%3E%3Cpath d='M15 15 Q20 12 25 14 T35 18 Q33 25 30 28 Q25 30 20 28 Q15 25 15 20 Z' fill='%23228B22' opacity='0.8'/%3E%3Cpath d='M10 25 Q12 23 15 24 Q18 28 15 32 Q12 33 10 30 Z' fill='%23228B22' opacity='0.8'/%3E%3Cpath d='M30 10 Q35 12 37 15 Q35 18 32 16 Q30 13 30 10 Z' fill='%23228B22' opacity='0.8'/%3E%3Cpath d='M25 32 Q28 35 32 36 Q35 38 33 40 Q28 39 25 36 Z' fill='%23228B22' opacity='0.8'/%3E%3Cpath d='M12 18 Q15 17 18 18' stroke='white' stroke-width='1' fill='none' opacity='0.4'/%3E%3Cpath d='M28 22 Q31 21 34 22' stroke='white' stroke-width='1' fill='none' opacity='0.4'/%3E%3Cpath d='M20 35 Q23 34 26 35' stroke='white' stroke-width='1' fill='none' opacity='0.4'/%3E%3Cpath d='M10 20 Q10 10 20 7 Q30 5 38 12' stroke='%2387CEEB' stroke-width='1.5' fill='none' opacity='0.5'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border-radius: var(--radius-full);
+      z-index: 5;
+      box-shadow: 0 0 30px rgba(46, 134, 171, 0.7);
+      transform: translate(-50%, -50%);
+    }
 
-    /* Focus ring */
-    :focus-visible{ outline: 3px solid rgba(111,211,245,.85); outline-offset:2px; }
+    /* START/FINISH labels + path trace */
+    .point-label {
+      position: absolute;
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius);
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+      white-space: nowrap;
+    }
+    #start-label { color: var(--brand-aqua); background-color: var(--bg-primary); border: 1px solid var(--brand-aqua); box-shadow: 0 0 8px rgba(111, 211, 245, 0.5); }
+    #end-label   { color: var(--success);    background-color: var(--bg-primary); border: 1px solid var(--success);    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5); }
+    .path-trace { position: absolute; background-color: rgba(111, 211, 245, 0.3); border-radius: var(--radius-full); pointer-events: none; z-index: 2; }
+
+    /* Completion modal (use .panel) */
+    .completion.panel {
+      position: fixed;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%) scale(1);
+      max-width: 90%;
+      width: 560px;
+      z-index: 1100;
+      text-align: center;
+      display: none;
+    }
+    .completion.panel.show { display: block; animation: pop .25s ease; }
+    @keyframes pop { from { transform: translate(-50%, -50%) scale(.95); opacity: .6; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+    .score-highlight { color: var(--brand-aqua); font-weight: var(--font-weight-bold); }
+
+    /* Simple completion glow animation on maze */
+    .maze-celebrate { animation: celebrate 900ms ease-out 1; }
+    @keyframes celebrate {
+      0%   { box-shadow: 0 0 0 rgba(111,211,245,0); }
+      40%  { box-shadow: 0 0 40px rgba(111,211,245,.8); }
+      100% { box-shadow: 0 0 20px rgba(111,211,245,.2); }
+    }
+
+    /* Error toast */
+    #error-message {
+      position: fixed;
+      top: 20px; left: 50%; transform: translateX(-50%);
+      background-color: var(--error-bg);
+      color: var(--error);
+      padding: var(--space-4) var(--space-6);
+      border-radius: var(--radius);
+      z-index: 1200;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown { from { transform: translate(-50%, -100%); } to { transform: translate(-50%, 0); } }
+
+    /* Utilities */
+    .hidden { display: none !important; }
   </style>
+
+<style id="immersive-maze-css">
+:root{ --vh: 1vh; }
+@supports (height: 100dvh) { :root{ --vh: 1dvh; } }
+
+/* Hide the large game frame before starting */
+body:not(.playing) #game-container { display: none !important; }
+
+/* Immersive layout: single column, full-bleed stage, HUD floats */
+body.playing .site-header{ display:none !important; }
+body.playing .settings, body.playing .settings-panel, body.playing #settings{ display:none !important; }
+body.playing .page, body.playing .main-grid, body.playing main{
+  grid-template-columns: 1fr !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: calc(var(--vh) * 100) !important;
+  max-width: none !important;
+}
+
+body.playing #game-container, body.playing .game-container, body.playing .frame{
+  width: 100vw !important;
+  height: calc(var(--vh) * 100) !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+body.playing .hud, body.playing .hud-bar{
+  position: absolute !important;
+  z-index: 1000 !important;
+  top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+  left: 10px !important;
+  right: 10px !important;
+  margin: 0 !important;
+  background: linear-gradient(180deg, rgba(6,10,24,.65), rgba(6,10,24,.35)) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 14px !important;
+}
+
+body.playing footer, body.playing .footer, body.playing .bottom-bar, body.playing .instructions, body.playing .instructions-footer{ display:none !important; }
+</style>
+
 </head>
+
 <body>
   <!-- ===== Sticky Header ===== -->
   <header class="site-header" role="banner">
@@ -187,28 +370,27 @@
       <h2 id="settings-heading">Session Settings</h2>
 
       <div class="game-description" aria-describedby="about-p">
-        <p id="about-p"><strong>How to play:</strong> guide the ship along the dotted paths from <em>Start</em> to <em>Earth</em>. Drag or use arrow keys. Avoid walls.</p>
-      </div>
-
-      <div class="stats-row" role="region" aria-label="Player stats" style="display:flex;gap:10px;justify-content:center;margin-bottom:var(--space-3)">
-        <div class="metric" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);border-radius:12px;padding:8px 12px;min-width:110px;">
-          <div id="pbSettings" class="v" style="font-weight:900;color:#bfe6ff;text-shadow:0 0 6px rgba(150,220,255,.5);font-size:18px;">0</div>
-          <div class="t" style="font-size:11px;opacity:.9;margin-top:3px">Personal Best</div>
-        </div>
+        <h3 class="sr-only">About This Exercise</h3>
+        <p id="about-p">
+          Navigate a spaceship through randomly generated mazes to reach Earth. Improves fine motor control,
+          hand–eye coordination, and precision. Drag the spaceship or use arrow keys to follow the dotted paths.
+        </p>
       </div>
 
       <div class="settings-group">
         <label class="settings-label" for="difficulty-select">Difficulty</label>
-        <select id="difficulty-select" aria-label="Select difficulty">
+        <select id="difficulty-select" aria-label="Select difficulty level">
           <option value="easy" selected>Easy — wide paths</option>
           <option value="medium">Medium — standard paths</option>
           <option value="hard">Hard — narrow paths</option>
         </select>
+        <small class="setting-help">Higher difficulty increases precision demands.</small>
       </div>
 
       <div class="settings-group">
         <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
-        <input id="session-duration" type="number" min="1" max="10" value="5" inputmode="decimal" aria-label="Session duration in minutes" />
+        <input class="input" type="number" id="session-duration" min="1" max="10" value="5" aria-label="Set session duration in minutes">
+        <small class="setting-help">1–10 minutes recommended.</small>
       </div>
 
       <div class="settings-group">
@@ -225,8 +407,6 @@
         <button id="pause-session" class="btn btn-secondary" aria-pressed="false" aria-label="Pause session">Pause</button>
         <button id="restart-session" class="btn" aria-label="Restart session">Restart</button>
       </div>
-
-      <p id="error-message" role="alert" aria-live="assertive"></p>
     </aside>
 
     <!-- Right: HUD + Game -->
@@ -257,51 +437,55 @@
 
         <div class="hud-group" aria-live="polite">
           <div id="hud-moves" class="hud-value">0</div>
-          <div class="hud-label">Moves</div>
+          <div class="hud-label">Moves (this maze)</div>
         </div>
 
         <div class="hud-group" aria-live="polite">
           <div id="hud-avg" class="hud-value">0.0s</div>
-          <div class="hud-label">Avg</div>
+          <div class="hud-label">Avg. Completion</div>
         </div>
 
         <div class="hud-group" aria-live="polite">
           <div id="hud-time" class="hud-value">5:00</div>
-          <div class="hud-label">Time</div>
-        </div>
-
-        <div class="hud-actions" style="margin-left:auto;display:flex;gap:8px;">
-          <button id="pauseHud" class="btn-ghost" type="button" aria-label="Pause or resume">Pause</button>
-          <button id="exitHud" class="btn-ghost" type="button" aria-label="Exit to results">Exit</button>
+          <div class="hud-label">Time Left</div>
         </div>
       </div>
 
-      <!-- Game Frame -->
-      <div id="game-container" class="game-container panel">
+      <!-- Game Area -->
+      <div class="panel" id="game-container">
         <div id="stars-container" aria-hidden="true"></div>
-        <div id="maze-container" tabindex="0" role="application" aria-label="Cosmic maze game area. Use arrow keys or drag to move."></div>
-      </div>
 
-      <p class="instructions" id="instructions">Tip: Drag on mobile, or use arrow keys on desktop. Avoid the walls!</p>
+        <p class="instructions" id="instructions">
+          Guide the spaceship through the cosmic maze to reach Earth. Drag the ship or use arrow keys to follow the dotted lines.
+        </p>
+
+        <div id="maze-container"
+             tabindex="0"
+             role="application"
+             aria-label="Cosmic maze game area. Use arrow keys or drag to move.">
+        </div>
+      </div>
     </section>
   </main>
 
-  <!-- ===== Completion ===== -->
-  <div id="completion-message" class="panel hidden" role="dialog" aria-modal="true" aria-labelledby="complete-title">
-    <h2 id="complete-title" style="margin-top:0">Therapy Session Complete!</h2>
+  <!-- Completion Modal -->
+  <div id="completion-message" class="completion panel" role="dialog" aria-modal="true" aria-labelledby="complete-title">
+    <h2 id="complete-title">Therapy Session Complete!</h2>
     <div id="completion-scores" aria-live="polite">
-      <p>Mazes Completed: <span id="final-completed" class="v">0</span></p>
-      <p>Average Completion Time: <span id="final-avg-time" class="v">0.0s</span></p>
-      <p>Motor Performance Score: <span id="final-score" class="v">0</span></p>
-      <p>XP Earned: <span id="final-xp" class="v">0</span></p>
+      <p>Mazes Completed: <span id="final-completed" class="score-highlight">0</span></p>
+      <p>Average Completion Time: <span id="final-avg-time" class="score-highlight">0.0s</span></p>
+      <p>Motor Performance Score: <span id="final-score" class="score-highlight">0</span></p>
+      <p>XP Earned: <span id="final-xp" class="score-highlight">0</span></p>
     </div>
-    <div class="controls" style="justify-content:center">
-      <button id="restart-button" class="btn btn-primary" type="button">Start New Session</button>
-      <button class="btn" id="close-complete" type="button">Close</button>
+    <div class="controls" aria-label="Completion controls">
+      <button id="restart-button" class="btn btn-primary">Start New Therapy Session</button>
+      <button class="btn" id="close-complete">Close</button>
     </div>
   </div>
 
-  <!-- ===== Core MAZE logic (unchanged) ===== -->
+  <div id="error-message" role="alert"></div>
+
+  <!-- ===== Core JavaScript: Simplified and Fixed ===== -->
   <script type="module">
     // Simplified imports - match the pattern from other exercises
     const storage = {
@@ -377,7 +561,7 @@
     const finalAvgTime    = document.getElementById('final-avg-time');
     const finalScore      = document.getElementById('final-score');
     const finalXP         = document.getElementById('final-xp');
-    const closeComplete   = document.getElementById('close-complete');
+    const completeClose   = document.getElementById('close-complete');
     const restartModalBtn = document.getElementById('restart-button');
 
     // Instructions
@@ -394,7 +578,8 @@
     let timerInterval = null;
 
     let player = null, goal = null, startLabel = null, endLabel = null;
-    let maze = [], path = [], rows = 9, cols = 14;
+    let maze = [], pathNodes = [], pathTraces = [];
+    let mazeWidth = 600, mazeHeight = 400;
     let cellSize = 60, wallThickness = 12;
     let currentDifficulty = 'easy';
     let showTrace = true;
@@ -425,40 +610,113 @@
       diffEl.textContent = getCurrentDifficulty();
     });
 
-    // ...
-    // (The remainder of your original Maze game logic stays here unchanged.)
-    // ...
+    // Responsive maze size with debounce
+    let resizeTimeout;
+    function adjustMazeSize() {
+      const ww = window.innerWidth;
+      const wh = window.innerHeight;
+      const playing = document.body.classList.contains('playing');
 
-    // ===== Timer helpers =====
-    function formatTime(ms){ const t=Math.max(0, Math.round(ms/1000)); const m=Math.floor(t/60); const s=t%60; return `${m}:${s.toString().padStart(2,'0')}`; }
-    function startTimer(){ const start=Date.now(); const end=start+timeRemaining; timerInterval=setInterval(()=>{ const now=Date.now(); timeRemaining=Math.max(0, end-now); timeEl.textContent=formatTime(timeRemaining); const pct = (timeRemaining / sessionMs); timerBarEl.style.transform=`scaleX(${pct})`; if(timeRemaining<=0){ clearInterval(timerInterval); timerInterval=null; endSession(); } }, 100); }
-    function stopTimer(){ clearInterval(timerInterval); timerInterval=null; }
+      // Available height: if immersive, let the maze take the full viewport minus HUD (measured on the fly)
+      let availH = wh;
+      if (playing) {
+        const hud = document.querySelector('.hud, .hud-bar');
+        const hudH = hud ? Math.ceil(hud.getBoundingClientRect().height) + 12 : 0;
+        availH = Math.max(260, wh - hudH - (window.visualViewport ? Math.ceil(window.visualViewport.offsetTop||0) : 0));
+      }
 
-    // ===== Game generation (simplified excerpt preserved) =====
-    function generateMaze(){
-      // (Original generateMaze implementation preserved in your file; omitted here for brevity in this preview.)
+      // Width: keep previous behavior but allow up to viewport width when immersive
+      mazeWidth  = playing ? Math.min(ww, ww) : Math.min(600, ww * 0.9);
+      // Height: fill available height when immersive; otherwise use previous heuristic
+      mazeHeight = playing ? availH : Math.min(400, wh * 0.6);
+
+      mazeContainer.style.width  = `${Math.round(mazeWidth)}px`;
+      mazeContainer.style.height = `${Math.round(mazeHeight)}px`;
+    }
+    adjustMazeSize();
+    
+    window.addEventListener('resize', () => {
+      adjustMazeSize();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // Only rebuild when paused or not active to avoid disrupting gameplay
+        if (!isSessionActive || isPaused) {
+          generateMaze();
+        }
+      }, 150);
+    });
+
+    // Persist settings
+    function saveSettings() {
+      storage.set('mazeSessionDuration', sessionDurationInp.value);
+      storage.set('mazeDifficulty', difficultySelect.value);
+      storage.set('mazeShowTrace', showTraceSelect.value);
+    }
+    function loadSettings() {
+      sessionDurationInp.value = storage.get('mazeSessionDuration', 5);
+      difficultySelect.value   = storage.get('mazeDifficulty', 'easy');
+      showTraceSelect.value    = storage.get('mazeShowTrace', 'yes');
+      diffEl.textContent       = difficultySelect.value;
+    }
+    loadSettings();
+
+    // HUD updates
+    function updateHUD() {
+      scoreEl.textContent = `${score}`;
+      pbEl.textContent    = `${personalBest}`;
+      completedEl.textContent = `${mazesCompleted}`;
+      movesEl.textContent = `${moveCountThisMaze}`;
+
+      const avg = (mazesCompleted > 0)
+        ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
+      avgEl.textContent = `${avg}s`;
+
+      const mins = Math.max(0, Math.floor(timeRemaining / 60000));
+      const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
+      timeEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function clearMaze(){ if (mazeContainer) mazeContainer.innerHTML=''; }
+    // Error toast
+    function showError(msg) {
+      errorMessage.textContent = msg;
+      errorMessage.style.display = 'block';
+      setTimeout(() => errorMessage.style.display = 'none', 3000);
+    }
 
-    function updateHUD(){ scoreEl.textContent = String(score); pbEl.textContent = String(personalBest); diffEl.textContent = currentDifficulty; completedEl.textContent = String(mazesCompleted); movesEl.textContent = String(moveCountThisMaze); const avg = mazesCompleted ? (totalCompletionTime / mazesCompleted / 1000) : 0; avgEl.textContent = (avg>0?avg.toFixed(1):'0.0') + 's'; }
-
-    // ===== Start/Pause/Restart =====
+    // ===== Session Flow =====
     startBtn.addEventListener('click', () => {
+      if (isSessionActive) return; // Guard against multiple starts
+      if (timerInterval) stopTimer(); // Belt-and-braces cleanup
+      
       try {
-        // Read settings
         currentDifficulty = getCurrentDifficulty();
-        const d = difficultySizes[currentDifficulty] || difficultySizes.easy;
-        cellSize = d.cellSize; wallThickness = d.wallThickness;
-        showTrace = showTraceSelect?.value !== 'no';
-        sessionMs = Math.max(1, Number(sessionDurationInp.value)||5) * 60 * 1000;
+        
+        // Validate and clamp duration
+        const mins = Math.max(1, Math.min(10, Number(sessionDurationInp.value) || 5));
+        sessionMs = mins * 60 * 1000;
+        sessionDurationInp.value = mins; // Normalize UI
+        
+        showTrace = showTraceSelect.value === 'yes';
+        saveSettings();
 
-        // Reset session state
-        isSessionActive = true; isPaused = false; mazesCompleted=0; currentMaze=1; totalCompletionTime=0; score=0; moveCountThisMaze=0;
-        timeRemaining = sessionMs; updateHUD();
+        // Reset state
+        score = 0;
+        mazesCompleted = 0;
+        currentMaze = 1;
+        totalCompletionTime = 0;
+        timeRemaining = sessionMs;
+        moveCountThisMaze = 0;
+        isPaused = false;
 
-        // Start timer & maze
+        clearMaze(true);
+        updateHUD();
+
+        // Timer
+        isSessionActive = true;
         startTimer();
+
+        // Ensure correct size for current layout (esp. immersive)
+        adjustMazeSize();
 
         // Maze
         generateMaze();
@@ -477,55 +735,495 @@
       isPaused = !isPaused;
       pauseBtn.setAttribute('aria-pressed', String(isPaused));
       pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
-      if (isPaused) { stopTimer(); } else { startTimer(); mazeContainer.focus(); }
+      if (isPaused) {
+        stopTimer();
+      } else {
+        startTimer();
+        mazeContainer.focus();
+      }
     });
 
     restartBtn.addEventListener('click', () => {
       // Restart current session with same settings
-      if (timerInterval) stopTimer(); isSessionActive=false; isPaused=false; timeRemaining=sessionMs; updateHUD(); clearMaze();
-      // Recreate maze and resume timer
-      isSessionActive=true; startTimer(); generateMaze(); mazeStartTime = Date.now(); mazeContainer.focus();
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+      isPaused = false;
+      startBtn.click();
     });
 
-    // ===== Completion helpers =====
-    function showError(msg){ if(!errorMessage) return; errorMessage.textContent = msg; errorMessage.classList.add('show'); setTimeout(()=> errorMessage.classList.remove('show'), 4000); }
+    restartModalBtn.addEventListener('click', () => {
+      completionModal.classList.remove('show');
+      startBtn.click();
+    });
+    completeClose.addEventListener('click', () => {
+      completionModal.classList.remove('show');
+    });
 
-    function endSession(){ if(timerInterval) stopTimer(); isSessionActive=false; isPaused=false; const avgStr = mazesCompleted? (totalCompletionTime/mazesCompleted/1000).toFixed(1):'0.0'; const computedScore = Math.max(score, Math.round((mazesCompleted*100)/Math.max(1, (totalCompletionTime/mazesCompleted/1000)))); if(computedScore>personalBest){ personalBest=computedScore; storage.set('mazePersonalBest', personalBest);} updateHUD(); finalCompleted.textContent = `${mazesCompleted}`; finalAvgTime.textContent = `${avgStr}s`; finalScore.textContent = `${computedScore}`; finalXP.textContent = `${Math.max(10, Math.round(computedScore * 0.5))}`; completionModal.classList.add('show'); clearMaze(); }
+    function startTimer() {
+      // visual timer bar via transform (0..1)
+      timerInterval = setInterval(() => {
+        timeRemaining -= 100;
+        const progress = Math.max(0, timeRemaining / sessionMs);
+        timerBarEl.style.transform = `scaleX(${progress})`;
+        updateHUD();
+        if (timeRemaining <= 0) {
+          endSession();
+        }
+      }, 100);
+    }
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
 
-    closeComplete?.addEventListener('click', ()=>{ completionModal.classList.remove('show'); });
-    restartModalBtn?.addEventListener('click', ()=>{ completionModal.classList.remove('show'); startBtn.click(); });
+    // ===== Maze generation and play =====
+    function clearMaze(skipHandlers = false) {
+      if (!skipHandlers) removeAllEventListeners();
+      while (mazeContainer.firstChild) mazeContainer.removeChild(mazeContainer.firstChild);
+      pathTraces = [];
+      pathNodes = [];
+      player = goal = startLabel = endLabel = null;
+    }
+
+    function removeAllEventListeners() {
+      if (eventHandlers.keydown)   { mazeContainer.removeEventListener('keydown', eventHandlers.keydown);   eventHandlers.keydown=null; }
+      if (player) {
+        if (eventHandlers.mousedown){ player.removeEventListener('mousedown', eventHandlers.mousedown); eventHandlers.mousedown=null; }
+        if (eventHandlers.touchstart){ player.removeEventListener('touchstart', eventHandlers.touchstart); eventHandlers.touchstart=null; }
+      }
+      if (eventHandlers.mousemove) { document.removeEventListener('mousemove', eventHandlers.mousemove); eventHandlers.mousemove=null; }
+      if (eventHandlers.touchmove) { document.removeEventListener('touchmove', eventHandlers.touchmove); eventHandlers.touchmove=null; }
+      if (eventHandlers.mouseup)   { document.removeEventListener('mouseup',   eventHandlers.mouseup);   eventHandlers.mouseup=null; }
+      if (eventHandlers.touchend)  { document.removeEventListener('touchend',  eventHandlers.touchend);  eventHandlers.touchend=null; }
+    }
+
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+
+    function getUnvisitedNeighbors(x, y) {
+      const n = [];
+      const rows = maze.length, cols = maze[0].length;
+      const dirs = shuffle([{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}]);
+      for (const d of dirs) {
+        const nx = x + d.dx, ny = y + d.dy;
+        if (nx>=0 && nx<cols && ny>=0 && ny<rows && !maze[ny][nx].visited) n.push({x:nx,y:ny});
+      }
+      return n;
+    }
+
+    function createMazeWalls(cols, rows) {
+      const addWall = (top,left,w,h) => {
+        const el = document.createElement('div');
+        el.className = 'maze-wall';
+        el.style.top = `${top}px`; el.style.left = `${left}px`;
+        el.style.width = `${w}px`; el.style.height = `${h}px`;
+        mazeContainer.appendChild(el);
+      };
+      // Outer walls
+      addWall(0, 0, cols*cellSize, wallThickness); // top
+      addWall(0, 0, wallThickness, rows*cellSize); // left
+      addWall(0, cols*cellSize - wallThickness, wallThickness, rows*cellSize); // right
+      addWall(rows*cellSize - wallThickness, 0, cols*cellSize, wallThickness); // bottom
+
+      // Inner
+      for (let i=0;i<rows;i++){
+        for (let j=0;j<cols;j++){
+          const c = maze[i][j];
+          if (c.walls.right && j<cols-1) addWall(i*cellSize, (j+1)*cellSize - wallThickness/2, wallThickness, cellSize);
+          if (c.walls.bottom && i<rows-1) addWall((i+1)*cellSize - wallThickness/2, j*cellSize, cellSize, wallThickness);
+        }
+      }
+    }
+
+    function connectPathNodes(cols, rows) {
+      for (let y=0;y<rows;y++){
+        for (let x=0;x<cols;x++){
+          const idx = pathNodes.findIndex(n => n.gridX===x && n.gridY===y);
+          if (idx === -1) continue;
+          const cur = pathNodes[idx];
+          if (x>0 && !maze[y][x].walls.left){
+            const li = pathNodes.findIndex(n => n.gridX===x-1 && n.gridY===y);
+            if (li!==-1 && !cur.connections.includes(li)){ cur.connections.push(li); pathNodes[li].connections.push(idx); }
+          }
+          if (x<cols-1 && !maze[y][x].walls.right){
+            const ri = pathNodes.findIndex(n => n.gridX===x+1 && n.gridY===y);
+            if (ri!==-1 && !cur.connections.includes(ri)){ cur.connections.push(ri); pathNodes[ri].connections.push(idx); }
+          }
+          if (y>0 && !maze[y][x].walls.top){
+            const ti = pathNodes.findIndex(n => n.gridX===x && n.gridY===y-1);
+            if (ti!==-1 && !cur.connections.includes(ti)){ cur.connections.push(ti); pathNodes[ti].connections.push(idx); }
+          }
+          if (y<rows-1 && !maze[y][x].walls.bottom){
+            const bi = pathNodes.findIndex(n => n.gridX===x && n.gridY===y+1);
+            if (bi!==-1 && !cur.connections.includes(bi)){ cur.connections.push(bi); pathNodes[bi].connections.push(idx); }
+          }
+        }
+      }
+    }
+
+    function createPathLines(cols, rows) {
+      for (let i=0;i<rows;i++){
+        for (let j=0;j<cols;j++){
+          const cx = j*cellSize + cellSize/2;
+          const cy = i*cellSize + cellSize/2;
+          const node = { x:cx,y:cy, gridX:j, gridY:i, connections:[] };
+          pathNodes.push(node);
+          const ne = document.createElement('div');
+          ne.className='path-node'; ne.style.left=`${cx}px`; ne.style.top=`${cy}px`;
+          mazeContainer.appendChild(ne);
+        }
+      }
+      connectPathNodes(cols, rows);
+
+      // draw lines
+      for (let i=0;i<pathNodes.length;i++){
+        const a = pathNodes[i];
+        for (const idx of a.connections){
+          if (i<idx){
+            const b = pathNodes[idx];
+            const line = document.createElement('div');
+            line.className = 'path-line';
+            if (a.gridX === b.gridX) {
+              // vertical
+              line.classList.add('vertical');
+              const top = Math.min(a.y,b.y), h = Math.abs(a.y-b.y);
+              line.style.left = `${a.x}px`; line.style.top=`${top}px`; line.style.height=`${h}px`;
+            } else {
+              // horizontal
+              line.classList.add('horizontal');
+              const left = Math.min(a.x,b.x), w = Math.abs(a.x-b.x);
+              line.style.left = `${left}px`; line.style.top=`${a.y}px`; line.style.width=`${w}px`;
+            }
+            mazeContainer.appendChild(line);
+          }
+        }
+      }
+    }
+
+    function createPlayer(x, y) {
+      player = document.createElement('div');
+      player.id = 'player';
+      const w = Math.max(cellSize * 0.75, 24);
+      const h = Math.max(cellSize * 0.85, 28);
+      player.style.width = `${w}px`;
+      player.style.height = `${h}px`;
+      const px = x*cellSize + cellSize/2, py = y*cellSize + cellSize/2;
+      player.style.left = `${px}px`; player.style.top = `${py}px`;
+      mazeContainer.appendChild(player);
+    }
+
+    function createGoal(x, y) {
+      goal = document.createElement('div');
+      goal.id = 'goal';
+      const px = x*cellSize + cellSize/2, py = y*cellSize + cellSize/2;
+      goal.style.left = `${px}px`; goal.style.top = `${py}px`;
+      goal.style.width = `${cellSize * 0.7}px`;
+      goal.style.height= `${cellSize * 0.7}px`;
+      mazeContainer.appendChild(goal);
+    }
+
+    function createPointLabels(sx, sy, ex, ey) {
+      startLabel = document.createElement('div');
+      startLabel.id='start-label'; startLabel.className='point-label'; startLabel.textContent='START';
+      startLabel.style.left = `${sx*cellSize + cellSize/2}px`;
+      startLabel.style.top  = `${sy*cellSize - 15}px`;
+
+      endLabel = document.createElement('div');
+      endLabel.id='end-label'; endLabel.className='point-label'; endLabel.textContent='FINISH';
+      endLabel.style.left = `${ex*cellSize + cellSize/2}px`;
+      endLabel.style.top  = `${ey*cellSize + cellSize + 15}px`;
+
+      mazeContainer.appendChild(startLabel);
+      mazeContainer.appendChild(endLabel);
+    }
+
+    function generateMaze() {
+      // Difficulty dimensions
+      const dims = difficultySizes[currentDifficulty] || difficultySizes.easy;
+      cellSize = dims.cellSize; wallThickness = dims.wallThickness;
+
+      // Grid
+      const cols = Math.max(2, Math.floor(mazeWidth / cellSize));
+      const rows = Math.max(2, Math.floor(mazeHeight / cellSize));
+
+      clearMaze(true);
+      maze = [];
+
+      for (let i=0;i<rows;i++){
+        const row=[];
+        for (let j=0;j<cols;j++){
+          row.push({ x:j,y:i,visited:false, walls:{top:true,right:true,bottom:true,left:true} });
+        }
+        maze.push(row);
+      }
+
+      // DFS carve
+      const stack = [];
+      let x=0,y=0;
+      maze[y][x].visited=true; stack.push({x,y});
+      while (stack.length>0){
+        const cur = stack[stack.length-1];
+        const neigh = getUnvisitedNeighbors(cur.x, cur.y);
+        if (neigh.length===0) { stack.pop(); continue; }
+        const nxt = neigh[Math.floor(Math.random()*neigh.length)];
+        // knock walls
+        if (nxt.x>cur.x){ maze[cur.y][cur.x].walls.right=false; maze[nxt.y][nxt.x].walls.left=false; }
+        else if (nxt.x<cur.x){ maze[cur.y][cur.x].walls.left=false; maze[nxt.y][nxt.x].walls.right=false; }
+        else if (nxt.y>cur.y){ maze[cur.y][cur.x].walls.bottom=false; maze[nxt.y][nxt.x].walls.top=false; }
+        else if (nxt.y<cur.y){ maze[cur.y][cur.x].walls.top=false; maze[nxt.y][nxt.x].walls.bottom=false; }
+        maze[nxt.y][nxt.x].visited=true; stack.push(nxt);
+      }
+
+      // visuals
+      createMazeWalls(cols, rows);
+      createPathLines(cols, rows);
+      createPlayer(0,0);
+      createGoal(cols-1, rows-1);
+      createPointLabels(0,0, cols-1, rows-1);
+
+      // movement
+      setupPlayerMovement();
+      // reset per-maze counters
+      moveCountThisMaze = 0;
+      updateHUD();
+    }
+
+    function findPath(startIndex, targetIndex) {
+      if (startIndex === targetIndex) return [startIndex];
+      const visited = new Set();
+      const q = [[startIndex]];
+      while (q.length){
+        const p = q.shift();
+        const cur = p[p.length-1];
+        if (cur===targetIndex) return p;
+        if (!visited.has(cur)){
+          visited.add(cur);
+          for (const nxt of pathNodes[cur].connections){
+            if (!visited.has(nxt)) q.push([...p, nxt]);
+          }
+        }
+      }
+      return [];
+    }
+
+    function setupPlayerMovement() {
+      if (!player || !pathNodes.length) return;
+
+      let playerX = parseFloat(player.style.left);
+      let playerY = parseFloat(player.style.top);
+      let closestNodeIndex = 0;
+      let isDragging = false;
+      let dragPath = [];
+      let lastVisitedNode = 0;
+
+      function updateClosestNodeIndex() {
+        let min = Infinity;
+        for (let i=0;i<pathNodes.length;i++){
+          const n = pathNodes[i];
+          const dx = n.x - playerX, dy = n.y - playerY;
+          const d = Math.hypot(dx,dy);
+          if (d<min){ min=d; closestNodeIndex=i; }
+        }
+      }
+      updateClosestNodeIndex();
+
+      function addPathTrace(fromX, fromY, toX, toY) {
+        if (!showTrace) return;
+        const trace = document.createElement('div');
+        trace.className = 'path-trace';
+        const cx = (fromX+toX)/2, cy=(fromY+toY)/2;
+        const w = Math.abs(toX-fromX)+10, h=Math.abs(toY-fromY)+10;
+        trace.style.left=`${cx-w/2}px`; trace.style.top=`${cy-h/2}px`;
+        trace.style.width=`${w}px`; trace.style.height=`${h}px`;
+        mazeContainer.appendChild(trace);
+        pathTraces.push(trace);
+      }
+
+      function checkGoalReached() {
+        const gx = parseFloat(goal.style.left), gy = parseFloat(goal.style.top);
+        const d = Math.hypot(playerX-gx, playerY-gy);
+        const r = parseFloat(goal.style.width)/2;
+        if (d < r) {
+          // Celebrate!
+          mazeContainer.classList.add('maze-celebrate');
+          setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 900);
+          completeCurrentMaze();
+        }
+      }
+
+      function moveToNode(nodeIndex) {
+        if (nodeIndex<0 || nodeIndex>=pathNodes.length) return;
+        const target = pathNodes[nodeIndex];
+        addPathTrace(playerX, playerY, target.x, target.y);
+        playerX = target.x; playerY = target.y;
+        player.style.left = `${playerX}px`;
+        player.style.top  = `${playerY}px`;
+        closestNodeIndex = nodeIndex;
+        moveCountThisMaze++;
+        updateHUD();
+        checkGoalReached();
+      }
+
+      function keyHandler(e) {
+        if (!isSessionActive || isPaused) return;
+        const cur = pathNodes[closestNodeIndex];
+        let next = -1;
+        switch (e.key) {
+          case 'ArrowUp':
+            next = cur.connections.find(i => pathNodes[i].y < cur.y && pathNodes[i].x === cur.x); break;
+          case 'ArrowDown':
+            next = cur.connections.find(i => pathNodes[i].y > cur.y && pathNodes[i].x === cur.x); break;
+          case 'ArrowLeft':
+            next = cur.connections.find(i => pathNodes[i].x < cur.x && pathNodes[i].y === cur.y); break;
+          case 'ArrowRight':
+            next = cur.connections.find(i => pathNodes[i].x > cur.x && pathNodes[i].y === cur.y); break;
+          default:
+            return;
+        }
+        if (next !== undefined && next !== -1) {
+          moveToNode(next);
+          e.preventDefault();
+        }
+      }
+
+      function startDrag(e) {
+        if (!isSessionActive || isPaused) return;
+        isDragging = true;
+        dragPath = [closestNodeIndex];
+        lastVisitedNode = closestNodeIndex;
+        player.style.boxShadow = '0 0 30px rgba(111, 211, 245, 1)';
+        e.preventDefault();
+      }
+
+      function drag(e) {
+        if (!isDragging || !isSessionActive || isPaused) return;
+        const rect = mazeContainer.getBoundingClientRect();
+        let cx, cy;
+        if (e.type === 'mousemove') { cx = e.clientX - rect.left; cy = e.clientY - rect.top; }
+        else { cx = e.touches[0].clientX - rect.left; cy = e.touches[0].clientY - rect.top; e.preventDefault(); }
+
+        const cur = pathNodes[closestNodeIndex];
+        const toCheck = new Set([closestNodeIndex, ...cur.connections.flatMap(i => [i, ...pathNodes[i].connections])]);
+        let best=-1, min=Infinity;
+
+        for (const idx of toCheck) {
+          const n = pathNodes[idx];
+          const d = Math.hypot(n.x-cx, n.y-cy) + (dragPath.includes(idx) ? cellSize*0.5 : 0);
+          if (d < min && idx !== lastVisitedNode) { min=d; best=idx; }
+        }
+        if (best !== -1 && min < cellSize*0.7) {
+          const path = findPath(closestNodeIndex, best);
+          if (path.length){
+            for (let i=1;i<path.length;i++){
+              const ni = path[i];
+              if (!dragPath.includes(ni)) dragPath.push(ni);
+              moveToNode(ni);
+              lastVisitedNode = ni;
+            }
+          }
+        }
+      }
+
+      function endDrag() {
+        isDragging = false;
+        player.style.boxShadow = '0 0 20px rgba(111, 211, 245, 0.8)';
+        dragPath = [];
+        lastVisitedNode = closestNodeIndex;
+      }
+
+      eventHandlers.keydown    = keyHandler;
+      eventHandlers.mousedown  = startDrag;
+      eventHandlers.touchstart = startDrag;
+      eventHandlers.mousemove  = drag;
+      eventHandlers.touchmove  = drag;
+      eventHandlers.mouseup    = endDrag;
+      eventHandlers.touchend   = endDrag;
+
+      mazeContainer.addEventListener('keydown', eventHandlers.keydown);
+      player.addEventListener('mousedown', eventHandlers.mousedown);
+      player.addEventListener('touchstart', eventHandlers.touchstart, { passive: false });
+      document.addEventListener('mousemove', eventHandlers.mousemove);
+      document.addEventListener('touchmove', eventHandlers.touchmove, { passive: false });
+      document.addEventListener('mouseup',   eventHandlers.mouseup);
+      document.addEventListener('touchend',  eventHandlers.touchend);
+    }
+
+    function completeCurrentMaze() {
+      const ms = Date.now() - mazeStartTime;
+      totalCompletionTime += ms;
+      mazesCompleted++;
+      currentMaze++;
+      // Simple score: better with faster avg time
+      const avg = (totalCompletionTime / mazesCompleted / 1000) || 1;
+      score = Math.max(score, Math.round((mazesCompleted * 100) / avg));
+      updateHUD();
+
+      // New maze
+      generateMaze();
+      mazeStartTime = Date.now();
+    }
+
+    // ===== Session End =====
+    function endSession() {
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+
+      // Compute final stats
+      const avgStr = (mazesCompleted > 0) ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
+      const avg = parseFloat(avgStr);
+      const computedScore = Math.round((mazesCompleted * 100) / (avg > 0 ? avg : 1));
+
+      // Update PB
+      if (computedScore > personalBest) {
+        personalBest = computedScore;
+        storage.set('mazePersonalBest', personalBest);
+      }
+      updateHUD();
+
+      // Completion modal + XP line
+      finalCompleted.textContent = `${mazesCompleted}`;
+      finalAvgTime.textContent   = `${avgStr}s`;
+      finalScore.textContent     = `${computedScore}`;
+      finalXP.textContent        = `${Math.max(10, Math.round(computedScore * 0.5))}`;
+      completionModal.classList.add('show');
+
+      // Clean up maze elements
+      clearMaze();
+    }
 
     // Accessibility / mobile tweaks
     document.addEventListener('touchstart', e => { if (e.touches.length>1) e.preventDefault(); }, { passive:false });
-    let lastTouchEnd = 0; document.addEventListener('touchend', e => { const now=Date.now(); if (now - lastTouchEnd <= 300) e.preventDefault(); lastTouchEnd=now; }, false);
-    document.addEventListener('touchmove', e => { /* prevent scroll while playing */ if (isSessionActive && !isPaused) e.preventDefault(); }, { passive:false });
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', e => { const now=Date.now(); if (now-lastTouchEnd<=300) e.preventDefault(); lastTouchEnd=now; }, false);
+    document.addEventListener('touchmove', e => { if (isSessionActive && !isPaused) e.preventDefault(); }, { passive:false });
     document.addEventListener('contextmenu', e => e.preventDefault());
-    window.addEventListener('beforeunload', () => { /* cleanup timers */ if (timerInterval) stopTimer(); });
+
+    window.addEventListener('beforeunload', () => { if (timerInterval) stopTimer(); removeAllEventListeners(); });
   </script>
 
-  <!-- Immersive helpers (non-breaking) -->
-  <script>
-    (function(){
-      const setVH=()=>document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px');
-      setVH(); addEventListener('resize', setVH, {passive:true});
-      const start = document.getElementById('start-session');
-      const completion = document.getElementById('completion-message');
-      if (start) start.addEventListener('click', () => {
-        document.body.classList.add('playing');
-        try{ const el=document.documentElement; if (el.requestFullscreen) el.requestFullscreen({navigationUI:'hide'});}catch{}
-        scrollTo({top:0,behavior:'smooth'});
-      });
-      if (completion) {
-        const mo = new MutationObserver(() => {
-          const open = completion.classList.contains('show') || completion.style.display === 'block';
-          if (open) {
-            document.body.classList.remove('playing');
-            try{ if (document.fullscreenElement) document.exitFullscreen(); }catch{}
-          }
-        });
-        mo.observe(completion, {attributes:true, attributeFilter:['class','style']});
-      }
-    })();
-  </script>
+<script id="immersive-maze-js">
+(function(){
+  function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); }
+  setVH(); window.addEventListener('resize', setVH, {passive:true});
+
+  var startBtn = document.getElementById('start-session');
+  var completion = document.getElementById('completion-message');
+  var closeBtn = document.getElementById('close-complete');
+
+  function enter(){ document.body.classList.add('playing'); /* re-measure after layout change */ setTimeout(()=>{ try{adjustMazeSize();}catch(e){} }, 0); }
+  function exit(){ document.body.classList.remove('playing'); }
+
+  if (startBtn) startBtn.addEventListener('click', function(){ requestAnimationFrame(()=>requestAnimationFrame(enter)); }, {capture:false});
+  if (closeBtn) closeBtn.addEventListener('click', exit);
+
+  if (completion && 'MutationObserver' in window){
+    var mo = new MutationObserver(function(){
+      var open = completion.classList.contains('show') || completion.style.display === 'block';
+      if (open) exit();
+    });
+    mo.observe(completion, {attributes:true, attributeFilter:['class','style']});
+  }
+})();
+</script>
+
 </body>
 </html>
