@@ -787,3 +787,189 @@
         starsContainer.appendChild(star);
       }
     }
+
+    // ----- HUD helpers
+    function updateHUD() {
+      scoreEl.textContent = score;
+      completedEl.textContent = mazesCompleted;
+      timeEl.textContent = formatTime(timeLeft || (parseFloat(durInput.value) * 60) || 300);
+      pbEl.textContent = personalBest;
+      pbSettingsEl.textContent = personalBest;
+    }
+
+    function formatTime(seconds) {
+      const s = Math.max(0, Math.floor(seconds));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${m}:${String(r).padStart(2,'0')}`;
+    }
+
+    // ----- Session control
+    function startSession() {
+      // derive settings
+      const mins = Math.max(1, parseFloat(durInput.value) || 5);
+      timeLeft = Math.floor(mins * 60);
+      const diff = difficultySizes[difficultySelect.value] || difficultySizes.easy;
+      cellSize = diff.cellSize;
+      wallThickness = diff.wallThickness;
+      showTrace = (showTraceSelect.value === 'yes');
+
+      // reset state
+      isPlaying = true;
+      isPaused = false;
+      score = 0;
+      mazesCompleted = 0;
+      totalCompletionTime = 0;
+
+      // UI
+      document.body.classList.add('playing');
+      doneModal.classList.add('hidden');
+      updateHUD();
+
+      // build the first maze
+      generateMaze();
+      adjustMazeSize();
+
+      // start timer
+      startTimer();
+    }
+
+    function pauseSession() { isPaused = true; }
+    function resumeSession() { isPaused = false; }
+
+    function endSession() {
+      isPlaying = false;
+      clearInterval(timerInterval);
+      // simple results fill
+      document.getElementById('fCompleted').textContent = String(mazesCompleted);
+      const avg = mazesCompleted ? (totalCompletionTime / mazesCompleted) : 0;
+      document.getElementById('fAvgTime').textContent = `${avg.toFixed(1)}s`;
+      document.getElementById('fScore').textContent = String(score);
+      document.getElementById('fXp').textContent = String(Math.max(0, score)); // placeholder
+      doneModal.classList.remove('hidden');
+
+      // update PB
+      if (score > personalBest) {
+        personalBest = score;
+        localStorage.setItem('maze_pb', String(personalBest));
+        updateHUD();
+      }
+    }
+
+    function exitSession() {
+      isPlaying = false;
+      isPaused = false;
+      clearInterval(timerInterval);
+      document.body.classList.remove('playing');
+      doneModal.classList.add('hidden');
+      // clear maze contents
+      mazeContainer.innerHTML = '';
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!isPlaying || isPaused) return;
+        timeLeft -= 1;
+        timeEl.textContent = formatTime(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          endSession();
+        }
+      }, 1000);
+    }
+
+    // ----- Layout/maze
+    function adjustMazeSize() {
+      // If you later compute dynamic sizes from container rects, do it here.
+      // For now, nothing required because CSS handles sizing.
+    }
+
+    function generateMaze() {
+      mazeContainer.innerHTML = '';
+
+      // Very simple placeholder "maze": a start ship and a goal to the right
+      const rect = mazeContainer.getBoundingClientRect();
+      const startX = 40;
+      const startY = Math.max(60, rect.height * 0.5);
+      const goalX  = Math.max(100, rect.width - 60);
+      const goalY  = startY;
+
+      // player
+      const p = document.createElement('div');
+      p.id = 'player';
+      p.style.width = '36px';
+      p.style.height = '36px';
+      p.style.left = `${startX}px`;
+      p.style.top  = `${startY}px`;
+      p.style.position = 'absolute';
+      p.style.transform = 'translate(-50%, -50%) rotate(90deg)';
+      mazeContainer.appendChild(p);
+      player = p;
+
+      // goal
+      const g = document.createElement('div');
+      g.id = 'goal';
+      g.style.left = `${goalX}px`;
+      g.style.top  = `${goalY}px`;
+      g.style.width = '44px';
+      g.style.height = '44px';
+      mazeContainer.appendChild(g);
+      goal = g;
+
+      // simple drag to move (mouse + touch)
+      let dragging = false;
+
+      const moveTo = (clientX, clientY) => {
+        const r = mazeContainer.getBoundingClientRect();
+        const x = Math.min(r.right - 5, Math.max(r.left + 5, clientX)) - r.left;
+        const y = Math.min(r.bottom - 5, Math.max(r.top + 5, clientY)) - r.top;
+        player.style.left = `${x}px`;
+        player.style.top  = `${y}px`;
+
+        // reached goal?
+        const dx = x - parseFloat(goal.style.left);
+        const dy = y - parseFloat(goal.style.top);
+        if (Math.hypot(dx, dy) < 30) {
+          // complete one maze
+          mazesCompleted += 1;
+          score += 100; // placeholder scoring
+          totalCompletionTime += Math.min(999, (performance.now() - (mazeStartTime || performance.now())) / 1000);
+          updateHUD();
+
+          mazeContainer.classList.add('maze-celebrate');
+          setTimeout(() => mazeContainer.classList.remove('maze-celebrate'), 500);
+          // generate another
+          mazeStartTime = performance.now();
+          generateMaze();
+        }
+      };
+
+      player.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault(); });
+      document.addEventListener('mouseup',   () => { dragging = false; });
+      document.addEventListener('mousemove', (e) => { if (dragging && isPlaying && !isPaused) moveTo(e.clientX, e.clientY); });
+
+      player.addEventListener('touchstart', (e) => { dragging = true; e.preventDefault(); }, { passive: false });
+      document.addEventListener('touchend',  () => { dragging = false; }, { passive: false });
+      document.addEventListener('touchmove', (e) => {
+        if (dragging && isPlaying && !isPaused) {
+          const t = e.touches[0];
+          moveTo(t.clientX, t.clientY);
+        }
+      }, { passive: false });
+
+      // keyboard arrows
+      mazeStartTime = performance.now();
+      mazeContainer.tabIndex = 0;
+      mazeContainer.focus();
+      mazeContainer.addEventListener('keydown', (e) => {
+        if (!isPlaying || isPaused) return;
+        const step = 6;
+        const left = parseFloat(player.style.left);
+        const top  = parseFloat(player.style.top);
+        if (e.key === 'ArrowLeft')  player.style.left = `${left - step}px`;
+        if (e.key === 'ArrowRight') player.style.left = `${left + step}px`;
+        if (e.key === 'ArrowUp')    player.style.top  = `${top - step}px`;
+        if (e.key === 'ArrowDown')  player.style.top  = `${top + step}px`;
+      });
+    }
