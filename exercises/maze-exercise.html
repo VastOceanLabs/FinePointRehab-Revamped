@@ -973,3 +973,10 @@
         if (e.key === 'ArrowDown')  player.style.top  = `${top + step}px`;
       });
     }
+
+    // Debug helpers
+    if (!startBtn) console.error('Start button not found in DOM');
+    window.addEventListener('error', e => console.error('JS Error:', e.message));
+  </script>
+</body>
+</html>
