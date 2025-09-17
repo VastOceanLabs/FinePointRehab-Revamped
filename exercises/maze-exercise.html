@@ -703,9 +703,62 @@
       hard: { cellSize: 30, wallThickness: 8 }
     };
 
-    // Initialize
+    // Initialize display
     updatePBDisplay();
+    updateHUD(); // Initialize HUD with default values
     generateStars();
+
+    // Wire up event handlers
+    startBtn.addEventListener('click', startSession);
+
+    pauseBtn.addEventListener('click', () => {
+      if (!isPlaying) return;
+      if (isPaused) {
+        resumeSession();
+      } else {
+        pauseSession();
+      }
+    });
+
+    exitBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        endSession();
+      }
+      exitSession();
+    });
+
+    doneBtn.addEventListener('click', () => {
+      doneModal.classList.add('hidden');
+      exitSession();
+      setTimeout(startSession, 200);
+    });
+
+    homeBtn.addEventListener('click', () => {
+      window.location.href = '/';
+    });
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+      if (isPlaying && !isPaused) {
+        adjustMazeSize();
+      }
+    });
+
+    // Prevent context menu and zoom
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('touchstart', e => {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+
+    // Prevent double-tap zoom
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', e => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
 
     // Personal best display
     function updatePBDisplay() {
