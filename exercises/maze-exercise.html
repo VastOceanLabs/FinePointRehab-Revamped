@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- BUILD: Cosmic Maze — Standalone immersive (no external modules) — 2025-09-17 -->
+  <!-- BUILD: Cosmic Maze — Standalone immersive v2 (layout-safe) — 2025-09-18 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Cosmic Maze — Fine Motor Skills Rehabilitation | Fine Point Rehab</title>
@@ -216,7 +216,6 @@
       padding: 0;
       overflow: hidden;
     }
-    body.playing .frame.panel { outline: 1px solid rgba(255,255,255,.06); }
 
     #stars-container {
       position: absolute;
@@ -233,6 +232,9 @@
       border: 1px solid var(--panel-border);
       overflow: hidden;
       z-index: 1;
+      /* Give it a minimum height to avoid 0-height edge cases */
+      min-height: 260px;
+      min-width: 320px;
     }
     #maze-svg { width: 100%; height: 100%; display: block; }
 
@@ -353,7 +355,7 @@
     </div>
 
     <!-- Game Frame -->
-    <section class="frame panel">
+    <section class="frame panel" id="frame">
       <div id="stars-container"></div>
       <p class="instructions">Guide the spaceship through the maze to the green goal. Drag the ship or use arrow keys.</p>
       <div id="maze-container" tabindex="0">
@@ -431,6 +433,7 @@
     const pbSettingsEl = document.getElementById('pbSettings');
     const timeEl = document.getElementById('time');
 
+    const frameEl = document.getElementById('frame');
     const mazeContainer = document.getElementById('maze-container');
     const doneModal = document.getElementById('done');
 
@@ -481,8 +484,8 @@
       doneModal.classList.add('hidden');
       updateHUD();
 
-      // build maze and start
-      generateMaze();
+      // defer generation until layout has settled
+      scheduleGenerateMaze();
       startTimer();
     }
 
@@ -517,10 +520,16 @@
     function generateMaze(){
       // clear container
       mazeContainer.innerHTML = '';
-      // SVG setup
-      const r = mazeContainer.getBoundingClientRect();
-      const W = Math.floor(r.width);
-      const H = Math.floor(r.height);
+
+      // measure with multiple fallbacks
+      const rect = mazeContainer.getBoundingClientRect();
+      let W = Math.floor(rect.width || mazeContainer.clientWidth || mazeContainer.offsetWidth || 0);
+      let H = Math.floor(rect.height || mazeContainer.clientHeight || mazeContainer.offsetHeight || 0);
+
+      if (W < 50 || H < 50){
+        console.warn('[Maze] Container too small (W,H)=', W, H, 'retrying...');
+        return false; // tell caller it failed
+      }
 
       // difficulty -> cell size
       const diff = difficultySelect.value;
@@ -568,19 +577,21 @@
         nxt.visited = true;
         stack.push(nxt);
       }
-      const end = grid[rows-1][cols-1];
 
       // draw SVG
       const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
       svg.setAttribute('id','maze-svg');
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.setAttribute('width', String(W));
+      svg.setAttribute('height', String(H));
       svg.setAttribute('preserveAspectRatio', 'none');
       mazeContainer.appendChild(svg);
 
       // background grid glow
       const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
-      bg.setAttribute('x', pad); bg.setAttribute('y', pad);
-      bg.setAttribute('width', W - pad*2); bg.setAttribute('height', H - pad*2);
+      const oxPad = 10;
+      bg.setAttribute('x', oxPad); bg.setAttribute('y', oxPad);
+      bg.setAttribute('width', Math.max(0, W - oxPad*2)); bg.setAttribute('height', Math.max(0, H - oxPad*2));
       bg.setAttribute('rx', 10);
       bg.setAttribute('fill', 'rgba(20,30,60,0.35)');
       bg.setAttribute('stroke', 'rgba(255,255,255,0.08)');
@@ -594,10 +605,10 @@
       pathGroup.setAttribute('fill', 'none');
       svg.appendChild(pathGroup);
 
-      const ox = pad + wall; // inner offset
-      const oy = pad + wall;
-      const step = ((W - pad*2) / cols);
-      const stepY = ((H - pad*2) / rows);
+      const ox = oxPad + wall; // inner offset
+      const oy = oxPad + wall;
+      const step = ((W - oxPad*2) / cols);
+      const stepY = ((H - oxPad*2) / rows);
 
       for (let y=0;y<rows;y++){
         for (let x=0;x<cols;x++){
@@ -637,7 +648,7 @@
         }
       }
 
-      // place player and goal
+      // place player and goal (centered within first/last cells)
       const playerX = ox + step*0.5;
       const playerY = oy + stepY*0.5;
       const goalX   = ox + (cols-0.5)*step - 22;
@@ -679,7 +690,7 @@
           mazeContainer.classList.add('maze-celebrate');
           setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 500);
           mazeStartTime = performance.now();
-          generateMaze();
+          scheduleGenerateMaze(true);
         }
       }
       p.addEventListener('mousedown', (e)=>{ if(!isPlaying||isPaused) return; dragging = true; e.preventDefault(); });
@@ -708,8 +719,8 @@
         if (e.key === 'ArrowUp')    player.style.top  = (top  - stepPix) + 'px';
         if (e.key === 'ArrowDown')  player.style.top  = (top  + stepPix) + 'px';
         // re-check goal
-        const dx = left - parseFloat(goal.style.left);
-        const dy = top  - parseFloat(goal.style.top);
+        const dx = parseFloat(player.style.left) - parseFloat(goal.style.left);
+        const dy = parseFloat(player.style.top)  - parseFloat(goal.style.top);
         if (Math.hypot(dx, dy) < 30) {
           mazesCompleted += 1;
           score += 100;
@@ -718,10 +729,43 @@
           mazeContainer.classList.add('maze-celebrate');
           setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 500);
           mazeStartTime = performance.now();
-          generateMaze();
+          scheduleGenerateMaze(true);
+        }
+      });
+
+      return true; // success
+    }
+
+    // Generate after a frame; retry up to N times if size is 0
+    let genAttempts = 0;
+    function scheduleGenerateMaze(isRetry=false){
+      requestAnimationFrame(()=>{
+        const ok = generateMaze();
+        if (!ok){
+          genAttempts++;
+          if (genAttempts < 10){
+            // Try again after a tick; also force a min-size style in case layout is collapsing
+            mazeContainer.style.minHeight = '300px';
+            mazeContainer.style.minWidth = '320px';
+            setTimeout(()=>scheduleGenerateMaze(true), 50);
+          } else {
+            console.error('[Maze] Failed to render after retries. Check container sizing/CSS.');
+          }
+        } else {
+          genAttempts = 0;
         }
       });
     }
+
+    // Regenerate maze on resize/orientation (if playing)
+    let resizeTimer = null;
+    window.addEventListener('resize', ()=>{
+      if (!isPlaying || isPaused) return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(()=> scheduleGenerateMaze(true), 150);
+    });
+
+    function endToHome(){ window.location.href = '/'; }
 
     // --- Wire up buttons ---
     startBtn?.addEventListener('click', beginSession);
@@ -739,14 +783,15 @@
       document.getElementById('settings').classList.remove('hidden');
       doneModal.classList.add('hidden');
     });
-    homeBtn?.addEventListener('click', ()=>{
-      window.location.href = '/';
-    });
+    homeBtn?.addEventListener('click', endToHome);
 
     // initial PB display
     pbEl.textContent = String(personalBest);
     pbSettingsEl.textContent = String(personalBest);
     timeEl.textContent = formatTime(sessionMs);
+
+    // Debug helper
+    window.addEventListener('error', e => console.error('[Maze JS Error]:', e.message));
   </script>
 </body>
 </html>
