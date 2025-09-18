@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- BUILD: Cosmic Maze — Standalone immersive v2 (layout-safe) — 2025-09-18 -->
+  <!-- BUILD: Cosmic Maze — Standalone immersive v3 (robust sizing + visibility) — 2025-09-18 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Cosmic Maze — Fine Motor Skills Rehabilitation | Fine Point Rehab</title>
@@ -14,7 +14,6 @@
       --bg-2: #0f1630;
       --bg-3: #0b1024;
       --accent: #6fd3f5;
-      --accent-soft: rgba(111,211,245,.15);
       --panel: rgba(10,16,36,.9);
       --panel-border: rgba(255,255,255,.08);
       --text: #eaf6ff;
@@ -34,7 +33,7 @@
         radial-gradient(900px 700px at 75% 65%, rgba(20,80,160,.25), transparent 55%),
         linear-gradient(180deg, var(--bg-2), var(--bg-1) 50%, var(--bg-3));
       min-height: calc(var(--vh) * 100);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       line-height: 1.5;
       overflow: hidden;
     }
@@ -162,24 +161,6 @@
       background: rgba(255,255,255,.08);
     }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 10px;
-      margin: 8px 0 4px;
-    }
-    .metric {
-      display: grid;
-      place-items: center;
-      padding: 10px;
-      border-radius: 10px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--panel-border);
-      min-height: 70px;
-    }
-    .v { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
-    .t { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; }
-
     /* HUD */
     .hud {
       position: fixed;
@@ -222,20 +203,21 @@
       inset: 0;
       z-index: 0;
     }
+
     #maze-container {
       position: absolute;
-      inset: 0;
-      margin: 60px 10px 10px;
+      top: 60px; left: 10px; right: 10px; bottom: 10px;
+      display: block;
       border-radius: 12px;
       background: radial-gradient(700px 400px at 80% 20%, rgba(111,211,245,.08), rgba(0,0,0,0) 60%),
-                  rgba(4,8,20,.75);
+                  rgba(4,8,20,.85);
       border: 1px solid var(--panel-border);
       overflow: hidden;
       z-index: 1;
-      /* Give it a minimum height to avoid 0-height edge cases */
       min-height: 260px;
       min-width: 320px;
     }
+
     #maze-svg { width: 100%; height: 100%; display: block; }
 
     .instructions {
@@ -298,10 +280,8 @@
       .hud { font-size: 12px; }
       .v { font-size: 16px; }
       .t { font-size: 10px; }
-      body.playing #maze-container { margin: 55px 5px 5px 5px; }
+      body.playing #maze-container { top: 55px; left: 5px; right: 5px; bottom: 5px; }
     }
-    input, select, textarea, button { font-size: 16px; } /* prevent zoom on iOS */
-    @supports (-webkit-touch-callout: none) { .layout { min-height: -webkit-fill-available; } }
   </style>
 </head>
 
@@ -358,9 +338,7 @@
     <section class="frame panel" id="frame">
       <div id="stars-container"></div>
       <p class="instructions">Guide the spaceship through the maze to the green goal. Drag the ship or use arrow keys.</p>
-      <div id="maze-container" tabindex="0">
-        <!-- SVG maze goes here -->
-      </div>
+      <div id="maze-container" tabindex="0"></div>
 
       <!-- Completion Modal -->
       <div id="done" class="hidden">
@@ -380,111 +358,69 @@
   </main>
 
   <script>
-    // --- Viewport height fix for mobile ---
     function setVH() { document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); }
     setVH();
     window.addEventListener('resize', setVH);
     window.addEventListener('orientationchange', () => setTimeout(setVH, 200));
 
-    // --- Simple starfield ---
+    // Simple starfield
     (function makeStars(){
       const wrap = document.getElementById('stars-container');
       const frag = document.createDocumentFragment();
       for (let i=0;i<120;i++){
         const s = document.createElement('div');
         const size = Math.random() * 2 + 1;
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
         s.style.cssText = 'position:absolute;border-radius:50%;opacity:'+ (Math.random()*0.7+0.2) +';'+
-          'width:'+size+'px;height:'+size+'px;'+
-          'left:'+x+'%;top:'+y+'%;background:#cfefff;';
+          'width:'+size+'px;height:'+size+'px;left:'+ (Math.random()*100) +'%;top:'+ (Math.random()*100) +'%;background:#cfefff;';
         frag.appendChild(s);
       }
       wrap.appendChild(frag);
     })();
 
-    // --- Game state ---
-    let isPlaying = false;
-    let isPaused = false;
-    let sessionMs = 5 * 60 * 1000;
-    let timeLeft = 0;
-    let timerInterval = null;
+    let isPlaying=false, isPaused=false, sessionMs=5*60*1000, timeLeft=0, timerInterval=null;
+    let score=0, mazesCompleted=0, totalCompletionTime=0, mazeStartTime=0;
+    let personalBest = parseInt(localStorage.getItem('maze_pb'), 10); if (isNaN(personalBest)) personalBest = 0;
 
-    let score = 0;
-    let mazesCompleted = 0;
-    let totalCompletionTime = 0;
-    let mazeStartTime = 0;
-
-    let personalBest = parseInt(localStorage.getItem('maze_pb'), 10);
-    if (isNaN(personalBest)) personalBest = 0;
-
-    // --- DOM ---
     const startBtn = document.getElementById('start');
     const pauseBtn = document.getElementById('pauseHud');
     const exitBtn = document.getElementById('exitHud');
     const doneBtn = document.getElementById('doneBtn');
     const homeBtn = document.getElementById('homeBtn');
-
     const durInput = document.getElementById('dur');
     const difficultySelect = document.getElementById('difficulty');
-
     const scoreEl = document.getElementById('score');
     const pbEl = document.getElementById('pb');
     const pbSettingsEl = document.getElementById('pbSettings');
     const timeEl = document.getElementById('time');
-
-    const frameEl = document.getElementById('frame');
     const mazeContainer = document.getElementById('maze-container');
     const doneModal = document.getElementById('done');
 
-    let player = null;
-    let goal = null;
+    let player=null, goal=null;
 
-    function formatTime(ms){
-      const s = Math.max(0, Math.ceil(ms/1000));
-      const m = Math.floor(s/60).toString().padStart(2,'0');
-      const ss = (s%60).toString().padStart(2,'0');
-      return m+':'+ss;
-    }
-
-    function updateHUD(){
-      scoreEl.textContent = String(score);
-      pbEl.textContent = String(personalBest);
-      timeEl.textContent = formatTime(timeLeft);
-    }
+    function formatTime(ms){ const s=Math.max(0,Math.ceil(ms/1000)); return (Math.floor(s/60)+'').padStart(2,'0')+':'+((s%60)+'').padStart(2,'0'); }
+    function updateHUD(){ scoreEl.textContent=String(score); pbEl.textContent=String(personalBest); timeEl.textContent=formatTime(timeLeft); }
 
     function startTimer(){
       if (timerInterval) clearInterval(timerInterval);
       const start = performance.now();
       timerInterval = setInterval(()=>{
         if (!isPlaying || isPaused) return;
-        const elapsed = performance.now() - start;
+        const elapsed = performance.now()-start;
         timeLeft = Math.max(0, sessionMs - elapsed);
         timeEl.textContent = formatTime(timeLeft);
-        if (timeLeft <= 0){
-          clearInterval(timerInterval);
-          endSession();
-        }
+        if (timeLeft <= 0){ clearInterval(timerInterval); endSession(); }
       }, 250);
     }
 
     function beginSession(){
-      // settings
       const mins = parseFloat(durInput.value) || 5;
       sessionMs = Math.min(20, Math.max(1, mins)) * 60 * 1000;
-      isPlaying = true;
-      isPaused = false;
-      score = 0;
-      mazesCompleted = 0;
-      totalCompletionTime = 0;
-      timeLeft = sessionMs;
-
+      isPlaying = true; isPaused = false;
+      score = 0; mazesCompleted = 0; totalCompletionTime = 0; timeLeft = sessionMs;
       document.body.classList.add('playing');
       document.getElementById('settings').classList.add('hidden');
       doneModal.classList.add('hidden');
       updateHUD();
-
-      // defer generation until layout has settled
       scheduleGenerateMaze();
       startTimer();
     }
@@ -492,93 +428,48 @@
     function endSession(){
       isPlaying = false;
       document.body.classList.remove('playing');
-      // stats
       const avg = mazesCompleted ? (totalCompletionTime / mazesCompleted) : 0;
       document.getElementById('fCompleted').textContent = String(mazesCompleted);
       document.getElementById('fAvgTime').textContent = avg.toFixed(1)+'s';
       document.getElementById('fScore').textContent = String(score);
       const xp = Math.round(score/10);
       document.getElementById('fXp').textContent = String(xp);
-
-      if (mazesCompleted > personalBest){
-        personalBest = mazesCompleted;
-        localStorage.setItem('maze_pb', String(personalBest));
-      }
-      pbEl.textContent = String(personalBest);
-      pbSettingsEl.textContent = String(personalBest);
-
+      if (mazesCompleted > personalBest){ personalBest = mazesCompleted; localStorage.setItem('maze_pb', String(personalBest)); }
+      pbEl.textContent = String(personalBest); pbSettingsEl.textContent = String(personalBest);
       doneModal.classList.remove('hidden');
     }
 
-    function pauseSession(toggle){
-      if (!isPlaying) return;
-      isPaused = (toggle === undefined) ? !isPaused : !!toggle;
-      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+    function pauseSession(toggle){ if (!isPlaying) return; isPaused = (toggle===undefined) ? !isPaused : !!toggle; pauseBtn.textContent = isPaused ? 'Resume' : 'Pause'; }
+
+    function measuredSize(el){
+      const r = el.getBoundingClientRect();
+      let W = Math.floor(r.width || el.clientWidth || el.offsetWidth || parseFloat(getComputedStyle(el).width) || 0);
+      let H = Math.floor(r.height || el.clientHeight || el.offsetHeight || parseFloat(getComputedStyle(el).height) || 0);
+      return {W,H};
     }
 
-    // --- Maze generation (recursive backtracker) ---
     function generateMaze(){
-      // clear container
       mazeContainer.innerHTML = '';
 
-      // measure with multiple fallbacks
-      const rect = mazeContainer.getBoundingClientRect();
-      let W = Math.floor(rect.width || mazeContainer.clientWidth || mazeContainer.offsetWidth || 0);
-      let H = Math.floor(rect.height || mazeContainer.clientHeight || mazeContainer.offsetHeight || 0);
-
+      const {W,H} = measuredSize(mazeContainer);
       if (W < 50 || H < 50){
-        console.warn('[Maze] Container too small (W,H)=', W, H, 'retrying...');
-        return false; // tell caller it failed
+        console.warn('[Maze] Container too small (W,H)=',W,H,'retrying...');
+        return false;
       }
 
-      // difficulty -> cell size
       const diff = difficultySelect.value;
       const cell = (diff === 'easy') ? 56 : (diff === 'hard') ? 32 : 44;
       const cols = Math.max(3, Math.floor(W / cell));
       const rows = Math.max(3, Math.floor(H / cell));
-      const pad = 10; // inner padding
-      const wall = 4; // wall thickness
+      const pad = 10, wall = 6; // thicker walls for visibility
 
-      // build grid of cells
       const grid = [];
-      for (let y=0;y<rows;y++){
-        const row = [];
-        for (let x=0;x<cols;x++){
-          row.push({x,y, visited:false, walls:[true,true,true,true]}); // top,right,bottom,left
-        }
-        grid.push(row);
-      }
-      function neigh(x,y){
-        const list = [];
-        if (y>0) list.push(grid[y-1][x]);           // up
-        if (x<cols-1) list.push(grid[y][x+1]);      // right
-        if (y<rows-1) list.push(grid[y+1][x]);      // down
-        if (x>0) list.push(grid[y][x-1]);           // left
-        return list;
-      }
-      function carve(a,b){
-        if (a.x === b.x){
-          if (a.y > b.y){ a.walls[0]=false; b.walls[2]=false; } else { a.walls[2]=false; b.walls[0]=false; }
-        } else {
-          if (a.x > b.x){ a.walls[3]=false; b.walls[1]=false; } else { a.walls[1]=false; b.walls[3]=false; }
-        }
-      }
-      // DFS stack
-      const stack = [];
-      const start = grid[0][0];
-      start.visited = true;
-      stack.push(start);
-      while (stack.length){
-        const cur = stack[stack.length-1];
-        const nbs = neigh(cur.x,cur.y).filter(c=>!c.visited);
-        if (nbs.length === 0){ stack.pop(); continue; }
-        const nxt = nbs[Math.floor(Math.random()*nbs.length)];
-        carve(cur, nxt);
-        nxt.visited = true;
-        stack.push(nxt);
-      }
+      for (let y=0;y<rows;y++){ const row=[]; for (let x=0;x<cols;x++){ row.push({x,y,visited:false,walls:[true,true,true,true]}); } grid.push(row); }
+      function neigh(x,y){ const L=[]; if(y>0)L.push(grid[y-1][x]); if(x<cols-1)L.push(grid[y][x+1]); if(y<rows-1)L.push(grid[y+1][x]); if(x>0)L.push(grid[y][x-1]); return L; }
+      function carve(a,b){ if(a.x===b.x){ if(a.y>b.y){a.walls[0]=false;b.walls[2]=false;} else {a.walls[2]=false;b.walls[0]=false;} } else { if(a.x>b.x){a.walls[3]=false;b.walls[1]=false;} else {a.walls[1]=false;b.walls[3]=false;} } }
+      const stack = []; const startCell = grid[0][0]; startCell.visited=true; stack.push(startCell);
+      while (stack.length){ const cur=stack[stack.length-1]; const nbs=neigh(cur.x,cur.y).filter(c=>!c.visited); if(!nbs.length){stack.pop();continue;} const nxt=nbs[Math.floor(Math.random()*nbs.length)]; carve(cur,nxt); nxt.visited=true; stack.push(nxt); }
 
-      // draw SVG
       const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
       svg.setAttribute('id','maze-svg');
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -587,29 +478,28 @@
       svg.setAttribute('preserveAspectRatio', 'none');
       mazeContainer.appendChild(svg);
 
-      // background grid glow
       const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
       const oxPad = 10;
       bg.setAttribute('x', oxPad); bg.setAttribute('y', oxPad);
       bg.setAttribute('width', Math.max(0, W - oxPad*2)); bg.setAttribute('height', Math.max(0, H - oxPad*2));
       bg.setAttribute('rx', 10);
-      bg.setAttribute('fill', 'rgba(20,30,60,0.35)');
-      bg.setAttribute('stroke', 'rgba(255,255,255,0.08)');
+      bg.setAttribute('fill', 'rgba(20,30,60,0.55)');
+      bg.setAttribute('stroke', 'rgba(255,255,255,0.12)');
       svg.appendChild(bg);
 
-      // draw cell walls
       const pathGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
-      pathGroup.setAttribute('stroke', 'rgba(190,220,255,0.65)');
+      pathGroup.setAttribute('stroke', '#9fd6ff');  // brighter
       pathGroup.setAttribute('stroke-width', String(wall));
       pathGroup.setAttribute('stroke-linecap', 'square');
       pathGroup.setAttribute('fill', 'none');
       svg.appendChild(pathGroup);
 
-      const ox = oxPad + wall; // inner offset
+      const ox = oxPad + wall;
       const oy = oxPad + wall;
       const step = ((W - oxPad*2) / cols);
       const stepY = ((H - oxPad*2) / rows);
 
+      let linesDrawn = 0;
       for (let y=0;y<rows;y++){
         for (let x=0;x<cols;x++){
           const c = grid[y][x];
@@ -617,44 +507,28 @@
           const y0 = oy + y*stepY;
           const x1 = x0 + step;
           const y1 = y0 + stepY;
-          // top
-          if (c.walls[0]){
-            const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
-            ln.setAttribute('x1', x0); ln.setAttribute('y1', y0);
-            ln.setAttribute('x2', x1); ln.setAttribute('y2', y0);
-            pathGroup.appendChild(ln);
-          }
-          // right
-          if (c.walls[1]){
-            const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
-            ln.setAttribute('x1', x1); ln.setAttribute('y1', y0);
-            ln.setAttribute('x2', x1); ln.setAttribute('y2', y1);
-            pathGroup.appendChild(ln);
-          }
-          // bottom
-          if (c.walls[2]){
-            const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
-            ln.setAttribute('x1', x0); ln.setAttribute('y1', y1);
-            ln.setAttribute('x2', x1); ln.setAttribute('y2', y1);
-            pathGroup.appendChild(ln);
-          }
-          // left
-          if (c.walls[3]){
-            const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
-            ln.setAttribute('x1', x0); ln.setAttribute('y1', y0);
-            ln.setAttribute('x2', x0); ln.setAttribute('y2', y1);
-            pathGroup.appendChild(ln);
-          }
+          if (c.walls[0]){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('x1',x0);ln.setAttribute('y1',y0);ln.setAttribute('x2',x1);ln.setAttribute('y2',y0); pathGroup.appendChild(ln); linesDrawn++; }
+          if (c.walls[1]){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('x1',x1);ln.setAttribute('y1',y0);ln.setAttribute('x2',x1);ln.setAttribute('y2',y1); pathGroup.appendChild(ln); linesDrawn++; }
+          if (c.walls[2]){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('x1',x0);ln.setAttribute('y1',y1);ln.setAttribute('x2',x1);ln.setAttribute('y2',y1); pathGroup.appendChild(ln); linesDrawn++; }
+          if (c.walls[3]){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('x1',x0);ln.setAttribute('y1',y0);ln.setAttribute('x2',x0);ln.setAttribute('y2',y1); pathGroup.appendChild(ln); linesDrawn++; }
         }
       }
 
-      // place player and goal (centered within first/last cells)
+      if (linesDrawn === 0){
+        console.error('[Maze] No lines drawn — visibility/calc issue');
+        const warn = document.createElement('div');
+        warn.textContent = 'Maze failed to draw (lines=0). Check console.';
+        warn.style.cssText = 'position:absolute;left:20px;top:20px;background:#b00020;color:#fff;padding:6px 10px;border-radius:8px;z-index:5;';
+        mazeContainer.appendChild(warn);
+      } else {
+        console.log('[Maze] Lines drawn:', linesDrawn, 'Canvas:', W, 'x', H);
+      }
+
       const playerX = ox + step*0.5;
       const playerY = oy + stepY*0.5;
       const goalX   = ox + (cols-0.5)*step - 22;
       const goalY   = oy + (rows-0.5)*stepY - 22;
 
-      // goal
       const g = document.createElement('div');
       g.id = 'goal';
       g.style.left = goalX + 'px';
@@ -662,7 +536,6 @@
       mazeContainer.appendChild(g);
       goal = g;
 
-      // player
       const p = document.createElement('div');
       p.id = 'player';
       p.style.left = (playerX-22) + 'px';
@@ -670,7 +543,6 @@
       mazeContainer.appendChild(p);
       player = p;
 
-      // controls
       let dragging = false;
       function moveTo(clientX, clientY){
         const r = mazeContainer.getBoundingClientRect();
@@ -678,19 +550,13 @@
         const y = Math.min(r.bottom - 5, Math.max(r.top + 5, clientY)) - r.top;
         player.style.left = (x-22) + 'px';
         player.style.top  = (y-22) + 'px';
-        // goal check
         const dx = (x-22) - parseFloat(goal.style.left);
         const dy = (y-22) - parseFloat(goal.style.top);
         if (Math.hypot(dx, dy) < 30) {
-          // one maze done
-          mazesCompleted += 1;
-          score += 100;
+          mazesCompleted += 1; score += 100;
           totalCompletionTime += Math.min(999, (performance.now() - (mazeStartTime || performance.now())) / 1000);
-          updateHUD();
-          mazeContainer.classList.add('maze-celebrate');
-          setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 500);
-          mazeStartTime = performance.now();
-          scheduleGenerateMaze(true);
+          updateHUD(); mazeContainer.classList.add('maze-celebrate'); setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 500);
+          mazeStartTime = performance.now(); scheduleGenerateMaze(true);
         }
       }
       p.addEventListener('mousedown', (e)=>{ if(!isPlaying||isPaused) return; dragging = true; e.preventDefault(); });
@@ -699,13 +565,8 @@
 
       p.addEventListener('touchstart', (e)=>{ if(!isPlaying||isPaused) return; dragging = true; e.preventDefault(); }, {passive:false});
       document.addEventListener('touchend', ()=> dragging=false, {passive:false});
-      document.addEventListener('touchmove', (e)=>{
-        if (!dragging) return;
-        const t = e.touches[0];
-        moveTo(t.clientX, t.clientY);
-      }, {passive:false});
+      document.addEventListener('touchmove', (e)=>{ if (!dragging) return; const t = e.touches[0]; moveTo(t.clientX, t.clientY); }, {passive:false});
 
-      // keyboard
       mazeStartTime = performance.now();
       mazeContainer.tabIndex = 0;
       mazeContainer.focus();
@@ -718,36 +579,29 @@
         if (e.key === 'ArrowRight') player.style.left = (left + stepPix) + 'px';
         if (e.key === 'ArrowUp')    player.style.top  = (top  - stepPix) + 'px';
         if (e.key === 'ArrowDown')  player.style.top  = (top  + stepPix) + 'px';
-        // re-check goal
         const dx = parseFloat(player.style.left) - parseFloat(goal.style.left);
         const dy = parseFloat(player.style.top)  - parseFloat(goal.style.top);
         if (Math.hypot(dx, dy) < 30) {
-          mazesCompleted += 1;
-          score += 100;
+          mazesCompleted += 1; score += 100;
           totalCompletionTime += Math.min(999, (performance.now() - (mazeStartTime || performance.now())) / 1000);
-          updateHUD();
-          mazeContainer.classList.add('maze-celebrate');
-          setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 500);
-          mazeStartTime = performance.now();
-          scheduleGenerateMaze(true);
+          updateHUD(); mazeContainer.classList.add('maze-celebrate'); setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 500);
+          mazeStartTime = performance.now(); scheduleGenerateMaze(true);
         }
       });
 
-      return true; // success
+      return true;
     }
 
-    // Generate after a frame; retry up to N times if size is 0
-    let genAttempts = 0;
-    function scheduleGenerateMaze(isRetry=false){
+    let genAttempts=0;
+    function scheduleGenerateMaze(){
       requestAnimationFrame(()=>{
         const ok = generateMaze();
         if (!ok){
           genAttempts++;
-          if (genAttempts < 10){
-            // Try again after a tick; also force a min-size style in case layout is collapsing
-            mazeContainer.style.minHeight = '300px';
-            mazeContainer.style.minWidth = '320px';
-            setTimeout(()=>scheduleGenerateMaze(true), 50);
+          if (genAttempts < 12){
+            mazeContainer.style.minHeight = '320px';
+            mazeContainer.style.minWidth  = '340px';
+            setTimeout(scheduleGenerateMaze, 60);
           } else {
             console.error('[Maze] Failed to render after retries. Check container sizing/CSS.');
           }
@@ -757,17 +611,11 @@
       });
     }
 
-    // Regenerate maze on resize/orientation (if playing)
-    let resizeTimer = null;
-    window.addEventListener('resize', ()=>{
-      if (!isPlaying || isPaused) return;
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(()=> scheduleGenerateMaze(true), 150);
-    });
+    let resizeTimer=null;
+    window.addEventListener('resize', ()=>{ if(!isPlaying||isPaused) return; clearTimeout(resizeTimer); resizeTimer=setTimeout(scheduleGenerateMaze,150); });
 
     function endToHome(){ window.location.href = '/'; }
 
-    // --- Wire up buttons ---
     startBtn?.addEventListener('click', beginSession);
     pauseBtn?.addEventListener('click', ()=> pauseSession());
     exitBtn?.addEventListener('click', ()=>{
@@ -779,18 +627,13 @@
       timeLeft = 0;
       updateHUD();
     });
-    doneBtn?.addEventListener('click', ()=>{
-      document.getElementById('settings').classList.remove('hidden');
-      doneModal.classList.add('hidden');
-    });
+    doneBtn?.addEventListener('click', ()=>{ document.getElementById('settings').classList.remove('hidden'); doneModal.classList.add('hidden'); });
     homeBtn?.addEventListener('click', endToHome);
 
-    // initial PB display
     pbEl.textContent = String(personalBest);
     pbSettingsEl.textContent = String(personalBest);
     timeEl.textContent = formatTime(sessionMs);
 
-    // Debug helper
     window.addEventListener('error', e => console.error('[Maze JS Error]:', e.message));
   </script>
 </body>
