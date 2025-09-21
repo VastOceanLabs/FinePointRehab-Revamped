@@ -701,7 +701,8 @@
 
     // Update difficulty display
     difficultySelect.addEventListener('change', () => {
-      diffEl.textContent = difficultySelect.value;
+      currentDifficulty = difficultySelect.value;
+      if (diffEl) diffEl.textContent = currentDifficulty;
     });
 
     // Maze sizing function
@@ -753,9 +754,12 @@
 
     function updateHUD() {
       scoreEl.textContent = `${score}`;
-      pbEl.textContent = `${personalBest}`;
-      completedEl.textContent = `${mazesCompleted}`;
-      movesEl.textContent = `${moveCountThisMaze}`;
+      
+      // Only update elements that exist in the DOM
+      if (pbEl) pbEl.textContent = `${personalBest}`;
+      if (completedEl) completedEl.textContent = `${mazesCompleted}`;
+      if (movesEl) movesEl.textContent = `${moveCountThisMaze}`;
+      if (diffEl) diffEl.textContent = currentDifficulty;
 
       const avg = (mazesCompleted > 0)
         ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
