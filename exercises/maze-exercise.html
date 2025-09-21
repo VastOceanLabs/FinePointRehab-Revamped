@@ -1,290 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- BUILD: Cosmic Maze — Standalone immersive v3 (robust sizing + visibility) — 2025-09-18 -->
+  <!-- BUILD: Cosmic Maze — Standalone immersive v3.1 (force-visible strokes) -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Cosmic Maze — Fine Motor Skills Rehabilitation | Fine Point Rehab</title>
-  <meta name="description" content="Guide the spaceship through a procedurally generated maze. Immersive, mobile-friendly, and self-contained." />
-
   <style>
-    :root {
-      --vh: 1vh;
-      --bg-1: #070b16;
-      --bg-2: #0f1630;
-      --bg-3: #0b1024;
-      --accent: #6fd3f5;
-      --panel: rgba(10,16,36,.9);
-      --panel-border: rgba(255,255,255,.08);
-      --text: #eaf6ff;
-      --muted: #a7c1d6;
-      --radius: 14px;
-    }
-
+    :root { --vh: 1vh; --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024; --accent:#6fd3f5; --panel:rgba(10,16,36,.9); --panel-border:rgba(255,255,255,.08); --text:#eaf6ff; --muted:#a7c1d6; --radius:14px; }
     * { box-sizing: border-box; }
-
-    html, body { height: 100%; }
-
-    body {
-      margin: 0;
-      color: var(--text);
+    html, body { height: 100%; margin:0; }
+    body { color: var(--text);
       background:
         radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
         radial-gradient(900px 700px at 75% 65%, rgba(20,80,160,.25), transparent 55%),
         linear-gradient(180deg, var(--bg-2), var(--bg-1) 50%, var(--bg-3));
-      min-height: calc(var(--vh) * 100);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      line-height: 1.5;
-      overflow: hidden;
-    }
-
-    header.app {
-      position: fixed;
-      inset: 0 0 auto 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 16px;
-      z-index: 30;
-      background: linear-gradient(180deg, rgba(5,8,18,.85), rgba(5,8,18,.35) 80%, transparent);
-      -webkit-backdrop-filter: blur(6px);
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid var(--panel-border);
-    }
-
-    header .home {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      height: 36px;
-      padding: 0 14px;
-      border-radius: 999px;
-      text-decoration: none;
-      color: var(--text);
-      background: rgba(255,255,255,.06);
-      border: 1px solid var(--panel-border);
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 18px;
-      letter-spacing: .4px;
-      font-weight: 650;
-      color: #dff4ff;
-      text-shadow: 0 1px 12px rgba(111,211,245,.35);
-    }
-
-    main.layout {
-      position: relative;
-      display: grid;
-      grid-template-rows: 1fr;
-      gap: 12px;
-      height: calc(var(--vh) * 100);
-      padding: 64px 12px 12px;
-    }
-
-    .panel {
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 50px rgba(0,0,0,.45);
-    }
-
-    #settings.panel {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    .settings-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 14px;
-    }
-
-    .group {
-      display: grid;
-      gap: 6px;
-      background: rgba(255,255,255,.02);
-      border: 1px solid var(--panel-border);
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    .label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      color: var(--muted);
-    }
-
-    input[type="number"], select {
-      width: 100%;
-      background: rgba(5,12,28,.7);
-      color: var(--text);
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      padding: 10px 12px;
-    }
-
-    .settings-actions {
-      margin-top: 10px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      height: 44px;
-      padding: 0 16px;
-      border-radius: 12px;
-      border: 1px solid var(--panel-border);
-      background: rgba(255,255,255,.05);
-      color: var(--text);
-      cursor: pointer;
-      user-select: none;
-    }
-    .btn-primary {
-      background: linear-gradient(180deg, #39b8e5, #0780a8);
-      border-color: rgba(0,0,0,.25);
-      color: #001018;
-      font-weight: 700;
-      text-shadow: 0 1px 0 rgba(255,255,255,.25);
-    }
-    .btn-ghost {
-      background: rgba(255,255,255,.08);
-    }
-
-    /* HUD */
-    .hud {
-      position: fixed;
-      inset: 56px 0 auto 0;
-      display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: minmax(0, 1fr);
-      gap: 10px;
-      padding: 6px 12px;
-      z-index: 25;
-      pointer-events: none;
-    }
-    .hud .pill {
-      pointer-events: auto;
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 8px;
-      align-items: center;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--panel-border);
-      background: rgba(10,16,36,.8);
-      backdrop-filter: blur(6px);
-    }
-    .hud .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
-    .hud .val { font-weight: 800; font-size: 16px; }
-
-    /* Game frame */
-    .frame.panel {
-      position: relative;
-      max-width: 1100px;
-      height: min(70vh, 620px);
-      margin: 0 auto;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    #stars-container {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-    }
-
-    #maze-container {
-      position: absolute;
-      top: 60px; left: 10px; right: 10px; bottom: 10px;
-      display: block;
-      border-radius: 12px;
-      background: radial-gradient(700px 400px at 80% 20%, rgba(111,211,245,.08), rgba(0,0,0,0) 60%),
-                  rgba(4,8,20,.85);
-      border: 1px solid var(--panel-border);
-      overflow: hidden;
-      z-index: 1;
-      min-height: 260px;
-      min-width: 320px;
-    }
-
-    #maze-svg { width: 100%; height: 100%; display: block; }
-
-    .instructions {
-      position: absolute;
-      inset: 12px auto auto 12px;
-      z-index: 2;
-      background: rgba(0,0,0,.35);
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    /* Player & Goal */
-    #player, #goal {
-      position: absolute;
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      z-index: 3;
-      display: grid; place-items: center;
-      box-shadow: 0 6px 18px rgba(0,0,0,.45);
-    }
-    #player {
-      background: radial-gradient(circle at 35% 30%, #ffe, #ffd34d 35%, #a06b00 70%);
-      border: 1px solid rgba(0,0,0,.4);
-    }
-    #goal {
-      border-radius: 10px;
-      background: radial-gradient(circle at 50% 35%, #e5fff7, #3dd6a2 45%, #0a8c65 80%);
-      border: 1px solid rgba(0,0,0,.35);
-    }
-
-    /* Celebration pulse */
-    @keyframes celebrate {
-      0% { box-shadow: 0 0 0 rgba(111,211,245,0); }
-      40% { box-shadow: 0 0 40px rgba(111,211,245,.8); }
-      100% { box-shadow: 0 0 20px rgba(111,211,245,.2); }
-    }
+      min-height: calc(var(--vh) * 100); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; line-height: 1.5; overflow: hidden; }
+    header.app { position: fixed; inset: 0 0 auto 0; display:flex; align-items:center; gap:12px; padding:10px 16px; z-index:30; background: linear-gradient(180deg, rgba(5,8,18,.85), rgba(5,8,18,.35) 80%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border-bottom: 1px solid var(--panel-border); }
+    header .home { display:inline-flex; align-items:center; justify-content:center; height:36px; padding:0 14px; border-radius:999px; text-decoration:none; color:var(--text); background: rgba(255,255,255,.06); border: 1px solid var(--panel-border); }
+    header h1 { margin:0; font-size:18px; letter-spacing:.4px; font-weight:650; color:#dff4ff; text-shadow:0 1px 12px rgba(111,211,245,.35); }
+    main.layout { position:relative; display:grid; grid-template-rows:1fr; gap:12px; height: calc(var(--vh) * 100); padding:64px 12px 12px; }
+    .panel { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); background: var(--panel); border:1px solid var(--panel-border); border-radius: var(--radius); box-shadow:0 10px 50px rgba(0,0,0,.45); }
+    #settings.panel { max-width:980px; margin:0 auto; padding:16px; }
+    .settings-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .group { display:grid; gap:6px; background: rgba(255,255,255,.02); border:1px solid var(--panel-border); border-radius:12px; padding:12px; }
+    .label { font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+    input[type="number"], select { width:100%; background: rgba(5,12,28,.7); color:var(--text); border:1px solid var(--panel-border); border-radius:10px; padding:10px 12px; }
+    .settings-actions { margin-top:10px; display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; height:44px; padding:0 16px; border-radius:12px; border:1px solid var(--panel-border); background:rgba(255,255,255,.05); color:var(--text); cursor:pointer; user-select:none; }
+    .btn-primary { background: linear-gradient(180deg,#39b8e5,#0780a8); border-color:rgba(0,0,0,.25); color:#001018; font-weight:700; text-shadow:0 1px 0 rgba(255,255,255,.25); }
+    .btn-ghost { background: rgba(255,255,255,.08); }
+    .hud { position:fixed; inset:56px 0 auto 0; display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:10px; padding:6px 12px; z-index:25; pointer-events:none; }
+    .hud .pill { pointer-events:auto; display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:center; padding:7px 10px; border-radius:999px; border:1px solid var(--panel-border); background: rgba(10,16,36,.8); backdrop-filter: blur(6px); }
+    .hud .k { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
+    .hud .val { font-weight:800; font-size:16px; }
+    .frame.panel { position:relative; max-width:1100px; height:min(70vh,620px); margin:0 auto; padding:0; overflow:hidden; }
+    #stars-container { position:absolute; inset:0; z-index:0; }
+    #maze-container { position:absolute; top:60px; left:10px; right:10px; bottom:10px; display:block; border-radius:12px;
+      background: radial-gradient(700px 400px at 80% 20%, rgba(111,211,245,.08), rgba(0,0,0,0) 60%), rgba(4,8,20,.85);
+      border: 1px solid var(--panel-border); overflow:hidden; z-index:1; min-height:260px; min-width:320px; }
+    #maze-svg { width:100%; height:100%; display:block; }
+    .instructions { position:absolute; inset:12px auto auto 12px; z-index:2; background:rgba(0,0,0,.35); border:1px solid var(--panel-border); border-radius:10px; padding:8px 10px; font-size:13px; color:var(--muted); }
+    #player, #goal { position:absolute; width:44px; height:44px; border-radius:50%; z-index:3; display:grid; place-items:center; box-shadow:0 6px 18px rgba(0,0,0,.45); }
+    #player { background: radial-gradient(circle at 35% 30%, #ffe, #ffd34d 35%, #a06b00 70%); border:1px solid rgba(0,0,0,.4); }
+    #goal { border-radius:10px; background: radial-gradient(circle at 50% 35%, #e5fff7, #3dd6a2 45%, #0a8c65 80%); border:1px solid rgba(0,0,0,.35); }
+    @keyframes celebrate { 0%{ box-shadow:0 0 0 rgba(111,211,245,0);} 40%{ box-shadow:0 0 40px rgba(111,211,245,.8);} 100%{ box-shadow:0 0 20px rgba(111,211,245,.2);} }
     .maze-celebrate { animation: celebrate .5s ease; }
-
-    /* Completion modal */
-    #done {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(0,0,0,.65);
-      backdrop-filter: blur(4px);
-      z-index: 10;
-    }
-    #doneCard { max-width: min(520px, 92vw); max-height: 80vh; overflow: auto; padding: 22px; }
-    #done h2 { margin-top: 0; color: var(--accent); }
-    .hi { color: #9ee7ff; font-weight: 900; }
-    .hidden { display: none !important; }
-
-    :focus-visible { outline: 3px solid rgba(111,211,245,.85); outline-offset: 2px; }
-
-    @media (max-width: 768px) {
-      .hud { font-size: 12px; }
-      .v { font-size: 16px; }
-      .t { font-size: 10px; }
-      body.playing #maze-container { top: 55px; left: 5px; right: 5px; bottom: 5px; }
-    }
+    #done { position:absolute; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.65); backdrop-filter: blur(4px); z-index:10; }
+    #doneCard { max-width:min(520px,92vw); max-height:80vh; overflow:auto; padding:22px; }
+    #done h2 { margin-top:0; color:var(--accent); }
+    .hi { color:#9ee7ff; font-weight:900; }
+    .hidden { display:none !important; }
+    :focus-visible { outline:3px solid rgba(111,211,245,.85); outline-offset:2px; }
+    @media (max-width: 768px){ .hud{font-size:12px;} .v{font-size:16px;} .t{font-size:10px;} body.playing #maze-container{ top:55px; left:5px; right:5px; bottom:5px; } }
   </style>
 </head>
-
 <body>
   <header class="app" role="banner">
     <a class="home" href="/">← Home</a>
@@ -292,7 +61,6 @@
   </header>
 
   <main class="layout">
-    <!-- Settings Panel -->
     <section id="settings" class="panel">
       <h2 style="margin:8px 6px 10px 6px;">Settings</h2>
       <div class="settings-grid">
@@ -301,12 +69,10 @@
           <div id="pbSettings" class="v">0</div>
           <div class="t">Most mazes completed</div>
         </div>
-
         <div class="group">
           <label class="label" for="dur">Session Duration (minutes)</label>
           <input id="dur" type="number" min="1" step="0.5" max="20" value="5" />
         </div>
-
         <div class="group">
           <label class="label" for="difficulty">Difficulty</label>
           <select id="difficulty">
@@ -316,14 +82,12 @@
           </select>
         </div>
       </div>
-
       <div class="settings-actions">
         <div class="t">Drag the ship or use arrow keys. Reach the green goal.</div>
         <button id="start" class="btn btn-primary">Start Session</button>
       </div>
     </section>
 
-    <!-- HUD -->
     <div class="hud">
       <div class="pill"><div class="k">Time</div><div id="time" class="val">05:00</div></div>
       <div class="pill"><div class="k">Score</div><div id="score" class="val">0</div></div>
@@ -334,13 +98,11 @@
       </div>
     </div>
 
-    <!-- Game Frame -->
     <section class="frame panel" id="frame">
       <div id="stars-container"></div>
       <p class="instructions">Guide the spaceship through the maze to the green goal. Drag the ship or use arrow keys.</p>
       <div id="maze-container" tabindex="0"></div>
 
-      <!-- Completion Modal -->
       <div id="done" class="hidden">
         <div id="doneCard" class="panel">
           <h2>Session Complete!</h2>
@@ -358,12 +120,9 @@
   </main>
 
   <script>
-    function setVH() { document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); }
-    setVH();
-    window.addEventListener('resize', setVH);
-    window.addEventListener('orientationchange', () => setTimeout(setVH, 200));
+    function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); }
+    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', () => setTimeout(setVH, 200));
 
-    // Simple starfield
     (function makeStars(){
       const wrap = document.getElementById('stars-container');
       const frag = document.createDocumentFragment();
@@ -461,7 +220,7 @@
       const cell = (diff === 'easy') ? 56 : (diff === 'hard') ? 32 : 44;
       const cols = Math.max(3, Math.floor(W / cell));
       const rows = Math.max(3, Math.floor(H / cell));
-      const pad = 10, wall = 6; // thicker walls for visibility
+      const pad = 10, wall = 6;
 
       const grid = [];
       for (let y=0;y<rows;y++){ const row=[]; for (let x=0;x<cols;x++){ row.push({x,y,visited:false,walls:[true,true,true,true]}); } grid.push(row); }
@@ -471,46 +230,42 @@
       while (stack.length){ const cur=stack[stack.length-1]; const nbs=neigh(cur.x,cur.y).filter(c=>!c.visited); if(!nbs.length){stack.pop();continue;} const nxt=nbs[Math.floor(Math.random()*nbs.length)]; carve(cur,nxt); nxt.visited=true; stack.push(nxt); }
 
       const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-      svg.setAttribute('id','maze-svg');
-      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-      svg.setAttribute('width', String(W));
-      svg.setAttribute('height', String(H));
-      svg.setAttribute('preserveAspectRatio', 'none');
+      svg.setAttribute('id','maze-svg'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', String(W)); svg.setAttribute('height', String(H)); svg.setAttribute('preserveAspectRatio', 'none');
       mazeContainer.appendChild(svg);
+
+      const css = document.createElementNS('http://www.w3.org/2000/svg','style');
+      css.textContent = `#maze-svg line, #maze-svg g { stroke: #9fd6ff !important; } #maze-svg line { stroke-width: ${wall}px !important; vector-effect: non-scaling-stroke; shape-rendering: crispEdges; }`;
+      svg.appendChild(css);
 
       const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
       const oxPad = 10;
       bg.setAttribute('x', oxPad); bg.setAttribute('y', oxPad);
       bg.setAttribute('width', Math.max(0, W - oxPad*2)); bg.setAttribute('height', Math.max(0, H - oxPad*2));
-      bg.setAttribute('rx', 10);
-      bg.setAttribute('fill', 'rgba(20,30,60,0.55)');
-      bg.setAttribute('stroke', 'rgba(255,255,255,0.12)');
+      bg.setAttribute('rx', 10); bg.setAttribute('fill', 'rgba(20,30,60,0.55)'); bg.setAttribute('stroke', 'rgba(255,255,255,0.12)');
       svg.appendChild(bg);
 
       const pathGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
-      pathGroup.setAttribute('stroke', '#9fd6ff');  // brighter
-      pathGroup.setAttribute('stroke-width', String(wall));
-      pathGroup.setAttribute('stroke-linecap', 'square');
-      pathGroup.setAttribute('fill', 'none');
+      pathGroup.setAttribute('stroke', '#9fd6ff'); pathGroup.setAttribute('stroke-width', String(wall)); pathGroup.setAttribute('fill', 'none');
       svg.appendChild(pathGroup);
 
-      const ox = oxPad + wall;
-      const oy = oxPad + wall;
-      const step = ((W - oxPad*2) / cols);
-      const stepY = ((H - oxPad*2) / rows);
+      const ox = oxPad + wall, oy = oxPad + wall;
+      const step = ((W - oxPad*2) / cols), stepY = ((H - oxPad*2) / rows);
 
       let linesDrawn = 0;
+      function L(x1,y1,x2,y2){
+        const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1', x1); ln.setAttribute('y1', y1); ln.setAttribute('x2', x2); ln.setAttribute('y2', y2);
+        ln.setAttribute('stroke', '#9fd6ff'); ln.setAttribute('stroke-width', String(wall));
+        pathGroup.appendChild(ln); linesDrawn++;
+      }
       for (let y=0;y<rows;y++){
         for (let x=0;x<cols;x++){
           const c = grid[y][x];
-          const x0 = ox + x*step;
-          const y0 = oy + y*stepY;
-          const x1 = x0 + step;
-          const y1 = y0 + stepY;
-          if (c.walls[0]){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('x1',x0);ln.setAttribute('y1',y0);ln.setAttribute('x2',x1);ln.setAttribute('y2',y0); pathGroup.appendChild(ln); linesDrawn++; }
-          if (c.walls[1]){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('x1',x1);ln.setAttribute('y1',y0);ln.setAttribute('x2',x1);ln.setAttribute('y2',y1); pathGroup.appendChild(ln); linesDrawn++; }
-          if (c.walls[2]){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('x1',x0);ln.setAttribute('y1',y1);ln.setAttribute('x2',x1);ln.setAttribute('y2',y1); pathGroup.appendChild(ln); linesDrawn++; }
-          if (c.walls[3]){ const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('x1',x0);ln.setAttribute('y1',y0);ln.setAttribute('x2',x0);ln.setAttribute('y2',y1); pathGroup.appendChild(ln); linesDrawn++; }
+          const x0 = ox + x*step, y0 = oy + y*stepY, x1 = x0 + step, y1 = y0 + stepY;
+          if (c.walls[0]) L(x0,y0,x1,y0);
+          if (c.walls[1]) L(x1,y0,x1,y1);
+          if (c.walls[2]) L(x0,y1,x1,y1);
+          if (c.walls[3]) L(x0,y0,x0,y1);
         }
       }
 
@@ -524,69 +279,47 @@
         console.log('[Maze] Lines drawn:', linesDrawn, 'Canvas:', W, 'x', H);
       }
 
-      const playerX = ox + step*0.5;
-      const playerY = oy + stepY*0.5;
-      const goalX   = ox + (cols-0.5)*step - 22;
-      const goalY   = oy + (rows-0.5)*stepY - 22;
+      const playerX = ox + step*0.5, playerY = oy + stepY*0.5;
+      const goalX   = ox + (cols-0.5)*step - 22, goalY   = oy + (rows-0.5)*stepY - 22;
 
-      const g = document.createElement('div');
-      g.id = 'goal';
-      g.style.left = goalX + 'px';
-      g.style.top  = goalY + 'px';
-      mazeContainer.appendChild(g);
-      goal = g;
-
-      const p = document.createElement('div');
-      p.id = 'player';
-      p.style.left = (playerX-22) + 'px';
-      p.style.top  = (playerY-22) + 'px';
-      mazeContainer.appendChild(p);
-      player = p;
+      const g = document.createElement('div'); g.id='goal'; g.style.left = goalX + 'px'; g.style.top = goalY + 'px'; mazeContainer.appendChild(g); goal = g;
+      const p = document.createElement('div'); p.id='player'; p.style.left = (playerX-22)+'px'; p.style.top = (playerY-22)+'px'; mazeContainer.appendChild(p); player = p;
 
       let dragging = false;
       function moveTo(clientX, clientY){
         const r = mazeContainer.getBoundingClientRect();
         const x = Math.min(r.right - 5, Math.max(r.left + 5, clientX)) - r.left;
         const y = Math.min(r.bottom - 5, Math.max(r.top + 5, clientY)) - r.top;
-        player.style.left = (x-22) + 'px';
-        player.style.top  = (y-22) + 'px';
-        const dx = (x-22) - parseFloat(goal.style.left);
-        const dy = (y-22) - parseFloat(goal.style.top);
-        if (Math.hypot(dx, dy) < 30) {
-          mazesCompleted += 1; score += 100;
+        player.style.left = (x-22) + 'px'; player.style.top = (y-22) + 'px';
+        const dx = (x-22) - parseFloat(goal.style.left); const dy = (y-22) - parseFloat(goal.style.top);
+        if (Math.hypot(dx, dy) < 30) { mazesCompleted += 1; score += 100;
           totalCompletionTime += Math.min(999, (performance.now() - (mazeStartTime || performance.now())) / 1000);
           updateHUD(); mazeContainer.classList.add('maze-celebrate'); setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 500);
-          mazeStartTime = performance.now(); scheduleGenerateMaze(true);
-        }
+          mazeStartTime = performance.now(); scheduleGenerateMaze(true); }
       }
       p.addEventListener('mousedown', (e)=>{ if(!isPlaying||isPaused) return; dragging = true; e.preventDefault(); });
-      document.addEventListener('mouseup', ()=> dragging=false);
-      document.addEventListener('mousemove', (e)=>{ if (dragging) moveTo(e.clientX, e.clientY); });
-
+      addEventListener('mouseup', ()=> dragging=false);
+      addEventListener('mousemove', (e)=>{ if (dragging) moveTo(e.clientX, e.clientY); });
       p.addEventListener('touchstart', (e)=>{ if(!isPlaying||isPaused) return; dragging = true; e.preventDefault(); }, {passive:false});
-      document.addEventListener('touchend', ()=> dragging=false, {passive:false});
-      document.addEventListener('touchmove', (e)=>{ if (!dragging) return; const t = e.touches[0]; moveTo(t.clientX, t.clientY); }, {passive:false});
+      addEventListener('touchend', ()=> dragging=false, {passive:false});
+      addEventListener('touchmove', (e)=>{ if (!dragging) return; const t = e.touches[0]; moveTo(t.clientX, t.clientY); }, {passive:false});
 
       mazeStartTime = performance.now();
-      mazeContainer.tabIndex = 0;
-      mazeContainer.focus();
+      mazeContainer.tabIndex = 0; mazeContainer.focus();
       mazeContainer.addEventListener('keydown', (e)=>{
         if (!isPlaying || isPaused) return;
         const stepPix = 6;
-        const left = parseFloat(player.style.left);
-        const top  = parseFloat(player.style.top);
+        const left = parseFloat(player.style.left), top = parseFloat(player.style.top);
         if (e.key === 'ArrowLeft')  player.style.left = (left - stepPix) + 'px';
         if (e.key === 'ArrowRight') player.style.left = (left + stepPix) + 'px';
         if (e.key === 'ArrowUp')    player.style.top  = (top  - stepPix) + 'px';
         if (e.key === 'ArrowDown')  player.style.top  = (top  + stepPix) + 'px';
         const dx = parseFloat(player.style.left) - parseFloat(goal.style.left);
         const dy = parseFloat(player.style.top)  - parseFloat(goal.style.top);
-        if (Math.hypot(dx, dy) < 30) {
-          mazesCompleted += 1; score += 100;
+        if (Math.hypot(dx, dy) < 30) { mazesCompleted += 1; score += 100;
           totalCompletionTime += Math.min(999, (performance.now() - (mazeStartTime || performance.now())) / 1000);
           updateHUD(); mazeContainer.classList.add('maze-celebrate'); setTimeout(()=>mazeContainer.classList.remove('maze-celebrate'), 500);
-          mazeStartTime = performance.now(); scheduleGenerateMaze(true);
-        }
+          mazeStartTime = performance.now(); scheduleGenerateMaze(true); }
       });
 
       return true;
@@ -612,21 +345,13 @@
     }
 
     let resizeTimer=null;
-    window.addEventListener('resize', ()=>{ if(!isPlaying||isPaused) return; clearTimeout(resizeTimer); resizeTimer=setTimeout(scheduleGenerateMaze,150); });
+    addEventListener('resize', ()=>{ if(!isPlaying||isPaused) return; clearTimeout(resizeTimer); resizeTimer=setTimeout(scheduleGenerateMaze,150); });
 
     function endToHome(){ window.location.href = '/'; }
 
     startBtn?.addEventListener('click', beginSession);
     pauseBtn?.addEventListener('click', ()=> pauseSession());
-    exitBtn?.addEventListener('click', ()=>{
-      isPlaying = false;
-      clearInterval(timerInterval);
-      document.getElementById('settings').classList.remove('hidden');
-      doneModal.classList.add('hidden');
-      document.body.classList.remove('playing');
-      timeLeft = 0;
-      updateHUD();
-    });
+    exitBtn?.addEventListener('click', ()=>{ isPlaying=false; clearInterval(timerInterval); document.getElementById('settings').classList.remove('hidden'); doneModal.classList.add('hidden'); document.body.classList.remove('playing'); timeLeft=0; updateHUD(); });
     doneBtn?.addEventListener('click', ()=>{ document.getElementById('settings').classList.remove('hidden'); doneModal.classList.add('hidden'); });
     homeBtn?.addEventListener('click', endToHome);
 
@@ -634,7 +359,7 @@
     pbSettingsEl.textContent = String(personalBest);
     timeEl.textContent = formatTime(sessionMs);
 
-    window.addEventListener('error', e => console.error('[Maze JS Error]:', e.message));
+    addEventListener('error', e => console.error('[Maze JS Error]:', e.message));
   </script>
 </body>
 </html>
