@@ -1403,11 +1403,13 @@
         isSessionActive = true;
         startTimer();
         
-        // Adjust maze size for current container, then generate
-        adjustMazeSize();
-        generateMaze();
-        mazeStartTime = Date.now();
-        mazeContainer.focus();
+        // Wait a frame for the screen transition to complete, then generate maze
+        setTimeout(() => {
+          adjustMazeSize();
+          generateMaze();
+          mazeStartTime = Date.now();
+          mazeContainer.focus();
+        }, 50);
       } catch (e) {
         console.error(e);
         showError('Failed to start session: ' + e.message);
