@@ -1022,9 +1022,14 @@
       const cols = Math.max(3, Math.floor(mazeWidth / cellSize));
       const rows = Math.max(3, Math.floor(mazeHeight / cellSize));
 
-      // Clear existing maze
-      clearMaze();
+      // Clear existing maze only if we have content
+      if (mazeContainer && mazeContainer.children.length > 0) {
+        clearMaze();
+      }
+      
       maze = [];
+      pathNodes = [];
+      pathTraces = [];
 
       // Initialize maze grid
       for (let i = 0; i < rows; i++) {
@@ -1405,11 +1410,24 @@
         
         // Wait a frame for the screen transition to complete, then generate maze
         setTimeout(() => {
-          adjustMazeSize();
-          generateMaze();
-          mazeStartTime = Date.now();
-          mazeContainer.focus();
-        }, 50);
+          try {
+            console.log('Starting maze generation...');
+            console.log('Maze container:', mazeContainer);
+            console.log('Container dimensions:', mazeContainer ? mazeContainer.getBoundingClientRect() : 'null');
+            
+            adjustMazeSize();
+            console.log('Adjusted maze size:', mazeWidth, 'x', mazeHeight);
+            
+            generateMaze();
+            console.log('Maze generated successfully');
+            
+            mazeStartTime = Date.now();
+            mazeContainer.focus();
+          } catch (error) {
+            console.error('Error generating maze:', error);
+            showError('Failed to generate maze: ' + error.message);
+          }
+        }, 100); // Increased delay to ensure layout is complete
       } catch (e) {
         console.error(e);
         showError('Failed to start session: ' + e.message);
