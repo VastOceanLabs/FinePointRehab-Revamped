@@ -719,6 +719,25 @@
       diffEl.textContent = difficultySelect.value;
     });
 
+    // Maze sizing function
+    function adjustMazeSize() {
+      if (!mazeContainer) return;
+      
+      // Use the CSS-defined dimensions directly
+      const containerStyle = window.getComputedStyle(mazeContainer);
+      const containerWidth = parseInt(containerStyle.width);
+      const containerHeight = parseInt(containerStyle.height);
+      
+      if (containerWidth > 0 && containerHeight > 0) {
+        mazeWidth = containerWidth;
+        mazeHeight = containerHeight;
+      } else {
+        // Fallback to default sizes
+        mazeWidth = window.innerWidth <= 768 ? 320 : 600;
+        mazeHeight = window.innerWidth <= 768 ? 240 : 400;
+      }
+    }
+
     // Utility functions
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
