@@ -1,482 +1,1273 @@
-<!DOCTYPE html>
+<script>
+    // Simple storage utility
+    const storage = {
+      get: (key, defaultValue) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch {
+          return defaultValue;
+        }
+      },
+      set: (key, value) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          console.error('Storage error:', e);
+        }
+      }
+    };
+
+    // Generate starfield
+    function generateStars(container, count = 150) {
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.style.position = 'absolute';
+        star.style.width = Math.random() * 3 + 'px';
+        star.style.height = star.style.width;
+        star.style.backgroundColor = 'white';
+        star.style.borderRadius = '50%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.opacity = Math.random() * 0.8 + 0.2;
+        container.appendChild(star);
+      }
+    }
+
+    // DOM elements
+    const starsContainer = document.getElementById('stars-container');
+    const timerBarEl = document.getElementById('timer-bar');
+    const hudScore = document.getElementById('hud-score');
+    const hudPB = document.getElementById('hud-pb');
+    const pbSettingsEl = document.getElementById('pb-settings');
+    const hudHits = document.getElementById('hud-hits');
+    const hudTime = document.getElementById('hud-time');
+    const instructions = document.getElementById('instructions');
+    const scanArea = document.getElementById('scan-area');
+    const targetDisplay = document.getElementById('target-display');
+    const targetIcon = document.getElementById('target-icon');
+    const focusOverlay = document.getElementById('focus-overlay');
+    const statsDisplay = document.getElementById('stats-display');
+    const accuracyDisplay = document.getElementById('accuracy-display');
+    const reactionDisplay = document.getElementById('reaction-display');
+    const feedbackMessage = document.getElementById('feedback-message');
+    const startBtn = document.getElementById('start-session');
+    const pauseBtn = document.getElementById('pause-session');
+    const restartBtn = document.getElementById('restart-session');
+    const endBtn = document.getElementById('end-session');
+    const completionModal = document.getElementById('completion-message');
+    const finalHitsEl = document.getElementById('final-hits');
+    const finalAccuracyEl = document.getElementById('final-accuracy');
+    const finalReactionEl = document.getElementById('final-reaction');
+    const finalScoreEl = document.getElementById('final-score');
+    const finalXPEl = document.getElementById('final-xp');
+    const completeClose = document.getElementById('close-complete');
+    const restartModalBtn = document.getElementById('restart-button');
+    const difficultySelect = document.getElementById('difficulty');
+    const focusAreaSelect = document.getElementById('focus-area');
+    const objectTypeSelect = document.getElementById('object-type');
+    const sessionDurationInp = document.getElementById('session-duration');
+
+    // Generate initial stars
+    generateStars(starsContainer, 150);
+
+    // Personal best tracking
+    const PB_KEY = 'visual-scanner:best';
+    const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
+    const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
+
+    function updatePersonalBest() {
+      const pb = getPB();
+      if (hudPB) hudPB.textContent = pb ? String(pb) : '0';
+      if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
+    }
+
+    // Game state
+    let isSessionActive = false;
+    let isPaused = false;
+    let sessionMs = 3 * 60 * 1000;
+    let timeRemaining = 0;
+    let timerInterval = null;
+    let score = 0;
+    let hits = 0;
+    let attempts = 0;
+    let reactionTimes = [];
+    let currentTarget = null;
+    let targetStartTime = 0;
+    let targetElement = null;
+    let distractorElements = [];
+
+    // Target object sets
+    const TARGET_SETS = {
+      shapes: ['🔴', '🔵', '🟡', '🟢', '🟣', '🟠', '⭐', '💎', '🔺', '🔸', '🔹', '⬛'],
+      letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+      numbers: '0123456789'.split(''),
+      emoji: ['😀', '😎', '🎯', '🎨', '🎵', '🎭', '🎊', '🎈', '🌟', '🌈', '🔥', '⚡']
+    };
+
+    // Utility functions
+    function showFeedback(message, type) {
+      if (!feedbackMessage) return;
+      feedbackMessage.textContent = message;
+      feedbackMessage.className = `feedback-message ${type}`;
+      feedbackMessage.classList.remove('hidden');
+      setTimeout(() => feedbackMessage.classList.add('hidden'), 1000);
+    }
+
+    function saveSettings() {
+      if (difficultySelect) storage.set('scannerDifficulty', difficultySelect.value);
+      if (focusAreaSelect) storage.set('scannerFocusArea', focusAreaSelect.value);
+      if (objectTypeSelect) storage.set('scannerObjectType', objectTypeSelect.value);
+      if (sessionDurationInp) storage.set('scannerSessionDuration', sessionDurationInp.value);
+    }
+
+    function loadSettings() {
+      if (difficultySelect) difficultySelect.value = storage.get('scannerDifficulty', 'medium');
+      if (focusAreaSelect) focusAreaSelect.value = storage.get('scannerFocusArea', 'none');
+      if (objectTypeSelect) objectTypeSelect.value = storage.get('scannerObjectType', 'shapes');
+      if (sessionDurationInp) sessionDurationInp.value = storage.get('scannerSessionDuration', 3);
+      updatePersonalBest();
+    }
+
+    function updateHUD() {
+      if (hudScore) hudScore.textContent = `${score}`;
+      if (hudPB) hudPB.textContent = `${getPB()}`;
+      if (hudHits) hudHits.textContent = `${hits}`;
+
+      const mins = Math.max(0, Math.floor(timeRemaining / 60000));
+      const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
+      if (hudTime) hudTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+      // Update accuracy and reaction time displays
+      const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 100;
+      const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
+      
+      if (accuracyDisplay) accuracyDisplay.textContent = `${accuracy}%`;
+      if (reactionDisplay) reactionDisplay.textContent = `${avgReaction}ms`;
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeRemaining -= 100;
+        const progress = Math.max(0, timeRemaining / sessionMs);
+        if (timerBarEl) timerBarEl.style.width = `${progress * 100}%`;
+        updateHUD();
+        if (timeRemaining <= 0) {
+          endSession();
+        }
+      }, 100);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    // Screen management
+    function setScreen(screenName) {
+      document.querySelectorAll('[data-screen]').forEach(el => {
+        el.classList.remove('active');
+      });
+      const screen = document.querySelector(`[data-screen="${screenName}"]`);
+      if (screen) screen.classList.add('active');
+    }
+
+    // Focus area management
+    function updateFocusArea() {
+      const area = focusAreaSelect?.value || 'none';
+      if (focusOverlay) {
+        focusOverlay.className = 'focus-overlay';
+        if (area !== 'none') {
+          focusOverlay.classList.add(area);
+        }
+      }
+    }
+
+    // Target generation
+    function pickTarget() {
+      const type = objectTypeSelect?.value || 'shapes';
+      const targets = TARGET_SETS[type] || TARGET_SETS.shapes;
+      return targets[Math.floor(Math.random() * targets.length)];
+    }
+
+    function pickDistractors(target, count) {
+      const type = objectTypeSelect?.value || 'shapes';
+      const targets = TARGET_SETS[type] || TARGET_SETS.shapes;
+      const distractors = targets.filter(t => t !== target);
+      
+      const selected = [];
+      for (let i = 0; i < count && distractors.length > 0; i++) {
+        const index = Math.floor(Math.random() * distractors.length);
+        selected.push(distractors.splice(index, 1)[0]);
+      }
+      return selected;
+    }
+
+    function getRandomPosition(area) {
+      const rect = scanArea.getBoundingClientRect();
+      const padding = 30; // Keep objects away from edges
+      
+      let bounds = {
+        left: padding,
+        top: padding,
+        right: rect.width - padding,
+        bottom: rect.height - padding
+      };
+
+      const focusArea = focusAreaSelect?.value || 'none';
+      if (focusArea !== 'none') {
+        const mid = { x: rect.width / 2, y: rect.height / 2 };
+        switch (focusArea) {
+          case 'left':
+            bounds.right = mid.x - padding;
+            break;
+          case 'right':
+            bounds.left = mid.x + padding;
+            break;
+          case 'top':
+            bounds.bottom = mid.y - padding;
+            break;
+          case 'bottom':
+            bounds.top = mid.y + padding;
+            break;
+        }
+      }
+
+      return {
+        x: Math.random() * (bounds.right - bounds.left) + bounds.left,
+        y: Math.random() * (bounds.bottom - bounds.top) + bounds.top
+      };
+    }
+
+    function clearTargets() {
+      if (targetElement) {
+        targetElement.remove();
+        targetElement = null;
+      }
+      distractorElements.forEach(el => el.remove());
+      distractorElements = [];
+    }
+
+    function spawnTarget() {
+      clearTargets();
+      
+      currentTarget = pickTarget();
+      targetStartTime = Date.now();
+      
+      if (targetIcon) targetIcon.textContent = currentTarget;
+
+      // Create target element
+      targetElement = document.createElement('div');
+      targetElement.className = 'visual-object';
+      targetElement.textContent = currentTarget;
+      targetElement.dataset.isTarget = 'true';
+
+      const targetPos = getRandomPosition();
+      targetElement.style.left = targetPos.x + 'px';
+      targetElement.style.top = targetPos.y + 'px';
+
+      targetElement.addEventListener('click', handleTargetClick);
+      scanArea.appendChild(targetElement);
+
+      // Add distractors based on difficulty
+      const difficulty = difficultySelect?.value || 'medium';
+      let distractorCount = 0;
+      switch (difficulty) {
+        case 'easy': distractorCount = 3; break;
+        case 'medium': distractorCount = 6; break;
+        case 'hard': distractorCount = 10; break;
+      }
+
+      const distractors = pickDistractors(currentTarget, distractorCount);
+      distractors.forEach(distractor => {
+        const el = document.createElement('div');
+        el.className = 'visual-object';
+        el.textContent = distractor;
+        el.dataset.isTarget = 'false';
+
+        const pos = getRandomPosition();
+        el.style.left = pos.x + 'px';
+        el.style.top = pos.y + 'px';
+
+        el.addEventListener('click', handleDistractorClick);
+        scanArea.appendChild(el);
+        distractorElements.push(el);
+      });
+
+      if (scanArea) scanArea.classList.add('active');
+    }
+
+    function handleTargetClick(e) {
+      if (!isSessionActive || isPaused) return;
+      e.preventDefault();
+      
+      const reactionTime = Date.now() - targetStartTime;
+      reactionTimes.push(reactionTime);
+      
+      hits++;
+      attempts++;
+      score += 100;
+      
+      e.target.classList.add('correct');
+      showFeedback('Found it!', 'success');
+      
+      if (scanArea) scanArea.classList.add('celebrate');
+      setTimeout(() => {
+        if (scanArea) scanArea.classList.remove('celebrate');
+      }, 900);
+
+      updateHUD();
+      
+      // Spawn next target after brief delay
+      setTimeout(() => {
+        if (isSessionActive) {
+          spawnTarget();
+        }
+      }, 1000);
+    }
+
+    function handleDistractorClick(e) {
+      if (!isSessionActive || isPaused) return;
+      e.preventDefault();
+      
+      attempts++;
+      score = Math.max(0, score - 10);
+      
+      e.target.classList.add('incorrect');
+      showFeedback('Wrong target!', 'error');
+      
+      updateHUD();
+      
+      // Remove incorrect styling after animation
+      setTimeout(() => {
+        e.target.classList.remove('incorrect');
+      }, 400);
+    }
+
+    function startSession() {
+      if (isSessionActive) return;
+
+      const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp?.value) || 3));
+      sessionMs = minutes * 60 * 1000;
+
+      // Reset game state
+      score = 0;
+      hits = 0;
+      attempts = 0;
+      reactionTimes = [];
+      currentTarget = null;
+      timeRemaining = sessionMs;
+      isPaused = false;
+
+      // Clear scan area
+      if (scanArea) {
+        scanArea.innerHTML = '';
+        scanArea.classList.remove('active');
+      }
+
+      updateHUD();
+      setScreen('game');
+      saveSettings();
+      updateFocusArea();
+
+      isSessionActive = true;
+      startTimer();
+      updatePersonalBest();
+
+      setTimeout(() => {
+        spawnTarget();
+      }, 500);
+    }
+
+    function endSession() {
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+      isPaused = false;
+
+      clearTargets();
+      if (scanArea) scanArea.classList.remove('active');
+
+      const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 0;
+      const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
+
+      // Check for personal best
+      const previousPB = getPB();
+      let isNewPB = false;
+      if (score > previousPB) {
+        isNewPB = true;
+        setPB(score);
+        updatePersonalBest();
+      }
+
+      // Show completion modal
+      if (finalHitsEl) finalHitsEl.textContent = `${hits}`;
+      if (finalAccuracyEl) finalAccuracyEl.textContent = `${accuracy}%`;
+      if (finalReactionEl) finalReactionEl.textContent = `${avgReaction}ms`;
+      if (finalScoreEl) finalScoreEl.textContent = `${score}`;
+      if (finalXPEl) finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
+
+      if (completionModal) completionModal.classList.add('show');
+      setScreen('settings');
+    }
+
+    // Event listeners
+    if (startBtn) startBtn.addEventListener('click', startSession);
+    if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
+    if (focusAreaSelect) focusAreaSelect.addEventListener('change', () => {
+      saveSettings();
+      updateFocusArea();
+    });
+    if (objectTypeSelect) objectTypeSelect.addEventListener('change', saveSettings);
+    if (sessionDurationInp) sessionDurationInp.addEventListener('input', saveSettings);
+
+    if (pauseBtn) pauseBtn.addEventListener('click', () => {
+      if (!isSessionActive) return;
+      isPaused = !isPaused;
+      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+      if (isPaused) {
+        stopTimer();
+        if (scanArea) scanArea.style.filter = 'grayscale(0.5) brightness(0.7)';
+      } else {
+        startTimer();
+        if (scanArea) scanArea.style.filter = '';
+      }
+    });
+
+    if (endBtn) endBtn.addEventListener('click', () => endSession());
+
+    if (restartBtn) restartBtn.addEventListener('click', () => {
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+      isPaused = false;
+      clearTargets();
+      setScreen('settings');
+    });
+
+    if (restartModalBtn) restartModalBtn.addEventListener('click', () => {
+      if (completionModal) completionModal.classList.remove('show');
+      setScreen('settings');
+    });
+
+    if (completeClose) completeClose.addEventListener('click', () => {
+      if (completionModal) completionModal.classList.remove('show');
+      setScreen('settings');
+    });
+
+    // Initialize
+    loadSettings();
+    updateHUD();
+    updateFocusArea();
+    setScreen('settings');
+  </script>
+</body>
+</html><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Visual Scanner Exercise | Fine Point Rehab</title>
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/components.css">
+  <title>Visual Scanner — Visual-Cognitive Training</title>
+
   <style>
+    :root {
+      --bg-primary: #0f1629;
+      --bg-secondary: #1a1f3a;
+      --bg-tertiary: #252b47;
+      --text-primary: #e8eef5;
+      --text-secondary: #b8c5d1;
+      --text-muted: #8a96a3;
+      --brand-aqua: #6fd3f5;
+      --success: #4caf50;
+      --error: #ff6b6b;
+      --error-bg: #2d1b1b;
+      --border: #374151;
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --radius: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-full: 50%;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --font-size-xs: 12px;
+      --font-size-base: 16px;
+      --font-size-lg: 20px;
+      --font-size-xl: 24px;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+      --duration-fast: 150ms;
+      --easing: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg-gradient, linear-gradient(180deg, #0b0f1c, #121d33));
-      color: var(--text-primary, white);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
+      color: var(--text-primary);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
-    
-    header {
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--easing);
+    }
+
+    .btn:hover {
+      border-color: var(--brand-aqua);
+      background-color: var(--bg-tertiary);
+    }
+
+    .btn-primary {
+      background-color: var(--brand-aqua);
+      color: #000;
+      border-color: var(--brand-aqua);
+    }
+
+    .btn-primary:hover {
+      background-color: #5bc2e7;
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-tertiary);
+    }
+
+    .input, select {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: var(--font-size-base);
+    }
+
+    .panel {
+      background: rgba(15, 22, 41, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .site-header {
       position: sticky;
       top: 0;
-      background: var(--header-bg, rgba(8, 15, 35, 0.95));
-      padding: 10px 20px;
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+      background: rgba(8, 15, 35, 0.8);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .site-header .inner {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      z-index: 100;
-      border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.1));
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    
-    header h1 {
+
+    .site-header h1 {
       margin: 0;
-      font-size: 20px;
-      color: var(--text-primary, white);
+      font-size: var(--font-size-xl);
+      line-height: 1.2;
     }
-    
-    header a {
-      text-decoration: none;
-      color: var(--brand, rgba(111, 211, 245, 1));
-      font-weight: bold;
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-4);
     }
-    
-    main {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 0;
-      overflow: hidden;
+
+    /* Screen system */
+    [data-screen] {
+      display: none !important;
     }
-    
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+
+    [data-screen].active {
+      display: block !important;
+    }
+
+    /* Settings screen styling */
+    .settings-panel {
+      max-width: 480px;
+      margin: 0 auto;
+      padding-top: var(--space-6);
+    }
+
+    .settings-panel h2 {
+      margin: 0 0 var(--space-4);
+      font-size: var(--font-size-lg);
+      text-align: center;
+    }
+
+    .game-description {
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      border: 1px solid var(--border);
+    }
+
+    .stats-row {
+      display: flex;
       gap: 10px;
-      margin-top: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
     }
-    
+
+    .metric-settings {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(111, 211, 245, 0.08);
+      min-width: 110px;
+    }
+
+    .pb-value {
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-lg);
+      color: var(--brand-aqua);
+      text-shadow: 0 0 6px rgba(111, 211, 245, 0.5);
+      line-height: 1.1;
+    }
+
+    .pb-label {
+      font-size: var(--font-size-xs);
+      opacity: 0.9;
+      margin-top: var(--space-1);
+      color: var(--text-secondary);
+    }
+
+    .settings-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .settings-label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .setting-help {
+      display: block;
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      margin-top: var(--space-1);
+      font-style: italic;
+    }
+
+    .right-col {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: var(--space-3);
+    }
+
     .hud {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-      gap: 15px;
-      background: var(--panel-bg, rgba(8,15,35,0.9));
-      padding: 15px 20px;
-      border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.1));
-    }
-    
-    .hud div {
-      text-align: center;
-      font-size: 14px;
-      font-weight: 500;
-    }
-    
-    #timer-bar {
-      height: 4px;
-      background: var(--brand, #6fd3f5);
-      transition: width 0.3s ease;
-      width: 100%;
-    }
-    
-    #game-area {
-      flex: 1;
-      position: relative;
-      display: flex;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: var(--space-2);
       align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    
-    #scan-area {
-      width: 100%;
-      height: 100%;
-      border: 2px dashed var(--border-color, rgba(255,255,255,0.3));
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      color: var(--text-secondary, rgba(255,255,255,0.7));
       position: relative;
+      padding-top: calc(var(--space-3) + 8px);
     }
-    
-    #completion-message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--panel-bg, rgba(8,15,35,0.95));
-      padding: 30px;
-      border-radius: 15px;
-      text-align: center;
-      z-index: 200;
-      display: none;
-      border: 1px solid var(--border-color, rgba(255,255,255,0.1));
-      min-width: 300px;
-    }
-    
-    #completion-message.show {
-      display: block;
-    }
-    
-    #reward-badge {
-      font-size: 40px;
-      margin: 15px 0;
-      color: var(--accent-gold, gold);
-      text-shadow: 0 0 10px var(--accent-gold, gold);
-    }
-    
-    #target-icon {
-      font-size: 16px;
-      margin-left: 5px;
-    }
-    
-    /* Target object styling */
-    .visual-object {
-      position: absolute;
-      width: 48px; 
-      height: 48px;
-      display: grid; 
-      place-items: center;
-      border-radius: 50%;
-      background: rgba(111,211,245,0.15);
-      border: 2px solid rgba(111,211,245,0.6);
-      font-size: 20px;
-      cursor: pointer;
-      transition: transform 120ms ease;
-    }
-    .visual-object:active { 
-      transform: scale(0.95); 
-    }
-    
-    /* Mobile responsiveness */
+
     @media (max-width: 768px) {
-      main {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
-      }
-      
       .hud {
         grid-template-columns: 1fr 1fr 1fr;
-        gap: 10px;
-        font-size: 12px;
+        grid-auto-flow: row;
+        gap: var(--space-1);
+        padding: var(--space-2);
+        padding-top: calc(var(--space-2) + 6px);
+      }
+      
+      .hud-value {
+        font-size: var(--font-size-base);
+      }
+      
+      .hud-label {
+        font-size: 11px;
       }
       
       .controls {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        grid-column: 1 / -1;
+        display: flex;
+        gap: var(--space-2);
+        justify-content: center;
+        margin-top: var(--space-1);
+      }
+      
+      .controls .btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+    }
+
+    .hud-group {
+      display: grid;
+      gap: var(--space-1);
+      text-align: center;
+    }
+
+    .hud-value {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+    }
+
+    .hud-label {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+    }
+
+    .timer-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 8px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--brand-aqua), rgba(111,211,245,.35));
+      transform-origin: left center;
+      transition: width .1s linear;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+    }
+
+    .controls {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .instructions {
+      text-align: center;
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-3);
+      font-size: var(--font-size-base);
+      padding: var(--space-3);
+      background-color: rgba(8, 15, 35, 0.7);
+      border-radius: var(--radius);
+    }
+
+    #game-container {
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: var(--space-3);
+      background: rgba(0,0,0,0.15);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      height: 70vh;
+      min-height: 500px;
+    }
+
+    #stars-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* Scan area */
+    #scan-area {
+      width: 100%;
+      height: 100%;
+      border: 2px dashed rgba(111, 211, 245, 0.4);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--font-size-lg);
+      color: var(--text-secondary);
+      position: relative;
+      background: rgba(8, 15, 35, 0.2);
+    }
+
+    #scan-area.active {
+      border-color: var(--brand-aqua);
+      background: rgba(111, 211, 245, 0.05);
+    }
+
+    /* Target objects */
+    .visual-object {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-full);
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--brand-aqua));
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--easing);
+      box-shadow: 0 0 15px rgba(111, 211, 245, 0.4);
+      z-index: 10;
+    }
+
+    .visual-object:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(111, 211, 245, 0.6);
+    }
+
+    .visual-object:active {
+      transform: scale(0.95);
+    }
+
+    .visual-object.correct {
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--success));
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
+      animation: correctPulse 0.6s ease-out;
+    }
+
+    .visual-object.incorrect {
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--error));
+      box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+      animation: incorrectShake 0.4s ease;
+    }
+
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes incorrectShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      50% { transform: translateX(4px); }
+      75% { transform: translateX(-4px); }
+    }
+
+    /* Target indicator */
+    .target-display {
+      position: absolute;
+      top: var(--space-4);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 22, 41, 0.95);
+      border: 2px solid var(--brand-aqua);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-weight: var(--font-weight-bold);
+      z-index: 20;
+    }
+
+    .target-icon {
+      font-size: var(--font-size-xl);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(111, 211, 245, 0.2);
+      border-radius: var(--radius-full);
+      border: 1px solid var(--brand-aqua);
+    }
+
+    /* Stats display */
+    .stats-display {
+      position: absolute;
+      bottom: var(--space-4);
+      right: var(--space-4);
+      background: rgba(15, 22, 41, 0.95);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-2) var(--space-3);
+      backdrop-filter: blur(8px);
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+      font-size: var(--font-size-xs);
+      z-index: 20;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .stat-value {
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+    }
+
+    /* Focus area overlay */
+    .focus-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .focus-overlay.left::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 2px solid var(--brand-aqua);
+    }
+
+    .focus-overlay.right::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border-right: 2px solid var(--brand-aqua);
+    }
+
+    .focus-overlay.top::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      height: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 2px solid var(--brand-aqua);
+    }
+
+    .focus-overlay.bottom::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 50%;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 2px solid var(--brand-aqua);
+    }
+
+    /* Feedback message */
+    .feedback-message {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 22, 41, 0.95);
+      border: 2px solid var(--brand-aqua);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      color: var(--text-primary);
+      font-weight: var(--font-weight-semibold);
+      text-align: center;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transition: opacity var(--duration-fast) var(--easing);
+      pointer-events: none;
+      font-size: var(--font-size-lg);
+    }
+
+    .feedback-message:not(.hidden) {
+      opacity: 1;
+    }
+
+    .feedback-message.success {
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .feedback-message.error {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    /* Completion modal */
+    .completion {
+      position: fixed;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%) scale(1);
+      max-width: 90%;
+      width: 560px;
+      z-index: 1100;
+      text-align: center;
+      display: none;
+    }
+
+    .completion.show {
+      display: block;
+      animation: pop 0.25s ease;
+    }
+
+    @keyframes pop {
+      from {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0.6;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .score-highlight {
+      color: var(--brand-aqua);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .celebrate {
+      animation: celebrate 900ms ease-out 1;
+    }
+
+    @keyframes celebrate {
+      0% { box-shadow: 0 0 0 rgba(111,211,245,0); }
+      40% { box-shadow: 0 0 40px rgba(111,211,245,.8); }
+      100% { box-shadow: 0 0 20px rgba(111,211,245,.2); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .visual-object.correct,
+      .visual-object.incorrect,
+      .celebrate { 
+        animation: none; 
+      }
+    }
+
+    @media (max-width: 768px) {
+      .visual-object {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+      }
+      
+      .settings-panel {
+        padding: var(--space-3);
+        margin: var(--space-2);
+      }
+      
+      .page {
+        padding: var(--space-2);
+      }
+
+      #game-container {
+        height: 80vh;
+        min-height: 400px;
+      }
+
+      .target-display {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin-bottom: var(--space-3);
+      }
+
+      .stats-display {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        margin-top: var(--space-3);
       }
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <a href="/">← Home</a>
-    <h1>Visual Scanner</h1>
-    <div></div>
+  <header class="site-header">
+    <div class="inner">
+      <a class="btn btn-secondary" href="/" aria-label="Go to Home">← Home</a>
+      <h1>Visual Scanner</h1>
+    </div>
   </header>
 
-  <main>
-    <!-- LEFT PANEL: SETTINGS -->
-    <aside class="panel settings">
-      <h2>Settings</h2>
-      
-      <div class="settings-group">
-        <label for="difficulty">Difficulty:</label>
-        <select id="difficulty" class="panel">
-          <option value="easy">Easy</option>
-          <option value="medium" selected>Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-        <p class="setting-description">Adjust the complexity of the scanning task.</p>
+  <main class="page">
+    <!-- Settings Screen -->
+    <aside class="settings-panel panel active" data-screen="settings">
+      <h2>Session Settings</h2>
+
+      <div class="game-description">
+        <p>
+          Scan the visual field to find and click target objects. Improves visual attention, 
+          scanning speed, and visual processing skills. Train focused attention and visual search efficiency.
+        </p>
+      </div>
+
+      <!-- Personal Best display -->
+      <div class="stats-row">
+        <div class="metric-settings">
+          <div id="pb-settings" class="pb-value">0</div>
+          <div class="pb-label">Personal Best</div>
+        </div>
       </div>
 
       <div class="settings-group">
-        <label for="focus-area">Focus Area:</label>
-        <select id="focus-area">
-          <option value="none">None (Full Field)</option>
-          <option value="left">Left</option>
-          <option value="right">Right</option>
-          <option value="top">Top</option>
-          <option value="bottom">Bottom</option>
+        <label class="settings-label" for="difficulty">Difficulty</label>
+        <select class="input" id="difficulty">
+          <option value="easy">Easy — fewer distractors, larger targets</option>
+          <option value="medium" selected>Medium — moderate challenge</option>
+          <option value="hard">Hard — many distractors, smaller targets</option>
         </select>
-        <p class="setting-description">Limit the search to a specific area.</p>
+        <small class="setting-help">Higher difficulty increases visual complexity and challenge.</small>
       </div>
 
       <div class="settings-group">
-        <label for="object-type">Object Type:</label>
-        <select id="object-type">
-          <option value="shapes">Shapes</option>
-          <option value="letters">Letters</option>
-          <option value="numbers">Numbers</option>
-          <option value="emoji">Emoji</option>
+        <label class="settings-label" for="focus-area">Focus Area</label>
+        <select class="input" id="focus-area">
+          <option value="none">Full Field — scan entire area</option>
+          <option value="left">Left Side — focus on left hemisphere</option>
+          <option value="right">Right Side — focus on right hemisphere</option>
+          <option value="top">Upper Field — focus on upper quadrants</option>
+          <option value="bottom">Lower Field — focus on lower quadrants</option>
         </select>
-        <p class="setting-description">Choose what kind of objects to scan for.</p>
+        <small class="setting-help">Target specific visual field areas for focused training.</small>
       </div>
 
       <div class="settings-group">
-        <label for="session-duration">Session Duration (minutes):</label>
-        <input type="number" id="session-duration" value="3" min="1" max="10" class="panel">
-        <p class="setting-description">How long each session should last.</p>
+        <label class="settings-label" for="object-type">Object Type</label>
+        <select class="input" id="object-type">
+          <option value="shapes" selected>Shapes — geometric forms and symbols</option>
+          <option value="letters">Letters — alphabet characters</option>
+          <option value="numbers">Numbers — numeric digits</option>
+          <option value="emoji">Emoji — colorful icons and faces</option>
+        </select>
+        <small class="setting-help">Different object types challenge various visual processing skills.</small>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
+        <input class="input" type="number" id="session-duration" min="1" max="10" value="3">
+        <small class="setting-help">1—10 minutes recommended.</small>
       </div>
 
       <div class="controls">
-        <button id="start-session" class="btn">Start</button>
-        <button id="pause-session" class="btn">Pause</button>
+        <button id="start-session" class="btn btn-primary">Start</button>
         <button id="restart-session" class="btn">Restart</button>
       </div>
     </aside>
 
-    <!-- RIGHT PANEL: GAME -->
-    <section class="panel play">
-      <div id="timer-bar"></div>
-      <div class="hud">
-        <div>Score: <span id="score">0</span></div>
-        <div>PB: <span id="personal-best">0</span></div>
-        <div>Difficulty: <span id="hud-difficulty">Medium</span></div>
-        <div>Time: <span id="time-remaining">3:00</span></div>
-        <div>Find: <span id="target-icon">🔍</span></div>
+    <!-- Game Screen -->
+    <section class="right-col" data-screen="game">
+      <!-- HUD Row -->
+      <div class="hud panel">
+        <div class="timer-bar" id="timer-bar"></div>
+
+        <div class="hud-group">
+          <div id="hud-score" class="hud-value">0</div>
+          <div class="hud-label">Score</div>
+        </div>
+
+        <div class="hud-group">
+          <div id="hud-pb" class="hud-value">0</div>
+          <div class="hud-label">Personal Best</div>
+        </div>
+
+        <div class="hud-group">
+          <div id="hud-hits" class="hud-value">0</div>
+          <div class="hud-label">Found</div>
+        </div>
+
+        <div class="hud-group">
+          <div id="hud-time" class="hud-value">3:00</div>
+          <div class="hud-label">Time Left</div>
+        </div>
+
+        <div class="controls">
+          <button id="pause-session" class="btn btn-secondary">Pause</button>
+          <button id="end-session" class="btn">End</button>
+        </div>
       </div>
-      
-      <div id="game-area">
+
+      <!-- Game Area -->
+      <div class="panel" id="game-container">
+        <div id="stars-container"></div>
+
+        <div class="target-display" id="target-display">
+          <span>Find:</span>
+          <div class="target-icon" id="target-icon">🔍</div>
+        </div>
+
+        <p class="instructions" id="instructions">
+          Scan the area below and click on the target object when you find it.
+        </p>
+
         <div id="scan-area">
-          <p>Click "Start" to begin your visual scanning session</p>
+          <span>Click "Start" to begin your visual scanning session</span>
         </div>
-        
-        <div id="completion-message">
-          <h2>Session Complete!</h2>
-          <p>Final Score: <span id="final-score">0</span></p>
-          <p>Time Taken: <span id="final-time">0s</span></p>
-          <p>Success Rate: <span id="final-rate">0%</span></p>
-          <div id="personal-best-message" style="display: none;">
-            <p class="xp-line">New Personal Best! 🎉</p>
+
+        <div class="focus-overlay" id="focus-overlay"></div>
+
+        <div class="stats-display" id="stats-display">
+          <div class="stat-item">
+            <div class="stat-value" id="accuracy-display">100%</div>
+            <div class="stat-label">Accuracy</div>
           </div>
-          <div id="reward-badge">🏅</div>
-          <button id="restart-button" class="btn">Start New Session</button>
+          <div class="stat-item">
+            <div class="stat-value" id="reaction-display">0ms</div>
+            <div class="stat-label">Avg Time</div>
+          </div>
         </div>
+
+        <div class="feedback-message hidden" id="feedback-message" role="status" aria-live="polite"></div>
       </div>
     </section>
   </main>
 
-  <!-- JS: Session + Gamification -->
-  <script type="module">
-    import { recordSession } from '/js/progress.js';
-    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
+  <div id="completion-message" class="completion panel">
+    <h2>Therapy Session Complete!</h2>
+    <div id="completion-scores">
+      <p>Targets Found: <span id="final-hits" class="score-highlight">0</span></p>
+      <p>Success Rate: <span id="final-accuracy" class="score-highlight">0%</span></p>
+      <p>Average Reaction Time: <span id="final-reaction" class="score-highlight">0ms</span></p>
+      <p>Visual Performance Score: <span id="final-score" class="score-highlight">0</span></p>
+      <p>XP Earned: <span id="final-xp" class="score-highlight">0</span></p>
+    </div>
+    <div class="controls">
+      <button id="restart-button" class="btn btn-primary">Start New Therapy Session</button>
+      <button class="btn" id="close-complete">Close</button>
+    </div>
+  </div>
 
-    // Use correct exercise ID from registry
-    const EXERCISE_ID = 'scanner';
-    
-    let score = 0;
-    let startTime = 0;
-    let sessionTimer = null;
-    let remainingTime = 0;
-    let isPaused = false;
-    let sessionActive = false;
-    let currentTarget = null;
-
-    // DOM elements
-    const startBtn = document.getElementById('start-session');
-    const pauseBtn = document.getElementById('pause-session');
-    const restartBtn = document.getElementById('restart-session');
-    const restartButtonInModal = document.getElementById('restart-button');
-    const difficultySelect = document.getElementById('difficulty');
-    const focusAreaSelect = document.getElementById('focus-area');
-    const objectTypeSelect = document.getElementById('object-type');
-    const sessionDurationInput = document.getElementById('session-duration');
-    
-    const hudDiff = document.getElementById('hud-difficulty');
-    const scoreEl = document.getElementById('score');
-    const pbEl = document.getElementById('personal-best');
-    const timeRemainingEl = document.getElementById('time-remaining');
-    const targetIconEl = document.getElementById('target-icon');
-    const timerBar = document.getElementById('timer-bar');
-    
-    const scanArea = document.getElementById('scan-area');
-    const completion = document.getElementById('completion-message');
-    const finalScore = document.getElementById('final-score');
-    const finalTime = document.getElementById('final-time');
-    const finalRate = document.getElementById('final-rate');
-    const personalBestMessage = document.getElementById('personal-best-message');
-
-    // Session Enhancement Integration
-    let sessionEnhancement;
-    try {
-      // Try to import session enhancement if available
-      const module = await import('/js/session-enhancement.js');
-      sessionEnhancement = module.default || module.sessionEnhancement;
-    } catch (e) {
-      console.log('Session enhancement not available, using fallback');
-      sessionEnhancement = {
-        initializeExercise: () => {},
-        handleSessionComplete: () => {},
-        personalBest: {
-          getBest: (id, diff) => parseInt(localStorage.getItem(`pb-${id}-${diff}`) || '0'),
-          setBest: (id, diff, score) => localStorage.setItem(`pb-${id}-${diff}`, score)
-        }
-      };
-    }
-
-    function getDifficulty() {
-      return difficultySelect.value;
-    }
-
-    function getSessionDuration() {
-      return parseInt(sessionDurationInput.value) * 60; // Convert to seconds
-    }
-
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function updateTimerDisplay() {
-      const totalDuration = getSessionDuration();
-      const progress = Math.max(0, remainingTime / totalDuration);
-      timerBar.style.width = `${progress * 100}%`;
-      timeRemainingEl.textContent = formatTime(remainingTime);
-    }
-
-    function loadPersonalBest() {
-      const difficulty = getDifficulty();
-      const personalBest = sessionEnhancement.personalBest.getBest(EXERCISE_ID, difficulty);
-      pbEl.textContent = personalBest;
-    }
-
-  <!-- JS: Session + Gamification -->
-  <script type="module">
-    import { recordSession } from '/js/progress.js';
-    import { checkAndUnlockAchievements, markExerciseTried } from '/js/achievements.js';
-
-    // Use correct exercise ID from registry
-    const EXERCISE_ID = 'scanner';
-    
-    let score = 0;
-    let startTime = 0;
-    let sessionTimer = null;
-    let remainingTime = 0;
-    let isPaused = false;
-    let sessionActive = false;
-    
-    // Gameplay state
-    let hits = 0;
-    let targetEl = null;
-    let currentTarget = null;
-
-    // DOM elements
-    const startBtn = document.getElementById('start-session');
-    const pauseBtn = document.getElementById('pause-session');
-    const restartBtn = document.getElementById('restart-session');
-    const restartButtonInModal = document.getElementById('restart-button');
-    const difficultySelect = document.getElementById('difficulty');
-    const focusAreaSelect = document.getElementById('focus-area');
-    const objectTypeSelect = document.getElementById('object-type');
-    const sessionDurationInput = document.getElementById('session-duration');
-    
-    const hudDiff = document.getElementById('hud-difficulty');
-    const scoreEl = document.getElementById('score');
-    const pbEl = document.getElementById('personal-best');
-    const timeRemainingEl = document.getElementById('time-remaining');
-    const targetIconEl = document.getElementById('target-icon');
-    const timerBar = document.getElementById('timer-bar');
-    
-    const scanArea = document.getElementById('scan-area');
-    const completion = document.getElementById('completion-message');
-    const finalScore = document.getElementById('final-score');
-    const finalTime = document.getElementById('final-time');
-    const finalRate = document.getElementById('final-rate');
-    const personalBestMessage = document.getElementById('personal-best-message');
-
-    // Target object sets
-    const TARGET_SETS = {
-      shapes: ['🔴','🔵','🟡','🟢','🟣','🟠','⭐','💎'],
-      letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
-      numbers: '0123456789'.split(''),
-      emoji: ['😀','😎','🎯','🎨','🎵','🎭','🎊','🎈']
-    };
-
-    // Session Enhancement Integration (with fallback)
-    let sessionEnhancement;
-    await (async () => {
-      try {
-        const module = await import('/js/session-enhancement.js');
-        sessionEnhancement = module.default || module.sessionEnhancement;
-      } catch (e) {
-        console.log('Session enhancement not available, using fallback');
-        sessionEnhancement = {
-          initializeExercise: () => {},
-          handleSessionComplete: () => {},
-          personalBest: {
-            getBest: (id, diff) => parseInt(localStorage.getItem(`pb-${id}-${diff}`) || '0'),
-            setBest: (id, diff, score) => localStorage.setItem(`pb-${id}-${diff}`, score)
-          }
-        };
-      }
-    })();
-
-    function getDifficulty() {
-      return difficultySelect.value;
-    }
-
-    function getSessionDuration() {
-      return parseInt(sessionDurationInput.value) * 60; // Convert to seconds
-    }
-
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function updateTimerDisplay() {
-      const totalDuration = getSessionDuration();
-      const progress = Math.max(0, remainingTime / totalDuration);
-      timerBar.style.width = `${progress * 100}%`;
-      timeRemainingEl.textContent = formatTime(remainingTime);
-    }
-
-    function loadPersonalBest() {
-      const difficulty = getDifficulty();
-      const personalBest = sessionEnhancement.personalBest.getBest(EXERCISE_ID, difficulty);
-      pbEl.textContent = personalBest;
-    }
-
-    function pickTarget() {
-      const list = TARGET_SETS[objectTypeSelect.value] || TARGET_SETS.shapes;
-      return list[Math.floor(Math.random() * list.length)];
-    }
-
-    // Returns a {x,y,width,height} region inside scanArea honoring focus-area
-    function focusRegion() {
-      const r = scanArea.getBoundingClientRect();
-      const pad = 16;
-      switch (focusAreaSelect.value) {
-        case 'left':   return { x:r.left+pad, y:r.top+pad, width:r.width/2-pad*2, height:r.height-pad*2 };
-        case 'right':  return { x:r.left+r.width/2+pad, y:r.top+pad, width:r.width/2-pad*2, height:r.height-pad*2 };
-        case 'top':    return { x:r.left+pad, y:r.top+pad, width:r.width-pad*2, height:r.height/2-pad*2 };
-        case 'bottom': return { x:r.left+pad, y:r.top+r.height/2+pad, width:r.width-pad*2, height:r.height/2-pad*2 };
-        default:       return { x:r.left+pad, y:r.top+pad, width:r.width-pad*2, height:r.height-pad*2 };
-      }
-    }
-
-    function clearTarget() {
-      if (targetEl?.parentNode) targetEl.parentNode.removeChild(targetEl);
-      targetEl = null;
-    }
-
-    // Spawn one target element at a random spot inside the focus region
-    function spawnTarget() {
-      clearTarget();
-      currentTarget = pickTarget();
-      targetIconEl.textContent = currentTarget;
-
-      const el = document.createElement('div');
-      el.className = 'visual-object';
-      el.textContent = currentTarget;
-
-  </main>
-
-  <!-- JS: Session + Gamification -->
-  </script>
-</body>
-</html>
+  <script>
