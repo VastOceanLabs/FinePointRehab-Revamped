@@ -879,9 +879,9 @@
     const restartBtn = document.getElementById('restart-session');
     const timerBarEl = document.getElementById('timer-bar');
     const scoreEl = document.getElementById('hud-score');
+    const scoreEl = document.getElementById('hud-score');
     const pbEl = document.getElementById('hud-pb');
     const pbSettingsEl = document.getElementById('pb-settings');
-    const syncRateEl = document.getElementById('hud-sync-rate'); // for completion modal
     const streakEl = document.getElementById('hud-streak');
     const timeEl = document.getElementById('hud-time');
     const progressDisplay = document.getElementById('progress-display');
@@ -910,7 +910,7 @@
 
     function updatePersonalBest() {
       const pb = getPB();
-      if (pbEl) pbEl.textContent = pb ? String(pb) : '—';
+      if (pbEl) pbEl.textContent = pb ? String(pb) : '0';
       if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
     }
 
