@@ -381,6 +381,22 @@
       user-select: none;
     }
 
+    .sort-object.number-type {
+      background: radial-gradient(circle at 30% 30%, #1a1f3a, #0f1629);
+      color: #ffffff;
+      border: 2px solid var(--brand-aqua);
+      font-weight: var(--font-weight-bold);
+      text-shadow: 0 0 4px rgba(111, 211, 245, 0.8);
+    }
+
+    .sort-object.letter-type {
+      background: radial-gradient(circle at 30% 30%, #252b47, #1a1f3a);
+      color: #ffffff;
+      border: 2px solid var(--brand-aqua);
+      font-weight: var(--font-weight-bold);
+      text-shadow: 0 0 4px rgba(111, 211, 245, 0.6);
+    }
+
     .sort-object:hover {
       transform: scale(1.05);
       box-shadow: 0 0 20px rgba(111, 211, 245, 0.6);
@@ -1156,9 +1172,19 @@
     function renderObjects(items, showHintsMode) {
       if (!objectsContainer) return;
       const frag = document.createDocumentFragment();
+      const currentType = categoryTypeSelect?.value || 'shapes';
+      
       items.forEach((it, idx) => {
         const ob = document.createElement('div');
         ob.className = 'sort-object';
+        
+        // Add type-specific classes for better contrast
+        if (currentType === 'numbers') {
+          ob.classList.add('number-type');
+        } else if (currentType === 'letters') {
+          ob.classList.add('letter-type');
+        }
+        
         ob.dataset.category = it.category;
         ob.dataset.index = String(idx);
         ob.setAttribute('tabindex', '0');
