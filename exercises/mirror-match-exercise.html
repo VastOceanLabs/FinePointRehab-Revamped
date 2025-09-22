@@ -1114,6 +1114,395 @@
       return points;
     }
 
+    function generateDiversePatterns(difficulty) {
+      const settings = difficultySetting[difficulty];
+      const patternLength = settings.patternLength;
+      const numPatterns = 10;
+      const sideWidth = containerWidth / 2;
+
+      for (let p = 0; p < numPatterns; p++) {
+        let available = patternTypes.filter(t => !usedPatternTypes.includes(t));
+        if (!available.length) { 
+          usedPatternTypes = []; 
+          available = [...patternTypes]; 
+        }
+        const type = available[Math.floor(Math.random() * available.length)];
+        usedPatternTypes.push(type);
+        if (usedPatternTypes.length > 3) usedPatternTypes.shift();
+        
+        const pts = generatePatternByType(type, patternLength, sideWidth, containerHeight);
+        patterns.push(pts);
+      }
+    }
+
+    function drawPatternPaths() {
+      // Left SVG
+      const lsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      lsvg.setAttribute("width", "100%");
+      lsvg.setAttribute("height", "100%");
+      lsvg.style.position = "absolute";
+      lsvg.style.top = "0";
+      lsvg.style.left = "0";
+      lsvg.style.pointerEvents = "none";
+
+      const lpath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      lpath.classList.add("mirror-path");
+      let d = "";
+      pattern.forEach((pt, i) => {
+        d += (i === 0 ? `M ${pt.x} ${pt.y} ` : `L ${pt.x} ${pt.y} `);
+      });
+      lpath.setAttribute("d", d);
+      lsvg.appendChild(lpath);
+      leftSide.appendChild(lsvg);
+
+      // Right SVG mirrored
+      const rsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      rsvg.setAttribute("width", "100%");
+      rsvg.setAttribute("height", "100%");
+      rsvg.style.position = "absolute";
+      rsvg.style.top = "0";
+      rsvg.style.left = "0";
+      rsvg.style.pointerEvents = "none";
+
+      const rpath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      rpath.classList.add("mirror-path");
+      d = "";
+      pattern.forEach((pt, i) => {
+        const mx = containerWidth / 2 - pt.x;
+        d += (i === 0 ? `M ${mx} ${pt.y} ` : `L ${mx} ${pt.y} `);
+      });
+      rpath.setAttribute("d", d);
+      rsvg.appendChild(rpath);
+      rightSide.appendChild(rsvg);
+    }
+
+    function createTargetPair() {
+      const point = pattern[currentTargetIndex];
+      if (!point) return;
+      
+      const targetSize = targetSizes[targetSizeSelect.value];
+      // Increase minimum size on mobile for better touch targets
+      const isMobile = window.innerWidth <= 768;
+      const actualSize = Math.max(targetSize, isMobile ? 48 : 44);
+
+      const leftTarget = document.createElement("div");
+      leftTarget.className = "mirror-target pulse";
+      leftTarget.style.width = `${actualSize}px`;
+      leftTarget.style.height = `${actualSize}px`;
+      leftTarget.style.left = `${point.x}px`;
+      leftTarget.style.top = `${point.y}px`;
+
+      const rightTarget = document.createElement("div");
+      rightTarget.className = "mirror-target pulse";
+      rightTarget.style.width = `${actualSize}px`;
+      rightTarget.style.height = `${actualSize}px`;
+      rightTarget.style.left = `${containerWidth / 2 - point.x}px`;
+      rightTarget.style.top = `${point.y}px`;
+
+      // Enhanced event listeners for better mobile support
+      leftTarget.addEventListener("touchstart", handleLeftTouch, { passive: false });
+      leftTarget.addEventListener("mousedown", handleLeftTouch);
+      leftTarget.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
+      
+      rightTarget.addEventListener("touchstart", handleRightTouch, { passive: false });
+      rightTarget.addEventListener("mousedown", handleRightTouch);
+      rightTarget.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
+
+      leftTarget.addEventListener("contextmenu", e => e.preventDefault());
+      rightTarget.addEventListener("contextmenu", e => e.preventDefault());
+
+      // Accessibility
+      makeTargetAccessible(leftTarget, `Left target ${currentTargetIndex + 1}`);
+      makeTargetAccessible(rightTarget, `Right target ${currentTargetIndex + 1}`);
+
+      leftSide.appendChild(leftTarget);
+      rightSide.appendChild(rightTarget);
+
+      currentTargets.left = leftTarget;
+      currentTargets.right = rightTarget;
+    }
+
+    function makeTargetAccessible(el, label) {
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', label);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        }
+      });
+    }
+
+    function showTouchIndicator(e, indicator) {
+      const rect = e.target.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      indicator.style.left = `${x}px`;
+      indicator.style.top = `${y}px`;
+      indicator.classList.add('active');
+      setTimeout(() => indicator.classList.remove('active'), 250);
+    }
+
+    function handleLeftTouch(e) {
+      if (!isSessionActive || leftTouched || isPaused) return;
+      e.preventDefault();
+      e.stopPropagation();
+      
+      showTouchIndicator(e, leftTouchIndicator);
+      leftTouched = true;
+      leftTouchTime = Date.now();
+      if (!rightTouched) lastTouchedSide = 'left';
+      currentTargets.left.classList.remove("pulse");
+      currentTargets.left.classList.add("touched");
+      checkTargetPair();
+    }
+
+    function handleRightTouch(e) {
+      if (!isSessionActive || rightTouched || isPaused) return;
+      e.preventDefault();
+      e.stopPropagation();
+      
+      showTouchIndicator(e, rightTouchIndicator);
+      rightTouched = true;
+      rightTouchTime = Date.now();
+      if (!leftTouched) lastTouchedSide = 'right';
+      currentTargets.right.classList.remove("pulse");
+      currentTargets.right.classList.add("touched");
+      checkTargetPair();
+    }
+
+    function checkTargetPair() {
+      if (!leftTouched || !rightTouched) return;
+
+      totalAttempts++;
+      const timeDiff = Math.abs(leftTouchTime - rightTouchTime);
+      const baseWindow = difficultySetting[difficultySelect.value].baseSync;
+      const usingAdaptive = (adaptiveTimingSelect.value === 'on');
+      const currentSyncWindow = usingAdaptive ? adaptiveSyncWindow : baseWindow;
+
+      const mode = mirrorModeSelect.value;
+      const isSimul = (mode === 'simultaneous');
+      
+      let isSync;
+      if (isSimul) {
+        isSync = (timeDiff < currentSyncWindow);
+      } else {
+        // Sequential mode: left then right, within window
+        const orderOK = lastTouchedSide === 'left';
+        const withinWindow = timeDiff < currentSyncWindow;
+        isSync = orderOK && withinWindow;
+      }
+
+      if (isSync) {
+        successfulAttempts++;
+        if (isSimul) {
+          syncTimes.push(timeDiff);
+        }
+
+        // Perfect sync handling (simultaneous only)
+        if (isSimul) {
+          const perfectThreshold = Math.min(80, Math.floor(currentSyncWindow * 0.25));
+          if (timeDiff <= perfectThreshold) {
+            currentTargets.left.classList.add("perfect-glow");
+            currentTargets.right.classList.add("perfect-glow");
+            perfectCount++;
+          }
+        }
+
+        // Feedback
+        const feedbackText = isSimul 
+          ? `Perfect! Sync time: ${timeDiff}ms` 
+          : `Excellent! Sequence completed.`;
+        showFeedback(feedbackText, 'success');
+
+        currentTargets.left.classList.remove("touched");
+        currentTargets.right.classList.remove("touched");
+        currentTargets.left.classList.add("completed");
+        currentTargets.right.classList.add("completed");
+
+        // Adaptive tuning (simultaneous only)
+        if (usingAdaptive && isSimul) {
+          if (timeDiff < adaptiveSyncWindow * 0.7) {
+            adaptiveSyncWindow = Math.max(200, adaptiveSyncWindow - 25);
+          } else if (timeDiff > adaptiveSyncWindow * 0.9) {
+            adaptiveSyncWindow = Math.min(1000, adaptiveSyncWindow + 10);
+          }
+        }
+
+        // Streak handling
+        streak += 1;
+        if (streak > bestStreak) bestStreak = streak;
+
+        // Progress to next target or pattern
+        currentTargetIndex++;
+        if (currentTargetIndex >= pattern.length) {
+          completePattern();
+        } else {
+          leftTouched = false;
+          rightTouched = false;
+          lastTouchedSide = null;
+          setTimeout(() => createTargetPair(), 350);
+        }
+      } else {
+        // Failure
+        let feedbackText;
+        if (isSimul) {
+          feedbackText = `Try again! Sync time: ${timeDiff}ms (need < ${currentSyncWindow}ms)`;
+        } else {
+          feedbackText = lastTouchedSide !== 'left' 
+            ? `Try again! Touch left first, then right within ${currentSyncWindow}ms`
+            : `Try again! Gap was ${timeDiff}ms (need < ${currentSyncWindow}ms)`;
+        }
+        showFeedback(feedbackText, 'error');
+        
+        currentTargets.left.classList.remove("touched");
+        currentTargets.right.classList.remove("touched");
+        currentTargets.left.classList.add("failed");
+        currentTargets.right.classList.add("failed");
+        streak = 0;
+
+        setTimeout(() => {
+          if (!currentTargets.left || !currentTargets.right) return;
+          currentTargets.left.classList.remove("failed");
+          currentTargets.right.classList.remove("failed");
+          currentTargets.left.classList.add("pulse");
+          currentTargets.right.classList.add("pulse");
+          leftTouched = false;
+          rightTouched = false;
+          lastTouchedSide = null;
+        }, 750);
+      }
+
+      updateStats();
+    }
+
+    function completePattern() {
+      patternsCompleted++;
+      const settings = difficultySetting[difficultySelect.value];
+      let patternScore = settings.pointsPerPattern;
+
+      // Bonus for good performance
+      const mode = mirrorModeSelect.value;
+      if (mode === 'simultaneous' && syncTimes.length >= pattern.length) {
+        const recent = syncTimes.slice(-pattern.length);
+        const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+        const currentSyncWindow = adaptiveTimingSelect.value === 'on' ? adaptiveSyncWindow : settings.baseSync;
+        
+        if (avg < currentSyncWindow * 0.5) patternScore *= 1.5;
+        else if (avg < currentSyncWindow * 0.75) patternScore *= 1.25;
+      }
+      
+      score += Math.round(patternScore);
+
+      // Mark path as completed
+      const leftPaths = leftSide.querySelectorAll(".mirror-path");
+      const rightPaths = rightSide.querySelectorAll(".mirror-path");
+      if (leftPaths.length && rightPaths.length) {
+        leftPaths[0].classList.add("completed");
+        rightPaths[0].classList.add("completed");
+      }
+
+      // Celebration animation
+      if (mirrorContainer) {
+        mirrorContainer.classList.add('mirror-celebrate');
+        setTimeout(() => mirrorContainer.classList.remove('mirror-celebrate'), 900);
+      }
+
+      updateStats();
+
+      currentPatternIndex++;
+      if (currentPatternIndex >= patterns.length) {
+        setTimeout(() => endSession(), 600);
+      } else {
+        setTimeout(() => startPattern(), 700);
+      }
+    }
+
+    function startPattern() {
+      if (!isSessionActive) return;
+      
+      clearMirrorArea();
+      leftTouched = false;
+      rightTouched = false;
+      lastTouchedSide = null;
+
+      pattern = patterns[currentPatternIndex];
+      if (!pattern) {
+        endSession();
+        return;
+      }
+
+      if (currentPatternEl) currentPatternEl.textContent = currentPatternIndex + 1;
+      drawPatternPaths();
+      currentTargetIndex = 0;
+      createTargetPair();
+    }
+
+    function showFeedback(message, type) {
+      if (feedbackTimeout) clearTimeout(feedbackTimeout);
+      if (feedbackMessage) {
+        feedbackMessage.textContent = message;
+        feedbackMessage.className = `feedback-message ${type}`;
+        feedbackMessage.classList.remove('hidden');
+        feedbackTimeout = setTimeout(() => feedbackMessage.classList.add('hidden'), 1800);
+      }
+    }
+
+    function endSession() {
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+
+      // Calculate final statistics
+      const averageTime = syncTimes.length 
+        ? Math.round(syncTimes.reduce((a, b) => a + b, 0) / syncTimes.length)
+        : 0;
+      const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
+
+      // Check for personal best
+      const previousPB = getPB();
+      let isNewPB = false;
+      if (score > previousPB) {
+        isNewPB = true;
+        setPB(score);
+        updatePersonalBest();
+      }
+
+      // Show completion modal
+      if (finalPatternsEl) finalPatternsEl.textContent = `${patternsCompleted}`;
+      if (finalSyncRateEl) finalSyncRateEl.textContent = `${syncRate}%`;
+      if (finalAvgSyncEl) finalAvgSyncEl.textContent = `${averageTime}ms`;
+      if (finalPerfectsEl) finalPerfectsEl.textContent = `${perfectCount}`;
+      if (finalScoreEl) finalScoreEl.textContent = `${score}`;
+      if (finalXPEl) finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
+      
+      // Add new PB indicator
+      const pbLine = document.getElementById('pb-line');
+      if (pbLine) {
+        pbLine.classList.toggle('hidden', !isNewPB);
+      } else if (isNewPB) {
+        // Create PB celebration line if it doesn't exist
+        const pbCelebration = document.createElement('p');
+        pbCelebration.id = 'pb-line';
+        pbCelebration.innerHTML = '🎉 <span class="score-highlight">New Personal Best!</span>';
+        pbCelebration.style.color = 'var(--brand-aqua)';
+        pbCelebration.style.fontWeight = 'var(--font-weight-bold)';
+        pbCelebration.style.textAlign = 'center';
+        pbCelebration.style.margin = '0 0 var(--space-3)';
+        if (finalXPEl && finalXPEl.parentElement) {
+          finalXPEl.parentElement.insertBefore(pbCelebration, finalXPEl.parentElement.lastElementChild);
+        }
+      }
+
+      if (completionModal) completionModal.classList.add('show');
+
+      // Clear the mirror area
+      clearMirrorArea();
+      
+      // Return to settings screen
+      setScreen('settings');
+    }
+
     // The rest of the JavaScript continues...
     function startSession() {
       if (isSessionActive) return;
