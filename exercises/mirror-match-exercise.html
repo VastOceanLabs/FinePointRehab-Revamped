@@ -1,876 +1,4 @@
-<p>Perfect Syncs: <span id="final-perfects" class="score-highlight">0</span></p>
-      <p>Motor Performance Score: <span id="final-score" class="score-highlight">0</span></p>
-      <p>XP Earned: <span id="final-xp" class="score-highlight">0</span></p>
-    </div>
-    <div class="controls">
-      <button id="restart-button" class="btn btn-primary">Start New Therapy Session</button>
-      <button class="btn" id="close-complete">Close</button>
-    </div>
-  </div>
-
-  <!-- Orientation hint for mobile users -->
-  <div class="orientation-hint">
-    <h3>🔄 Better Experience in Landscape</h3>
-    <p>For optimal bilateral coordination training, please rotate your device to landscape mode.</p>
-    <button class="btn btn-secondary" onclick="this.parentElement.style.display='none'">Continue Anyway</button>
-  </div>
-
-  <div id="error-message"></div>
-
-  <script>
-    // Simple storage utility
-    const storage = {
-      get: (key, defaultValue) => {
-        try {
-          const item = localStorage.getItem(key);
-          return item ? JSON.parse(item) : defaultValue;
-        } catch {
-          return defaultValue;
-        }
-      },
-      set: (key, value) => {
-        try {
-          localStorage.setItem(key, JSON.stringify(value));
-        } catch (e) {
-          console.error('Storage error:', e);
-        }
-      }
-    };
-
-    // Generate starfield
-    function generateStars(container, count = 150) {
-      if (!container) return;
-      container.innerHTML = '';
-      for (let i = 0; i < count; i++) {
-        const star = document.createElement('div');
-        star.style.position = 'absolute';
-        star.style.width = Math.random() * 3 + 'px';
-        star.style.height = star.style.width;
-        star.style.backgroundColor = 'white';
-        star.style.borderRadius = '50%';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.opacity = Math.random() * 0.8 + 0.2;
-        container.appendChild(star);
-      }
-    }
-
-    // DOM elements
-    const starsContainer = document.getElementById('stars-container');
-    const mirrorContainer = document.getElementById('mirror-container');
-    const difficultySelect = document.getElementById('difficulty-select');
-    const targetSizeSelect = document.getElementById('target-size-select');
-    const mirrorModeSelect = document.getElementById('mirror-mode-select');
-    const adaptiveTimingSelect = document.getElementById('adaptive-timing-select');
-    const sessionDurationInp = document.getElementById('session-duration');
-    const startBtn = document.getElementById('start-session');
-    const pauseBtn = document.getElementById('pause-session');
-    const restartBtn = document.getElementById('restart-session');
-    const timerBarEl = document.getElementById('timer-bar');
-    const hudScore = document.getElementById('hud-score');
-    const hudPB = document.getElementById('hud-pb');
-    const pbSettingsEl = document.getElementById('pb-settings');
-    const hudStreak = document.getElementById('hud-streak');
-    const hudTime = document.getElementById('hud-time');
-    const progressDisplay = document.getElementById('progress-display');
-    const currentPatternEl = document.getElementById('current-pattern');
-    const totalPatternsEl = document.getElementById('total-patterns');
-    const instructions = document.getElementById('instructions');
-    const mirrorArea = document.getElementById('mirror-area');
-    const leftSide = document.getElementById('left-side');
-    const rightSide = document.getElementById('right-side');
-    const feedbackMessage = document.getElementById('feedback-message');
-    const completionModal = document.getElementById('completion-message');
-    const finalPatternsEl = document.getElementById('final-patterns');
-    const finalSyncRateEl = document.getElementById('final-sync-rate');
-    const finalAvgSyncEl = document.getElementById('final-avg-sync');
-    const finalPerfectsEl = document.getElementById('final-perfects');
-    const finalScoreEl = document.getElementById('final-score');
-    const finalXPEl = document.getElementById('final-xp');
-    const completeClose = document.getElementById('close-complete');
-    const restartModalBtn = document.getElementById('restart-button');
-    const errorMessage = document.getElementById('error-message');
-
-    // Generate initial stars
-    generateStars(starsContainer, 150);
-
-    // Personal best tracking
-    const PB_KEY = 'mirror-match:best';
-    const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
-    const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
-
-    function updatePersonalBest() {
-      const pb = getPB();
-      if (hudPB) hudPB.textContent = pb ? String(pb) : '0';
-      if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
-    }
-
-    // Game state
-    let isSessionActive = false;
-    let isPaused = false;
-    let sessionMs = 3 * 60 * 1000;
-    let timeRemaining = 0;
-    let timerInterval = null;
-    let score = 0;
-    let patternsCompleted = 0;
-    let totalAttempts = 0;
-    let successfulAttempts = 0;
-    let syncTimes = [];
-    let currentPatternIndex = 0;
-    let currentTargetIndex = 0;
-    let pattern = [];
-    let patterns = [];
-    let usedPatternTypes = [];
-    let adaptiveSyncWindow = 500;
-    let leftTouched = false;
-    let rightTouched = false;
-    let leftTouchTime = 0;
-    let rightTouchTime = 0;
-    let lastTouchedSide = null;
-    let currentTargets = { left: null, right: null };
-    let feedbackTimeout = null;
-    let streak = 0;
-    let bestStreak = 0;
-    let perfectCount = 0;
-    let containerWidth = 800;
-    let containerHeight = 500;
-
-    // Game configuration
-    const targetSizes = { small: 40, medium: 55, large: 70 };
-    const difficultySetting = {
-      easy:   { pointsPerPattern: 100, patternLength: 3, timeLimit: 60000, baseSync: 750 },
-      medium: { pointsPerPattern: 200, patternLength: 5, timeLimit: 45000, baseSync: 500 },
-      hard:   { pointsPerPattern: 300, patternLength: 7, timeLimit: 30000, baseSync: 350 }
-    };
-    const patternTypes = ['random', 'circle', 'square', 'triangle', 'zigzag', 'line', 'spiral'];
-
-    // Touch indicators
-    const leftTouchIndicator = document.createElement('div');
-    leftTouchIndicator.classList.add('touch-indicator');
-    document.body.appendChild(leftTouchIndicator);
-
-    const rightTouchIndicator = document.createElement('div');
-    rightTouchIndicator.classList.add('touch-indicator');
-    document.body.appendChild(rightTouchIndicator);
-
-    // Event listeners and settings
-    if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
-    if (targetSizeSelect) targetSizeSelect.addEventListener('change', saveSettings);
-    if (mirrorModeSelect) mirrorModeSelect.addEventListener('change', () => {
-      saveSettings();
-      updateInstructionsText();
-    });
-    if (adaptiveTimingSelect) adaptiveTimingSelect.addEventListener('change', saveSettings);
-    if (sessionDurationInp) sessionDurationInp.addEventListener('input', saveSettings);
-
-    // Utility functions
-    function showError(msg) {
-      if (errorMessage) {
-        errorMessage.textContent = msg;
-        errorMessage.style.display = 'block';
-        setTimeout(() => errorMessage.style.display = 'none', 3000);
-      }
-    }
-
-    function saveSettings() {
-      if (difficultySelect) storage.set('mirrorDifficulty', difficultySelect.value);
-      if (targetSizeSelect) storage.set('mirrorTargetSize', targetSizeSelect.value);
-      if (mirrorModeSelect) storage.set('mirrorMode', mirrorModeSelect.value);
-      if (adaptiveTimingSelect) storage.set('mirrorAdaptiveTiming', adaptiveTimingSelect.value);
-      if (sessionDurationInp) storage.set('mirrorSessionDuration', sessionDurationInp.value);
-    }
-
-    function loadSettings() {
-      if (difficultySelect) difficultySelect.value = storage.get('mirrorDifficulty', 'medium');
-      if (targetSizeSelect) targetSizeSelect.value = storage.get('mirrorTargetSize', 'medium');
-      if (mirrorModeSelect) mirrorModeSelect.value = storage.get('mirrorMode', 'simultaneous');
-      if (adaptiveTimingSelect) adaptiveTimingSelect.value = storage.get('mirrorAdaptiveTiming', 'on');
-      if (sessionDurationInp) sessionDurationInp.value = storage.get('mirrorSessionDuration', 3);
-      updatePersonalBest();
-    }
-
-    function updateInstructionsText() {
-      if (!mirrorModeSelect) return;
-      const mode = mirrorModeSelect.value;
-      if (instructions) {
-        instructions.textContent = (mode === 'simultaneous')
-          ? 'Touch both circles simultaneously to complete each target pair.'
-          : 'Touch the left circle first, then the right circle to complete each target pair.';
-      }
-    }
-
-    function updateHUD() {
-      if (hudScore) hudScore.textContent = `${score}`;
-      if (hudPB) hudPB.textContent = `${getPB()}`;
-      if (hudStreak) hudStreak.textContent = `${streak}`;
-
-      const mins = Math.max(0, Math.floor(timeRemaining / 60000));
-      const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
-      if (hudTime) hudTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function updateStats() {
-      if (hudScore) hudScore.textContent = String(score);
-      if (hudPB) hudPB.textContent = String(getPB());
-      if (hudStreak) hudStreak.textContent = String(streak);
-    }
-
-    function startTimer() {
-      timerInterval = setInterval(() => {
-        timeRemaining -= 100;
-        const progress = Math.max(0, timeRemaining / sessionMs);
-        if (timerBarEl) timerBarEl.style.transform = `scaleX(${progress})`;
-        updateHUD();
-        if (timeRemaining <= 0) {
-          endSession();
-        }
-      }, 100);
-    }
-
-    function stopTimer() {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-
-    function clearMirrorArea() {
-      if (leftSide) leftSide.innerHTML = '';
-      if (rightSide) rightSide.innerHTML = '';
-      currentTargets = { left: null, right: null };
-    }
-
-    function adjustContainerSize() {
-      if (!mirrorContainer) return;
-      const containerStyle = window.getComputedStyle(mirrorContainer);
-      const newWidth = parseInt(containerStyle.width);
-      const newHeight = parseInt(containerStyle.height);
-      
-      if (newWidth > 0 && newHeight > 0) {
-        containerWidth = newWidth;
-        containerHeight = newHeight;
-      } else {
-        containerWidth = window.innerWidth <= 900 ? 320 : 800;
-        containerHeight = window.innerWidth <= 900 ? 200 : 500;
-      }
-    }
-
-    function generatePatternByType(type, length, sideWidth, areaHeight) {
-      const centerX = sideWidth / 2;
-      const centerY = areaHeight / 2;
-      const radius = Math.min(sideWidth, areaHeight) * 0.3;
-      let points = [];
-
-      switch (type) {
-        case 'circle':
-          for (let i = 0; i < length; i++) {
-            const a = (i / length) * 2 * Math.PI;
-            points.push({ x: centerX + Math.cos(a) * radius, y: centerY + Math.sin(a) * radius });
-          }
-          break;
-        case 'square': {
-          const s = radius * 1.5, h = s / 2;
-          const corners = [
-            { x: centerX - h, y: centerY - h }, { x: centerX + h, y: centerY - h },
-            { x: centerX + h, y: centerY + h }, { x: centerX - h, y: centerY + h }
-          ];
-          for (let i = 0; i < length; i++) points.push(corners[i % 4]);
-          break;
-        }
-        case 'triangle': {
-          const tri = [];
-          for (let i = 0; i < 3; i++) {
-            const a = (i / 3) * 2 * Math.PI - Math.PI / 2;
-            tri.push({ x: centerX + Math.cos(a) * radius, y: centerY + Math.sin(a) * radius });
-          }
-          for (let i = 0; i < length; i++) points.push(tri[i % 3]);
-          break;
-        }
-        case 'zigzag': {
-          const stepY = areaHeight / (length + 1);
-          for (let i = 0; i < length; i++) {
-            const y = stepY + i * stepY;
-            const x = (i % 2 === 0) ? sideWidth * 0.25 : sideWidth * 0.75;
-            points.push({ x, y });
-          }
-          break;
-        }
-        case 'line': {
-          const sx = sideWidth * 0.2, ex = sideWidth * 0.8;
-          const sy = areaHeight * 0.3, ey = areaHeight * 0.7;
-          for (let i = 0; i < length; i++) {
-            const t = i / (length - 1);
-            points.push({ x: sx + (ex - sx) * t, y: sy + (ey - sy) * t });
-          }
-          break;
-        }
-        case 'spiral':
-          for (let i = 0; i < length; i++) {
-            const a = (i / length) * 4 * Math.PI;
-            const r = (i / length) * radius;
-            points.push({ x: centerX + Math.cos(a) * r, y: centerY + Math.sin(a) * r });
-          }
-          break;
-        default: // random
-          for (let i = 0; i < length; i++) {
-            const x = Math.floor(Math.random() * (sideWidth - 100) + 50);
-            const y = Math.floor(Math.random() * (areaHeight - 100) + 50);
-            points.push({ x, y });
-          }
-      }
-      return points;
-    }
-
-    function generateDiversePatterns(difficulty) {
-      const settings = difficultySetting[difficulty];
-      const patternLength = settings.patternLength;
-      const numPatterns = 10;
-      const sideWidth = containerWidth / 2;
-
-      for (let p = 0; p < numPatterns; p++) {
-        let available = patternTypes.filter(t => !usedPatternTypes.includes(t));
-        if (!available.length) { 
-          usedPatternTypes = []; 
-          available = [...patternTypes]; 
-        }
-        const type = available[Math.floor(Math.random() * available.length)];
-        usedPatternTypes.push(type);
-        if (usedPatternTypes.length > 3) usedPatternTypes.shift();
-        
-        const pts = generatePatternByType(type, patternLength, sideWidth, containerHeight);
-        patterns.push(pts);
-      }
-    }
-
-    function drawPatternPaths() {
-      // Left SVG
-      const lsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      lsvg.setAttribute("width", "100%");
-      lsvg.setAttribute("height", "100%");
-      lsvg.style.position = "absolute";
-      lsvg.style.top = "0";
-      lsvg.style.left = "0";
-      lsvg.style.pointerEvents = "none";
-
-      const lpath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      lpath.classList.add("mirror-path");
-      let d = "";
-      pattern.forEach((pt, i) => {
-        d += (i === 0 ? `M ${pt.x} ${pt.y} ` : `L ${pt.x} ${pt.y} `);
-      });
-      lpath.setAttribute("d", d);
-      lsvg.appendChild(lpath);
-      leftSide.appendChild(lsvg);
-
-      // Right SVG mirrored
-      const rsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      rsvg.setAttribute("width", "100%");
-      rsvg.setAttribute("height", "100%");
-      rsvg.style.position = "absolute";
-      rsvg.style.top = "0";
-      rsvg.style.left = "0";
-      rsvg.style.pointerEvents = "none";
-
-      const rpath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      rpath.classList.add("mirror-path");
-      d = "";
-      pattern.forEach((pt, i) => {
-        const mx = containerWidth / 2 - pt.x;
-        d += (i === 0 ? `M ${mx} ${pt.y} ` : `L ${mx} ${pt.y} `);
-      });
-      rpath.setAttribute("d", d);
-      rsvg.appendChild(rpath);
-      rightSide.appendChild(rsvg);
-    }
-
-    function createTargetPair() {
-      const point = pattern[currentTargetIndex];
-      if (!point) return;
-      
-      const targetSize = targetSizes[targetSizeSelect.value];
-      // Increase minimum size on mobile for better touch targets
-      const isMobile = window.innerWidth <= 768;
-      const actualSize = Math.max(targetSize, isMobile ? 48 : 44);
-
-      const leftTarget = document.createElement("div");
-      leftTarget.className = "mirror-target pulse";
-      leftTarget.style.width = `${actualSize}px`;
-      leftTarget.style.height = `${actualSize}px`;
-      leftTarget.style.left = `${point.x}px`;
-      leftTarget.style.top = `${point.y}px`;
-
-      const rightTarget = document.createElement("div");
-      rightTarget.className = "mirror-target pulse";
-      rightTarget.style.width = `${actualSize}px`;
-      rightTarget.style.height = `${actualSize}px`;
-      rightTarget.style.left = `${containerWidth / 2 - point.x}px`;
-      rightTarget.style.top = `${point.y}px`;
-
-      // Enhanced event listeners for better mobile support
-      leftTarget.addEventListener("touchstart", handleLeftTouch, { passive: false });
-      leftTarget.addEventListener("mousedown", handleLeftTouch);
-      leftTarget.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
-      
-      rightTarget.addEventListener("touchstart", handleRightTouch, { passive: false });
-      rightTarget.addEventListener("mousedown", handleRightTouch);
-      rightTarget.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
-
-      leftTarget.addEventListener("contextmenu", e => e.preventDefault());
-      rightTarget.addEventListener("contextmenu", e => e.preventDefault());
-
-      // Accessibility
-      makeTargetAccessible(leftTarget, `Left target ${currentTargetIndex + 1}`);
-      makeTargetAccessible(rightTarget, `Right target ${currentTargetIndex + 1}`);
-
-      leftSide.appendChild(leftTarget);
-      rightSide.appendChild(rightTarget);
-
-      currentTargets.left = leftTarget;
-      currentTargets.right = rightTarget;
-    }
-
-    function makeTargetAccessible(el, label) {
-      el.setAttribute('role', 'button');
-      el.setAttribute('tabindex', '0');
-      el.setAttribute('aria-label', label);
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
-          e.preventDefault();
-          el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        }
-      });
-    }
-
-    function showTouchIndicator(e, indicator) {
-      const rect = e.target.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top + rect.height / 2;
-      indicator.style.left = `${x}px`;
-      indicator.style.top = `${y}px`;
-      indicator.classList.add('active');
-      setTimeout(() => indicator.classList.remove('active'), 250);
-    }
-
-    function handleLeftTouch(e) {
-      if (!isSessionActive || leftTouched || isPaused) return;
-      e.preventDefault();
-      e.stopPropagation();
-      
-      showTouchIndicator(e, leftTouchIndicator);
-      leftTouched = true;
-      leftTouchTime = Date.now();
-      if (!rightTouched) lastTouchedSide = 'left';
-      currentTargets.left.classList.remove("pulse");
-      currentTargets.left.classList.add("touched");
-      checkTargetPair();
-    }
-
-    function handleRightTouch(e) {
-      if (!isSessionActive || rightTouched || isPaused) return;
-      e.preventDefault();
-      e.stopPropagation();
-      
-      showTouchIndicator(e, rightTouchIndicator);
-      rightTouched = true;
-      rightTouchTime = Date.now();
-      if (!leftTouched) lastTouchedSide = 'right';
-      currentTargets.right.classList.remove("pulse");
-      currentTargets.right.classList.add("touched");
-      checkTargetPair();
-    }
-
-    function checkTargetPair() {
-      if (!leftTouched || !rightTouched) return;
-
-      totalAttempts++;
-      const timeDiff = Math.abs(leftTouchTime - rightTouchTime);
-      const difficulty = difficultySelect ? difficultySelect.value : 'medium';
-      const baseWindow = difficultySetting[difficulty] ? difficultySetting[difficulty].baseSync : 500;
-      const usingAdaptive = adaptiveTimingSelect ? (adaptiveTimingSelect.value === 'on') : true;
-      const currentSyncWindow = usingAdaptive ? adaptiveSyncWindow : baseWindow;
-
-      const mode = mirrorModeSelect ? mirrorModeSelect.value : 'simultaneous';
-      const isSimul = (mode === 'simultaneous');
-      
-      let isSync;
-      if (isSimul) {
-        isSync = (timeDiff < currentSyncWindow);
-      } else {
-        // Sequential mode: left then right, within window
-        const orderOK = lastTouchedSide === 'left';
-        const withinWindow = timeDiff < currentSyncWindow;
-        isSync = orderOK && withinWindow;
-      }
-
-      if (isSync) {
-        successfulAttempts++;
-        if (isSimul) {
-          syncTimes.push(timeDiff);
-        }
-
-        // Perfect sync handling (simultaneous only)
-        if (isSimul) {
-          const perfectThreshold = Math.min(80, Math.floor(currentSyncWindow * 0.25));
-          if (timeDiff <= perfectThreshold) {
-            if (currentTargets.left) currentTargets.left.classList.add("perfect-glow");
-            if (currentTargets.right) currentTargets.right.classList.add("perfect-glow");
-            perfectCount++;
-          }
-        }
-
-        // Feedback
-        const feedbackText = isSimul 
-          ? `Perfect! Sync time: ${timeDiff}ms` 
-          : `Excellent! Sequence completed.`;
-        showFeedback(feedbackText, 'success');
-
-        if (currentTargets.left) {
-          currentTargets.left.classList.remove("touched");
-          currentTargets.left.classList.add("completed");
-        }
-        if (currentTargets.right) {
-          currentTargets.right.classList.remove("touched");
-          currentTargets.right.classList.add("completed");
-        }
-
-        // Adaptive tuning (simultaneous only)
-        if (usingAdaptive && isSimul) {
-          if (timeDiff < adaptiveSyncWindow * 0.7) {
-            adaptiveSyncWindow = Math.max(200, adaptiveSyncWindow - 25);
-          } else if (timeDiff > adaptiveSyncWindow * 0.9) {
-            adaptiveSyncWindow = Math.min(1000, adaptiveSyncWindow + 10);
-          }
-        }
-
-        // Streak handling
-        streak += 1;
-        if (streak > bestStreak) bestStreak = streak;
-
-        // Progress to next target or pattern
-        currentTargetIndex++;
-        if (currentTargetIndex >= pattern.length) {
-          completePattern();
-        } else {
-          leftTouched = false;
-          rightTouched = false;
-          lastTouchedSide = null;
-          setTimeout(() => createTargetPair(), 350);
-        }
-      } else {
-        // Failure
-        let feedbackText;
-        if (isSimul) {
-          feedbackText = `Try again! Sync time: ${timeDiff}ms (need < ${currentSyncWindow}ms)`;
-        } else {
-          feedbackText = lastTouchedSide !== 'left' 
-            ? `Try again! Touch left first, then right within ${currentSyncWindow}ms`
-            : `Try again! Gap was ${timeDiff}ms (need < ${currentSyncWindow}ms)`;
-        }
-        showFeedback(feedbackText, 'error');
-        
-        if (currentTargets.left) {
-          currentTargets.left.classList.remove("touched");
-          currentTargets.left.classList.add("failed");
-        }
-        if (currentTargets.right) {
-          currentTargets.right.classList.remove("touched");
-          currentTargets.right.classList.add("failed");
-        }
-        streak = 0;
-
-        setTimeout(() => {
-          if (!currentTargets.left || !currentTargets.right) return;
-          currentTargets.left.classList.remove("failed");
-          currentTargets.right.classList.remove("failed");
-          currentTargets.left.classList.add("pulse");
-          currentTargets.right.classList.add("pulse");
-          leftTouched = false;
-          rightTouched = false;
-          lastTouchedSide = null;
-        }, 750);
-      }
-
-      updateStats();
-    }
-
-    function completePattern() {
-      patternsCompleted++;
-      const settings = difficultySetting[difficultySelect.value];
-      let patternScore = settings.pointsPerPattern;
-
-      // Bonus for good performance
-      const mode = mirrorModeSelect.value;
-      if (mode === 'simultaneous' && syncTimes.length >= pattern.length) {
-        const recent = syncTimes.slice(-pattern.length);
-        const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
-        const currentSyncWindow = adaptiveTimingSelect.value === 'on' ? adaptiveSyncWindow : settings.baseSync;
-        
-        if (avg < currentSyncWindow * 0.5) patternScore *= 1.5;
-        else if (avg < currentSyncWindow * 0.75) patternScore *= 1.25;
-      }
-      
-      score += Math.round(patternScore);
-
-      // Mark path as completed
-      const leftPaths = leftSide.querySelectorAll(".mirror-path");
-      const rightPaths = rightSide.querySelectorAll(".mirror-path");
-      if (leftPaths.length && rightPaths.length) {
-        leftPaths[0].classList.add("completed");
-        rightPaths[0].classList.add("completed");
-      }
-
-      // Celebration animation
-      if (mirrorContainer) {
-        mirrorContainer.classList.add('mirror-celebrate');
-        setTimeout(() => mirrorContainer.classList.remove('mirror-celebrate'), 900);
-      }
-
-      updateStats();
-
-      currentPatternIndex++;
-      if (currentPatternIndex >= patterns.length) {
-        setTimeout(() => endSession(), 600);
-      } else {
-        setTimeout(() => startPattern(), 700);
-      }
-    }
-
-    function startPattern() {
-      if (!isSessionActive) return;
-      
-      clearMirrorArea();
-      leftTouched = false;
-      rightTouched = false;
-      lastTouchedSide = null;
-
-      pattern = patterns[currentPatternIndex];
-      if (!pattern) {
-        endSession();
-        return;
-      }
-
-      if (currentPatternEl) currentPatternEl.textContent = currentPatternIndex + 1;
-      drawPatternPaths();
-      currentTargetIndex = 0;
-      createTargetPair();
-    }
-
-    function showFeedback(message, type) {
-      if (feedbackTimeout) clearTimeout(feedbackTimeout);
-      if (feedbackMessage) {
-        feedbackMessage.textContent = message;
-        feedbackMessage.className = `feedback-message ${type}`;
-        feedbackMessage.classList.remove('hidden');
-        feedbackTimeout = setTimeout(() => feedbackMessage.classList.add('hidden'), 1800);
-      }
-    }
-
-    function endSession() {
-      if (timerInterval) stopTimer();
-      isSessionActive = false;
-
-      // Calculate final statistics
-      const averageTime = syncTimes.length 
-        ? Math.round(syncTimes.reduce((a, b) => a + b, 0) / syncTimes.length)
-        : 0;
-      const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
-
-      // Check for personal best
-      const previousPB = getPB();
-      let isNewPB = false;
-      if (score > previousPB) {
-        isNewPB = true;
-        setPB(score);
-        updatePersonalBest();
-      }
-
-      // Show completion modal
-      if (finalPatternsEl) finalPatternsEl.textContent = `${patternsCompleted}`;
-      if (finalSyncRateEl) finalSyncRateEl.textContent = `${syncRate}%`;
-      if (finalAvgSyncEl) finalAvgSyncEl.textContent = `${averageTime}ms`;
-      if (finalPerfectsEl) finalPerfectsEl.textContent = `${perfectCount}`;
-      if (finalScoreEl) finalScoreEl.textContent = `${score}`;
-      if (finalXPEl) finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
-      
-      // Add new PB indicator
-      const pbLine = document.getElementById('pb-line');
-      if (pbLine) {
-        pbLine.classList.toggle('hidden', !isNewPB);
-      } else if (isNewPB) {
-        // Create PB celebration line if it doesn't exist
-        const pbCelebration = document.createElement('p');
-        pbCelebration.id = 'pb-line';
-        pbCelebration.innerHTML = '🎉 <span class="score-highlight">New Personal Best!</span>';
-        pbCelebration.style.color = 'var(--brand-aqua)';
-        pbCelebration.style.fontWeight = 'var(--font-weight-bold)';
-        pbCelebration.style.textAlign = 'center';
-        pbCelebration.style.margin = '0 0 var(--space-3)';
-        if (finalXPEl && finalXPEl.parentElement) {
-          finalXPEl.parentElement.insertBefore(pbCelebration, finalXPEl.parentElement.lastElementChild);
-        }
-      }
-
-      if (completionModal) completionModal.classList.add('show');
-
-      // Clear the mirror area
-      clearMirrorArea();
-      
-      // Return to settings screen
-      setScreen('settings');
-    }
-
-    // Session management
-    function startSession() {
-      if (isSessionActive) return;
-      if (timerInterval) stopTimer();
-      
-      try {
-        const difficulty = difficultySelect ? difficultySelect.value : 'medium';
-        const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp ? sessionDurationInp.value : 3) || 3));
-        sessionMs = minutes * 60 * 1000;
-        if (sessionDurationInp) sessionDurationInp.value = minutes;
-        
-        saveSettings();
-
-        // Reset state
-        score = 0;
-        patternsCompleted = 0;
-        totalAttempts = 0;
-        successfulAttempts = 0;
-        syncTimes = [];
-        perfectCount = 0;
-        streak = 0;
-        bestStreak = 0;
-        currentPatternIndex = 0;
-        currentTargetIndex = 0;
-        pattern = [];
-        patterns = [];
-        usedPatternTypes = [];
-        adaptiveSyncWindow = difficultySetting[difficulty] ? difficultySetting[difficulty].baseSync : 500;
-        timeRemaining = sessionMs;
-        isPaused = false;
-
-        clearMirrorArea();
-        updateHUD();
-
-        // Switch to game screen and initialize
-        setScreen('game');
-
-        // Start session
-        isSessionActive = true;
-        startTimer();
-        updatePersonalBest();
-        
-        // Wait a frame for the screen transition, then generate patterns
-        setTimeout(() => {
-          try {
-            adjustContainerSize();
-            generateDiversePatterns(difficulty);
-            if (totalPatternsEl) totalPatternsEl.textContent = patterns.length;
-            updateInstructionsText();
-            startPattern();
-            if (mirrorContainer) mirrorContainer.focus();
-          } catch (error) {
-            console.error('Error generating patterns:', error);
-            showError('Failed to generate patterns: ' + error.message);
-          }
-        }, 100);
-      } catch (e) {
-        console.error(e);
-        showError('Failed to start session: ' + e.message);
-      }
-    }
-
-    // Screen management
-    function setScreen(screenName) {
-      document.querySelectorAll('[data-screen]').forEach(el => {
-        el.classList.remove('active');
-      });
-      const screen = document.querySelector(`[data-screen="${screenName}"]`);
-      if (screen) screen.classList.add('active');
-    }
-
-    // Event Listeners
-    if (startBtn) startBtn.addEventListener('click', startSession);
-
-    if (pauseBtn) pauseBtn.addEventListener('click', () => {
-      if (!isSessionActive) return;
-      isPaused = !isPaused;
-      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
-      if (isPaused) {
-        stopTimer();
-        if (mirrorArea) mirrorArea.classList.add('is-paused');
-      } else {
-        startTimer();
-        if (mirrorArea) mirrorArea.classList.remove('is-paused');
-        if (mirrorContainer) mirrorContainer.focus();
-      }
-    });
-
-    // Add end session button handler
-    const endBtn = document.getElementById('end-session');
-    if (endBtn) endBtn.addEventListener('click', () => {
-      endSession();
-    });
-
-    if (restartBtn) restartBtn.addEventListener('click', () => {
-      if (timerInterval) stopTimer();
-      isSessionActive = false;
-      isPaused = false;
-      setScreen('settings');
-    });
-
-    if (restartModalBtn) restartModalBtn.addEventListener('click', () => {
-      if (completionModal) completionModal.classList.remove('show');
-      setScreen('settings');
-    });
-
-    if (completeClose) completeClose.addEventListener('click', () => {
-      if (completionModal) completionModal.classList.remove('show');
-      setScreen('settings');
-    });
-
-    // Enhanced mobile gesture handling
-    document.addEventListener('touchstart', (ev) => { 
-      if (ev.touches.length > 1) ev.preventDefault(); 
-    }, { passive: false });
-    
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (ev) => {
-      const now = Date.now();
-      if (now - lastTouchEnd <= 300) ev.preventDefault();
-      lastTouchEnd = now;
-    }, { passive: false });
-    
-    document.addEventListener('gesturestart', (ev) => ev.preventDefault());
-    document.addEventListener('contextmenu', e => e.preventDefault());
-
-    // Resize handling
-    window.addEventListener('resize', () => {
-      if (!isSessionActive) return;
-      adjustContainerSize();
-      if (pattern && pattern.length) {
-        const type = usedPatternTypes[usedPatternTypes.length - 1] || 'random';
-        const newPattern = generatePatternByType(type, pattern.length, containerWidth / 2, containerHeight);
-        patterns[currentPatternIndex] = newPattern;
-        pattern = newPattern;
-        clearMirrorArea();
-        drawPatternPaths();
-        if (currentTargetIndex < pattern.length) createTargetPair();
-      }
-    });
-
-    // Initialize
-    loadSettings();
-    updateHUD();
-    updateInstructionsText();
-    setScreen('settings');
-
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', () => {
-      if (timerInterval) stopTimer();
-    });
-  </script>
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1683,4 +811,694 @@
       <p>Patterns Completed: <span id="final-patterns" class="score-highlight">0</span></p>
       <p>Success Rate: <span id="final-sync-rate" class="score-highlight">0%</span></p>
       <p>Average Sync Time: <span id="final-avg-sync" class="score-highlight">0ms</span></p>
-      <p>Perfect Syn
+      <p>Perfect Syncs: <span id="final-perfects" class="score-highlight">0</span></p>
+      <p>Motor Performance Score: <span id="final-score" class="score-highlight">0</span></p>
+      <p>XP Earned: <span id="final-xp" class="score-highlight">0</span></p>
+    </div>
+    <div class="controls">
+      <button id="restart-button" class="btn btn-primary">Start New Therapy Session</button>
+      <button class="btn" id="close-complete">Close</button>
+    </div>
+  </div>
+
+  <!-- Orientation hint for mobile users -->
+  <div class="orientation-hint">
+    <h3>🔄 Better Experience in Landscape</h3>
+    <p>For optimal bilateral coordination training, please rotate your device to landscape mode.</p>
+    <button class="btn btn-secondary" onclick="this.parentElement.style.display='none'">Continue Anyway</button>
+  </div>
+
+  <div id="error-message"></div>
+
+  <script>
+    // Simple storage utility
+    const storage = {
+      get: (key, defaultValue) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch {
+          return defaultValue;
+        }
+      },
+      set: (key, value) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          console.error('Storage error:', e);
+        }
+      }
+    };
+
+    // Generate starfield
+    function generateStars(container, count = 150) {
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.style.position = 'absolute';
+        star.style.width = Math.random() * 3 + 'px';
+        star.style.height = star.style.width;
+        star.style.backgroundColor = 'white';
+        star.style.borderRadius = '50%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.opacity = Math.random() * 0.8 + 0.2;
+        container.appendChild(star);
+      }
+    }
+
+    // DOM elements
+    const starsContainer = document.getElementById('stars-container');
+    const mirrorContainer = document.getElementById('mirror-container');
+    const difficultySelect = document.getElementById('difficulty-select');
+    const targetSizeSelect = document.getElementById('target-size-select');
+    const mirrorModeSelect = document.getElementById('mirror-mode-select');
+    const adaptiveTimingSelect = document.getElementById('adaptive-timing-select');
+    const sessionDurationInp = document.getElementById('session-duration');
+    const startBtn = document.getElementById('start-session');
+    const pauseBtn = document.getElementById('pause-session');
+    const restartBtn = document.getElementById('restart-session');
+    const timerBarEl = document.getElementById('timer-bar');
+    const hudScore = document.getElementById('hud-score');
+    const hudPB = document.getElementById('hud-pb');
+    const pbSettingsEl = document.getElementById('pb-settings');
+    const hudStreak = document.getElementById('hud-streak');
+    const hudTime = document.getElementById('hud-time');
+    const progressDisplay = document.getElementById('progress-display');
+    const currentPatternEl = document.getElementById('current-pattern');
+    const totalPatternsEl = document.getElementById('total-patterns');
+    const instructions = document.getElementById('instructions');
+    const mirrorArea = document.getElementById('mirror-area');
+    const leftSide = document.getElementById('left-side');
+    const rightSide = document.getElementById('right-side');
+    const feedbackMessage = document.getElementById('feedback-message');
+    const completionModal = document.getElementById('completion-message');
+    const finalPatternsEl = document.getElementById('final-patterns');
+    const finalSyncRateEl = document.getElementById('final-sync-rate');
+    const finalAvgSyncEl = document.getElementById('final-avg-sync');
+    const finalPerfectsEl = document.getElementById('final-perfects');
+    const finalScoreEl = document.getElementById('final-score');
+    const finalXPEl = document.getElementById('final-xp');
+    const completeClose = document.getElementById('close-complete');
+    const restartModalBtn = document.getElementById('restart-button');
+    const errorMessage = document.getElementById('error-message');
+
+    // Generate initial stars
+    generateStars(starsContainer, 150);
+
+    // Personal best tracking
+    const PB_KEY = 'mirror-match:best';
+    const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
+    const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
+
+    function updatePersonalBest() {
+      const pb = getPB();
+      if (hudPB) hudPB.textContent = pb ? String(pb) : '0';
+      if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
+    }
+
+    // Game state
+    let isSessionActive = false;
+    let isPaused = false;
+    let sessionMs = 3 * 60 * 1000;
+    let timeRemaining = 0;
+    let timerInterval = null;
+    let score = 0;
+    let patternsCompleted = 0;
+    let totalAttempts = 0;
+    let successfulAttempts = 0;
+    let syncTimes = [];
+    let currentPatternIndex = 0;
+    let currentTargetIndex = 0;
+    let pattern = [];
+    let patterns = [];
+    let usedPatternTypes = [];
+    let adaptiveSyncWindow = 500;
+    let leftTouched = false;
+    let rightTouched = false;
+    let leftTouchTime = 0;
+    let rightTouchTime = 0;
+    let lastTouchedSide = null;
+    let currentTargets = { left: null, right: null };
+    let feedbackTimeout = null;
+    let streak = 0;
+    let bestStreak = 0;
+    let perfectCount = 0;
+    let containerWidth = 800;
+    let containerHeight = 500;
+
+    // Game configuration
+    const targetSizes = { small: 40, medium: 55, large: 70 };
+    const difficultySetting = {
+      easy:   { pointsPerPattern: 100, patternLength: 3, timeLimit: 60000, baseSync: 750 },
+      medium: { pointsPerPattern: 200, patternLength: 5, timeLimit: 45000, baseSync: 500 },
+      hard:   { pointsPerPattern: 300, patternLength: 7, timeLimit: 30000, baseSync: 350 }
+    };
+    const patternTypes = ['random', 'circle', 'square', 'triangle', 'zigzag', 'line', 'spiral'];
+
+    // Touch indicators
+    const leftTouchIndicator = document.createElement('div');
+    leftTouchIndicator.classList.add('touch-indicator');
+    document.body.appendChild(leftTouchIndicator);
+
+    const rightTouchIndicator = document.createElement('div');
+    rightTouchIndicator.classList.add('touch-indicator');
+    document.body.appendChild(rightTouchIndicator);
+
+    // Utility functions
+    function showError(msg) {
+      if (errorMessage) {
+        errorMessage.textContent = msg;
+        errorMessage.style.display = 'block';
+        setTimeout(() => errorMessage.style.display = 'none', 3000);
+      }
+    }
+
+    function saveSettings() {
+      if (difficultySelect) storage.set('mirrorDifficulty', difficultySelect.value);
+      if (targetSizeSelect) storage.set('mirrorTargetSize', targetSizeSelect.value);
+      if (mirrorModeSelect) storage.set('mirrorMode', mirrorModeSelect.value);
+      if (adaptiveTimingSelect) storage.set('mirrorAdaptiveTiming', adaptiveTimingSelect.value);
+      if (sessionDurationInp) storage.set('mirrorSessionDuration', sessionDurationInp.value);
+    }
+
+    function loadSettings() {
+      if (difficultySelect) difficultySelect.value = storage.get('mirrorDifficulty', 'medium');
+      if (targetSizeSelect) targetSizeSelect.value = storage.get('mirrorTargetSize', 'medium');
+      if (mirrorModeSelect) mirrorModeSelect.value = storage.get('mirrorMode', 'simultaneous');
+      if (adaptiveTimingSelect) adaptiveTimingSelect.value = storage.get('mirrorAdaptiveTiming', 'on');
+      if (sessionDurationInp) sessionDurationInp.value = storage.get('mirrorSessionDuration', 3);
+      updatePersonalBest();
+    }
+
+    function updateInstructionsText() {
+      if (!mirrorModeSelect) return;
+      const mode = mirrorModeSelect.value;
+      if (instructions) {
+        instructions.textContent = (mode === 'simultaneous')
+          ? 'Touch both circles simultaneously to complete each target pair.'
+          : 'Touch the left circle first, then the right circle to complete each target pair.';
+      }
+    }
+
+    function updateHUD() {
+      if (hudScore) hudScore.textContent = `${score}`;
+      if (hudPB) hudPB.textContent = `${getPB()}`;
+      if (hudStreak) hudStreak.textContent = `${streak}`;
+
+      const mins = Math.max(0, Math.floor(timeRemaining / 60000));
+      const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
+      if (hudTime) hudTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateStats() {
+      if (hudScore) hudScore.textContent = String(score);
+      if (hudPB) hudPB.textContent = String(getPB());
+      if (hudStreak) hudStreak.textContent = String(streak);
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeRemaining -= 100;
+        const progress = Math.max(0, timeRemaining / sessionMs);
+        if (timerBarEl) timerBarEl.style.transform = `scaleX(${progress})`;
+        updateHUD();
+        if (timeRemaining <= 0) {
+          endSession();
+        }
+      }, 100);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    function clearMirrorArea() {
+      if (leftSide) leftSide.innerHTML = '';
+      if (rightSide) rightSide.innerHTML = '';
+      currentTargets = { left: null, right: null };
+    }
+
+    function adjustContainerSize() {
+      if (!mirrorContainer) return;
+      const containerStyle = window.getComputedStyle(mirrorContainer);
+      const newWidth = parseInt(containerStyle.width);
+      const newHeight = parseInt(containerStyle.height);
+      
+      if (newWidth > 0 && newHeight > 0) {
+        containerWidth = newWidth;
+        containerHeight = newHeight;
+      } else {
+        containerWidth = window.innerWidth <= 900 ? 320 : 800;
+        containerHeight = window.innerWidth <= 900 ? 200 : 500;
+      }
+    }
+
+    // Screen management
+    function setScreen(screenName) {
+      document.querySelectorAll('[data-screen]').forEach(el => {
+        el.classList.remove('active');
+      });
+      const screen = document.querySelector(`[data-screen="${screenName}"]`);
+      if (screen) screen.classList.add('active');
+    }
+
+    // Session management
+    function startSession() {
+      if (isSessionActive) return;
+      console.log('Starting session...');
+      
+      const difficulty = difficultySelect?.value || 'medium';
+      const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp?.value) || 3));
+      sessionMs = minutes * 60 * 1000;
+      
+      // Reset game state
+      score = 0;
+      patternsCompleted = 0;
+      totalAttempts = 0;
+      successfulAttempts = 0;
+      syncTimes = [];
+      perfectCount = 0;
+      streak = 0;
+      bestStreak = 0;
+      currentPatternIndex = 0;
+      currentTargetIndex = 0;
+      pattern = [];
+      patterns = [];
+      usedPatternTypes = [];
+      adaptiveSyncWindow = difficultySetting[difficulty]?.baseSync || 500;
+      timeRemaining = sessionMs;
+      isPaused = false;
+
+      clearMirrorArea();
+      updateHUD();
+      setScreen('game');
+
+      // Start session
+      isSessionActive = true;
+      startTimer();
+      updatePersonalBest();
+      
+      // Generate patterns and start
+      setTimeout(() => {
+        adjustContainerSize();
+        generateDiversePatterns(difficulty);
+        if (totalPatternsEl) totalPatternsEl.textContent = patterns.length;
+        updateInstructionsText();
+        startPattern();
+        if (mirrorContainer) mirrorContainer.focus();
+      }, 100);
+    }
+
+    function generateDiversePatterns(difficulty) {
+      const settings = difficultySetting[difficulty] || difficultySetting.medium;
+      const patternLength = settings.patternLength;
+      const numPatterns = 10;
+      const sideWidth = containerWidth / 2;
+
+      for (let p = 0; p < numPatterns; p++) {
+        let available = patternTypes.filter(t => !usedPatternTypes.includes(t));
+        if (!available.length) { 
+          usedPatternTypes = []; 
+          available = [...patternTypes]; 
+        }
+        const type = available[Math.floor(Math.random() * available.length)];
+        usedPatternTypes.push(type);
+        if (usedPatternTypes.length > 3) usedPatternTypes.shift();
+        
+        const pts = generatePatternByType(type, patternLength, sideWidth, containerHeight);
+        patterns.push(pts);
+      }
+    }
+
+    function generatePatternByType(type, length, sideWidth, areaHeight) {
+      const centerX = sideWidth / 2;
+      const centerY = areaHeight / 2;
+      const radius = Math.min(sideWidth, areaHeight) * 0.3;
+      let points = [];
+
+      switch (type) {
+        case 'circle':
+          for (let i = 0; i < length; i++) {
+            const a = (i / length) * 2 * Math.PI;
+            points.push({ x: centerX + Math.cos(a) * radius, y: centerY + Math.sin(a) * radius });
+          }
+          break;
+        case 'square': {
+          const s = radius * 1.5, h = s / 2;
+          const corners = [
+            { x: centerX - h, y: centerY - h }, { x: centerX + h, y: centerY - h },
+            { x: centerX + h, y: centerY + h }, { x: centerX - h, y: centerY + h }
+          ];
+          for (let i = 0; i < length; i++) points.push(corners[i % 4]);
+          break;
+        }
+        case 'triangle': {
+          const tri = [];
+          for (let i = 0; i < 3; i++) {
+            const a = (i / 3) * 2 * Math.PI - Math.PI / 2;
+            tri.push({ x: centerX + Math.cos(a) * radius, y: centerY + Math.sin(a) * radius });
+          }
+          for (let i = 0; i < length; i++) points.push(tri[i % 3]);
+          break;
+        }
+        case 'zigzag': {
+          const stepY = areaHeight / (length + 1);
+          for (let i = 0; i < length; i++) {
+            const y = stepY + i * stepY;
+            const x = (i % 2 === 0) ? sideWidth * 0.25 : sideWidth * 0.75;
+            points.push({ x, y });
+          }
+          break;
+        }
+        case 'line': {
+          const sx = sideWidth * 0.2, ex = sideWidth * 0.8;
+          const sy = areaHeight * 0.3, ey = areaHeight * 0.7;
+          for (let i = 0; i < length; i++) {
+            const t = i / (length - 1);
+            points.push({ x: sx + (ex - sx) * t, y: sy + (ey - sy) * t });
+          }
+          break;
+        }
+        case 'spiral':
+          for (let i = 0; i < length; i++) {
+            const a = (i / length) * 4 * Math.PI;
+            const r = (i / length) * radius;
+            points.push({ x: centerX + Math.cos(a) * r, y: centerY + Math.sin(a) * r });
+          }
+          break;
+        default: // random
+          for (let i = 0; i < length; i++) {
+            const x = Math.floor(Math.random() * (sideWidth - 100) + 50);
+            const y = Math.floor(Math.random() * (areaHeight - 100) + 50);
+            points.push({ x, y });
+          }
+      }
+      return points;
+    }
+
+    function drawPatternPaths() {
+      if (!leftSide || !rightSide) return;
+      
+      // Left SVG
+      const lsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      lsvg.setAttribute("width", "100%");
+      lsvg.setAttribute("height", "100%");
+      lsvg.style.position = "absolute";
+      lsvg.style.top = "0";
+      lsvg.style.left = "0";
+      lsvg.style.pointerEvents = "none";
+
+      const lpath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      lpath.classList.add("mirror-path");
+      let d = "";
+      pattern.forEach((pt, i) => {
+        d += (i === 0 ? `M ${pt.x} ${pt.y} ` : `L ${pt.x} ${pt.y} `);
+      });
+      lpath.setAttribute("d", d);
+      lsvg.appendChild(lpath);
+      leftSide.appendChild(lsvg);
+
+      // Right SVG mirrored
+      const rsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      rsvg.setAttribute("width", "100%");
+      rsvg.setAttribute("height", "100%");
+      rsvg.style.position = "absolute";
+      rsvg.style.top = "0";
+      rsvg.style.left = "0";
+      rsvg.style.pointerEvents = "none";
+
+      const rpath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      rpath.classList.add("mirror-path");
+      d = "";
+      pattern.forEach((pt, i) => {
+        const mx = containerWidth / 2 - pt.x;
+        d += (i === 0 ? `M ${mx} ${pt.y} ` : `L ${mx} ${pt.y} `);
+      });
+      rpath.setAttribute("d", d);
+      rsvg.appendChild(rpath);
+      rightSide.appendChild(rsvg);
+    }
+
+    function createTargetPair() {
+      const point = pattern[currentTargetIndex];
+      if (!point) return;
+      
+      const targetSize = targetSizes[targetSizeSelect?.value || 'medium'];
+      const isMobile = window.innerWidth <= 768;
+      const actualSize = Math.max(targetSize, isMobile ? 48 : 44);
+
+      const leftTarget = document.createElement("div");
+      leftTarget.className = "mirror-target pulse";
+      leftTarget.style.width = `${actualSize}px`;
+      leftTarget.style.height = `${actualSize}px`;
+      leftTarget.style.left = `${point.x}px`;
+      leftTarget.style.top = `${point.y}px`;
+
+      const rightTarget = document.createElement("div");
+      rightTarget.className = "mirror-target pulse";
+      rightTarget.style.width = `${actualSize}px`;
+      rightTarget.style.height = `${actualSize}px`;
+      rightTarget.style.left = `${containerWidth / 2 - point.x}px`;
+      rightTarget.style.top = `${point.y}px`;
+
+      // Event listeners
+      leftTarget.addEventListener("touchstart", handleLeftTouch, { passive: false });
+      leftTarget.addEventListener("mousedown", handleLeftTouch);
+      rightTarget.addEventListener("touchstart", handleRightTouch, { passive: false });
+      rightTarget.addEventListener("mousedown", handleRightTouch);
+
+      leftSide.appendChild(leftTarget);
+      rightSide.appendChild(rightTarget);
+
+      currentTargets.left = leftTarget;
+      currentTargets.right = rightTarget;
+    }
+
+    function handleLeftTouch(e) {
+      if (!isSessionActive || leftTouched || isPaused) return;
+      e.preventDefault();
+      leftTouched = true;
+      leftTouchTime = Date.now();
+      if (!rightTouched) lastTouchedSide = 'left';
+      currentTargets.left.classList.remove("pulse");
+      currentTargets.left.classList.add("touched");
+      checkTargetPair();
+    }
+
+    function handleRightTouch(e) {
+      if (!isSessionActive || rightTouched || isPaused) return;
+      e.preventDefault();
+      rightTouched = true;
+      rightTouchTime = Date.now();
+      if (!leftTouched) lastTouchedSide = 'right';
+      currentTargets.right.classList.remove("pulse");
+      currentTargets.right.classList.add("touched");
+      checkTargetPair();
+    }
+
+    function checkTargetPair() {
+      if (!leftTouched || !rightTouched) return;
+
+      totalAttempts++;
+      const timeDiff = Math.abs(leftTouchTime - rightTouchTime);
+      const difficulty = difficultySelect?.value || 'medium';
+      const baseWindow = difficultySetting[difficulty]?.baseSync || 500;
+      const usingAdaptive = adaptiveTimingSelect?.value === 'on';
+      const currentSyncWindow = usingAdaptive ? adaptiveSyncWindow : baseWindow;
+
+      const mode = mirrorModeSelect?.value || 'simultaneous';
+      const isSimul = (mode === 'simultaneous');
+      
+      let isSync = isSimul ? (timeDiff < currentSyncWindow) : (lastTouchedSide === 'left' && timeDiff < currentSyncWindow);
+
+      if (isSync) {
+        successfulAttempts++;
+        if (isSimul) syncTimes.push(timeDiff);
+
+        const feedbackText = isSimul ? `Perfect! Sync time: ${timeDiff}ms` : `Excellent! Sequence completed.`;
+        showFeedback(feedbackText, 'success');
+
+        if (currentTargets.left) {
+          currentTargets.left.classList.remove("touched");
+          currentTargets.left.classList.add("completed");
+        }
+        if (currentTargets.right) {
+          currentTargets.right.classList.remove("touched");
+          currentTargets.right.classList.add("completed");
+        }
+
+        streak += 1;
+        if (streak > bestStreak) bestStreak = streak;
+
+        currentTargetIndex++;
+        if (currentTargetIndex >= pattern.length) {
+          completePattern();
+        } else {
+          leftTouched = false;
+          rightTouched = false;
+          lastTouchedSide = null;
+          setTimeout(() => createTargetPair(), 350);
+        }
+      } else {
+        const feedbackText = isSimul ? 
+          `Try again! Sync time: ${timeDiff}ms (need < ${currentSyncWindow}ms)` :
+          `Try again! Touch left first, then right within ${currentSyncWindow}ms`;
+        showFeedback(feedbackText, 'error');
+        
+        if (currentTargets.left) {
+          currentTargets.left.classList.remove("touched");
+          currentTargets.left.classList.add("failed");
+        }
+        if (currentTargets.right) {
+          currentTargets.right.classList.remove("touched");
+          currentTargets.right.classList.add("failed");
+        }
+        streak = 0;
+
+        setTimeout(() => {
+          if (currentTargets.left && currentTargets.right) {
+            currentTargets.left.classList.remove("failed");
+            currentTargets.right.classList.remove("failed");
+            currentTargets.left.classList.add("pulse");
+            currentTargets.right.classList.add("pulse");
+            leftTouched = false;
+            rightTouched = false;
+            lastTouchedSide = null;
+          }
+        }, 750);
+      }
+
+      updateStats();
+    }
+
+    function completePattern() {
+      patternsCompleted++;
+      const difficulty = difficultySelect?.value || 'medium';
+      const settings = difficultySetting[difficulty] || difficultySetting.medium;
+      score += settings.pointsPerPattern;
+
+      updateStats();
+
+      currentPatternIndex++;
+      if (currentPatternIndex >= patterns.length) {
+        setTimeout(() => endSession(), 600);
+      } else {
+        setTimeout(() => startPattern(), 700);
+      }
+    }
+
+    function startPattern() {
+      if (!isSessionActive) return;
+      
+      clearMirrorArea();
+      leftTouched = false;
+      rightTouched = false;
+      lastTouchedSide = null;
+
+      pattern = patterns[currentPatternIndex];
+      if (!pattern) {
+        endSession();
+        return;
+      }
+
+      if (currentPatternEl) currentPatternEl.textContent = currentPatternIndex + 1;
+      drawPatternPaths();
+      currentTargetIndex = 0;
+      createTargetPair();
+    }
+
+    function showFeedback(message, type) {
+      if (feedbackTimeout) clearTimeout(feedbackTimeout);
+      if (feedbackMessage) {
+        feedbackMessage.textContent = message;
+        feedbackMessage.className = `feedback-message ${type}`;
+        feedbackMessage.classList.remove('hidden');
+        feedbackTimeout = setTimeout(() => feedbackMessage.classList.add('hidden'), 1800);
+      }
+    }
+
+    function endSession() {
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+
+      const averageTime = syncTimes.length ? Math.round(syncTimes.reduce((a, b) => a + b, 0) / syncTimes.length) : 0;
+      const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
+
+      // Check for personal best
+      const previousPB = getPB();
+      let isNewPB = false;
+      if (score > previousPB) {
+        isNewPB = true;
+        setPB(score);
+        updatePersonalBest();
+      }
+
+      // Show completion modal
+      if (finalPatternsEl) finalPatternsEl.textContent = `${patternsCompleted}`;
+      if (finalSyncRateEl) finalSyncRateEl.textContent = `${syncRate}%`;
+      if (finalAvgSyncEl) finalAvgSyncEl.textContent = `${averageTime}ms`;
+      if (finalPerfectsEl) finalPerfectsEl.textContent = `${perfectCount}`;
+      if (finalScoreEl) finalScoreEl.textContent = `${score}`;
+      if (finalXPEl) finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
+      
+      if (completionModal) completionModal.classList.add('show');
+      clearMirrorArea();
+      setScreen('settings');
+    }
+
+    // Event listeners
+    if (startBtn) startBtn.addEventListener('click', startSession);
+    if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
+    if (targetSizeSelect) targetSizeSelect.addEventListener('change', saveSettings);
+    if (mirrorModeSelect) mirrorModeSelect.addEventListener('change', () => {
+      saveSettings();
+      updateInstructionsText();
+    });
+    if (adaptiveTimingSelect) adaptiveTimingSelect.addEventListener('change', saveSettings);
+    if (sessionDurationInp) sessionDurationInp.addEventListener('input', saveSettings);
+
+    if (pauseBtn) pauseBtn.addEventListener('click', () => {
+      if (!isSessionActive) return;
+      isPaused = !isPaused;
+      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+      if (isPaused) {
+        stopTimer();
+        if (mirrorArea) mirrorArea.classList.add('is-paused');
+      } else {
+        startTimer();
+        if (mirrorArea) mirrorArea.classList.remove('is-paused');
+        if (mirrorContainer) mirrorContainer.focus();
+      }
+    });
+
+    const endBtn = document.getElementById('end-session');
+    if (endBtn) endBtn.addEventListener('click', () => endSession());
+
+    if (restartBtn) restartBtn.addEventListener('click', () => {
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+      isPaused = false;
+      setScreen('settings');
+    });
+
+    if (restartModalBtn) restartModalBtn.addEventListener('click', () => {
+      if (completionModal) completionModal.classList.remove('show');
+      setScreen('settings');
+    });
+
+    if (completeClose) completeClose.addEventListener('click', () => {
+      if (completionModal) completionModal.classList.remove('show');
+      setScreen('settings');
+    });
+
+    // Initialize
+    loadSettings();
+    updateHUD();
+    updateInstructionsText();
+    setScreen('settings');
+  </script>
+</body>
+</html>
