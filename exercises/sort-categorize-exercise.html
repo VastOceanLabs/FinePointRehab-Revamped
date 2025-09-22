@@ -2,750 +2,1139 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVKCCWBFKE"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-RVKCCWBFKE');
-  </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Sort & Categorize Exercise | Cognitive-Motor Training | Fine Point Rehab</title>
-
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="Interactive sorting and categorization exercise that combines cognitive processing with motor skills. Enhance visual discrimination, decision-making, and upper limb control while improving attention and cognitive flexibility. Ideal for stroke rehabilitation, brain injury recovery, and cognitive therapy.">
-
-  <!-- Canonical URL -->
-  <link rel="canonical" href="https://finepointrehab.com/exercises/sort-categorize-exercise.html">
-
-  <!-- Open Graph / Social Media Meta Tags -->
-  <meta property="og:title" content="Sort & Categorize Exercise | Cognitive-Motor Training | Fine Point Rehab">
-  <meta property="og:description" content="Interactive categorization exercise combining cognitive processing with motor skills. Enhance visual discrimination, decision-making, and upper limb control.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://finepointrehab.com/exercises/sort-categorize-exercise.html">
-  <meta property="og:image" content="https://finepointrehab.com/images/sort-categorize-preview.jpg">
-  <meta property="og:site_name" content="Fine Point Rehab">
-
-  <!-- Design System Styles -->
-  <link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/components.css">
-  <link rel="stylesheet" href="/css/exercises.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sort & Categorize — Cognitive-Motor Training</title>
 
   <style>
-    /* Stars background effect */
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: var(--brand);
-      border-radius: 50%;
-      animation: twinkle 3s infinite;
-    }
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-
-    /* Exercise-specific styles */
-    #stars-container { 
-      position: absolute; 
-      inset: 0; 
-      z-index: 1; 
-      pointer-events: none; 
-      overflow: hidden; 
-    }
-
-    #timer-bar { 
-      position: absolute; 
-      top: 0; 
-      left: 0; 
-      height: 4px; 
-      background: var(--brand, #48cae4); 
-      width: 100%; 
-      z-index: 20; 
-      border-radius: 0 0 var(--radius, 8px) var(--radius, 8px);
+    :root {
+      --bg-primary: #0f1629;
+      --bg-secondary: #1a1f3a;
+      --bg-tertiary: #252b47;
+      --text-primary: #e8eef5;
+      --text-secondary: #b8c5d1;
+      --text-muted: #8a96a3;
+      --brand-aqua: #6fd3f5;
+      --success: #4caf50;
+      --error: #ff6b6b;
+      --error-bg: #2d1b1b;
+      --border: #374151;
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --radius: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-full: 50%;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --font-size-xs: 12px;
+      --font-size-base: 16px;
+      --font-size-lg: 20px;
+      --font-size-xl: 24px;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+      --duration-fast: 150ms;
+      --easing: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    #challenge-display {
-      position: absolute; 
-      top: var(--gap, 16px); 
-      left: 50%; 
-      transform: translateX(-50%);
-      padding: var(--gap, 16px);
-      background: var(--color-bg-elevated, rgba(28, 42, 78, 0.95));
-      border: 2px solid var(--brand, #48cae4);
-      border-radius: var(--radius, 8px);
-      z-index: 20; 
-      font-weight: 700; 
-      text-align: center; 
-      max-width: 80%;
+    * {
+      box-sizing: border-box;
     }
 
-    #sort-area {
-      flex: 1;
-      background: var(--color-bg-elevated, rgba(28, 42, 78, 0.95));
-      border: 2px solid var(--brand, #48cae4);
-      border-radius: var(--radius, 8px);
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(72, 202, 228, 0.3);
-      display: flex; 
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--easing);
+    }
+
+    .btn:hover {
+      border-color: var(--brand-aqua);
+      background-color: var(--bg-tertiary);
+    }
+
+    .btn-primary {
+      background-color: var(--brand-aqua);
+      color: #000;
+      border-color: var(--brand-aqua);
+    }
+
+    .btn-primary:hover {
+      background-color: #5bc2e7;
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-tertiary);
+    }
+
+    .input, select {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: var(--font-size-base);
+    }
+
+    .panel {
+      background: rgba(15, 22, 41, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+      background: rgba(8, 15, 35, 0.8);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .site-header .inner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .site-header h1 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+      line-height: 1.2;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-4);
+    }
+
+    /* Screen system */
+    [data-screen] {
+      display: none !important;
+    }
+
+    [data-screen].active {
+      display: block !important;
+    }
+
+    /* Settings screen styling */
+    .settings-panel {
+      max-width: 480px;
+      margin: 0 auto;
+      padding-top: var(--space-6);
+    }
+
+    .settings-panel h2 {
+      margin: 0 0 var(--space-4);
+      font-size: var(--font-size-lg);
+      text-align: center;
+    }
+
+    .game-description {
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      border: 1px solid var(--border);
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
+    }
+
+    .metric-settings {
+      flex: 0 0 auto;
+      display: flex;
       flex-direction: column;
-      margin: var(--gap, 16px);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(111, 211, 245, 0.08);
+      min-width: 110px;
     }
 
+    .pb-value {
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-lg);
+      color: var(--brand-aqua);
+      text-shadow: 0 0 6px rgba(111, 211, 245, 0.5);
+      line-height: 1.1;
+    }
+
+    .pb-label {
+      font-size: var(--font-size-xs);
+      opacity: 0.9;
+      margin-top: var(--space-1);
+      color: var(--text-secondary);
+    }
+
+    .settings-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .settings-label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .setting-help {
+      display: block;
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      margin-top: var(--space-1);
+      font-style: italic;
+    }
+
+    .right-col {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: var(--space-3);
+    }
+
+    .hud {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: var(--space-2);
+      align-items: center;
+      position: relative;
+      padding-top: calc(var(--space-3) + 8px);
+    }
+
+    @media (max-width: 768px) {
+      .hud {
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-auto-flow: row;
+        gap: var(--space-1);
+        padding: var(--space-2);
+        padding-top: calc(var(--space-2) + 6px);
+      }
+      
+      .hud-value {
+        font-size: var(--font-size-base);
+      }
+      
+      .hud-label {
+        font-size: 11px;
+      }
+      
+      .controls {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: var(--space-2);
+        justify-content: center;
+        margin-top: var(--space-1);
+      }
+      
+      .controls .btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+    }
+
+    .hud-group {
+      display: grid;
+      gap: var(--space-1);
+      text-align: center;
+    }
+
+    .hud-value {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+    }
+
+    .hud-label {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+    }
+
+    .timer-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 8px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--brand-aqua), rgba(111,211,245,.35));
+      transform-origin: left center;
+      transition: width .1s linear;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+    }
+
+    .controls {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .instructions {
+      text-align: center;
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-3);
+      font-size: var(--font-size-base);
+      padding: var(--space-3);
+      background-color: rgba(8, 15, 35, 0.7);
+      border-radius: var(--radius);
+    }
+
+    #game-container {
+      position: relative;
+      display: grid;
+      grid-template-rows: 2fr 1fr;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: rgba(0,0,0,0.15);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      height: 70vh;
+      min-height: 500px;
+    }
+
+    #stars-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* Game areas */
     #objects-container {
-      flex: 1; 
-      position: relative; 
-      padding: var(--gap);
-      display: flex; 
-      flex-wrap: wrap; 
-      align-items: center; 
-      justify-content: center; 
-      gap: var(--gap);
+      background: rgba(8, 15, 35, 0.4);
+      border: 2px solid rgba(111, 211, 245, 0.3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: var(--space-3);
+      position: relative;
+      overflow: auto;
     }
 
     #categories-container {
-      display: flex; 
-      justify-content: space-evenly; 
-      padding: var(--gap, 16px);
-      border-top: 1px solid rgba(72, 202, 228, 0.5); 
-      background: rgba(18, 29, 51, 0.5);
-      min-height: 150px;
+      background: rgba(8, 15, 35, 0.4);
+      border: 2px solid rgba(111, 211, 245, 0.3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3);
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      gap: var(--space-2);
       flex-wrap: wrap;
-      gap: var(--gap-sm, 8px);
     }
 
-    .category-box {
-      width: 130px; 
-      height: 130px; 
-      border: 3px dashed rgba(72, 202, 228, 0.7);
-      border-radius: var(--radius, 8px); 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      padding: var(--gap-sm, 8px);
-      transition: all 0.2s ease; 
-      background: rgba(18, 29, 51, 0.4);
-      position: relative;
-    }
-
-    .category-box.highlight { 
-      background: rgba(72, 202, 228, 0.2); 
-      box-shadow: 0 0 20px rgba(72, 202, 228, 0.5); 
-      transform: scale(1.05);
-    }
-
-    .category-box.correct { 
-      border-color: var(--success, #10b981); 
-      background: rgba(16, 185, 129, 0.15); 
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); 
-      animation: correctPulse 0.8s ease;
-    }
-
-    .category-box.incorrect { 
-      border-color: var(--danger, #ef4444); 
-      background: rgba(239, 68, 68, 0.15); 
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); 
-      animation: incorrectShake 0.5s ease;
-    }
-
-    @keyframes correctPulse {
-      0% { transform: scale(1) }
-      50% { transform: scale(1.1) }
-      100% { transform: scale(1) }
-    }
-
-    @keyframes incorrectShake {
-      0% { transform: translateX(0) }
-      20% { transform: translateX(-10px) }
-      40% { transform: translateX(10px) }
-      60% { transform: translateX(-10px) }
-      80% { transform: translateX(10px) }
-      100% { transform: translateX(0) }
-    }
-
-    .category-icon { 
-      font-size: 38px; 
-      margin-bottom: var(--gap-xs);
-    }
-
-    .category-label { 
-      font-size: 16px; 
-      text-align: center; 
-      font-weight: 700; 
-      color: var(--text-primary);
-      background: rgba(var(--color-bg-rgb), 0.8); 
-      padding: var(--gap-xs) var(--gap-sm); 
-      border-radius: var(--radius); 
-      width: 90%;
-    }
-
+    /* Sort objects */
     .sort-object {
-      width: 70px; 
-      height: 70px; 
-      border-radius: var(--radius, 8px); 
-      position: relative; 
+      width: 70px;
+      height: 70px;
+      border-radius: var(--radius);
+      position: relative;
       z-index: 5;
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 30px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
       cursor: grab;
-      box-shadow: 0 0 15px rgba(72, 202, 228, 0.4); 
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--brand, #48cae4));
-      border: 3px solid transparent; 
-      touch-action: none; 
+      box-shadow: 0 0 15px rgba(111, 211, 245, 0.4);
+      transition: all var(--duration-fast) var(--easing);
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), var(--brand-aqua));
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      touch-action: none;
       user-select: none;
     }
 
-    .sort-object:active { 
-      cursor: grabbing; 
-      transform: scale(1.05); 
+    .sort-object:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(111, 211, 245, 0.6);
+    }
+
+    .sort-object:active {
+      cursor: grabbing;
+      transform: scale(1.05);
       z-index: 12;
     }
 
     .sort-object:focus-visible {
-      outline: 2px solid var(--brand, #48cae4);
+      outline: 2px solid var(--brand-aqua);
       outline-offset: 2px;
     }
 
-    .category-hint {
-      position: absolute; 
-      bottom: -24px; 
-      left: 50%; 
-      transform: translateX(-50%);
-      font-size: 12px; 
-      background: var(--color-bg-elevated);
-      padding: var(--gap-xs) var(--gap-sm); 
-      border-radius: var(--radius); 
-      opacity: 0; 
-      transition: opacity 0.2s ease; 
-      pointer-events: none; 
-      white-space: nowrap;
-      border: 1px solid rgba(var(--brand-rgb), 0.3);
+    .sort-object.dragging {
+      opacity: 0.25;
     }
 
-    .sort-object:hover .category-hint { 
-      opacity: 1;
-    }
-
-    .object-clone { 
-      position: absolute; 
-      opacity: 0.85; 
-      pointer-events: none; 
-      z-index: 15; 
+    .object-clone {
+      position: absolute;
+      opacity: 0.85;
+      pointer-events: none;
+      z-index: 15;
       transition: transform 0.08s ease;
     }
 
-    #round-progress { 
-      position: relative; 
-      height: 10px; 
-      flex: 1; 
-      background: rgba(148, 163, 184, 0.2); 
-      border-radius: 999px; 
-      overflow: hidden; 
-      margin: 0 var(--gap-sm, 8px);
+    /* Category boxes */
+    .category-box {
+      width: 130px;
+      height: 130px;
+      border: 3px dashed rgba(111, 211, 245, 0.7);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2);
+      transition: all var(--duration-fast) var(--easing);
+      background: rgba(8, 15, 35, 0.4);
+      position: relative;
     }
 
-    #round-progress-fill { 
-      position: absolute; 
-      top: 0; 
-      left: 0; 
-      height: 100%; 
-      width: 0%; 
-      background: linear-gradient(90deg, var(--brand, #48cae4), var(--accent, #2563eb));
+    .category-box.highlight {
+      background: rgba(111, 211, 245, 0.2);
+      box-shadow: 0 0 20px rgba(111, 211, 245, 0.5);
+      transform: scale(1.05);
+      border-color: var(--brand-aqua);
+      border-style: solid;
     }
 
-    #feedback-message {
-      position: absolute; 
-      top: 20%; 
-      left: 50%; 
+    .category-box.correct {
+      border-color: var(--success);
+      background: rgba(76, 175, 80, 0.15);
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+      animation: correctPulse 0.8s ease;
+    }
+
+    .category-box.incorrect {
+      border-color: var(--error);
+      background: rgba(255, 107, 107, 0.15);
+      box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+      animation: incorrectShake 0.5s ease;
+    }
+
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes incorrectShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-6px); }
+    }
+
+    .category-icon {
+      font-size: 38px;
+      margin-bottom: var(--space-1);
+    }
+
+    .category-label {
+      font-size: var(--font-size-base);
+      text-align: center;
+      font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+      background: rgba(15, 22, 41, 0.8);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius);
+      width: 90%;
+    }
+
+    /* Hints */
+    .category-hint {
+      position: absolute;
+      bottom: -28px;
+      left: 50%;
       transform: translateX(-50%);
-      padding: var(--gap) var(--gap-lg); 
-      border-radius: var(--radius); 
-      font-size: 18px; 
-      font-weight: 800; 
-      opacity: 0; 
-      transition: opacity 0.25s ease; 
-      z-index: 50; 
-      text-align: center; 
+      font-size: var(--font-size-xs);
+      background: rgba(15, 22, 41, 0.95);
+      color: var(--brand-aqua);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius);
+      opacity: 0;
+      transition: opacity var(--duration-fast) var(--easing);
+      pointer-events: none;
+      white-space: nowrap;
+      border: 1px solid rgba(111, 211, 245, 0.3);
       box-shadow: var(--shadow-lg);
     }
 
-    #feedback-message.show { 
+    .sort-object:hover .category-hint {
       opacity: 1;
     }
 
-    #feedback-message.correct { 
-      background: var(--success, #10b981); 
-      color: var(--text-on-success, #ffffff);
-    }
-
-    #feedback-message.incorrect { 
-      background: var(--danger, #ef4444); 
-      color: var(--text-on-danger, #ffffff);
-    }
-
-    .stat-box {
+    /* Feedback message */
+    .feedback-message {
+      position: absolute;
+      top: 25%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 22, 41, 0.95);
+      border: 2px solid var(--brand-aqua);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      color: var(--text-primary);
+      font-weight: var(--font-weight-semibold);
       text-align: center;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transition: opacity var(--duration-fast) var(--easing);
+      pointer-events: none;
+      font-size: var(--font-size-lg);
     }
 
-    .stat-value { 
-      font-size: 22px; 
-      font-weight: 800; 
-      color: var(--brand);
+    .feedback-message:not(.hidden) {
+      opacity: 1;
     }
 
-    .stat-label { 
-      font-size: 12px; 
-      color: var(--text-secondary);
+    .feedback-message.correct {
+      border-color: var(--success);
+      color: var(--success);
     }
 
-    /* Game panel layout */
-    .game-panel {
-      position: relative;
+    .feedback-message.incorrect {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    /* Challenge display */
+    .challenge-display {
+      position: absolute;
+      top: var(--space-4);
+      left: 50%;
+      transform: translateX(-50%);
+      padding: var(--space-3) var(--space-4);
+      background: rgba(15, 22, 41, 0.95);
+      border: 2px solid var(--brand-aqua);
+      border-radius: var(--radius-lg);
+      z-index: 20;
+      font-weight: var(--font-weight-bold);
+      text-align: center;
+      max-width: 80%;
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Progress bar */
+    .progress-container {
+      position: absolute;
+      bottom: var(--space-4);
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      background: rgba(15, 22, 41, 0.95);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      z-index: 20;
+    }
+
+    .progress-bar {
+      width: 200px;
+      height: 8px;
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: var(--radius-full);
       overflow: hidden;
     }
 
-    .game-hud {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: var(--gap-sm) var(--gap);
-      background: var(--color-bg-elevated);
-      border-bottom: 1px solid rgba(var(--brand-rgb), 0.2);
-      gap: var(--gap);
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand-aqua), var(--success));
+      transition: width 0.3s ease;
     }
 
-    .hud-stats {
-      display: flex;
-      gap: var(--gap-lg);
-      align-items: center;
+    .progress-text {
+      color: var(--brand-aqua);
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-xs);
+      white-space: nowrap;
     }
 
-    .hud-stat {
-      display: flex;
-      align-items: center;
-      gap: var(--gap-xs);
-      font-size: 14px;
+    /* Completion modal */
+    .completion {
+      position: fixed;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%) scale(1);
+      max-width: 90%;
+      width: 560px;
+      z-index: 1100;
+      text-align: center;
+      display: none;
     }
 
-    .hud-stat .label {
-      color: var(--text-secondary);
+    .completion.show {
+      display: block;
+      animation: pop 0.25s ease;
     }
 
-    .hud-stat .value {
-      color: var(--brand);
-      font-weight: 700;
+    @keyframes pop {
+      from {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0.6;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
     }
 
-    /* Bottom stats panel */
-    #stats-panel {
-      position: absolute; 
-      bottom: 0; 
-      left: 0; 
-      right: 0;
-      background: var(--color-bg-elevated); 
-      padding: var(--gap-sm) var(--gap); 
-      display: flex; 
-      gap: var(--gap-sm); 
-      justify-content: space-around; 
-      align-items: center;
-      box-shadow: var(--shadow-lg); 
-      z-index: 30;
+    .score-highlight {
+      color: var(--brand-aqua);
+      font-weight: var(--font-weight-bold);
     }
 
-    /* Utility Classes */
-    .hidden { 
-      display: none !important; 
+    .celebrate {
+      animation: celebrate 900ms ease-out 1;
     }
 
-    /* Responsive adjustments */
+    @keyframes celebrate {
+      0% { box-shadow: 0 0 0 rgba(111,211,245,0); }
+      40% { box-shadow: 0 0 40px rgba(111,211,245,.8); }
+      100% { box-shadow: 0 0 20px rgba(111,211,245,.2); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .category-box.correct,
+      .category-box.incorrect,
+      .celebrate { 
+        animation: none; 
+      }
+    }
+
     @media (max-width: 768px) {
-      .stat-value { 
-        font-size: 18px;
-      }
-      .category-box { 
-        width: 110px; 
-        height: 110px;
-      }
-      .category-icon { 
-        font-size: 30px;
-      }
-      .category-label { 
-        font-size: 14px;
-      }
-      .sort-object { 
-        width: 60px; 
-        height: 60px; 
+      .sort-object {
+        width: 60px;
+        height: 60px;
         font-size: 24px;
       }
-      #challenge-display { 
-        font-size: 16px; 
-        padding: var(--gap-sm);
+      
+      .category-box {
+        width: 110px;
+        height: 110px;
       }
-    }
+      
+      .category-icon {
+        font-size: 30px;
+      }
+      
+      .category-label {
+        font-size: 14px;
+      }
+      
+      .settings-panel {
+        padding: var(--space-3);
+        margin: var(--space-2);
+      }
+      
+      .page {
+        padding: var(--space-2);
+      }
 
-    /* Reduced motion support */
-    @media (prefers-reduced-motion: reduce) {
-      .category-box.correct {
-        animation: none;
-        border-color: var(--success);
-      }
-      .category-box.incorrect {
-        animation: none;
-        border-color: var(--danger);
-      }
-      .star {
-        animation: none;
+      #game-container {
+        height: 80vh;
+        min-height: 400px;
       }
     }
   </style>
 </head>
+
 <body>
-  <main class="layout">
-    <!-- Settings Panel -->
-    <aside class="panel settings-panel" id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <header class="panel-header">
-        <h1 id="settings-title">Sort & Categorize</h1>
-        <p class="panel-description">
-          Drag and drop objects into their correct categories to train visual discrimination, decision-making, and hand-eye coordination.
+  <header class="site-header">
+    <div class="inner">
+      <a class="btn btn-secondary" href="/" aria-label="Go to Home">← Home</a>
+      <h1>Sort & Categorize</h1>
+    </div>
+  </header>
+
+  <main class="page">
+    <!-- Settings Screen -->
+    <aside class="settings-panel panel active" data-screen="settings">
+      <h2>Session Settings</h2>
+
+      <div class="game-description">
+        <p>
+          Drag objects into their correct categories to train visual discrimination, decision-making, and motor coordination.
+          Improves cognitive flexibility, attention, and hand-eye coordination through categorization tasks.
         </p>
-      </header>
+      </div>
 
-      <div class="settings-content">
-        <div class="setting-group">
-          <label class="setting-label" for="difficulty">Difficulty</label>
-          <select class="setting-input" id="difficulty" aria-label="Difficulty">
-            <option value="easy">Easy (3 Categories)</option>
-            <option value="medium" selected>Medium (4 Categories)</option>
-            <option value="hard">Hard (5 Categories)</option>
-          </select>
-        </div>
-
-        <div class="setting-group">
-          <label class="setting-label" for="category-type">Category Type</label>
-          <select class="setting-input" id="category-type" aria-label="Category Type">
-            <option value="colors">Colors</option>
-            <option value="shapes" selected>Shapes</option>
-            <option value="numbers">Numbers</option>
-            <option value="letters">Letters</option>
-          </select>
-        </div>
-
-        <div class="setting-group">
-          <label class="setting-label" for="objects-count">Objects Per Round</label>
-          <select class="setting-input" id="objects-count" aria-label="Objects per round">
-            <option value="6">Few (6)</option>
-            <option value="9" selected>Medium (9)</option>
-            <option value="12">Many (12)</option>
-          </select>
-        </div>
-
-        <div class="setting-group">
-          <label class="setting-label" for="session-duration">Session Duration (minutes)</label>
-          <input class="setting-input" type="number" id="session-duration" min="1" max="10" value="3">
-        </div>
-
-        <div class="setting-group">
-          <label class="setting-label" for="hint-setting">Show Category Hints</label>
-          <select class="setting-input" id="hint-setting">
-            <option value="off">Off</option>
-            <option value="hover" selected>Show on Hover</option>
-            <option value="always">Always Show</option>
-          </select>
+      <!-- Personal Best display -->
+      <div class="stats-row">
+        <div class="metric-settings">
+          <div id="pb-settings" class="pb-value">0</div>
+          <div class="pb-label">Personal Best</div>
         </div>
       </div>
 
-      <div class="panel-footer">
-        <button class="btn btn-primary" id="start-session">Start Therapy Session</button>
+      <div class="settings-group">
+        <label class="settings-label" for="difficulty">Difficulty</label>
+        <select class="input" id="difficulty">
+          <option value="easy">Easy — 3 categories, simple sorting</option>
+          <option value="medium" selected>Medium — 4 categories, moderate complexity</option>
+          <option value="hard">Hard — 5 categories, challenging sorting</option>
+        </select>
+        <small class="setting-help">Higher difficulty adds more categories and complexity.</small>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="category-type">Category Type</label>
+        <select class="input" id="category-type">
+          <option value="colors">Colors — sort by color matching</option>
+          <option value="shapes" selected>Shapes — sort by geometric forms</option>
+          <option value="numbers">Numbers — sort by number ranges</option>
+          <option value="letters">Letters — sort by alphabet ranges</option>
+        </select>
+        <small class="setting-help">Different categories challenge different cognitive skills.</small>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="objects-count">Objects Per Round</label>
+        <select class="input" id="objects-count">
+          <option value="6">Few — 6 objects per round</option>
+          <option value="9" selected>Medium — 9 objects per round</option>
+          <option value="12">Many — 12 objects per round</option>
+        </select>
+        <small class="setting-help">More objects increase working memory demands.</small>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="hint-setting">Category Hints</label>
+        <select class="input" id="hint-setting">
+          <option value="off">Off — no hints shown</option>
+          <option value="hover" selected>On Hover — hints when hovering</option>
+          <option value="always">Always — hints always visible</option>
+        </select>
+        <small class="setting-help">Hints can assist with learning category rules.</small>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
+        <input class="input" type="number" id="session-duration" min="1" max="10" value="3">
+        <small class="setting-help">1—10 minutes recommended.</small>
+      </div>
+
+      <div class="controls">
+        <button id="start-session" class="btn btn-primary">Start</button>
+        <button id="restart-session" class="btn">Restart</button>
       </div>
     </aside>
 
-    <!-- Game Panel -->
-    <section class="panel game-panel">
-      <div class="game-hud">
-        <div class="hud-stats">
-          <div class="hud-stat">
-            <span class="label">Score</span>
-            <span class="value" id="hud-score">0</span>
-          </div>
-          <div class="hud-stat">
-            <span class="label">Progress</span>
-            <span class="value" id="hud-progress">0/0</span>
-          </div>
-          <div class="hud-stat">
-            <span class="label">Difficulty</span>
-            <span class="value" id="hud-difficulty">Medium</span>
-          </div>
+    <!-- Game Screen -->
+    <section class="right-col" data-screen="game">
+      <!-- HUD Row -->
+      <div class="hud panel">
+        <div class="timer-bar" id="timer-bar"></div>
+
+        <div class="hud-group">
+          <div id="hud-score" class="hud-value">0</div>
+          <div class="hud-label">Score</div>
+        </div>
+
+        <div class="hud-group">
+          <div id="hud-pb" class="hud-value">0</div>
+          <div class="hud-label">Personal Best</div>
+        </div>
+
+        <div class="hud-group">
+          <div id="hud-rounds" class="hud-value">0</div>
+          <div class="hud-label">Rounds</div>
+        </div>
+
+        <div class="hud-group">
+          <div id="hud-time" class="hud-value">3:00</div>
+          <div class="hud-label">Time Left</div>
+        </div>
+
+        <div class="controls">
+          <button id="pause-session" class="btn btn-secondary">Pause</button>
+          <button id="end-session" class="btn">End</button>
         </div>
       </div>
 
-      <div class="game-area" role="application" aria-label="Sort & Categorize exercise">
+      <!-- Game Area -->
+      <div class="panel" id="game-container">
         <div id="stars-container"></div>
-        <div id="timer-bar"></div>
-        
-        <div id="challenge-display" role="status" aria-live="polite" class="hidden">
+
+        <div class="challenge-display" id="challenge-display">
           Sort the objects by their categories
         </div>
-        <div id="feedback-message" role="status" aria-live="polite"></div>
 
-        <div id="sort-area" aria-label="Play area">
-          <div id="objects-container" aria-label="Objects to sort"></div>
-          <div id="categories-container" aria-label="Category boxes"></div>
+        <p class="instructions" id="instructions">
+          Drag and drop objects into their matching category boxes below.
+        </p>
+
+        <!-- Objects to sort -->
+        <div id="objects-container" aria-label="Objects to sort"></div>
+
+        <!-- Category boxes -->
+        <div id="categories-container" aria-label="Category boxes"></div>
+
+        <!-- Progress indicator -->
+        <div class="progress-container" id="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-text" id="progress-text">0/0</div>
         </div>
 
-        <!-- Bottom Stats Panel -->
-        <div id="stats-panel" class="hidden" aria-live="polite">
-          <div class="stat-box">
-            <div id="score" class="stat-value">0</div>
-            <div class="stat-label">Score</div>
-          </div>
-          <div class="stat-box">
-            <div id="rounds-completed" class="stat-value">0</div>
-            <div class="stat-label">Rounds</div>
-          </div>
-          <div id="round-progress" aria-label="Round progress">
-            <div id="round-progress-fill"></div>
-          </div>
-          <div class="stat-box">
-            <div id="time-left" class="stat-value">3:00</div>
-            <div class="stat-label">Time Left</div>
-          </div>
-          <div class="stat-box">
-            <div id="accuracy" class="stat-value">0%</div>
-            <div class="stat-label">Accuracy</div>
-          </div>
-        </div>
-
-        <!-- Completion Dialog -->
-        <div id="completion-message" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="completed-title">
-          <div class="modal-content">
-            <h2 id="completed-title">Session Complete!</h2>
-            <div class="completion-stats">
-              <p>Final Score: <span id="final-score" class="highlight">0</span></p>
-              <p>Rounds Completed: <span id="final-rounds" class="highlight">0</span></p>
-              <p>Accuracy: <span id="final-accuracy" class="highlight">0%</span></p>
-            </div>
-            <button class="btn btn-outline" id="restart-button">Start New Session</button>
-          </div>
-        </div>
+        <div class="feedback-message hidden" id="feedback-message" role="status" aria-live="polite"></div>
       </div>
     </section>
   </main>
 
-  <!-- STANDARDIZED MODULE IMPORTS & SESSION INTEGRATION -->
-  <script type="module">
-    import { recordSession } from '/js/progress.js';
-    import { checkAndUnlockAchievements } from '/js/achievements.js';
-    const EXERCISE_ID = 'sort';
+  <div id="completion-message" class="completion panel">
+    <h2>Therapy Session Complete!</h2>
+    <div id="completion-scores">
+      <p>Rounds Completed: <span id="final-rounds" class="score-highlight">0</span></p>
+      <p>Success Rate: <span id="final-accuracy" class="score-highlight">0%</span></p>
+      <p>Cognitive Performance Score: <span id="final-score" class="score-highlight">0</span></p>
+      <p>XP Earned: <span id="final-xp" class="score-highlight">0</span></p>
+    </div>
+    <div class="controls">
+      <button id="restart-button" class="btn btn-primary">Start New Therapy Session</button>
+      <button class="btn" id="close-complete">Close</button>
+    </div>
+  </div>
 
-    // Call this when an exercise session ends
-    window.endSession = function(score, difficulty = 'medium') {
-      recordSession(EXERCISE_ID, difficulty, score);
-      try { checkAndUnlockAchievements(); } catch (e) { /* optional */ }
+  <script>
+    // Simple storage utility
+    const storage = {
+      get: (key, defaultValue) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch {
+          return defaultValue;
+        }
+      },
+      set: (key, value) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+          console.error('Storage error:', e);
+        }
+      }
     };
-  </script>
 
-  <!-- MAIN GAME SCRIPT -->
-  <script type="module">
-    import { initUtils } from '/js/utils.js';
-    import { sessionEnhancement } from '/js/session-enhancement.js';
-    
-    initUtils(); // Initialize utilities
-    
-    const EXERCISE_ID = 'sort';
+    // Generate starfield
+    function generateStars(container, count = 150) {
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.style.position = 'absolute';
+        star.style.width = Math.random() * 3 + 'px';
+        star.style.height = star.style.width;
+        star.style.backgroundColor = 'white';
+        star.style.borderRadius = '50%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.opacity = Math.random() * 0.8 + 0.2;
+        container.appendChild(star);
+      }
+    }
 
-    /* --------- State --------- */
-    const el = (id) => document.getElementById(id);
-    const objectsContainer = el('objects-container');
-    const categoriesContainer = el('categories-container');
-    const statsPanel = el('stats-panel');
-    const challengeDisplay = el('challenge-display');
-    const feedbackMessage = el('feedback-message');
-    const timerBar = el('timer-bar');
+    // DOM elements
+    const starsContainer = document.getElementById('stars-container');
+    const timerBarEl = document.getElementById('timer-bar');
+    const hudScore = document.getElementById('hud-score');
+    const hudPB = document.getElementById('hud-pb');
+    const pbSettingsEl = document.getElementById('pb-settings');
+    const hudRounds = document.getElementById('hud-rounds');
+    const hudTime = document.getElementById('hud-time');
+    const instructions = document.getElementById('instructions');
+    const objectsContainer = document.getElementById('objects-container');
+    const categoriesContainer = document.getElementById('categories-container');
+    const challengeDisplay = document.getElementById('challenge-display');
+    const feedbackMessage = document.getElementById('feedback-message');
+    const progressContainer = document.getElementById('progress-container');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const startBtn = document.getElementById('start-session');
+    const pauseBtn = document.getElementById('pause-session');
+    const restartBtn = document.getElementById('restart-session');
+    const endBtn = document.getElementById('end-session');
+    const completionModal = document.getElementById('completion-message');
+    const finalRoundsEl = document.getElementById('final-rounds');
+    const finalAccuracyEl = document.getElementById('final-accuracy');
+    const finalScoreEl = document.getElementById('final-score');
+    const finalXPEl = document.getElementById('final-xp');
+    const completeClose = document.getElementById('close-complete');
+    const restartModalBtn = document.getElementById('restart-button');
+    const difficultySelect = document.getElementById('difficulty');
+    const categoryTypeSelect = document.getElementById('category-type');
+    const objectsCountSelect = document.getElementById('objects-count');
+    const hintSettingSelect = document.getElementById('hint-setting');
+    const sessionDurationInp = document.getElementById('session-duration');
 
-    const scoreEl = el('score');
-    const roundsEl = el('rounds-completed');
-    const timeLeftEl = el('time-left');
-    const accuracyEl = el('accuracy');
+    // Generate initial stars
+    generateStars(starsContainer, 150);
 
-    const hudScore = el('hud-score');
-    const hudProgress = el('hud-progress');
-    const hudDifficulty = el('hud-difficulty');
+    // Personal best tracking
+    const PB_KEY = 'sort-categorize:best';
+    const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
+    const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
 
-    const progressFill = el('round-progress-fill');
+    function updatePersonalBest() {
+      const pb = getPB();
+      if (hudPB) hudPB.textContent = pb ? String(pb) : '0';
+      if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
+    }
 
-    const settingsPanel = el('settings-panel');
-    const startBtn = el('start-session');
-    const restartBtn = el('restart-button');
-    const completionMsg = el('completion-message');
-
-    const stars = el('stars-container');
-
-    let sessionActive = false;
-    let sessionEndsAt = 0;
-    let sessionTimerId = null;
-    let totalSessionSeconds = 0;
-
+    // Game state
+    let isSessionActive = false;
+    let isPaused = false;
+    let sessionMs = 3 * 60 * 1000;
+    let timeRemaining = 0;
+    let timerInterval = null;
     let score = 0;
     let rounds = 0;
     let attempts = 0;
     let correct = 0;
-
     let totalInRound = 0;
     let placedInRound = 0;
-
     let dragging = null;
     let dragClone = null;
-    let dragOffset = {x:0,y:0};
+    let dragOffset = { x: 0, y: 0 };
+    let categories = [];
+    let currentObjects = [];
 
-    // Global event listeners for drag (attached once)
+    // Global event listeners for drag
     let globalMoveHandler = null;
     let globalUpHandler = null;
 
-    /* --------- Utilities --------- */
-    function starfield(n=120){
-      stars.innerHTML = '';
-      const frag = document.createDocumentFragment();
-      for(let i=0;i<n;i++){
-        const s = document.createElement('div');
-        s.className = 'star';
-        s.style.left = (Math.random()*100)+'%';
-        s.style.top  = (Math.random()*100)+'%';
-        s.style.opacity = (0.25 + Math.random()*0.6).toFixed(2);
-        s.style.transform = `scale(${0.8 + Math.random()*1.6})`;
-        frag.appendChild(s);
-      }
-      stars.appendChild(frag);
-    }
-    starfield();
-
-    function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-
-    /* --------- Difficulty --------- */
-    function getCurrentDifficulty(){
-      const difficultySelect = document.getElementById('difficulty');
-      if (!difficultySelect) return 'medium';
-      const val = (difficultySelect.value || 'medium').toLowerCase();
-      if (val !== 'easy' && val !== 'medium' && val !== 'hard') return 'medium';
-      return val;
-    }
-
-    function categoryCountFor(difficulty){
-      return difficulty === 'easy' ? 3 : (difficulty === 'hard' ? 5 : 4);
-    }
-
-    /* --------- Category Sets --------- */
+    // Emoji mappings
     const emoji = {
-      Red:'🔴', Blue:'🔵', Green:'🟢', Yellow:'🟡', Purple:'🟣',
-      Round:'🔵', Square:'🟥', Triangle:'🔺', Stars:'⭐', Hearts:'❤️'
+      Red: '🔴', Blue: '🔵', Green: '🟢', Yellow: '🟡', Purple: '🟣',
+      Round: '🔵', Square: '🟥', Triangle: '🔺', Stars: '⭐', Hearts: '❤️'
     };
 
-    function buildCategories(type, difficulty){
-      const n = categoryCountFor(difficulty);
-      if (type === 'colors'){
-        const base = ['Red','Blue','Green','Yellow','Purple'];
-        return base.slice(0,n).map(label => ({ key:label, label, icon: emoji[label] || '⬜' }));
+    // Utility functions
+    function showFeedback(message, type) {
+      if (!feedbackMessage) return;
+      feedbackMessage.textContent = message;
+      feedbackMessage.className = `feedback-message ${type}`;
+      feedbackMessage.classList.remove('hidden');
+      setTimeout(() => feedbackMessage.classList.add('hidden'), 1200);
+    }
+
+    function saveSettings() {
+      if (difficultySelect) storage.set('sortDifficulty', difficultySelect.value);
+      if (categoryTypeSelect) storage.set('sortCategoryType', categoryTypeSelect.value);
+      if (objectsCountSelect) storage.set('sortObjectsCount', objectsCountSelect.value);
+      if (hintSettingSelect) storage.set('sortHintSetting', hintSettingSelect.value);
+      if (sessionDurationInp) storage.set('sortSessionDuration', sessionDurationInp.value);
+    }
+
+    function loadSettings() {
+      if (difficultySelect) difficultySelect.value = storage.get('sortDifficulty', 'medium');
+      if (categoryTypeSelect) categoryTypeSelect.value = storage.get('sortCategoryType', 'shapes');
+      if (objectsCountSelect) objectsCountSelect.value = storage.get('sortObjectsCount', '9');
+      if (hintSettingSelect) hintSettingSelect.value = storage.get('sortHintSetting', 'hover');
+      if (sessionDurationInp) sessionDurationInp.value = storage.get('sortSessionDuration', 3);
+      updatePersonalBest();
+    }
+
+    function updateHUD() {
+      if (hudScore) hudScore.textContent = `${score}`;
+      if (hudPB) hudPB.textContent = `${getPB()}`;
+      if (hudRounds) hudRounds.textContent = `${rounds}`;
+
+      const mins = Math.max(0, Math.floor(timeRemaining / 60000));
+      const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
+      if (hudTime) hudTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateProgress() {
+      const percentage = totalInRound > 0 ? (placedInRound / totalInRound) * 100 : 0;
+      if (progressFill) progressFill.style.width = `${percentage}%`;
+      if (progressText) progressText.textContent = `${placedInRound}/${totalInRound}`;
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeRemaining -= 100;
+        const progress = Math.max(0, timeRemaining / sessionMs);
+        if (timerBarEl) timerBarEl.style.width = `${progress * 100}%`;
+        updateHUD();
+        if (timeRemaining <= 0) {
+          endSession();
+        }
+      }, 100);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    // Screen management
+    function setScreen(screenName) {
+      document.querySelectorAll('[data-screen]').forEach(el => {
+        el.classList.remove('active');
+      });
+      const screen = document.querySelector(`[data-screen="${screenName}"]`);
+      if (screen) screen.classList.add('active');
+    }
+
+    // Category generation
+    function buildCategories(type, difficulty) {
+      const categoryCount = difficulty === 'easy' ? 3 : (difficulty === 'hard' ? 5 : 4);
+      
+      if (type === 'colors') {
+        const base = ['Red', 'Blue', 'Green', 'Yellow', 'Purple'];
+        return base.slice(0, categoryCount).map(label => ({ 
+          key: label, 
+          label, 
+          icon: emoji[label] || '⬜' 
+        }));
       }
-      if (type === 'shapes'){
-        const base = ['Round','Square','Triangle','Stars','Hearts'];
-        return base.slice(0,n).map(label => ({ key:label, label, icon: emoji[label] || '◻️' }));
+      
+      if (type === 'shapes') {
+        const base = ['Round', 'Square', 'Triangle', 'Stars', 'Hearts'];
+        return base.slice(0, categoryCount).map(label => ({ 
+          key: label, 
+          label, 
+          icon: emoji[label] || '◻️' 
+        }));
       }
-      if (type === 'numbers'){
-        // group buckets by ranges
+      
+      if (type === 'numbers') {
         const defs = {
-          easy:  [ [1,3], [4,6], [7,9] ],
-          medium:[ [1,3], [4,6], [7,9], [10,12] ],
-          hard:  [ [1,3], [4,6], [7,9], [10,12], [13,15] ]
+          easy: [[1, 3], [4, 6], [7, 9]],
+          medium: [[1, 3], [4, 6], [7, 9], [10, 12]],
+          hard: [[1, 3], [4, 6], [7, 9], [10, 12], [13, 15]]
         }[difficulty];
-        return defs.map(([a,b]) => {
+        return defs.map(([a, b]) => {
           const label = `${a}-${b}`;
-          return { key:label, label, icon:'🔢', range:[a,b] };
+          return { key: label, label, icon: '🔢', range: [a, b] };
         });
       }
-      if (type === 'letters'){
-        // alphabet buckets
+      
+      if (type === 'letters') {
         const defs = {
-          easy:  [ ['A','I'], ['J','R'], ['S','Z'] ],
-          medium:[ ['A','F'], ['G','L'], ['M','R'], ['S','Z'] ],
-          hard:  [ ['A','E'], ['F','J'], ['K','O'], ['P','T'], ['U','Z'] ]
+          easy: [['A', 'I'], ['J', 'R'], ['S', 'Z']],
+          medium: [['A', 'F'], ['G', 'L'], ['M', 'R'], ['S', 'Z']],
+          hard: [['A', 'E'], ['F', 'J'], ['K', 'O'], ['P', 'T'], ['U', 'Z']]
         }[difficulty];
-        return defs.map(([a,b]) => {
-          const label = `${a}–${b}`;
-          return { key:label, label, icon:'🔤', range:[a.charCodeAt(0), b.charCodeAt(0)] };
+        return defs.map(([a, b]) => {
+          const label = `${a}—${b}`;
+          return { key: label, label, icon: '🔤', range: [a.charCodeAt(0), b.charCodeAt(0)] };
         });
       }
+      
       return [];
     }
 
-    function pickObjects(type, categories, count){
+    function pickObjects(type, categories, count) {
       const items = [];
-      if (type === 'colors'){
+      
+      if (type === 'colors') {
         const pool = categories.map(c => c.key);
-        for(let i=0;i<count;i++){
-          const cat = pool[Math.floor(Math.random()*pool.length)];
+        for (let i = 0; i < count; i++) {
+          const cat = pool[Math.floor(Math.random() * pool.length)];
           const icon = emoji[cat] || '⬜';
-          items.push({ display:icon, category:cat, hint:`Drop into ${cat}` });
+          items.push({ display: icon, category: cat, hint: `Drop into ${cat}` });
         }
         return items;
       }
-      if (type === 'shapes'){
+      
+      if (type === 'shapes') {
         const pool = categories.map(c => c.key);
-        const iconFor = (c)=> emoji[c] || '◻️';
-        for(let i=0;i<count;i++){
-          const cat = pool[Math.floor(Math.random()*pool.length)];
-          items.push({ display: iconFor(cat), category:cat, hint:`${cat}` });
+        for (let i = 0; i < count; i++) {
+          const cat = pool[Math.floor(Math.random() * pool.length)];
+          items.push({ display: emoji[cat] || '◻️', category: cat, hint: `${cat}` });
         }
         return items;
       }
-      if (type === 'numbers'){
-        // derive min/max across ranges we use
+      
+      if (type === 'numbers') {
         const min = Math.min(...categories.map(c => c.range[0]));
         const max = Math.max(...categories.map(c => c.range[1]));
-        for(let i=0;i<count;i++){
-          const num = Math.floor(Math.random()*(max-min+1))+min;
-          const cat = categories.find(c => num>=c.range[0] && num<=c.range[1]).key;
-          items.push({ display:String(num), category:cat, hint:`${cat}` });
+        for (let i = 0; i < count; i++) {
+          const num = Math.floor(Math.random() * (max - min + 1)) + min;
+          const cat = categories.find(c => num >= c.range[0] && num <= c.range[1]).key;
+          items.push({ display: String(num), category: cat, hint: `${cat}` });
         }
         return items;
       }
-      if (type === 'letters'){
-        const [min,max] = [
-          Math.min(...categories.map(c => c.range[0])),
-          Math.max(...categories.map(c => c.range[1]))
-        ];
-        for(let i=0;i<count;i++){
-          const code = Math.floor(Math.random()*(max-min+1))+min;
+      
+      if (type === 'letters') {
+        const min = Math.min(...categories.map(c => c.range[0]));
+        const max = Math.max(...categories.map(c => c.range[1]));
+        for (let i = 0; i < count; i++) {
+          const code = Math.floor(Math.random() * (max - min + 1)) + min;
           const letter = String.fromCharCode(code);
-          const cat = categories.find(c => code>=c.range[0] && code<=c.range[1]).key;
-          items.push({ display:letter, category:cat, hint:`${cat}` });
+          const cat = categories.find(c => code >= c.range[0] && code <= c.range[1]).key;
+          items.push({ display: letter, category: cat, hint: `${cat}` });
         }
         return items;
       }
+      
       return items;
     }
 
-    /* --------- Rendering --------- */
-    function clearRoundUI(){
-      objectsContainer.innerHTML = '';
-      categoriesContainer.innerHTML = '';
+    // Rendering functions
+    function clearRoundUI() {
+      if (objectsContainer) objectsContainer.innerHTML = '';
+      if (categoriesContainer) categoriesContainer.innerHTML = '';
       placedInRound = 0;
-      updateRoundProgress();
+      updateProgress();
     }
 
-    function renderCategories(categories){
+    function renderCategories(categories) {
+      if (!categoriesContainer) return;
       const frag = document.createDocumentFragment();
       categories.forEach(c => {
         const box = document.createElement('div');
         box.className = 'category-box';
-        box.setAttribute('role','button');
+        box.setAttribute('role', 'button');
         box.setAttribute('aria-label', `Category ${c.label}`);
         box.dataset.category = c.key;
 
@@ -757,13 +1146,15 @@
         label.className = 'category-label';
         label.textContent = c.label;
 
-        box.appendChild(icon); box.appendChild(label);
+        box.appendChild(icon);
+        box.appendChild(label);
         frag.appendChild(box);
       });
       categoriesContainer.appendChild(frag);
     }
 
-    function renderObjects(items, showHintsMode){
+    function renderObjects(items, showHintsMode) {
+      if (!objectsContainer) return;
       const frag = document.createDocumentFragment();
       items.forEach((it, idx) => {
         const ob = document.createElement('div');
@@ -771,7 +1162,7 @@
         ob.dataset.category = it.category;
         ob.dataset.index = String(idx);
         ob.setAttribute('tabindex', '0');
-        ob.setAttribute('role','button');
+        ob.setAttribute('role', 'button');
         ob.setAttribute('aria-label', `Object ${it.display}, category ${it.category}`);
 
         const span = document.createElement('span');
@@ -783,9 +1174,9 @@
         hint.textContent = it.hint || it.category;
         ob.appendChild(hint);
 
-        if (showHintsMode === 'always'){
+        if (showHintsMode === 'always') {
           hint.style.opacity = '1';
-        } else if (showHintsMode === 'off'){
+        } else if (showHintsMode === 'off') {
           hint.style.display = 'none';
         }
 
@@ -795,330 +1186,282 @@
       objectsContainer.appendChild(frag);
     }
 
-    /* --------- Drag & Drop (pointer-based) --------- */
-    function pointerPos(e){
-      if (e.touches && e.touches[0]) return { x:e.touches[0].clientX, y:e.touches[0].clientY };
-      return { x:e.clientX, y:e.clientY };
+    // Drag and drop functionality
+    function pointerPos(e) {
+      if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
     }
 
     function setupGlobalDragHandlers() {
-      if (globalMoveHandler) return; // Already set up
+      if (globalMoveHandler) return;
 
       globalMoveHandler = (e) => {
         if (!dragClone) return;
         e.preventDefault();
-        const {x,y} = pointerPos(e);
+        const { x, y } = pointerPos(e);
         dragClone.style.transform = `translate(${x - dragOffset.x - parseFloat(dragClone.style.left)}px, ${y - dragOffset.y - parseFloat(dragClone.style.top)}px)`;
 
-        // highlight hovered category
-        const target = categoryAtPoint(x,y);
-        for (const box of categoriesContainer.children){
+        const target = categoryAtPoint(x, y);
+        for (const box of categoriesContainer.children) {
           box.classList.toggle('highlight', box === target);
         }
       };
 
       globalUpHandler = (e) => {
         if (!dragClone) return;
-        const {x,y} = pointerPos(e);
-        const target = categoryAtPoint(x,y);
+        const { x, y } = pointerPos(e);
+        const target = categoryAtPoint(x, y);
         finalizeDrop(target);
       };
 
-      // Add only pointer event listeners (covers touch + mouse on modern browsers)
-      window.addEventListener('pointermove', globalMoveHandler, {passive:false});
-      window.addEventListener('pointerup', globalUpHandler, {passive:false});
+      window.addEventListener('pointermove', globalMoveHandler, { passive: false });
+      window.addEventListener('pointerup', globalUpHandler, { passive: false });
     }
 
-    function attachDragHandlers(elm){
+    function attachDragHandlers(elm) {
       const onDown = (e) => {
-        if (!sessionActive) return;
+        if (!isSessionActive || isPaused) return;
         e.preventDefault();
-        elm.setPointerCapture?.(e.pointerId || undefined);
+        if (elm.setPointerCapture) elm.setPointerCapture(e.pointerId);
 
-        const {x,y} = pointerPos(e);
+        const { x, y } = pointerPos(e);
         const rect = elm.getBoundingClientRect();
         dragOffset = { x: x - rect.left, y: y - rect.top };
 
         dragging = elm;
         dragClone = elm.cloneNode(true);
         dragClone.classList.add('object-clone');
-        dragClone.style.width = rect.width+'px';
-        dragClone.style.height = rect.height+'px';
-        dragClone.style.left = rect.left+'px';
-        dragClone.style.top = rect.top+'px';
+        dragClone.style.width = rect.width + 'px';
+        dragClone.style.height = rect.height + 'px';
+        dragClone.style.left = rect.left + 'px';
+        dragClone.style.top = rect.top + 'px';
         document.body.appendChild(dragClone);
 
-        elm.style.opacity = '0.25';
+        elm.classList.add('dragging');
       };
 
-      // Attach only pointer event handlers (covers touch + mouse on modern browsers)
-      elm.addEventListener('pointerdown', onDown, {passive:false});
+      elm.addEventListener('pointerdown', onDown, { passive: false });
     }
 
-    function categoryAtPoint(x,y){
+    function categoryAtPoint(x, y) {
+      if (!categoriesContainer) return null;
       const boxes = Array.from(categoriesContainer.children);
-      for (const b of boxes){
+      for (const b of boxes) {
         const r = b.getBoundingClientRect();
         if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return b;
       }
       return null;
     }
 
-    function finalizeDrop(targetBox){
+    function finalizeDrop(targetBox) {
       const obj = dragging;
       const clone = dragClone;
-      dragging = null; 
+      dragging = null;
       dragClone = null;
 
-      // clear highlights
-      for (const box of categoriesContainer.children){ 
-        box.classList.remove('highlight'); 
+      for (const box of categoriesContainer.children) {
+        box.classList.remove('highlight');
       }
 
-      if (!obj){ return; }
+      if (!obj) return;
 
       const correctCat = obj.dataset.category;
       attempts++;
 
-      if (targetBox && targetBox.dataset.category === correctCat){
+      if (targetBox && targetBox.dataset.category === correctCat) {
         // Correct placement
         targetBox.classList.add('correct');
-        setTimeout(()=> targetBox.classList.remove('correct'), 350);
+        setTimeout(() => targetBox.classList.remove('correct'), 600);
 
-        showFeedback(true);
+        showFeedback('Perfect!', 'correct');
         correct++;
         score += 10;
         placedInRound++;
-        updateRoundProgress();
+        updateProgress();
 
-        // Remove object after brief delay for better UX
         setTimeout(() => {
           if (obj && obj.parentNode) obj.remove();
         }, 200);
-        
+
+        if (objectsContainer) objectsContainer.classList.add('celebrate');
+        setTimeout(() => {
+          if (objectsContainer) objectsContainer.classList.remove('celebrate');
+        }, 900);
+
       } else {
-        if (targetBox){
+        if (targetBox) {
           targetBox.classList.add('incorrect');
-          setTimeout(()=> targetBox.classList.remove('incorrect'), 350);
+          setTimeout(() => targetBox.classList.remove('incorrect'), 600);
         }
-        showFeedback(false);
+        showFeedback('Try again!', 'incorrect');
         score = Math.max(0, score - 2);
-        
-        // Reset object position and opacity
-        if (obj && obj.parentNode) obj.style.opacity = '1';
+
+        if (obj) obj.classList.remove('dragging');
       }
 
-      // cleanup clone
       if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
 
-      updateScoreAccuracy();
-      updateHud();
+      updateHUD();
 
       // Round complete?
-      if (placedInRound >= totalInRound){
+      if (placedInRound >= totalInRound) {
         rounds++;
-        roundsEl.textContent = String(rounds);
-        startNextRound();
+        setTimeout(() => startNextRound(), 1000);
       }
     }
 
-    function showFeedback(isCorrect){
-      const msg = isCorrect ? 'Nice!' : 'Try again';
-      feedbackMessage.textContent = msg;
-      feedbackMessage.className = 'show ' + (isCorrect ? 'correct' : 'incorrect');
-      setTimeout(()=> { 
-        feedbackMessage.className = feedbackMessage.className.replace('show','').trim(); 
-      }, 600);
-    }
+    // Round management
+    function startRound() {
+      const difficulty = difficultySelect?.value || 'medium';
+      const type = categoryTypeSelect?.value || 'shapes';
+      const count = parseInt(objectsCountSelect?.value || '9', 10);
 
-    function updateScoreAccuracy(){
-      const acc = attempts ? Math.round((correct/attempts)*100) : 0;
-      scoreEl.textContent = String(score);
-      accuracyEl.textContent = acc + '%';
-    }
-
-    function updateHud(){
-      hudScore.textContent = String(score);
-      hudProgress.textContent = `${placedInRound}/${totalInRound}`;
-      hudDifficulty.textContent = capitalize(getCurrentDifficulty());
-    }
-
-    function updateRoundProgress(){
-      const pct = totalInRound ? (placedInRound/totalInRound)*100 : 0;
-      progressFill.style.width = pct + '%';
-      hudProgress.textContent = `${placedInRound}/${totalInRound}`;
-    }
-
-    function capitalize(s){ return (s||'').slice(0,1).toUpperCase() + (s||'').slice(1) }
-
-    /* --------- Rounds --------- */
-    function startRound(){
-      const difficulty = getCurrentDifficulty();
-      const type = document.getElementById('category-type').value;
-      const count = parseInt(document.getElementById('objects-count').value,10);
-
-      const categories = buildCategories(type, difficulty);
+      categories = buildCategories(type, difficulty);
       clearRoundUI();
       renderCategories(categories);
 
       const items = pickObjects(type, categories, count);
+      currentObjects = items;
       totalInRound = items.length;
       placedInRound = 0;
 
-      const hintMode = document.getElementById('hint-setting').value; // 'off' | 'hover' | 'always'
+      const hintMode = hintSettingSelect?.value || 'hover';
       renderObjects(items, hintMode);
 
-      challengeDisplay.classList.remove('hidden');
-      challengeDisplay.textContent = `Sort by ${capitalize(type)} (${categories.length} categories)`;
-      updateRoundProgress();
-      updateHud();
+      if (challengeDisplay) challengeDisplay.textContent = `Sort by ${capitalize(type)} (${categories.length} categories)`;
+      updateProgress();
+      updateHUD();
     }
 
-    function startNextRound(){
-      // brief pause then new round
-      setTimeout(()=> startRound(), 500);
-    }
-
-    /* --------- Session Timer --------- */
-    function formatTime(s){
-      const m = Math.floor(s/60);
-      const r = s%60;
-      return `${m}:${String(r).padStart(2,'0')}`;
-    }
-
-    function startTimer(totalSeconds){
-      totalSessionSeconds = totalSeconds;
-      sessionEndsAt = Date.now() + totalSeconds*1000;
-
-      if (sessionTimerId) clearInterval(sessionTimerId);
-
-      sessionTimerId = setInterval(() => {
-        const remaining = Math.max(0, Math.ceil((sessionEndsAt - Date.now())/1000));
-        timeLeftEl.textContent = formatTime(remaining);
-
-        const pct = clamp(remaining/totalSessionSeconds, 0, 1);
-        timerBar.style.width = (pct*100) + '%';
-
-        if (remaining <= 0){
-          clearInterval(sessionTimerId);
-          endExercise();
-        }
-      }, 250);
-    }
-
-    function endExercise(){
-      sessionActive = false;
-      
-      // Clear game area
-      clearRoundUI();
-      challengeDisplay.classList.add('hidden');
-      statsPanel.classList.add('hidden');
-
-      const acc = attempts ? Math.round((correct/attempts)*100) : 0;
-      document.getElementById('final-score').textContent = String(score);
-      document.getElementById('final-rounds').textContent = String(rounds);
-      document.getElementById('final-accuracy').textContent = acc + '%';
-
-      completionMsg.classList.remove('hidden');
-
-      // Notify session enhancement system
-      try {
-        sessionEnhancement.handleSessionComplete({ 
-          score: score, 
-          accuracy: acc,
-          rounds: rounds,
-          attempts: attempts,
-          correct: correct
-        });
-      } catch (e) {
-        console.warn('Session enhancement not available:', e);
-      }
-
-      // Record session via shared hook
-      window.endSession(score, getCurrentDifficulty());
-    }
-
-    /* --------- Session Flow --------- */
-    function resetState(){
-      score = 0; rounds = 0; attempts = 0; correct = 0;
-      scoreEl.textContent = '0'; 
-      roundsEl.textContent = '0'; 
-      accuracyEl.textContent = '0%';
-      hudScore.textContent = '0'; 
-      hudProgress.textContent = '0/0';
-      timerBar.style.width = '100%';
-      updateHud();
-    }
-
-    function initializeSession() {
-      // Initialize session enhancement with current difficulty
-      try {
-        sessionEnhancement.initializeExercise(EXERCISE_ID, getCurrentDifficulty());
-      } catch (e) {
-        console.warn('Session enhancement initialization failed:', e);
+    function startNextRound() {
+      if (isSessionActive) {
+        startRound();
       }
     }
 
-    startBtn.addEventListener('click', () => {
-      settingsPanel.classList.add('hidden');
-      settingsPanel.setAttribute('aria-hidden', 'true');
-      statsPanel.classList.remove('hidden');
-      statsPanel.removeAttribute('aria-hidden');
-      completionMsg.classList.add('hidden');
-      completionMsg.setAttribute('aria-hidden', 'true');
-      sessionActive = true;
-      resetState();
-      
-      // Set up global drag handlers
+    function capitalize(s) {
+      return (s || '').slice(0, 1).toUpperCase() + (s || '').slice(1);
+    }
+
+    function startSession() {
+      if (isSessionActive) return;
+
+      const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp?.value) || 3));
+      sessionMs = minutes * 60 * 1000;
+
+      // Reset game state
+      score = 0;
+      rounds = 0;
+      attempts = 0;
+      correct = 0;
+      totalInRound = 0;
+      placedInRound = 0;
+      timeRemaining = sessionMs;
+      isPaused = false;
+
+      updateHUD();
+      setScreen('game');
+      saveSettings();
+
+      isSessionActive = true;
+      startTimer();
+      updatePersonalBest();
       setupGlobalDragHandlers();
 
-      // start round + timer
-      startRound();
-      const mins = clamp(parseInt(document.getElementById('session-duration').value,10) || 3, 1, 10);
-      startTimer(mins * 60);
-    });
+      setTimeout(() => {
+        startRound();
+      }, 100);
+    }
 
-    restartBtn.addEventListener('click', () => {
-      completionMsg.classList.add('hidden');
-      completionMsg.setAttribute('aria-hidden', 'true');
-      settingsPanel.classList.remove('hidden');
-      settingsPanel.removeAttribute('aria-hidden');
-    });
+    function endSession() {
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+      isPaused = false;
 
-    // Update session enhancement when difficulty changes
-    document.getElementById('difficulty').addEventListener('change', () => {
-      updateHud();
-      initializeSession();
-    });
+      const accuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
 
-    // Accessibility: keyboard "drop" (Enter/Space) to nearest category center
-    objectsContainer.addEventListener('keydown', (e) => {
-      if (!sessionActive) return;
-      const tgt = e.target.closest('.sort-object');
-      if (!tgt) return;
-      if (e.key === 'Enter' || e.key === ' '){
-        e.preventDefault();
-        // snap to closest category by distance
-        const objRect = tgt.getBoundingClientRect();
-        const oc = { x: objRect.left + objRect.width/2, y: objRect.top + objRect.height/2 };
-        let best = null, bestD = Infinity;
-        for (const b of categoriesContainer.children){
-          const r = b.getBoundingClientRect();
-          const bc = { x: r.left + r.width/2, y: r.top + r.height/2 };
-          const d = Math.hypot(oc.x - bc.x, oc.y - bc.y);
-          if (d < bestD){ bestD = d; best = b; }
-        }
-        
-        // Simulate drag and drop
-        dragging = tgt;
-        dragClone = null; // Skip visual clone for keyboard interaction
-        finalizeDrop(best);
+      // Check for personal best
+      const previousPB = getPB();
+      let isNewPB = false;
+      if (score > previousPB) {
+        isNewPB = true;
+        setPB(score);
+        updatePersonalBest();
+      }
+
+      // Show completion modal
+      if (finalRoundsEl) finalRoundsEl.textContent = `${rounds}`;
+      if (finalAccuracyEl) finalAccuracyEl.textContent = `${accuracy}%`;
+      if (finalScoreEl) finalScoreEl.textContent = `${score}`;
+      if (finalXPEl) finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
+
+      if (completionModal) completionModal.classList.add('show');
+      clearRoundUI();
+      setScreen('settings');
+    }
+
+    // Event listeners
+    if (startBtn) startBtn.addEventListener('click', startSession);
+    if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
+    if (categoryTypeSelect) categoryTypeSelect.addEventListener('change', saveSettings);
+    if (objectsCountSelect) objectsCountSelect.addEventListener('change', saveSettings);
+    if (hintSettingSelect) hintSettingSelect.addEventListener('change', saveSettings);
+    if (sessionDurationInp) sessionDurationInp.addEventListener('input', saveSettings);
+
+    if (pauseBtn) pauseBtn.addEventListener('click', () => {
+      if (!isSessionActive) return;
+      isPaused = !isPaused;
+      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+      if (isPaused) {
+        stopTimer();
+      } else {
+        startTimer();
       }
     });
 
-    /* --------- Initialize session enhancement --------- */
-    // Initialize on page load
-    initializeSession();
+    if (endBtn) endBtn.addEventListener('click', () => endSession());
+
+    if (restartBtn) restartBtn.addEventListener('click', () => {
+      if (timerInterval) stopTimer();
+      isSessionActive = false;
+      isPaused = false;
+      setScreen('settings');
+    });
+
+    if (restartModalBtn) restartModalBtn.addEventListener('click', () => {
+      if (completionModal) completionModal.classList.remove('show');
+      setScreen('settings');
+    });
+
+    if (completeClose) completeClose.addEventListener('click', () => {
+      if (completionModal) completionModal.classList.remove('show');
+      setScreen('settings');
+    });
+
+    // Keyboard accessibility
+    if (objectsContainer) {
+      objectsContainer.addEventListener('keydown', (e) => {
+        if (!isSessionActive || isPaused) return;
+        const tgt = e.target.closest('.sort-object');
+        if (!tgt) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const objRect = tgt.getBoundingClientRect();
+          const oc = { x: objRect.left + objRect.width / 2, y: objRect.top + objRect.height / 2 };
+          let best = null, bestD = Infinity;
+          for (const b of categoriesContainer.children) {
+            const r = b.getBoundingClientRect();
+            const bc = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+            const d = Math.hypot(oc.x - bc.x, oc.y - bc.y);
+            if (d < bestD) { bestD = d; best = b; }
+          }
+
+          dragging = tgt;
+          dragClone = null;
+          finalizeDrop(best);
+        }
+      });
+    }
 
   </script>
 </body>
