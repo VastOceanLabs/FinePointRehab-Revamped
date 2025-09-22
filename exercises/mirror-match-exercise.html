@@ -1650,6 +1650,11 @@
     // Start on settings screen
     setScreen('settings');
 
+    // Only call updatePersonalBest if elements exist
+    setTimeout(() => {
+      updatePersonalBest();
+    }, 100);
+
     // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
       if (timerInterval) stopTimer();
