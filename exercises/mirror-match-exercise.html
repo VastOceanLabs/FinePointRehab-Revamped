@@ -181,11 +181,11 @@
     }
 
     function loadSettings() {
-      difficultySelect.value = storage.get('mirrorDifficulty', 'medium');
-      targetSizeSelect.value = storage.get('mirrorTargetSize', 'medium');
-      mirrorModeSelect.value = storage.get('mirrorMode', 'simultaneous');
-      adaptiveTimingSelect.value = storage.get('mirrorAdaptiveTiming', 'on');
-      sessionDurationInp.value = storage.get('mirrorSessionDuration', 3);
+      if (difficultySelect) difficultySelect.value = storage.get('mirrorDifficulty', 'medium');
+      if (targetSizeSelect) targetSizeSelect.value = storage.get('mirrorTargetSize', 'medium');
+      if (mirrorModeSelect) mirrorModeSelect.value = storage.get('mirrorMode', 'simultaneous');
+      if (adaptiveTimingSelect) adaptiveTimingSelect.value = storage.get('mirrorAdaptiveTiming', 'on');
+      if (sessionDurationInp) sessionDurationInp.value = storage.get('mirrorSessionDuration', 3);
       updatePersonalBest();
     }
 
