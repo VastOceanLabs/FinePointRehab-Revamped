@@ -190,6 +190,7 @@
     }
 
     function updateInstructionsText() {
+      if (!mirrorModeSelect) return;
       const mode = mirrorModeSelect.value;
       if (instructions) {
         instructions.textContent = (mode === 'simultaneous')
