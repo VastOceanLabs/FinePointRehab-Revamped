@@ -154,14 +154,14 @@
     document.body.appendChild(rightTouchIndicator);
 
     // Event listeners and settings
-    difficultySelect.addEventListener('change', saveSettings);
-    targetSizeSelect.addEventListener('change', saveSettings);
-    mirrorModeSelect.addEventListener('change', () => {
+    if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
+    if (targetSizeSelect) targetSizeSelect.addEventListener('change', saveSettings);
+    if (mirrorModeSelect) mirrorModeSelect.addEventListener('change', () => {
       saveSettings();
       updateInstructionsText();
     });
-    adaptiveTimingSelect.addEventListener('change', saveSettings);
-    sessionDurationInp.addEventListener('input', saveSettings);
+    if (adaptiveTimingSelect) adaptiveTimingSelect.addEventListener('change', saveSettings);
+    if (sessionDurationInp) sessionDurationInp.addEventListener('input', saveSettings);
 
     // Utility functions
     function showError(msg) {
