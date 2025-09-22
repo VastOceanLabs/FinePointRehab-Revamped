@@ -1,468 +1,4 @@
-<script>
-    // Simple storage utility
-    const storage = {
-      get: (key, defaultValue) => {
-        try {
-          const item = localStorage.getItem(key);
-          return item ? JSON.parse(item) : defaultValue;
-        } catch {
-          return defaultValue;
-        }
-      },
-      set: (key, value) => {
-        try {
-          localStorage.setItem(key, JSON.stringify(value));
-        } catch (e) {
-          console.error('Storage error:', e);
-        }
-      }
-    };
-
-    // Generate starfield
-    function generateStars(container, count = 150) {
-      if (!container) return;
-      container.innerHTML = '';
-      for (let i = 0; i < count; i++) {
-        const star = document.createElement('div');
-        star.style.position = 'absolute';
-        star.style.width = Math.random() * 3 + 'px';
-        star.style.height = star.style.width;
-        star.style.backgroundColor = 'white';
-        star.style.borderRadius = '50%';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.opacity = Math.random() * 0.8 + 0.2;
-        container.appendChild(star);
-      }
-    }
-
-    // DOM elements
-    const starsContainer = document.getElementById('stars-container');
-    const timerBarEl = document.getElementById('timer-bar');
-    const hudScore = document.getElementById('hud-score');
-    const hudPB = document.getElementById('hud-pb');
-    const pbSettingsEl = document.getElementById('pb-settings');
-    const hudHits = document.getElementById('hud-hits');
-    const hudTime = document.getElementById('hud-time');
-    const instructions = document.getElementById('instructions');
-    const scanArea = document.getElementById('scan-area');
-    const targetDisplay = document.getElementById('target-display');
-    const targetIcon = document.getElementById('target-icon');
-    const focusOverlay = document.getElementById('focus-overlay');
-    const statsDisplay = document.getElementById('stats-display');
-    const accuracyDisplay = document.getElementById('accuracy-display');
-    const reactionDisplay = document.getElementById('reaction-display');
-    const feedbackMessage = document.getElementById('feedback-message');
-    const startBtn = document.getElementById('start-session');
-    const pauseBtn = document.getElementById('pause-session');
-    const restartBtn = document.getElementById('restart-session');
-    const endBtn = document.getElementById('end-session');
-    const completionModal = document.getElementById('completion-message');
-    const finalHitsEl = document.getElementById('final-hits');
-    const finalAccuracyEl = document.getElementById('final-accuracy');
-    const finalReactionEl = document.getElementById('final-reaction');
-    const finalScoreEl = document.getElementById('final-score');
-    const finalXPEl = document.getElementById('final-xp');
-    const completeClose = document.getElementById('close-complete');
-    const restartModalBtn = document.getElementById('restart-button');
-    const difficultySelect = document.getElementById('difficulty');
-    const focusAreaSelect = document.getElementById('focus-area');
-    const objectTypeSelect = document.getElementById('object-type');
-    const sessionDurationInp = document.getElementById('session-duration');
-
-    // Generate initial stars
-    generateStars(starsContainer, 150);
-
-    // Personal best tracking
-    const PB_KEY = 'visual-scanner:best';
-    const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
-    const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
-
-    function updatePersonalBest() {
-      const pb = getPB();
-      if (hudPB) hudPB.textContent = pb ? String(pb) : '0';
-      if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
-    }
-
-    // Game state
-    let isSessionActive = false;
-    let isPaused = false;
-    let sessionMs = 3 * 60 * 1000;
-    let timeRemaining = 0;
-    let timerInterval = null;
-    let score = 0;
-    let hits = 0;
-    let attempts = 0;
-    let reactionTimes = [];
-    let currentTarget = null;
-    let targetStartTime = 0;
-    let targetElement = null;
-    let distractorElements = [];
-
-    // Target object sets
-    const TARGET_SETS = {
-      shapes: ['🔴', '🔵', '🟡', '🟢', '🟣', '🟠', '⭐', '💎', '🔺', '🔸', '🔹', '⬛'],
-      letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
-      numbers: '0123456789'.split(''),
-      emoji: ['😀', '😎', '🎯', '🎨', '🎵', '🎭', '🎊', '🎈', '🌟', '🌈', '🔥', '⚡']
-    };
-
-    // Utility functions
-    function showFeedback(message, type) {
-      if (!feedbackMessage) return;
-      feedbackMessage.textContent = message;
-      feedbackMessage.className = `feedback-message ${type}`;
-      feedbackMessage.classList.remove('hidden');
-      setTimeout(() => feedbackMessage.classList.add('hidden'), 1000);
-    }
-
-    function saveSettings() {
-      if (difficultySelect) storage.set('scannerDifficulty', difficultySelect.value);
-      if (focusAreaSelect) storage.set('scannerFocusArea', focusAreaSelect.value);
-      if (objectTypeSelect) storage.set('scannerObjectType', objectTypeSelect.value);
-      if (sessionDurationInp) storage.set('scannerSessionDuration', sessionDurationInp.value);
-    }
-
-    function loadSettings() {
-      if (difficultySelect) difficultySelect.value = storage.get('scannerDifficulty', 'medium');
-      if (focusAreaSelect) focusAreaSelect.value = storage.get('scannerFocusArea', 'none');
-      if (objectTypeSelect) objectTypeSelect.value = storage.get('scannerObjectType', 'shapes');
-      if (sessionDurationInp) sessionDurationInp.value = storage.get('scannerSessionDuration', 3);
-      updatePersonalBest();
-    }
-
-    function updateHUD() {
-      if (hudScore) hudScore.textContent = `${score}`;
-      if (hudPB) hudPB.textContent = `${getPB()}`;
-      if (hudHits) hudHits.textContent = `${hits}`;
-
-      const mins = Math.max(0, Math.floor(timeRemaining / 60000));
-      const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
-      if (hudTime) hudTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-
-      // Update accuracy and reaction time displays
-      const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 100;
-      const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
-      
-      if (accuracyDisplay) accuracyDisplay.textContent = `${accuracy}%`;
-      if (reactionDisplay) reactionDisplay.textContent = `${avgReaction}ms`;
-    }
-
-    function startTimer() {
-      timerInterval = setInterval(() => {
-        timeRemaining -= 100;
-        const progress = Math.max(0, timeRemaining / sessionMs);
-        if (timerBarEl) timerBarEl.style.width = `${progress * 100}%`;
-        updateHUD();
-        if (timeRemaining <= 0) {
-          endSession();
-        }
-      }, 100);
-    }
-
-    function stopTimer() {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-
-    // Screen management
-    function setScreen(screenName) {
-      document.querySelectorAll('[data-screen]').forEach(el => {
-        el.classList.remove('active');
-      });
-      const screen = document.querySelector(`[data-screen="${screenName}"]`);
-      if (screen) screen.classList.add('active');
-    }
-
-    // Focus area management
-    function updateFocusArea() {
-      const area = focusAreaSelect?.value || 'none';
-      if (focusOverlay) {
-        focusOverlay.className = 'focus-overlay';
-        if (area !== 'none') {
-          focusOverlay.classList.add(area);
-        }
-      }
-    }
-
-    // Target generation
-    function pickTarget() {
-      const type = objectTypeSelect?.value || 'shapes';
-      const targets = TARGET_SETS[type] || TARGET_SETS.shapes;
-      return targets[Math.floor(Math.random() * targets.length)];
-    }
-
-    function pickDistractors(target, count) {
-      const type = objectTypeSelect?.value || 'shapes';
-      const targets = TARGET_SETS[type] || TARGET_SETS.shapes;
-      const distractors = targets.filter(t => t !== target);
-      
-      const selected = [];
-      for (let i = 0; i < count && distractors.length > 0; i++) {
-        const index = Math.floor(Math.random() * distractors.length);
-        selected.push(distractors.splice(index, 1)[0]);
-      }
-      return selected;
-    }
-
-    function getRandomPosition(area) {
-      const rect = scanArea.getBoundingClientRect();
-      const padding = 30; // Keep objects away from edges
-      
-      let bounds = {
-        left: padding,
-        top: padding,
-        right: rect.width - padding,
-        bottom: rect.height - padding
-      };
-
-      const focusArea = focusAreaSelect?.value || 'none';
-      if (focusArea !== 'none') {
-        const mid = { x: rect.width / 2, y: rect.height / 2 };
-        switch (focusArea) {
-          case 'left':
-            bounds.right = mid.x - padding;
-            break;
-          case 'right':
-            bounds.left = mid.x + padding;
-            break;
-          case 'top':
-            bounds.bottom = mid.y - padding;
-            break;
-          case 'bottom':
-            bounds.top = mid.y + padding;
-            break;
-        }
-      }
-
-      return {
-        x: Math.random() * (bounds.right - bounds.left) + bounds.left,
-        y: Math.random() * (bounds.bottom - bounds.top) + bounds.top
-      };
-    }
-
-    function clearTargets() {
-      if (targetElement) {
-        targetElement.remove();
-        targetElement = null;
-      }
-      distractorElements.forEach(el => el.remove());
-      distractorElements = [];
-    }
-
-    function spawnTarget() {
-      clearTargets();
-      
-      currentTarget = pickTarget();
-      targetStartTime = Date.now();
-      
-      if (targetIcon) targetIcon.textContent = currentTarget;
-
-      // Create target element
-      targetElement = document.createElement('div');
-      targetElement.className = 'visual-object';
-      targetElement.textContent = currentTarget;
-      targetElement.dataset.isTarget = 'true';
-
-      const targetPos = getRandomPosition();
-      targetElement.style.left = targetPos.x + 'px';
-      targetElement.style.top = targetPos.y + 'px';
-
-      targetElement.addEventListener('click', handleTargetClick);
-      scanArea.appendChild(targetElement);
-
-      // Add distractors based on difficulty
-      const difficulty = difficultySelect?.value || 'medium';
-      let distractorCount = 0;
-      switch (difficulty) {
-        case 'easy': distractorCount = 3; break;
-        case 'medium': distractorCount = 6; break;
-        case 'hard': distractorCount = 10; break;
-      }
-
-      const distractors = pickDistractors(currentTarget, distractorCount);
-      distractors.forEach(distractor => {
-        const el = document.createElement('div');
-        el.className = 'visual-object';
-        el.textContent = distractor;
-        el.dataset.isTarget = 'false';
-
-        const pos = getRandomPosition();
-        el.style.left = pos.x + 'px';
-        el.style.top = pos.y + 'px';
-
-        el.addEventListener('click', handleDistractorClick);
-        scanArea.appendChild(el);
-        distractorElements.push(el);
-      });
-
-      if (scanArea) scanArea.classList.add('active');
-    }
-
-    function handleTargetClick(e) {
-      if (!isSessionActive || isPaused) return;
-      e.preventDefault();
-      
-      const reactionTime = Date.now() - targetStartTime;
-      reactionTimes.push(reactionTime);
-      
-      hits++;
-      attempts++;
-      score += 100;
-      
-      e.target.classList.add('correct');
-      showFeedback('Found it!', 'success');
-      
-      if (scanArea) scanArea.classList.add('celebrate');
-      setTimeout(() => {
-        if (scanArea) scanArea.classList.remove('celebrate');
-      }, 900);
-
-      updateHUD();
-      
-      // Spawn next target after brief delay
-      setTimeout(() => {
-        if (isSessionActive) {
-          spawnTarget();
-        }
-      }, 1000);
-    }
-
-    function handleDistractorClick(e) {
-      if (!isSessionActive || isPaused) return;
-      e.preventDefault();
-      
-      attempts++;
-      score = Math.max(0, score - 10);
-      
-      e.target.classList.add('incorrect');
-      showFeedback('Wrong target!', 'error');
-      
-      updateHUD();
-      
-      // Remove incorrect styling after animation
-      setTimeout(() => {
-        e.target.classList.remove('incorrect');
-      }, 400);
-    }
-
-    function startSession() {
-      if (isSessionActive) return;
-
-      const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp?.value) || 3));
-      sessionMs = minutes * 60 * 1000;
-
-      // Reset game state
-      score = 0;
-      hits = 0;
-      attempts = 0;
-      reactionTimes = [];
-      currentTarget = null;
-      timeRemaining = sessionMs;
-      isPaused = false;
-
-      // Clear scan area
-      if (scanArea) {
-        scanArea.innerHTML = '';
-        scanArea.classList.remove('active');
-      }
-
-      updateHUD();
-      setScreen('game');
-      saveSettings();
-      updateFocusArea();
-
-      isSessionActive = true;
-      startTimer();
-      updatePersonalBest();
-
-      setTimeout(() => {
-        spawnTarget();
-      }, 500);
-    }
-
-    function endSession() {
-      if (timerInterval) stopTimer();
-      isSessionActive = false;
-      isPaused = false;
-
-      clearTargets();
-      if (scanArea) scanArea.classList.remove('active');
-
-      const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 0;
-      const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
-
-      // Check for personal best
-      const previousPB = getPB();
-      let isNewPB = false;
-      if (score > previousPB) {
-        isNewPB = true;
-        setPB(score);
-        updatePersonalBest();
-      }
-
-      // Show completion modal
-      if (finalHitsEl) finalHitsEl.textContent = `${hits}`;
-      if (finalAccuracyEl) finalAccuracyEl.textContent = `${accuracy}%`;
-      if (finalReactionEl) finalReactionEl.textContent = `${avgReaction}ms`;
-      if (finalScoreEl) finalScoreEl.textContent = `${score}`;
-      if (finalXPEl) finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
-
-      if (completionModal) completionModal.classList.add('show');
-      setScreen('settings');
-    }
-
-    // Event listeners
-    if (startBtn) startBtn.addEventListener('click', startSession);
-    if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
-    if (focusAreaSelect) focusAreaSelect.addEventListener('change', () => {
-      saveSettings();
-      updateFocusArea();
-    });
-    if (objectTypeSelect) objectTypeSelect.addEventListener('change', saveSettings);
-    if (sessionDurationInp) sessionDurationInp.addEventListener('input', saveSettings);
-
-    if (pauseBtn) pauseBtn.addEventListener('click', () => {
-      if (!isSessionActive) return;
-      isPaused = !isPaused;
-      pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
-      if (isPaused) {
-        stopTimer();
-        if (scanArea) scanArea.style.filter = 'grayscale(0.5) brightness(0.7)';
-      } else {
-        startTimer();
-        if (scanArea) scanArea.style.filter = '';
-      }
-    });
-
-    if (endBtn) endBtn.addEventListener('click', () => endSession());
-
-    if (restartBtn) restartBtn.addEventListener('click', () => {
-      if (timerInterval) stopTimer();
-      isSessionActive = false;
-      isPaused = false;
-      clearTargets();
-      setScreen('settings');
-    });
-
-    if (restartModalBtn) restartModalBtn.addEventListener('click', () => {
-      if (completionModal) completionModal.classList.remove('show');
-      setScreen('settings');
-    });
-
-    if (completeClose) completeClose.addEventListener('click', () => {
-      if (completionModal) completionModal.classList.remove('show');
-      setScreen('settings');
-    });
-
-    // Initialize
-    loadSettings();
-    updateHUD();
-    updateFocusArea();
-    setScreen('settings');
-  </script>
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1271,3 +807,473 @@
   </div>
 
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Simple storage utility
+      const storage = {
+        get: (key, defaultValue) => {
+          try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : defaultValue;
+          } catch {
+            return defaultValue;
+          }
+        },
+        set: (key, value) => {
+          try {
+            localStorage.setItem(key, JSON.stringify(value));
+          } catch (e) {
+            console.error('Storage error:', e);
+          }
+        }
+      };
+
+      // Generate starfield
+      function generateStars(container, count = 150) {
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+          const star = document.createElement('div');
+          star.style.position = 'absolute';
+          star.style.width = Math.random() * 3 + 'px';
+          star.style.height = star.style.width;
+          star.style.backgroundColor = 'white';
+          star.style.borderRadius = '50%';
+          star.style.left = Math.random() * 100 + '%';
+          star.style.top = Math.random() * 100 + '%';
+          star.style.opacity = Math.random() * 0.8 + 0.2;
+          container.appendChild(star);
+        }
+      }
+
+      // DOM elements - queried after DOM is ready
+      const starsContainer = document.getElementById('stars-container');
+      const timerBarEl = document.getElementById('timer-bar');
+      const hudScore = document.getElementById('hud-score');
+      const hudPB = document.getElementById('hud-pb');
+      const pbSettingsEl = document.getElementById('pb-settings');
+      const hudHits = document.getElementById('hud-hits');
+      const hudTime = document.getElementById('hud-time');
+      const instructions = document.getElementById('instructions');
+      const scanArea = document.getElementById('scan-area');
+      const targetDisplay = document.getElementById('target-display');
+      const targetIcon = document.getElementById('target-icon');
+      const focusOverlay = document.getElementById('focus-overlay');
+      const statsDisplay = document.getElementById('stats-display');
+      const accuracyDisplay = document.getElementById('accuracy-display');
+      const reactionDisplay = document.getElementById('reaction-display');
+      const feedbackMessage = document.getElementById('feedback-message');
+      const startBtn = document.getElementById('start-session');
+      const pauseBtn = document.getElementById('pause-session');
+      const restartBtn = document.getElementById('restart-session');
+      const endBtn = document.getElementById('end-session');
+      const completionModal = document.getElementById('completion-message');
+      const finalHitsEl = document.getElementById('final-hits');
+      const finalAccuracyEl = document.getElementById('final-accuracy');
+      const finalReactionEl = document.getElementById('final-reaction');
+      const finalScoreEl = document.getElementById('final-score');
+      const finalXPEl = document.getElementById('final-xp');
+      const completeClose = document.getElementById('close-complete');
+      const restartModalBtn = document.getElementById('restart-button');
+      const difficultySelect = document.getElementById('difficulty');
+      const focusAreaSelect = document.getElementById('focus-area');
+      const objectTypeSelect = document.getElementById('object-type');
+      const sessionDurationInp = document.getElementById('session-duration');
+
+      // Generate initial stars
+      generateStars(starsContainer, 150);
+
+      // Personal best tracking
+      const PB_KEY = 'visual-scanner:best';
+      const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
+      const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
+
+      function updatePersonalBest() {
+        const pb = getPB();
+        if (hudPB) hudPB.textContent = pb ? String(pb) : '0';
+        if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
+      }
+
+      // Game state
+      let isSessionActive = false;
+      let isPaused = false;
+      let sessionMs = 3 * 60 * 1000;
+      let timeRemaining = 0;
+      let timerInterval = null;
+      let score = 0;
+      let hits = 0;
+      let attempts = 0;
+      let reactionTimes = [];
+      let currentTarget = null;
+      let targetStartTime = 0;
+      let targetElement = null;
+      let distractorElements = [];
+
+      // Target object sets
+      const TARGET_SETS = {
+        shapes: ['🔴', '🔵', '🟡', '🟢', '🟣', '🟠', '⭐', '💎', '🔺', '🔸', '🔹', '⬛'],
+        letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+        numbers: '0123456789'.split(''),
+        emoji: ['😀', '😎', '🎯', '🎨', '🎵', '🎭', '🎊', '🎈', '🌟', '🌈', '🔥', '⚡']
+      };
+
+      // Utility functions
+      function showFeedback(message, type) {
+        if (!feedbackMessage) return;
+        feedbackMessage.textContent = message;
+        feedbackMessage.className = `feedback-message ${type}`;
+        feedbackMessage.classList.remove('hidden');
+        setTimeout(() => feedbackMessage.classList.add('hidden'), 1000);
+      }
+
+      function saveSettings() {
+        if (difficultySelect) storage.set('scannerDifficulty', difficultySelect.value);
+        if (focusAreaSelect) storage.set('scannerFocusArea', focusAreaSelect.value);
+        if (objectTypeSelect) storage.set('scannerObjectType', objectTypeSelect.value);
+        if (sessionDurationInp) storage.set('scannerSessionDuration', sessionDurationInp.value);
+      }
+
+      function loadSettings() {
+        if (difficultySelect) difficultySelect.value = storage.get('scannerDifficulty', 'medium');
+        if (focusAreaSelect) focusAreaSelect.value = storage.get('scannerFocusArea', 'none');
+        if (objectTypeSelect) objectTypeSelect.value = storage.get('scannerObjectType', 'shapes');
+        if (sessionDurationInp) sessionDurationInp.value = storage.get('scannerSessionDuration', 3);
+        updatePersonalBest();
+      }
+
+      function updateHUD() {
+        if (hudScore) hudScore.textContent = `${score}`;
+        if (hudPB) hudPB.textContent = `${getPB()}`;
+        if (hudHits) hudHits.textContent = `${hits}`;
+
+        const mins = Math.max(0, Math.floor(timeRemaining / 60000));
+        const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
+        if (hudTime) hudTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+        // Update accuracy and reaction time displays
+        const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 100;
+        const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
+        
+        if (accuracyDisplay) accuracyDisplay.textContent = `${accuracy}%`;
+        if (reactionDisplay) reactionDisplay.textContent = `${avgReaction}ms`;
+      }
+
+      function startTimer() {
+        timerInterval = setInterval(() => {
+          timeRemaining -= 100;
+          const progress = Math.max(0, timeRemaining / sessionMs);
+          if (timerBarEl) timerBarEl.style.width = `${progress * 100}%`;
+          updateHUD();
+          if (timeRemaining <= 0) {
+            endSession();
+          }
+        }, 100);
+      }
+
+      function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+
+      // Screen management
+      function setScreen(screenName) {
+        document.querySelectorAll('[data-screen]').forEach(el => {
+          el.classList.remove('active');
+        });
+        const screen = document.querySelector(`[data-screen="${screenName}"]`);
+        if (screen) screen.classList.add('active');
+      }
+
+      // Focus area management
+      function updateFocusArea() {
+        const area = focusAreaSelect?.value || 'none';
+        if (focusOverlay) {
+          focusOverlay.className = 'focus-overlay';
+          if (area !== 'none') {
+            focusOverlay.classList.add(area);
+          }
+        }
+      }
+
+      // Target generation
+      function pickTarget() {
+        const type = objectTypeSelect?.value || 'shapes';
+        const targets = TARGET_SETS[type] || TARGET_SETS.shapes;
+        return targets[Math.floor(Math.random() * targets.length)];
+      }
+
+      function pickDistractors(target, count) {
+        const type = objectTypeSelect?.value || 'shapes';
+        const targets = TARGET_SETS[type] || TARGET_SETS.shapes;
+        const distractors = targets.filter(t => t !== target);
+        
+        const selected = [];
+        for (let i = 0; i < count && distractors.length > 0; i++) {
+          const index = Math.floor(Math.random() * distractors.length);
+          selected.push(distractors.splice(index, 1)[0]);
+        }
+        return selected;
+      }
+
+      function getRandomPosition() {
+        if (!scanArea) return { x: 100, y: 100 };
+        
+        const rect = scanArea.getBoundingClientRect();
+        const padding = 30; // Keep objects away from edges
+        
+        let bounds = {
+          left: padding,
+          top: padding,
+          right: rect.width - padding,
+          bottom: rect.height - padding
+        };
+
+        const focusArea = focusAreaSelect?.value || 'none';
+        if (focusArea !== 'none') {
+          const mid = { x: rect.width / 2, y: rect.height / 2 };
+          switch (focusArea) {
+            case 'left':
+              bounds.right = mid.x - padding;
+              break;
+            case 'right':
+              bounds.left = mid.x + padding;
+              break;
+            case 'top':
+              bounds.bottom = mid.y - padding;
+              break;
+            case 'bottom':
+              bounds.top = mid.y + padding;
+              break;
+          }
+        }
+
+        return {
+          x: Math.random() * (bounds.right - bounds.left) + bounds.left,
+          y: Math.random() * (bounds.bottom - bounds.top) + bounds.top
+        };
+      }
+
+      function clearTargets() {
+        if (targetElement) {
+          targetElement.remove();
+          targetElement = null;
+        }
+        distractorElements.forEach(el => el.remove());
+        distractorElements = [];
+      }
+
+      function spawnTarget() {
+        if (!scanArea) return;
+        
+        clearTargets();
+        
+        currentTarget = pickTarget();
+        targetStartTime = Date.now();
+        
+        if (targetIcon) targetIcon.textContent = currentTarget;
+
+        // Create target element
+        targetElement = document.createElement('div');
+        targetElement.className = 'visual-object';
+        targetElement.textContent = currentTarget;
+        targetElement.dataset.isTarget = 'true';
+
+        const targetPos = getRandomPosition();
+        targetElement.style.left = targetPos.x + 'px';
+        targetElement.style.top = targetPos.y + 'px';
+
+        targetElement.addEventListener('click', handleTargetClick);
+        scanArea.appendChild(targetElement);
+
+        // Add distractors based on difficulty
+        const difficulty = difficultySelect?.value || 'medium';
+        let distractorCount = 0;
+        switch (difficulty) {
+          case 'easy': distractorCount = 3; break;
+          case 'medium': distractorCount = 6; break;
+          case 'hard': distractorCount = 10; break;
+        }
+
+        const distractors = pickDistractors(currentTarget, distractorCount);
+        distractors.forEach(distractor => {
+          const el = document.createElement('div');
+          el.className = 'visual-object';
+          el.textContent = distractor;
+          el.dataset.isTarget = 'false';
+
+          const pos = getRandomPosition();
+          el.style.left = pos.x + 'px';
+          el.style.top = pos.y + 'px';
+
+          el.addEventListener('click', handleDistractorClick);
+          scanArea.appendChild(el);
+          distractorElements.push(el);
+        });
+
+        if (scanArea) scanArea.classList.add('active');
+      }
+
+      function handleTargetClick(e) {
+        if (!isSessionActive || isPaused) return;
+        e.preventDefault();
+        
+        const reactionTime = Date.now() - targetStartTime;
+        reactionTimes.push(reactionTime);
+        
+        hits++;
+        attempts++;
+        score += 100;
+        
+        e.target.classList.add('correct');
+        showFeedback('Found it!', 'success');
+        
+        if (scanArea) scanArea.classList.add('celebrate');
+        setTimeout(() => {
+          if (scanArea) scanArea.classList.remove('celebrate');
+        }, 900);
+
+        updateHUD();
+        
+        // Spawn next target after brief delay
+        setTimeout(() => {
+          if (isSessionActive) {
+            spawnTarget();
+          }
+        }, 1000);
+      }
+
+      function handleDistractorClick(e) {
+        if (!isSessionActive || isPaused) return;
+        e.preventDefault();
+        
+        attempts++;
+        score = Math.max(0, score - 10);
+        
+        e.target.classList.add('incorrect');
+        showFeedback('Wrong target!', 'error');
+        
+        updateHUD();
+        
+        // Remove incorrect styling after animation
+        setTimeout(() => {
+          e.target.classList.remove('incorrect');
+        }, 400);
+      }
+
+      function startSession() {
+        if (isSessionActive) return;
+
+        const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp?.value) || 3));
+        sessionMs = minutes * 60 * 1000;
+
+        // Reset game state
+        score = 0;
+        hits = 0;
+        attempts = 0;
+        reactionTimes = [];
+        currentTarget = null;
+        timeRemaining = sessionMs;
+        isPaused = false;
+
+        // Clear scan area
+        if (scanArea) {
+          scanArea.innerHTML = '';
+          scanArea.classList.remove('active');
+        }
+
+        updateHUD();
+        setScreen('game');
+        saveSettings();
+        updateFocusArea();
+
+        isSessionActive = true;
+        startTimer();
+        updatePersonalBest();
+
+        setTimeout(() => {
+          spawnTarget();
+        }, 500);
+      }
+
+      function endSession() {
+        if (timerInterval) stopTimer();
+        isSessionActive = false;
+        isPaused = false;
+
+        clearTargets();
+        if (scanArea) scanArea.classList.remove('active');
+
+        const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 0;
+        const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
+
+        // Check for personal best
+        const previousPB = getPB();
+        let isNewPB = false;
+        if (score > previousPB) {
+          isNewPB = true;
+          setPB(score);
+          updatePersonalBest();
+        }
+
+        // Show completion modal
+        if (finalHitsEl) finalHitsEl.textContent = `${hits}`;
+        if (finalAccuracyEl) finalAccuracyEl.textContent = `${accuracy}%`;
+        if (finalReactionEl) finalReactionEl.textContent = `${avgReaction}ms`;
+        if (finalScoreEl) finalScoreEl.textContent = `${score}`;
+        if (finalXPEl) finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
+
+        if (completionModal) completionModal.classList.add('show');
+        setScreen('settings');
+      }
+
+      // Event listeners
+      if (startBtn) startBtn.addEventListener('click', startSession);
+      if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
+      if (focusAreaSelect) focusAreaSelect.addEventListener('change', () => {
+        saveSettings();
+        updateFocusArea();
+      });
+      if (objectTypeSelect) objectTypeSelect.addEventListener('change', saveSettings);
+      if (sessionDurationInp) sessionDurationInp.addEventListener('input', saveSettings);
+
+      if (pauseBtn) pauseBtn.addEventListener('click', () => {
+        if (!isSessionActive) return;
+        isPaused = !isPaused;
+        pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+        if (isPaused) {
+          stopTimer();
+          if (scanArea) scanArea.style.filter = 'grayscale(0.5) brightness(0.7)';
+        } else {
+          startTimer();
+          if (scanArea) scanArea.style.filter = '';
+        }
+      });
+
+      if (endBtn) endBtn.addEventListener('click', () => endSession());
+
+      if (restartBtn) restartBtn.addEventListener('click', () => {
+        if (timerInterval) stopTimer();
+        isSessionActive = false;
+        isPaused = false;
+        clearTargets();
+        setScreen('settings');
+      });
+
+      if (restartModalBtn) restartModalBtn.addEventListener('click', () => {
+        if (completionModal) completionModal.classList.remove('show');
+        setScreen('settings');
+      });
+
+      if (completeClose) completeClose.addEventListener('click', () => {
+        if (completionModal) completionModal.classList.remove('show');
+        setScreen('settings');
+      });
+
+      // Initialize
+      loadSettings();
+      updateHUD();
+      updateFocusArea();
+      setScreen('settings');
+    });
+  </script>
+</body>
+</html>
