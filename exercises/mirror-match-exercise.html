@@ -173,11 +173,11 @@
     }
 
     function saveSettings() {
-      storage.set('mirrorDifficulty', difficultySelect.value);
-      storage.set('mirrorTargetSize', targetSizeSelect.value);
-      storage.set('mirrorMode', mirrorModeSelect.value);
-      storage.set('mirrorAdaptiveTiming', adaptiveTimingSelect.value);
-      storage.set('mirrorSessionDuration', sessionDurationInp.value);
+      if (difficultySelect) storage.set('mirrorDifficulty', difficultySelect.value);
+      if (targetSizeSelect) storage.set('mirrorTargetSize', targetSizeSelect.value);
+      if (mirrorModeSelect) storage.set('mirrorMode', mirrorModeSelect.value);
+      if (adaptiveTimingSelect) storage.set('mirrorAdaptiveTiming', adaptiveTimingSelect.value);
+      if (sessionDurationInp) storage.set('mirrorSessionDuration', sessionDurationInp.value);
     }
 
     function loadSettings() {
@@ -482,11 +482,12 @@
 
       totalAttempts++;
       const timeDiff = Math.abs(leftTouchTime - rightTouchTime);
-      const baseWindow = difficultySetting[difficultySelect.value].baseSync;
-      const usingAdaptive = (adaptiveTimingSelect.value === 'on');
+      const difficulty = difficultySelect ? difficultySelect.value : 'medium';
+      const baseWindow = difficultySetting[difficulty] ? difficultySetting[difficulty].baseSync : 500;
+      const usingAdaptive = adaptiveTimingSelect ? (adaptiveTimingSelect.value === 'on') : true;
       const currentSyncWindow = usingAdaptive ? adaptiveSyncWindow : baseWindow;
 
-      const mode = mirrorModeSelect.value;
+      const mode = mirrorModeSelect ? mirrorModeSelect.value : 'simultaneous';
       const isSimul = (mode === 'simultaneous');
       
       let isSync;
@@ -509,8 +510,8 @@
         if (isSimul) {
           const perfectThreshold = Math.min(80, Math.floor(currentSyncWindow * 0.25));
           if (timeDiff <= perfectThreshold) {
-            currentTargets.left.classList.add("perfect-glow");
-            currentTargets.right.classList.add("perfect-glow");
+            if (currentTargets.left) currentTargets.left.classList.add("perfect-glow");
+            if (currentTargets.right) currentTargets.right.classList.add("perfect-glow");
             perfectCount++;
           }
         }
@@ -521,10 +522,14 @@
           : `Excellent! Sequence completed.`;
         showFeedback(feedbackText, 'success');
 
-        currentTargets.left.classList.remove("touched");
-        currentTargets.right.classList.remove("touched");
-        currentTargets.left.classList.add("completed");
-        currentTargets.right.classList.add("completed");
+        if (currentTargets.left) {
+          currentTargets.left.classList.remove("touched");
+          currentTargets.left.classList.add("completed");
+        }
+        if (currentTargets.right) {
+          currentTargets.right.classList.remove("touched");
+          currentTargets.right.classList.add("completed");
+        }
 
         // Adaptive tuning (simultaneous only)
         if (usingAdaptive && isSimul) {
@@ -561,10 +566,14 @@
         }
         showFeedback(feedbackText, 'error');
         
-        currentTargets.left.classList.remove("touched");
-        currentTargets.right.classList.remove("touched");
-        currentTargets.left.classList.add("failed");
-        currentTargets.right.classList.add("failed");
+        if (currentTargets.left) {
+          currentTargets.left.classList.remove("touched");
+          currentTargets.left.classList.add("failed");
+        }
+        if (currentTargets.right) {
+          currentTargets.right.classList.remove("touched");
+          currentTargets.right.classList.add("failed");
+        }
         streak = 0;
 
         setTimeout(() => {
@@ -714,10 +723,10 @@
       if (timerInterval) stopTimer();
       
       try {
-        const difficulty = difficultySelect.value;
-        const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp.value) || 3));
+        const difficulty = difficultySelect ? difficultySelect.value : 'medium';
+        const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp ? sessionDurationInp.value : 3) || 3));
         sessionMs = minutes * 60 * 1000;
-        sessionDurationInp.value = minutes;
+        if (sessionDurationInp) sessionDurationInp.value = minutes;
         
         saveSettings();
 
@@ -735,16 +744,12 @@
         pattern = [];
         patterns = [];
         usedPatternTypes = [];
-        adaptiveSyncWindow = difficultySetting[difficulty].baseSync;
+        adaptiveSyncWindow = difficultySetting[difficulty] ? difficultySetting[difficulty].baseSync : 500;
         timeRemaining = sessionMs;
         isPaused = false;
 
         clearMirrorArea();
-        
-        // Only update HUD if elements exist
-        if (hudScore && hudTime && hudStreak && hudPB) {
-          updateHUD();
-        }
+        updateHUD();
 
         // Switch to game screen and initialize
         setScreen('game');
