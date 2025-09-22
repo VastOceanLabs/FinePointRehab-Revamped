@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Cosmic Mirror Match — Bilateral Coordination Rehabilitation</title>
+  <title>Mirror Match — Bilateral Coordination Rehabilitation</title>
 
   <style>
     :root {
@@ -164,6 +164,44 @@
       border: 1px solid var(--border);
     }
 
+    /* Personal Best display on settings */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
+    }
+
+    .metric-settings {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(111, 211, 245, 0.08);
+      min-width: 110px;
+    }
+
+    .pb-value {
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-lg);
+      color: var(--brand-aqua);
+      text-shadow: 0 0 6px rgba(111, 211, 245, 0.5);
+      line-height: 1.1;
+    }
+
+    .pb-label {
+      font-size: var(--font-size-xs);
+      opacity: 0.9;
+      margin-top: var(--space-1);
+      color: var(--text-secondary);
+    }
+
     .settings-group {
       margin-bottom: var(--space-4);
     }
@@ -309,6 +347,38 @@
       margin: 0 auto;
     }
 
+    .orientation-hint {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 22, 41, 0.95);
+      border: 2px solid var(--brand-aqua);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+      z-index: 1500;
+      backdrop-filter: blur(8px);
+      max-width: 90%;
+    }
+
+    .orientation-hint h3 {
+      margin: 0 0 var(--space-2);
+      color: var(--brand-aqua);
+    }
+
+    .orientation-hint p {
+      margin: 0 0 var(--space-3);
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 900px) and (orientation: portrait) {
+      .orientation-hint {
+        display: block;
+      }
+    }
+
     @media (max-width: 900px) {
       .mirror-container {
         width: 95vw;
@@ -317,6 +387,47 @@
         max-height: 450px;
         min-width: 300px;
         min-height: 200px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .mirror-container {
+        height: 50vh;
+        min-height: 250px;
+      }
+      
+      .mirror-target {
+        min-width: 48px;
+        min-height: 48px;
+      }
+      
+      .settings-panel {
+        padding: var(--space-3);
+        margin: var(--space-2);
+      }
+      
+      .page {
+        padding: var(--space-2);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .mirror-container {
+        height: 45vh;
+        min-height: 220px;
+      }
+      
+      .hud {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-1);
+      }
+      
+      .hud-group {
+        font-size: 14px;
+      }
+      
+      .hud-value {
+        font-size: var(--font-size-lg);
       }
     }
 
@@ -563,7 +674,7 @@
   <header class="site-header">
     <div class="inner">
       <a class="btn btn-secondary" href="/" aria-label="Go to Home">← Home</a>
-      <h1>Cosmic Mirror Match</h1>
+      <h1>Mirror Match</h1>
     </div>
   </header>
 
@@ -577,6 +688,14 @@
           Synchronize bilateral movements by touching corresponding targets simultaneously. Improves bilateral coordination,
           timing precision, and hemispheric integration. Touch mirrored targets at the same time to complete each pattern.
         </p>
+      </div>
+
+      <!-- Personal Best display -->
+      <div class="stats-row">
+        <div class="metric-settings">
+          <div id="pb-settings" class="pb-value">0</div>
+          <div class="pb-label">Personal Best</div>
+        </div>
       </div>
 
       <div class="settings-group">
@@ -641,8 +760,8 @@
         </div>
 
         <div class="hud-group">
-          <div id="hud-sync-rate" class="hud-value">0%</div>
-          <div class="hud-label">Success Rate</div>
+          <div id="hud-pb" class="hud-value">0</div>
+          <div class="hud-label">Personal Best</div>
         </div>
 
         <div class="hud-group">
@@ -702,6 +821,13 @@
 
   <div id="error-message"></div>
 
+  <!-- Orientation hint for mobile users -->
+  <div class="orientation-hint">
+    <h3>🔄 Better Experience in Landscape</h3>
+    <p>For optimal bilateral coordination training, please rotate your device to landscape mode.</p>
+    <button class="btn btn-secondary" onclick="this.parentElement.style.display='none'">Continue Anyway</button>
+  </div>
+
   <script>
     // Simple storage utility
     const storage = {
@@ -753,7 +879,9 @@
     const restartBtn = document.getElementById('restart-session');
     const timerBarEl = document.getElementById('timer-bar');
     const scoreEl = document.getElementById('hud-score');
-    const syncRateEl = document.getElementById('hud-sync-rate');
+    const pbEl = document.getElementById('hud-pb');
+    const pbSettingsEl = document.getElementById('pb-settings');
+    const syncRateEl = document.getElementById('hud-sync-rate'); // for completion modal
     const streakEl = document.getElementById('hud-streak');
     const timeEl = document.getElementById('hud-time');
     const progressDisplay = document.getElementById('progress-display');
@@ -774,6 +902,17 @@
     const completeClose = document.getElementById('close-complete');
     const restartModalBtn = document.getElementById('restart-button');
     const errorMessage = document.getElementById('error-message');
+
+    // Personal best tracking
+    const PB_KEY = 'mirror-match:best';
+    const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
+    const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
+
+    function updatePersonalBest() {
+      const pb = getPB();
+      if (pbEl) pbEl.textContent = pb ? String(pb) : '—';
+      if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
+    }
 
     // Generate initial stars
     generateStars(starsContainer, 150);
@@ -857,6 +996,7 @@
       mirrorModeSelect.value = storage.get('mirrorMode', 'simultaneous');
       adaptiveTimingSelect.value = storage.get('mirrorAdaptiveTiming', 'on');
       sessionDurationInp.value = storage.get('mirrorSessionDuration', 3);
+      updatePersonalBest();
     }
 
     function updateInstructionsText() {
@@ -1047,26 +1187,32 @@
       if (!point) return;
       
       const targetSize = targetSizes[targetSizeSelect.value];
+      // Increase minimum size on mobile for better touch targets
+      const isMobile = window.innerWidth <= 768;
+      const actualSize = Math.max(targetSize, isMobile ? 48 : 44);
 
       const leftTarget = document.createElement("div");
       leftTarget.className = "mirror-target pulse";
-      leftTarget.style.width = `${targetSize}px`;
-      leftTarget.style.height = `${targetSize}px`;
+      leftTarget.style.width = `${actualSize}px`;
+      leftTarget.style.height = `${actualSize}px`;
       leftTarget.style.left = `${point.x}px`;
       leftTarget.style.top = `${point.y}px`;
 
       const rightTarget = document.createElement("div");
       rightTarget.className = "mirror-target pulse";
-      rightTarget.style.width = `${targetSize}px`;
-      rightTarget.style.height = `${targetSize}px`;
+      rightTarget.style.width = `${actualSize}px`;
+      rightTarget.style.height = `${actualSize}px`;
       rightTarget.style.left = `${containerWidth / 2 - point.x}px`;
       rightTarget.style.top = `${point.y}px`;
 
-      // Event listeners
+      // Enhanced event listeners for better mobile support
       leftTarget.addEventListener("touchstart", handleLeftTouch, { passive: false });
       leftTarget.addEventListener("mousedown", handleLeftTouch);
+      leftTarget.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
+      
       rightTarget.addEventListener("touchstart", handleRightTouch, { passive: false });
       rightTarget.addEventListener("mousedown", handleRightTouch);
+      rightTarget.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
 
       leftTarget.addEventListener("contextmenu", e => e.preventDefault());
       rightTarget.addEventListener("contextmenu", e => e.preventDefault());
@@ -1376,6 +1522,15 @@
         : 0;
       const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
 
+      // Check for personal best
+      const previousPB = getPB();
+      let isNewPB = false;
+      if (score > previousPB) {
+        isNewPB = true;
+        setPB(score);
+        updatePersonalBest();
+      }
+
       // Show completion modal
       finalPatternsEl.textContent = `${patternsCompleted}`;
       finalSyncRateEl.textContent = `${syncRate}%`;
@@ -1383,6 +1538,23 @@
       finalPerfectsEl.textContent = `${perfectCount}`;
       finalScoreEl.textContent = `${score}`;
       finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
+      
+      // Add new PB indicator
+      const pbLine = document.getElementById('pb-line');
+      if (pbLine) {
+        pbLine.classList.toggle('hidden', !isNewPB);
+      } else if (isNewPB) {
+        // Create PB celebration line if it doesn't exist
+        const pbCelebration = document.createElement('p');
+        pbCelebration.id = 'pb-line';
+        pbCelebration.innerHTML = '🎉 <span class="score-highlight">New Personal Best!</span>';
+        pbCelebration.style.color = 'var(--brand-aqua)';
+        pbCelebration.style.fontWeight = 'var(--font-weight-bold)';
+        pbCelebration.style.textAlign = 'center';
+        pbCelebration.style.margin = '0 0 var(--space-3)';
+        finalXPEl.parentElement.insertBefore(pbCelebration, finalXPEl.parentElement.lastElementChild);
+      }
+
       completionModal.classList.add('show');
 
       // Clear the mirror area
