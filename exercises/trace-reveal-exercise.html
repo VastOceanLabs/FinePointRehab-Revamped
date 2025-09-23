@@ -56,6 +56,11 @@
       touch-action: manipulation;
     }
 
+    body.playing {
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -236,6 +241,7 @@
       display: grid;
       grid-template-rows: auto 1fr;
       gap: var(--space-3);
+      min-height: 0;
     }
 
     .hud {
@@ -330,9 +336,11 @@
 
     #game-container {
       position: relative;
-      display: grid;
-      place-items: center;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
       padding: var(--space-3);
+      padding-bottom: max(var(--space-1), env(safe-area-inset-bottom));
       background: rgba(0,0,0,0.15);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
@@ -347,10 +355,6 @@
     }
 
     /* MOBILE-OPTIMIZED GAME LAYOUT */
-    body.playing {
-      overflow: hidden;
-    }
-
     body.playing .page {
       display: grid;
       grid-template-rows: auto 1fr;
@@ -365,11 +369,12 @@
     }
 
     body.playing .right-col {
-      height: 100vh;
+      height: calc(var(--vh) * 100);
       max-width: none;
       margin: 0;
       gap: 0;
       grid-template-rows: auto 1fr;
+      min-height: 0;
     }
 
     body.playing #game-container {
@@ -377,85 +382,28 @@
       border-radius: 0;
       border: none;
       padding: var(--space-2);
+      padding-bottom: max(var(--space-1), env(safe-area-inset-bottom));
     }
 
     /* IMPROVED MOBILE CANVAS STAGE CONTAINER */
     .stage-wrap {
       position: relative;
+      flex: 1;
+      min-height: 0;
       width: 100%;
-      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       border-radius: var(--radius-lg);
       overflow: hidden;
       box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
       background: radial-gradient(60% 45% at 50% 40%, rgba(111, 211, 245, 0.12), transparent 68%);
-    }
-
-    /* Mobile-specific stage sizing */
-    @media (max-width: 768px) {
-      body.playing .hud {
-        padding: var(--space-1) var(--space-2);
-        padding-top: calc(var(--space-1) + 4px);
-        gap: var(--space-1);
-      }
-
-      body.playing #game-container {
-        padding: var(--space-1);
-        display: flex;
-        flex-direction: column;
-      }
-
-      .instructions {
-        font-size: 14px;
-        padding: var(--space-2);
-        margin-bottom: var(--space-2);
-      }
-
-      .stage-wrap {
-        flex: 1;
-        min-height: 0;
-        border-radius: var(--radius);
-      }
-
-      .coverage-display {
-        top: var(--space-2);
-        font-size: 11px;
-        padding: 4px 8px;
-      }
-
-      /* Ensure game is playable on very small screens */
-      @media (max-height: 600px) {
-        .instructions {
-          display: none;
-        }
-        
-        body.playing .hud {
-          padding: 4px var(--space-1);
-          padding-top: 8px;
-        }
-        
-        .hud-value {
-          font-size: 14px;
-        }
-        
-        .hud-label {
-          font-size: 10px;
-        }
-      }
-    }
-
-    /* Desktop keeps aspect ratio */
-    @media (min-width: 769px) {
-      .stage-wrap {
-        aspect-ratio: 1/1;
-        max-width: min(80vh, 80vw);
-      }
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     canvas.stage {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
       display: block;
       background: transparent;
       touch-action: none;
@@ -472,7 +420,7 @@
     /* Coverage target display */
     .coverage-display {
       position: absolute;
-      top: var(--space-4);
+      top: var(--space-2);
       left: 50%;
       transform: translateX(-50%);
       background: rgba(15, 22, 41, 0.95);
@@ -485,6 +433,53 @@
       font-size: var(--font-size-xs);
       z-index: 20;
       color: var(--brand-aqua);
+    }
+
+    /* Mobile-specific optimizations */
+    @media (max-width: 768px) {
+      body.playing .hud {
+        padding: var(--space-1) var(--space-2);
+        padding-top: calc(var(--space-1) + 4px);
+        gap: var(--space-1);
+      }
+
+      body.playing #game-container {
+        padding: var(--space-1);
+      }
+
+      .instructions {
+        font-size: 14px;
+        padding: var(--space-2);
+        margin-bottom: var(--space-2);
+      }
+
+      .coverage-display {
+        font-size: 11px;
+        padding: 4px 8px;
+      }
+    }
+
+    /* Hide instructions on short screens to save space */
+    @media (max-height: 720px) {
+      .instructions {
+        display: none;
+      }
+    }
+
+    /* Very short screens */
+    @media (max-height: 600px) {
+      body.playing .hud {
+        padding: 4px var(--space-1);
+        padding-top: 8px;
+      }
+      
+      .hud-value {
+        font-size: 14px;
+      }
+      
+      .hud-label {
+        font-size: 10px;
+      }
     }
 
     /* Completion modal */
@@ -712,11 +707,12 @@
         showErr("Script error: " + (e.message || "") + (e.filename ? " — " + e.filename + ":" + e.lineno : ""));
       });
 
-      // Viewport height handling
-      const setVH = () => document.documentElement.style.setProperty("--vh", (window.innerHeight * 0.01) + "px");
+      // Enhanced viewport height handling
+      const setVH = () => {
+        const vh = (window.visualViewport?.height ?? window.innerHeight) * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      };
       setVH();
-      addEventListener("resize", setVH);
-      addEventListener("orientationchange", setVH);
 
       // DOM elements
       const startBtn = document.getElementById("start");
@@ -758,7 +754,6 @@
       const gx = fx.getContext("2d");
       const gi = ink.getContext("2d");
       const gg = guide.getContext("2d");
-      const DPR = Math.max(1, window.devicePixelRatio || 1);
 
       // Generate starfield
       function generateStars(container, count = 150) {
@@ -790,7 +785,7 @@
         if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
       }
 
-      // Game state
+      // Game state - declare early to avoid TDZ
       let playing = false;
       let paused = false;
       let remainingMs = 0;
@@ -830,37 +825,46 @@
         if (coverageTarget) coverageTarget.textContent = requiredCov + "%";
       };
 
-      // Canvas sizing function
+      // Complete canvas sizing function
       function resizeStage() {
         try {
-          const wrap = fx.parentElement;
-          if (!wrap) return;
-          
-          const wrapRect = wrap.getBoundingClientRect();
-          let size;
-          
-          if (window.innerWidth <= 768) {
-            size = Math.max(200, Math.floor(Math.min(wrapRect.width - 20, wrapRect.height - 20)));
-          } else {
-            size = Math.max(10, Math.floor(wrapRect.width));
-          }
-          
+          const DPR = Math.max(1, window.devicePixelRatio || 1);
+          const wrap = fx.parentElement; // .stage-wrap
+          const game = document.getElementById('game-container');
+          const hud = document.querySelector('.hud');
+          const instr = document.getElementById('instructions');
+
+          if (!wrap || !game) return;
+
+          // Measure actual available space
+          const gameStyles = getComputedStyle(game);
+          const padY = parseFloat(gameStyles.paddingTop) + parseFloat(gameStyles.paddingBottom);
+
+          const hudH = hud ? hud.getBoundingClientRect().height : 0;
+          const instrH = (instr && getComputedStyle(instr).display !== 'none') 
+                          ? instr.getBoundingClientRect().height : 0;
+
+          const availW = wrap.clientWidth;
+          const availH = Math.max(0, game.clientHeight - hudH - instrH - padY - 20);
+          const cssSize = Math.max(160, Math.floor(Math.min(availW - 20, availH)));
+
+          // Apply size to all canvases
           [hidden, mask, fx, ink, guide].forEach((c) => {
-            c.width = Math.floor(size * DPR);
-            c.height = Math.floor(size * DPR);
-            c.style.width = size + "px";
-            c.style.height = size + "px";
+            c.width = Math.max(1, Math.floor(cssSize * DPR));
+            c.height = Math.max(1, Math.floor(cssSize * DPR));
+            c.style.width = cssSize + 'px';
+            c.style.height = cssSize + 'px';
           });
+
+          // Set up drawing contexts with proper DPR scaling
+          [gh, gm, gx, gi, gg].forEach(ctx => ctx.setTransform(DPR, 0, 0, DPR, 0, 0));
           
-          // Set up drawing contexts
           gi.lineCap = "round";
           gi.lineJoin = "round";
           gi.strokeStyle = "rgba(111,211,245,0.95)";
-          gi.lineWidth = Math.max(3, Math.round(brush * DPR * 0.5));
+          gi.lineWidth = Math.max(3, Math.round(brush * 0.5));
           
-          [gh, gm, gx, gi, gg].forEach(ctx => ctx.setTransform(DPR, 0, 0, DPR, 0, 0));
-          
-          cellSize = Math.max(8, Math.round(brush * DPR * 0.8));
+          cellSize = Math.max(8, Math.round(brush * 0.8));
           
           if (playing) {
             newShape();
@@ -876,50 +880,56 @@
         gg.clearRect(0, 0, guide.width, guide.height);
         gg.save();
         gg.fillStyle = "rgba(255,255,255,.06)";
-        gg.fillRect(0, 0, guide.width / DPR, guide.height / DPR);
+        gg.fillRect(0, 0, guide.width / devicePixelRatio, guide.height / devicePixelRatio);
         gg.fillStyle = "rgba(255,255,255,.9)";
         gg.font = "600 16px system-ui, sans-serif";
         gg.textAlign = "center";
-        gg.fillText("Set duration, pick difficulty, then Start", guide.width / (2 * DPR), guide.height / (2 * DPR));
+        gg.fillText("Set duration, pick difficulty, then Start", 
+          guide.width / (2 * devicePixelRatio), guide.height / (2 * devicePixelRatio));
         gg.restore();
       };
 
-      // Shape generation functions
+      // Shape generation functions - normalized to canvas size
       const make = (pts, closed = true, strokePx = 0) => ({ points: pts, closed, strokePx });
-      const minSide = () => Math.min(hidden.width, hidden.height);
+      const getCanvasSize = () => Math.min(hidden.width, hidden.height) / devicePixelRatio;
 
-      // Shape generators
+      // Shape generators using normalized coordinates
       const lineH = () => {
-        const y = hidden.height * 0.5, x1 = hidden.width * 0.15, x2 = hidden.width * 0.85;
-        return [make([{ x: x1, y }, { x: x2, y }], false, Math.round(hidden.height * 0.08))];
+        const size = getCanvasSize();
+        const y = size * 0.5, x1 = size * 0.15, x2 = size * 0.85;
+        return [make([{ x: x1, y }, { x: x2, y }], false, Math.round(size * 0.08))];
       };
       const lineV = () => {
-        const x = hidden.width * 0.5, y1 = hidden.height * 0.18, y2 = hidden.height * 0.82;
-        return [make([{ x, y: y1 }, { x, y: y2 }], false, Math.round(hidden.width * 0.08))];
+        const size = getCanvasSize();
+        const x = size * 0.5, y1 = size * 0.18, y2 = size * 0.82;
+        return [make([{ x, y: y1 }, { x, y: y2 }], false, Math.round(size * 0.08))];
       };
       const zigzag = () => {
+        const size = getCanvasSize();
         const pts = [];
-        const l = hidden.width * 0.18, r = hidden.width * 0.82, t = hidden.height * 0.22, b = hidden.height * 0.78, rows = 6;
+        const l = size * 0.18, r = size * 0.82, t = size * 0.22, b = size * 0.78, rows = 6;
         for (let i = 0; i <= rows; i++) {
           const y = t + (b - t) * (i / rows);
           const x = (i % 2 === 0) ? l : r;
           pts.push({ x, y });
         }
-        return [make(pts, false, Math.round(hidden.width * 0.07))];
+        return [make(pts, false, Math.round(size * 0.07))];
       };
       const sine = () => {
+        const size = getCanvasSize();
         const pts = [];
-        const l = hidden.width * 0.12, r = hidden.width * 0.88, mid = hidden.height * 0.5, amp = hidden.height * 0.22, cyc = 1.5, steps = 180;
+        const l = size * 0.12, r = size * 0.88, mid = size * 0.5, amp = size * 0.22, cyc = 1.5, steps = 180;
         for (let i = 0; i <= steps; i++) {
           const t = i / steps;
           const x = l + (r - l) * t;
           const y = mid + Math.sin(t * Math.PI * 2 * cyc) * amp;
           pts.push({ x, y });
         }
-        return [make(pts, false, Math.round(hidden.width * 0.06))];
+        return [make(pts, false, Math.round(size * 0.06))];
       };
       const circle = () => {
-        const cx = hidden.width / 2, cy = hidden.height / 2, r = minSide() * 0.32, pts = [];
+        const size = getCanvasSize();
+        const cx = size / 2, cy = size / 2, r = size * 0.32, pts = [];
         for (let i = 0; i <= 180; i++) {
           const a = (i / 180) * Math.PI * 2;
           pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
@@ -927,12 +937,14 @@
         return [make(pts, true, 0)];
       };
       const square = () => {
-        const s = minSide() * 0.64, x = (hidden.width - s) / 2, y = (hidden.height - s) / 2;
+        const size = getCanvasSize();
+        const s = size * 0.64, x = (size - s) / 2, y = (size - s) / 2;
         const pts = [{ x, y }, { x: x + s, y }, { x: x + s, y: y + s }, { x, y: y + s }, { x, y }];
         return [make(pts, true, 0)];
       };
       const triangle = () => {
-        const s = minSide() * 0.68, cx = hidden.width / 2, cy = hidden.height / 2;
+        const size = getCanvasSize();
+        const s = size * 0.68, cx = size / 2, cy = size / 2;
         const pts = [
           { x: cx, y: cy - s / 2 },
           { x: cx - s / 2, y: cy + s / 2 },
@@ -942,7 +954,8 @@
         return [make(pts, true, 0)];
       };
       const star = () => {
-        const cx = hidden.width / 2, cy = hidden.height / 2, R = minSide() * 0.34, r = R * 0.5, pts = [];
+        const size = getCanvasSize();
+        const cx = size / 2, cy = size / 2, R = size * 0.34, r = R * 0.5, pts = [];
         for (let i = 0; i < 10; i++) {
           const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
           const rad = (i % 2 === 0) ? R : r;
@@ -952,8 +965,9 @@
         return [make(pts, true, 0)];
       };
       const heart = () => {
-        const cx = hidden.width / 2, cy = hidden.height / 2;
-        const k = Math.min(hidden.width, hidden.height) * 0.02;
+        const size = getCanvasSize();
+        const cx = size / 2, cy = size / 2;
+        const k = size * 0.02;
         const steps = 220, pts = [];
         for (let i = 0; i <= steps; i++) {
           const t = (i / steps) * Math.PI * 2;
@@ -1000,11 +1014,12 @@
       };
 
       const drawHidden = () => {
+        const size = getCanvasSize();
         gh.clearRect(0, 0, hidden.width, hidden.height);
         const hue = Math.floor(Math.random() * 360);
         const g0 = "hsl(" + hue + ",85%,62%)";
         const g1 = "hsl(" + ((hue + 40) % 360) + ",85%,46%)";
-        const grd = gh.createRadialGradient(hidden.width / (2 * DPR), hidden.height / (2 * DPR), 0, hidden.width / (2 * DPR), hidden.height / (2 * DPR), hidden.width / (2 * DPR));
+        const grd = gh.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
         grd.addColorStop(0, g0);
         grd.addColorStop(1, g1);
 
@@ -1021,7 +1036,7 @@
           } else {
             gh.lineCap = "round";
             gh.lineJoin = "round";
-            gh.lineWidth = Math.max(4, sp.strokePx || 0) / DPR;
+            gh.lineWidth = Math.max(4, sp.strokePx || 0);
             gh.strokeStyle = grd;
             gh.stroke();
           }
@@ -1193,7 +1208,7 @@
         doneV.textContent = String(shapesDone);
         gx.save();
         gx.fillStyle = "rgba(255,255,255,.16)";
-        gx.fillRect(0, 0, fx.width / DPR, fx.height / DPR);
+        gx.fillRect(0, 0, fx.width / devicePixelRatio, fx.height / devicePixelRatio);
         gx.restore();
 
         if (fx.parentElement) fx.parentElement.classList.add('celebrate');
@@ -1254,10 +1269,14 @@
 
           document.body.classList.add('playing');
           setScreen('game');
-          resizeStage();
-          updateHUD();
-          newShape();
-          startTimerLoop();
+          
+          // Let layout apply before measuring and starting
+          requestAnimationFrame(() => {
+            resizeStage();
+            updateHUD();
+            newShape();
+            startTimerLoop();
+          });
         } catch (e) { 
           showErr(e); 
         }
@@ -1285,6 +1304,35 @@
 
         if (completionModal) completionModal.classList.add('show');
         setScreen('settings');
+      }
+
+      // Safe resize handling with TDZ guard
+      const isPlaying = () => (typeof playing !== 'undefined' && playing);
+      
+      let rAF = 0;
+      function scheduleResize() {
+        cancelAnimationFrame(rAF);
+        rAF = requestAnimationFrame(() => {
+          requestAnimationFrame(() => { 
+            setVH();
+            if (isPlaying()) resizeStage(); 
+          });
+        });
+      }
+
+      // Set up ResizeObserver for responsive canvas sizing
+      const gc = document.getElementById('game-container');
+      if (gc && 'ResizeObserver' in window) {
+        const ro = new ResizeObserver(() => requestAnimationFrame(() => {
+          if (playing) resizeStage();
+        }));
+        ro.observe(gc);
+      }
+
+      addEventListener('resize', scheduleResize);
+      addEventListener('orientationchange', scheduleResize);
+      if (window.visualViewport) {
+        visualViewport.addEventListener('resize', scheduleResize);
       }
 
       // Event listeners
@@ -1359,13 +1407,6 @@
         applyDifficulty();
         updatePersonalBest();
       }
-
-      // Resize handling
-      if (fx.parentElement) {
-        new ResizeObserver(resizeStage).observe(fx.parentElement);
-      }
-      window.addEventListener('resize', resizeStage);
-      window.addEventListener('orientationchange', resizeStage);
 
       // Initialize
       loadSettings();
