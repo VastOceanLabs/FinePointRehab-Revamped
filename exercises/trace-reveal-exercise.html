@@ -388,7 +388,6 @@
       overflow: hidden;
       box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
       background: radial-gradient(60% 45% at 50% 40%, rgba(111, 211, 245, 0.12), transparent 68%);
-      /* Remove aspect ratio constraint for mobile */
     }
 
     /* Mobile-specific stage sizing */
@@ -699,24 +698,67 @@
     document.addEventListener('DOMContentLoaded', () => {
       "use strict";
 
-      // Simple storage utility
-      const storage = {
-        get: (key, defaultValue) => {
-          try {
-            const item = localStorage.getItem(key);
-            return item ? JSON.parse(item) : defaultValue;
-          } catch {
-            return defaultValue;
-          }
-        },
-        set: (key, value) => {
-          try {
-            localStorage.setItem(key, JSON.stringify(value));
-          } catch (e) {
-            console.error('Storage error:', e);
-          }
+      // Error handling
+      const errbar = document.getElementById("errbar");
+      function showErr(e) {
+        if (errbar) {
+          errbar.style.display = 'block';
+          errbar.textContent = (e && e.message) ? e.message : String(e);
         }
-      };
+        console.error(e);
+      }
+
+      window.addEventListener("error", (e) => {
+        showErr("Script error: " + (e.message || "") + (e.filename ? " — " + e.filename + ":" + e.lineno : ""));
+      });
+
+      // Viewport height handling
+      const setVH = () => document.documentElement.style.setProperty("--vh", (window.innerHeight * 0.01) + "px");
+      setVH();
+      addEventListener("resize", setVH);
+      addEventListener("orientationchange", setVH);
+
+      // DOM elements
+      const startBtn = document.getElementById("start");
+      const restartBtn = document.getElementById("restart-session");
+      const durInput = document.getElementById("dur");
+      const diffSelect = document.getElementById("difficulty");
+      const covHint = document.getElementById("covHint");
+      const coverageTarget = document.getElementById("coverage-target");
+      const timeV = document.getElementById("time");
+      const doneV = document.getElementById("doneCount");
+      const covNowV = document.getElementById("covNow");
+      const timerBar = document.getElementById("timer-bar");
+      const pauseBtn = document.getElementById("pauseHud");
+      const exitBtn = document.getElementById("exitHud");
+      const completionModal = document.getElementById("completion-message");
+      const finalShapesEl = document.getElementById("final-shapes");
+      const finalCoverageEl = document.getElementById("final-coverage");
+      const finalScoreEl = document.getElementById("final-score");
+      const finalXPEl = document.getElementById("final-xp");
+      const restartModalBtn = document.getElementById("restart-button");
+      const completeClose = document.getElementById("close-complete");
+      const pbSettingsEl = document.getElementById("pb-settings");
+      const starsContainer = document.getElementById('stars-container');
+
+      // Canvas elements
+      const hidden = document.getElementById("hidden");
+      const mask = document.getElementById("mask");
+      const fx = document.getElementById("fx");
+      const ink = document.getElementById("ink");
+      const guide = document.getElementById("guide");
+      
+      if (!hidden || !mask || !fx || !ink || !guide) {
+        showErr("Canvas elements not found");
+        return;
+      }
+
+      const gh = hidden.getContext("2d");
+      const gm = mask.getContext("2d");
+      const gx = fx.getContext("2d");
+      const gi = ink.getContext("2d");
+      const gg = guide.getContext("2d");
+      const DPR = Math.max(1, window.devicePixelRatio || 1);
 
       // Generate starfield
       function generateStars(container, count = 150) {
@@ -736,64 +778,6 @@
         }
       }
 
-      // Error handling with null check
-      const errbar = document.getElementById("errbar");
-      window.addEventListener("error", (e) => {
-        if (!errbar) return;
-        errbar.style.display = "block";
-        errbar.textContent = "Script error: " + (e.message || "") + (e.filename ? " — " + e.filename + ":" + e.lineno : "");
-      });
-
-      // Viewport height handling
-      const setVH = () => document.documentElement.style.setProperty("--vh", (window.innerHeight * 0.01) + "px");
-      setVH();
-      addEventListener("resize", setVH);
-      addEventListener("orientationchange", setVH);
-
-      // Helper function to ensure DOM elements exist
-      const must = (el, id) => {
-        if (!el) throw new Error(`#${id} not found`);
-        return el;
-      };
-
-      // DOM elements - queried after DOM is ready
-      const starsContainer = document.getElementById('stars-container');
-      const startBtn = must(document.getElementById("start"), "start");
-      const restartBtn = document.getElementById("restart-session");
-      const durInput = must(document.getElementById("dur"), "dur");
-      const diffSelect = must(document.getElementById("difficulty"), "difficulty");
-      const covHint = document.getElementById("covHint");
-      const coverageDisplay = document.getElementById("coverage-display");
-      const coverageTarget = document.getElementById("coverage-target");
-      const timeV = must(document.getElementById("time"), "time");
-      const doneV = must(document.getElementById("doneCount"), "doneCount");
-      const covNowV = must(document.getElementById("covNow"), "covNow");
-      const timerBar = document.getElementById("timer-bar");
-      const pauseBtn = must(document.getElementById("pauseHud"), "pauseHud");
-      const exitBtn = must(document.getElementById("exitHud"), "exitHud");
-      const completionModal = document.getElementById("completion-message");
-      const finalShapesEl = document.getElementById("final-shapes");
-      const finalCoverageEl = document.getElementById("final-coverage");
-      const finalScoreEl = document.getElementById("final-score");
-      const finalXPEl = document.getElementById("final-xp");
-      const restartModalBtn = document.getElementById("restart-button");
-      const completeClose = document.getElementById("close-complete");
-      const pbSettingsEl = document.getElementById("pb-settings");
-
-      // Canvas elements
-      const hidden = must(document.getElementById("hidden"), "hidden");
-      const mask = must(document.getElementById("mask"), "mask");
-      const fx = must(document.getElementById("fx"), "fx");
-      const ink = must(document.getElementById("ink"), "ink");
-      const guide = must(document.getElementById("guide"), "guide");
-      const gh = hidden.getContext("2d");
-      const gm = mask.getContext("2d");
-      const gx = fx.getContext("2d");
-      const gi = ink.getContext("2d");
-      const gg = guide.getContext("2d");
-      const DPR = Math.max(1, window.devicePixelRatio || 1);
-
-      // Generate initial stars
       generateStars(starsContainer, 150);
 
       // Personal best tracking
@@ -811,10 +795,9 @@
       let paused = false;
       let remainingMs = 0;
       let sessionMs = 0;
-      let timeLoop = 0;
       let shapesDone = 0;
       let bestCov = 0;
-      let subs = [];  // current multi-subpath shape
+      let subs = [];
       let samples = [];
       let hits = 0;
       let grid = null;
@@ -831,7 +814,7 @@
         if (screen) screen.classList.add('active');
       }
 
-      // Shape generation bags to prevent immediate repeats
+      // Shape generation bags
       const bags = { easy: [], medium: [], hard: [] };
 
       const fmt = (ms) => {
@@ -847,15 +830,548 @@
         if (coverageTarget) coverageTarget.textContent = requiredCov + "%";
       };
 
-      diffSelect.addEventListener("change", () => {
-        applyDifficulty();
-        storage.set('traceRevealDifficulty', diffSelect.value);
+      // Canvas sizing function
+      function resizeStage() {
+        try {
+          const wrap = fx.parentElement;
+          if (!wrap) return;
+          
+          const wrapRect = wrap.getBoundingClientRect();
+          let size;
+          
+          if (window.innerWidth <= 768) {
+            size = Math.max(200, Math.floor(Math.min(wrapRect.width - 20, wrapRect.height - 20)));
+          } else {
+            size = Math.max(10, Math.floor(wrapRect.width));
+          }
+          
+          [hidden, mask, fx, ink, guide].forEach((c) => {
+            c.width = Math.floor(size * DPR);
+            c.height = Math.floor(size * DPR);
+            c.style.width = size + "px";
+            c.style.height = size + "px";
+          });
+          
+          // Set up drawing contexts
+          gi.lineCap = "round";
+          gi.lineJoin = "round";
+          gi.strokeStyle = "rgba(111,211,245,0.95)";
+          gi.lineWidth = Math.max(3, Math.round(brush * DPR * 0.5));
+          
+          [gh, gm, gx, gi, gg].forEach(ctx => ctx.setTransform(DPR, 0, 0, DPR, 0, 0));
+          
+          cellSize = Math.max(8, Math.round(brush * DPR * 0.8));
+          
+          if (playing) {
+            newShape();
+          } else {
+            drawIdleGuide();
+          }
+        } catch (e) {
+          showErr(e);
+        }
+      }
+
+      const drawIdleGuide = () => {
+        gg.clearRect(0, 0, guide.width, guide.height);
+        gg.save();
+        gg.fillStyle = "rgba(255,255,255,.06)";
+        gg.fillRect(0, 0, guide.width / DPR, guide.height / DPR);
+        gg.fillStyle = "rgba(255,255,255,.9)";
+        gg.font = "600 16px system-ui, sans-serif";
+        gg.textAlign = "center";
+        gg.fillText("Set duration, pick difficulty, then Start", guide.width / (2 * DPR), guide.height / (2 * DPR));
+        gg.restore();
+      };
+
+      // Shape generation functions
+      const make = (pts, closed = true, strokePx = 0) => ({ points: pts, closed, strokePx });
+      const minSide = () => Math.min(hidden.width, hidden.height);
+
+      // Shape generators
+      const lineH = () => {
+        const y = hidden.height * 0.5, x1 = hidden.width * 0.15, x2 = hidden.width * 0.85;
+        return [make([{ x: x1, y }, { x: x2, y }], false, Math.round(hidden.height * 0.08))];
+      };
+      const lineV = () => {
+        const x = hidden.width * 0.5, y1 = hidden.height * 0.18, y2 = hidden.height * 0.82;
+        return [make([{ x, y: y1 }, { x, y: y2 }], false, Math.round(hidden.width * 0.08))];
+      };
+      const zigzag = () => {
+        const pts = [];
+        const l = hidden.width * 0.18, r = hidden.width * 0.82, t = hidden.height * 0.22, b = hidden.height * 0.78, rows = 6;
+        for (let i = 0; i <= rows; i++) {
+          const y = t + (b - t) * (i / rows);
+          const x = (i % 2 === 0) ? l : r;
+          pts.push({ x, y });
+        }
+        return [make(pts, false, Math.round(hidden.width * 0.07))];
+      };
+      const sine = () => {
+        const pts = [];
+        const l = hidden.width * 0.12, r = hidden.width * 0.88, mid = hidden.height * 0.5, amp = hidden.height * 0.22, cyc = 1.5, steps = 180;
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const x = l + (r - l) * t;
+          const y = mid + Math.sin(t * Math.PI * 2 * cyc) * amp;
+          pts.push({ x, y });
+        }
+        return [make(pts, false, Math.round(hidden.width * 0.06))];
+      };
+      const circle = () => {
+        const cx = hidden.width / 2, cy = hidden.height / 2, r = minSide() * 0.32, pts = [];
+        for (let i = 0; i <= 180; i++) {
+          const a = (i / 180) * Math.PI * 2;
+          pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+        }
+        return [make(pts, true, 0)];
+      };
+      const square = () => {
+        const s = minSide() * 0.64, x = (hidden.width - s) / 2, y = (hidden.height - s) / 2;
+        const pts = [{ x, y }, { x: x + s, y }, { x: x + s, y: y + s }, { x, y: y + s }, { x, y }];
+        return [make(pts, true, 0)];
+      };
+      const triangle = () => {
+        const s = minSide() * 0.68, cx = hidden.width / 2, cy = hidden.height / 2;
+        const pts = [
+          { x: cx, y: cy - s / 2 },
+          { x: cx - s / 2, y: cy + s / 2 },
+          { x: cx + s / 2, y: cy + s / 2 },
+          { x: cx, y: cy - s / 2 }
+        ];
+        return [make(pts, true, 0)];
+      };
+      const star = () => {
+        const cx = hidden.width / 2, cy = hidden.height / 2, R = minSide() * 0.34, r = R * 0.5, pts = [];
+        for (let i = 0; i < 10; i++) {
+          const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+          const rad = (i % 2 === 0) ? R : r;
+          pts.push({ x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad });
+        }
+        pts.push(pts[0]);
+        return [make(pts, true, 0)];
+      };
+      const heart = () => {
+        const cx = hidden.width / 2, cy = hidden.height / 2;
+        const k = Math.min(hidden.width, hidden.height) * 0.02;
+        const steps = 220, pts = [];
+        for (let i = 0; i <= steps; i++) {
+          const t = (i / steps) * Math.PI * 2;
+          const x = cx + k * 16 * Math.pow(Math.sin(t), 3);
+          const y = cy - k * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+          pts.push({ x, y });
+        }
+        return [make(pts, true, 0)];
+      };
+
+      const POOLS = {
+        easy: [lineH, lineV, zigzag, sine],
+        medium: [circle, square, triangle, star, heart],
+        hard: [heart, star, circle, square, triangle]
+      };
+
+      const drawGuide = () => {
+        gg.clearRect(0, 0, guide.width, guide.height);
+        gg.save();
+        gg.lineCap = "round";
+        gg.lineJoin = "round";
+        for (const sp of subs) {
+          const pts = sp.points;
+          if (!pts || pts.length < 2) continue;
+          gg.strokeStyle = "rgba(0,0,0,.92)";
+          gg.lineWidth = 8;
+          gg.setLineDash([]);
+          gg.beginPath();
+          gg.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) gg.lineTo(pts[i].x, pts[i].y);
+          if (sp.closed) gg.closePath();
+          gg.stroke();
+
+          gg.strokeStyle = "rgba(255,255,255,.98)";
+          gg.lineWidth = 4;
+          gg.setLineDash([14, 10]);
+          gg.beginPath();
+          gg.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) gg.lineTo(pts[i].x, pts[i].y);
+          if (sp.closed) gg.closePath();
+          gg.stroke();
+        }
+        gg.restore();
+      };
+
+      const drawHidden = () => {
+        gh.clearRect(0, 0, hidden.width, hidden.height);
+        const hue = Math.floor(Math.random() * 360);
+        const g0 = "hsl(" + hue + ",85%,62%)";
+        const g1 = "hsl(" + ((hue + 40) % 360) + ",85%,46%)";
+        const grd = gh.createRadialGradient(hidden.width / (2 * DPR), hidden.height / (2 * DPR), 0, hidden.width / (2 * DPR), hidden.height / (2 * DPR), hidden.width / (2 * DPR));
+        grd.addColorStop(0, g0);
+        grd.addColorStop(1, g1);
+
+        for (const sp of subs) {
+          const pts = sp.points;
+          if (!pts || pts.length < 2) continue;
+          gh.beginPath();
+          gh.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) gh.lineTo(pts[i].x, pts[i].y);
+          if (sp.closed) gh.closePath();
+          if (sp.closed) {
+            gh.fillStyle = grd;
+            gh.fill();
+          } else {
+            gh.lineCap = "round";
+            gh.lineJoin = "round";
+            gh.lineWidth = Math.max(4, sp.strokePx || 0) / DPR;
+            gh.strokeStyle = grd;
+            gh.stroke();
+          }
+        }
+
+        gm.clearRect(0, 0, mask.width, mask.height);
+        gi.clearRect(0, 0, ink.width, ink.height);
+      };
+
+      const buildCoverage = () => {
+        samples = [];
+        hits = 0;
+        grid = new Map();
+        const addSample = (x, y) => {
+          const idx = samples.length;
+          samples.push({ x, y, hit: false });
+          const ci = Math.floor(x / cellSize), cj = Math.floor(y / cellSize);
+          const key = ci + "|" + cj;
+          const arr = grid.get(key);
+          if (arr) arr.push(idx); else grid.set(key, [idx]);
+        };
+        const step = 6;
+        for (const sp of subs) {
+          const pts = sp.points;
+          for (let i = 0; i < pts.length - 1; i++) {
+            const p1 = pts[i], p2 = pts[i + 1];
+            const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+            const steps = Math.max(1, Math.ceil(dist / step));
+            for (let j = 0; j <= steps; j++) {
+              const t = j / steps;
+              addSample(Math.round(p1.x + (p2.x - p1.x) * t), Math.round(p1.y + (p2.y - p1.y) * t));
+            }
+          }
+        }
+      };
+
+      const updateComposite = () => {
+        const tmp = document.createElement("canvas");
+        tmp.width = hidden.width;
+        tmp.height = hidden.height;
+        const gt = tmp.getContext("2d");
+        gt.drawImage(hidden, 0, 0);
+        gt.globalCompositeOperation = "destination-in";
+        gt.drawImage(mask, 0, 0);
+
+        gx.clearRect(0, 0, fx.width, fx.height);
+        gx.drawImage(tmp, 0, 0);
+        gx.save();
+        gx.globalCompositeOperation = "lighter";
+        gx.drawImage(tmp, 0, 0);
+        gx.restore();
+      };
+
+      const pos = (e) => {
+        const r = fx.getBoundingClientRect();
+        const x = ((e.clientX || e.pageX) - r.left);
+        const y = ((e.clientY || e.pageY) - r.top);
+        return { x, y };
+      };
+
+      let isDrawing = false;
+      let isCompleting = false;
+      let lastP = null;
+
+      const markCoverageNear = (p) => {
+        if (!samples.length) return;
+        const r = (brush / 2);
+        const r2 = r * r;
+        const ci = Math.floor(p.x / cellSize), cj = Math.floor(p.y / cellSize);
+        for (let di = -1; di <= 1; di++) {
+          for (let dj = -1; dj <= 1; dj++) {
+            const key = (ci + di) + "|" + (cj + dj);
+            const arr = grid.get(key);
+            if (!arr) continue;
+            for (const idx of arr) {
+              const s = samples[idx];
+              if (!s.hit) {
+                const dx = s.x - p.x, dy = s.y - p.y;
+                if (dx * dx + dy * dy <= r2) {
+                  s.hit = true;
+                  hits++;
+                }
+              }
+            }
+          }
+        }
+        const cov = Math.min(100, Math.round((hits / Math.max(1, samples.length)) * 100));
+        bestCov = Math.max(bestCov, cov);
+        covNowV.textContent = cov + "%";
+        if (cov >= requiredCov && !isCompleting) complete();
+      };
+
+      const drawAt = (p) => {
+        gm.globalCompositeOperation = "source-over";
+        gm.fillStyle = "white";
+        gm.beginPath();
+        gm.arc(p.x, p.y, brush / 2, 0, Math.PI * 2);
+        gm.fill();
+
+        if (lastP) {
+          gi.beginPath();
+          gi.moveTo(lastP.x, lastP.y);
+          gi.lineTo(p.x, p.y);
+          gi.stroke();
+        } else {
+          gi.beginPath();
+          gi.arc(p.x, p.y, Math.max(1, brush * 0.25), 0, Math.PI * 2);
+          gi.fillStyle = "rgba(111,211,245,0.95)";
+          gi.fill();
+        }
+        lastP = p;
+
+        updateComposite();
+        markCoverageNear(p);
+      };
+
+      const down = (e) => {
+        if (!playing || isCompleting) return;
+        isDrawing = true;
+        drawAt(pos(e));
+      };
+      const move = (e) => {
+        if (!isDrawing || !playing || isCompleting) return;
+        drawAt(pos(e));
+      };
+      const up = () => {
+        isDrawing = false;
+        lastP = null;
+      };
+
+      fx.addEventListener("mousedown", down);
+      fx.addEventListener("mousemove", move);
+      addEventListener("mouseup", up);
+
+      fx.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        down(e.touches[0]);
+      }, { passive: false });
+      fx.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        move(e.touches[0]);
+      }, { passive: false });
+      fx.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        up();
+      }, { passive: false });
+
+      const bagPick = (level) => {
+        if (!bags[level] || bags[level].length === 0) bags[level] = [...POOLS[level]];
+        const i = Math.floor(Math.random() * bags[level].length);
+        const fn = bags[level].splice(i, 1)[0];
+        return fn;
+      };
+
+      const newShape = () => {
+        const level = diffSelect.value;
+        const gen = bagPick(level);
+        subs = gen();
+        drawGuide();
+        drawHidden();
+        buildCoverage();
+        updateComposite();
+        isCompleting = false;
+      };
+
+      const complete = () => {
+        isCompleting = true;
+        shapesDone += 1;
+        doneV.textContent = String(shapesDone);
+        gx.save();
+        gx.fillStyle = "rgba(255,255,255,.16)";
+        gx.fillRect(0, 0, fx.width / DPR, fx.height / DPR);
+        gx.restore();
+
+        if (fx.parentElement) fx.parentElement.classList.add('celebrate');
+
+        setTimeout(() => {
+          gx.clearRect(0, 0, fx.width, fx.height);
+          if (fx.parentElement) fx.parentElement.classList.remove('celebrate');
+          if (playing) {
+            newShape();
+          }
+        }, 900);
+      };
+
+      // HUD updates
+      function updateHUD() {
+        try {
+          if (timeV) timeV.textContent = fmt(remainingMs);
+          if (doneV) doneV.textContent = String(shapesDone);
+          if (covNowV) covNowV.textContent = Math.round(bestCov) + '%';
+          if (timerBar && sessionMs > 0) {
+            const pct = Math.max(0, Math.min(1, remainingMs / sessionMs));
+            timerBar.style.width = (pct * 100).toFixed(2) + '%';
+          }
+        } catch (e) { showErr(e); }
+      }
+
+      let rafId = 0;
+      function startTimerLoop() {
+        cancelAnimationFrame(rafId);
+        let last = performance.now();
+        const tick = (t) => {
+          if (!playing) return;
+          const dt = t - last; 
+          last = t;
+          if (!paused) {
+            remainingMs = Math.max(0, remainingMs - dt);
+            updateHUD();
+            if (remainingMs <= 0) {
+              endSession();
+              return;
+            }
+          }
+          rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function beginSession() {
+        try {
+          applyDifficulty();
+          const mins = parseFloat(durInput.value || '2');
+          sessionMs = (isFinite(mins) && mins > 0 ? mins : 2) * 60 * 1000;
+          remainingMs = sessionMs;
+          shapesDone = 0;
+          bestCov = 0;
+          paused = false;
+          playing = true;
+
+          document.body.classList.add('playing');
+          setScreen('game');
+          resizeStage();
+          updateHUD();
+          newShape();
+          startTimerLoop();
+        } catch (e) { 
+          showErr(e); 
+        }
+      }
+
+      function endSession() {
+        playing = false;
+        document.body.classList.remove('playing');
+        cancelAnimationFrame(rafId);
+
+        const score = shapesDone * 100 + Math.round(bestCov);
+
+        // Update completion modal
+        if (finalShapesEl) finalShapesEl.textContent = String(shapesDone);
+        if (finalCoverageEl) finalCoverageEl.textContent = Math.round(bestCov) + '%';
+        if (finalScoreEl) finalScoreEl.textContent = String(score);
+        if (finalXPEl) finalXPEl.textContent = String(Math.max(10, Math.round(score * 0.5)));
+
+        // Personal best
+        const previousPB = getPB();
+        if (score > previousPB) {
+          setPB(score);
+          updatePersonalBest();
+        }
+
+        if (completionModal) completionModal.classList.add('show');
+        setScreen('settings');
+      }
+
+      // Event listeners
+      if (startBtn) startBtn.addEventListener('click', beginSession);
+
+      if (pauseBtn) pauseBtn.addEventListener('click', () => {
+        paused = !paused;
+        pauseBtn.textContent = paused ? 'Resume' : 'Pause';
       });
 
-      const resizeStage = () => {
-        const wrap = fx.parentElement;
-        if (!wrap) return;
-        
-        const wrapRect = wrap.getBoundingClientRect();
-        // For mobile, use the full available space
-        const size = Math.max(10, Math.floor(Math.min(wrapRect.width, wrap
+      if (exitBtn) exitBtn.addEventListener('click', () => {
+        playing = false;
+        paused = false;
+        document.body.classList.remove('playing');
+        setScreen('settings');
+        cancelAnimationFrame(rafId);
+      });
+
+      if (restartBtn) restartBtn.addEventListener('click', () => {
+        document.body.classList.remove('playing');
+        setScreen('settings');
+        if (completionModal) completionModal.classList.remove('show');
+      });
+
+      if (restartModalBtn) restartModalBtn.addEventListener('click', () => {
+        if (completionModal) completionModal.classList.remove('show');
+        beginSession();
+      });
+
+      if (completeClose) completeClose.addEventListener('click', () => {
+        if (completionModal) completionModal.classList.remove('show');
+        document.body.classList.remove('playing');
+        setScreen('settings');
+      });
+
+      // Keyboard controls
+      addEventListener("keydown", (e) => {
+        if (!playing) return;
+        if (e.key === " ") {
+          e.preventDefault();
+          if (pauseBtn) pauseBtn.click();
+        }
+        if (e.key === "Escape") {
+          e.preventDefault();
+          if (exitBtn) exitBtn.click();
+        }
+      });
+
+      // Settings
+      if (diffSelect) {
+        diffSelect.addEventListener("change", () => {
+          applyDifficulty();
+          try {
+            localStorage.setItem('traceRevealDifficulty', diffSelect.value);
+          } catch {}
+        });
+      }
+
+      if (durInput) {
+        durInput.addEventListener("input", () => {
+          try {
+            localStorage.setItem('traceRevealDuration', durInput.value);
+          } catch {}
+        });
+      }
+
+      function loadSettings() {
+        try {
+          if (diffSelect) diffSelect.value = localStorage.getItem('traceRevealDifficulty') || 'medium';
+          if (durInput) durInput.value = localStorage.getItem('traceRevealDuration') || '2';
+        } catch {}
+        applyDifficulty();
+        updatePersonalBest();
+      }
+
+      // Resize handling
+      if (fx.parentElement) {
+        new ResizeObserver(resizeStage).observe(fx.parentElement);
+      }
+      window.addEventListener('resize', resizeStage);
+      window.addEventListener('orientationchange', resizeStage);
+
+      // Initialize
+      loadSettings();
+      drawIdleGuide();
+      setScreen("settings");
+    });
+  </script>
+</body>
+</html>
