@@ -346,7 +346,7 @@
       pointer-events: none;
     }
 
-    /* Game layout adjustments for full screen */
+    /* MOBILE-OPTIMIZED GAME LAYOUT */
     body.playing {
       overflow: hidden;
     }
@@ -368,24 +368,88 @@
       height: 100vh;
       max-width: none;
       margin: 0;
+      gap: 0;
+      grid-template-rows: auto 1fr;
     }
 
     body.playing #game-container {
       height: 100%;
       border-radius: 0;
       border: none;
+      padding: var(--space-2);
     }
 
-    /* Canvas stage container */
+    /* IMPROVED MOBILE CANVAS STAGE CONTAINER */
     .stage-wrap {
       position: relative;
       width: 100%;
-      aspect-ratio: 1/1;
-      max-width: min(80vh, 80vw);
+      height: 100%;
       border-radius: var(--radius-lg);
       overflow: hidden;
       box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
       background: radial-gradient(60% 45% at 50% 40%, rgba(111, 211, 245, 0.12), transparent 68%);
+      /* Remove aspect ratio constraint for mobile */
+    }
+
+    /* Mobile-specific stage sizing */
+    @media (max-width: 768px) {
+      body.playing .hud {
+        padding: var(--space-1) var(--space-2);
+        padding-top: calc(var(--space-1) + 4px);
+        gap: var(--space-1);
+      }
+
+      body.playing #game-container {
+        padding: var(--space-1);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .instructions {
+        font-size: 14px;
+        padding: var(--space-2);
+        margin-bottom: var(--space-2);
+      }
+
+      .stage-wrap {
+        flex: 1;
+        min-height: 0;
+        border-radius: var(--radius);
+      }
+
+      .coverage-display {
+        top: var(--space-2);
+        font-size: 11px;
+        padding: 4px 8px;
+      }
+
+      /* Ensure game is playable on very small screens */
+      @media (max-height: 600px) {
+        .instructions {
+          display: none;
+        }
+        
+        body.playing .hud {
+          padding: 4px var(--space-1);
+          padding-top: 8px;
+        }
+        
+        .hud-value {
+          font-size: 14px;
+        }
+        
+        .hud-label {
+          font-size: 10px;
+        }
+      }
+    }
+
+    /* Desktop keeps aspect ratio */
+    @media (min-width: 769px) {
+      .stage-wrap {
+        aspect-ratio: 1/1;
+        max-width: min(80vh, 80vw);
+      }
     }
 
     canvas.stage {
@@ -485,10 +549,6 @@
       
       .page {
         padding: var(--space-2);
-      }
-
-      .stage-wrap {
-        max-width: min(90vh, 95vw);
       }
     }
 
@@ -797,507 +857,5 @@
         if (!wrap) return;
         
         const wrapRect = wrap.getBoundingClientRect();
-        const size = Math.max(10, Math.floor(wrapRect.width));
-        [hidden, mask, fx, ink, guide].forEach((c) => {
-          c.width = Math.floor(size * DPR);
-          c.height = Math.floor(size * DPR);
-          c.style.width = size + "px";
-          c.style.height = size + "px";
-        });
-        gi.lineCap = "round";
-        gi.lineJoin = "round";
-        gi.strokeStyle = "rgba(111,211,245,0.95)";
-        gi.lineWidth = Math.max(3, Math.round(brush * DPR * 0.5));
-
-        cellSize = Math.max(8, Math.round(brush * DPR * 0.8));
-
-        if (playing) {
-          newShape();
-        } else {
-          drawIdleGuide();
-        }
-      };
-
-      // Set up resize observer after DOM is ready
-      if (fx.parentElement) {
-        new ResizeObserver(resizeStage).observe(fx.parentElement);
-      }
-
-      const drawIdleGuide = () => {
-        gg.clearRect(0, 0, guide.width, guide.height);
-        gg.save();
-        gg.scale(DPR, DPR);
-        gg.fillStyle = "rgba(255,255,255,.06)";
-        gg.fillRect(0, 0, guide.width / DPR, guide.height / DPR);
-        gg.fillStyle = "rgba(255,255,255,.9)";
-        gg.font = "600 16px system-ui, sans-serif";
-        gg.textAlign = "center";
-        gg.fillText("Set duration, pick difficulty, then Start", guide.width / (2 * DPR), guide.height / (2 * DPR));
-        gg.restore();
-      };
-
-      // Shape generation functions
-      const make = (pts, closed = true, strokePx = 0) => ({ points: pts, closed, strokePx });
-      const minSide = () => Math.min(hidden.width, hidden.height);
-
-      // Open/simple shapes
-      const lineH = () => {
-        const y = hidden.height * 0.5, x1 = hidden.width * 0.15, x2 = hidden.width * 0.85;
-        return [make([{ x: x1, y }, { x: x2, y }], false, Math.round(hidden.height * 0.08))];
-      };
-      const lineV = () => {
-        const x = hidden.width * 0.5, y1 = hidden.height * 0.18, y2 = hidden.height * 0.82;
-        return [make([{ x, y: y1 }, { x, y: y2 }], false, Math.round(hidden.width * 0.08))];
-      };
-      const zigzag = () => {
-        const pts = [];
-        const l = hidden.width * 0.18, r = hidden.width * 0.82, t = hidden.height * 0.22, b = hidden.height * 0.78, rows = 6;
-        for (let i = 0; i <= rows; i++) {
-          const y = t + (b - t) * (i / rows);
-          const x = (i % 2 === 0) ? l : r;
-          pts.push({ x, y });
-        }
-        return [make(pts, false, Math.round(hidden.width * 0.07))];
-      };
-      const sine = () => {
-        const pts = [];
-        const l = hidden.width * 0.12, r = hidden.width * 0.88, mid = hidden.height * 0.5, amp = hidden.height * 0.22, cyc = 1.5, steps = 180;
-        for (let i = 0; i <= steps; i++) {
-          const t = i / steps;
-          const x = l + (r - l) * t;
-          const y = mid + Math.sin(t * Math.PI * 2 * cyc) * amp;
-          pts.push({ x, y });
-        }
-        return [make(pts, false, Math.round(hidden.width * 0.06))];
-      };
-
-      // Closed/simple shapes
-      const circle = () => {
-        const cx = hidden.width / 2, cy = hidden.height / 2, r = minSide() * 0.32, pts = [];
-        for (let i = 0; i <= 180; i++) {
-          const a = (i / 180) * Math.PI * 2;
-          pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
-        }
-        return [make(pts, true, 0)];
-      };
-      const square = () => {
-        const s = minSide() * 0.64, x = (hidden.width - s) / 2, y = (hidden.height - s) / 2;
-        const pts = [{ x, y }, { x: x + s, y }, { x: x + s, y: y + s }, { x, y: y + s }, { x, y }];
-        return [make(pts, true, 0)];
-      };
-      const triangle = () => {
-        const s = minSide() * 0.68, cx = hidden.width / 2, cy = hidden.height / 2;
-        const pts = [
-          { x: cx, y: cy - s / 2 },
-          { x: cx - s / 2, y: cy + s / 2 },
-          { x: cx + s / 2, y: cy + s / 2 },
-          { x: cx, y: cy - s / 2 }
-        ];
-        return [make(pts, true, 0)];
-      };
-      const star = () => {
-        const cx = hidden.width / 2, cy = hidden.height / 2, R = minSide() * 0.34, r = R * 0.5, pts = [];
-        for (let i = 0; i < 10; i++) {
-          const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-          const rad = (i % 2 === 0) ? R : r;
-          pts.push({ x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad });
-        }
-        pts.push(pts[0]);
-        return [make(pts, true, 0)];
-      };
-
-      // Complex shapes
-      const heart = () => {
-        const cx = hidden.width / 2, cy = hidden.height / 2;
-        const k = Math.min(hidden.width, hidden.height) * 0.02;
-        const steps = 220, pts = [];
-        for (let i = 0; i <= steps; i++) {
-          const t = (i / steps) * Math.PI * 2;
-          const x = cx + k * 16 * Math.pow(Math.sin(t), 3);
-          const y = cy - k * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-          pts.push({ x, y });
-        }
-        return [make(pts, true, 0)];
-      };
-
-      const POOLS = {
-        easy: [lineH, lineV, zigzag, sine],
-        medium: [circle, square, triangle, star, heart],
-        hard: [heart, star, circle, square, triangle]
-      };
-
-      const drawGuide = () => {
-        gg.clearRect(0, 0, guide.width, guide.height);
-        gg.save();
-        gg.lineCap = "round";
-        gg.lineJoin = "round";
-        for (const sp of subs) {
-          const pts = sp.points;
-          if (!pts || pts.length < 2) continue;
-          gg.strokeStyle = "rgba(0,0,0,.92)";
-          gg.lineWidth = 8 * DPR;
-          gg.setLineDash([]);
-          gg.beginPath();
-          gg.moveTo(pts[0].x, pts[0].y);
-          for (let i = 1; i < pts.length; i++) gg.lineTo(pts[i].x, pts[i].y);
-          if (sp.closed) gg.closePath();
-          gg.stroke();
-
-          gg.strokeStyle = "rgba(255,255,255,.98)";
-          gg.lineWidth = 4 * DPR;
-          gg.setLineDash([14 * DPR, 10 * DPR]);
-          gg.beginPath();
-          gg.moveTo(pts[0].x, pts[0].y);
-          for (let i = 1; i < pts.length; i++) gg.lineTo(pts[i].x, pts[i].y);
-          if (sp.closed) gg.closePath();
-          gg.stroke();
-        }
-        gg.restore();
-      };
-
-      const drawHidden = () => {
-        gh.clearRect(0, 0, hidden.width, hidden.height);
-        const hue = Math.floor(Math.random() * 360);
-        const g0 = "hsl(" + hue + ",85%,62%)";
-        const g1 = "hsl(" + ((hue + 40) % 360) + ",85%,46%)";
-        const grd = gh.createRadialGradient(hidden.width / 2, hidden.height / 2, 0, hidden.width / 2, hidden.height / 2, hidden.width / 2);
-        grd.addColorStop(0, g0);
-        grd.addColorStop(1, g1);
-
-        for (const sp of subs) {
-          const pts = sp.points;
-          if (!pts || pts.length < 2) continue;
-          gh.beginPath();
-          gh.moveTo(pts[0].x, pts[0].y);
-          for (let i = 1; i < pts.length; i++) gh.lineTo(pts[i].x, pts[i].y);
-          if (sp.closed) gh.closePath();
-          if (sp.closed) {
-            gh.fillStyle = grd;
-            gh.fill();
-          } else {
-            gh.lineCap = "round";
-            gh.lineJoin = "round";
-            gh.lineWidth = Math.max(4, sp.strokePx || 0);
-            gh.strokeStyle = grd;
-            gh.stroke();
-          }
-        }
-
-        gm.clearRect(0, 0, mask.width, mask.height);
-        gi.clearRect(0, 0, ink.width, ink.height);
-      };
-
-      const buildCoverage = () => {
-        samples = [];
-        hits = 0;
-        grid = new Map();
-        const addSample = (x, y) => {
-          const idx = samples.length;
-          samples.push({ x, y, hit: false });
-          const ci = Math.floor(x / cellSize), cj = Math.floor(y / cellSize);
-          const key = ci + "|" + cj;
-          const arr = grid.get(key);
-          if (arr) arr.push(idx); else grid.set(key, [idx]);
-        };
-        const step = 6 * DPR;
-        for (const sp of subs) {
-          const pts = sp.points;
-          for (let i = 0; i < pts.length - 1; i++) {
-            const p1 = pts[i], p2 = pts[i + 1];
-            const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-            const steps = Math.max(1, Math.ceil(dist / step));
-            for (let j = 0; j <= steps; j++) {
-              const t = j / steps;
-              addSample(Math.round(p1.x + (p2.x - p1.x) * t), Math.round(p1.y + (p2.y - p1.y) * t));
-            }
-          }
-        }
-      };
-
-      const updateComposite = () => {
-        const tmp = document.createElement("canvas");
-        tmp.width = hidden.width;
-        tmp.height = hidden.height;
-        const gt = tmp.getContext("2d");
-        gt.drawImage(hidden, 0, 0);
-        gt.globalCompositeOperation = "destination-in";
-        gt.drawImage(mask, 0, 0);
-
-        gx.clearRect(0, 0, fx.width, fx.height);
-        gx.drawImage(tmp, 0, 0);
-        gx.save();
-        gx.globalCompositeOperation = "lighter";
-        gx.drawImage(tmp, 0, 0);
-        gx.restore();
-      };
-
-      const pos = (e) => {
-        const r = fx.getBoundingClientRect();
-        const x = ((e.clientX || e.pageX) - r.left) * DPR;
-        const y = ((e.clientY || e.pageY) - r.top) * DPR;
-        return { x, y };
-      };
-
-      let isDrawing = false;
-      let isCompleting = false;
-      let lastP = null;
-
-      const markCoverageNear = (p) => {
-        if (!samples.length) return;
-        const r = (brush * DPR / 2);
-        const r2 = r * r;
-        const ci = Math.floor(p.x / cellSize), cj = Math.floor(p.y / cellSize);
-        for (let di = -1; di <= 1; di++) {
-          for (let dj = -1; dj <= 1; dj++) {
-            const key = (ci + di) + "|" + (cj + dj);
-            const arr = grid.get(key);
-            if (!arr) continue;
-            for (const idx of arr) {
-              const s = samples[idx];
-              if (!s.hit) {
-                const dx = s.x - p.x, dy = s.y - p.y;
-                if (dx * dx + dy * dy <= r2) {
-                  s.hit = true;
-                  hits++;
-                }
-              }
-            }
-          }
-        }
-        const cov = Math.min(100, Math.round((hits / Math.max(1, samples.length)) * 100));
-        bestCov = Math.max(bestCov, cov);
-        covNowV.textContent = cov + "%";
-        if (cov >= requiredCov && !isCompleting) complete();
-      };
-
-      const drawAt = (p) => {
-        gm.globalCompositeOperation = "source-over";
-        gm.fillStyle = "white";
-        gm.beginPath();
-        gm.arc(p.x, p.y, brush * DPR / 2, 0, Math.PI * 2);
-        gm.fill();
-
-        if (lastP) {
-          gi.beginPath();
-          gi.moveTo(lastP.x, lastP.y);
-          gi.lineTo(p.x, p.y);
-          gi.stroke();
-        } else {
-          gi.beginPath();
-          gi.arc(p.x, p.y, Math.max(1, (brush * DPR * 0.25)), 0, Math.PI * 2);
-          gi.fillStyle = "rgba(111,211,245,0.95)";
-          gi.fill();
-        }
-        lastP = p;
-
-        updateComposite();
-        markCoverageNear(p);
-      };
-
-      const down = (e) => {
-        if (!playing || isCompleting) return;
-        isDrawing = true;
-        drawAt(pos(e));
-      };
-      const move = (e) => {
-        if (!isDrawing || !playing || isCompleting) return;
-        drawAt(pos(e));
-      };
-      const up = () => {
-        isDrawing = false;
-        lastP = null;
-      };
-
-      fx.addEventListener("mousedown", down);
-      fx.addEventListener("mousemove", move);
-      addEventListener("mouseup", up);
-
-      fx.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        down(e.touches[0]);
-      }, { passive: false });
-      fx.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-        move(e.touches[0]);
-      }, { passive: false });
-      fx.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        up();
-      }, { passive: false });
-
-      const bagPick = (level) => {
-        if (!bags[level] || bags[level].length === 0) bags[level] = [...POOLS[level]];
-        const i = Math.floor(Math.random() * bags[level].length);
-        const fn = bags[level].splice(i, 1)[0];
-        return fn;
-      };
-
-      const newShape = () => {
-        const level = diffSelect.value;
-        const gen = bagPick(level);
-        subs = gen();
-        drawGuide();
-        drawHidden();
-        buildCoverage();
-        updateComposite();
-      };
-
-      const start = () => {
-        const mins = Math.max(0.5, Math.min(30, Number(durInput.value || 2)));
-        remainingMs = Math.round(mins * 60 * 1000);
-        sessionMs = remainingMs;
-        shapesDone = 0;
-        bestCov = 0;
-        doneV.textContent = "0";
-        covNowV.textContent = "0%";
-        timeV.textContent = fmt(remainingMs);
-        if (timerBar) timerBar.style.width = "100%";
-
-        document.body.classList.add("playing");
-        setScreen("game");
-        playing = true;
-        paused = false;
-
-        requestAnimationFrame(() => {
-          resizeStage();
-          newShape();
-          loop(performance.now());
-        });
-      };
-
-      const loop = (last) => {
-        if (!playing) return;
-        timeLoop = requestAnimationFrame((now) => {
-          if (!paused) {
-            const dt = now - last;
-            remainingMs = Math.max(0, remainingMs - dt);
-            const progress = Math.max(0, remainingMs / sessionMs);
-            if (timerBar) timerBar.style.width = `${progress * 100}%`;
-            timeV.textContent = fmt(remainingMs);
-            if (remainingMs <= 0) {
-              end();
-              return;
-            }
-          }
-          loop(now);
-        });
-      };
-
-      const pause = () => {
-        if (!playing) return;
-        paused = !paused;
-        pauseBtn.textContent = paused ? "Resume" : "Pause";
-      };
-
-      const exit = () => {
-        if (!playing) return;
-        playing = false;
-        paused = false;
-        document.body.classList.remove("playing");
-        cancelAnimationFrame(timeLoop);
-        setScreen("settings");
-      };
-
-      const end = () => {
-        playing = false;
-        paused = false;
-        document.body.classList.remove("playing");
-        cancelAnimationFrame(timeLoop);
-
-        const score = shapesDone * 100 + Math.round(bestCov);
-
-        // Check for personal best
-        const previousPB = getPB();
-        let isNewPB = false;
-        if (score > previousPB) {
-          isNewPB = true;
-          setPB(score);
-          updatePersonalBest();
-        }
-
-        // Show completion modal
-        if (finalShapesEl) finalShapesEl.textContent = String(shapesDone);
-        if (finalCoverageEl) finalCoverageEl.textContent = Math.round(bestCov) + "%";
-        if (finalScoreEl) finalScoreEl.textContent = String(score);
-        if (finalXPEl) finalXPEl.textContent = String(Math.max(10, Math.round(score * 0.5)));
-
-        if (completionModal) completionModal.classList.add("show");
-        setScreen("settings");
-      };
-
-      const complete = () => {
-        isCompleting = true;
-        shapesDone += 1;
-        doneV.textContent = String(shapesDone);
-        gx.save();
-        gx.fillStyle = "rgba(255,255,255,.16)";
-        gx.fillRect(0, 0, fx.width, fx.height);
-        gx.restore();
-
-        if (fx.parentElement) fx.parentElement.classList.add('celebrate');
-
-        setTimeout(() => {
-          gx.clearRect(0, 0, fx.width, fx.height);
-          if (fx.parentElement) fx.parentElement.classList.remove('celebrate');
-          if (playing) {
-            isCompleting = false;
-            newShape();
-          }
-        }, 900);
-      };
-
-      // Event listeners
-      startBtn.addEventListener("click", start);
-      pauseBtn.addEventListener("click", pause);
-      exitBtn.addEventListener("click", exit);
-      if (restartBtn) {
-        restartBtn.addEventListener("click", () => {
-          if (playing) exit();
-        });
-      }
-      if (restartModalBtn) {
-        restartModalBtn.addEventListener("click", () => {
-          if (completionModal) completionModal.classList.remove("show");
-          setScreen("settings");
-        });
-      }
-      if (completeClose) {
-        completeClose.addEventListener("click", () => {
-          if (completionModal) completionModal.classList.remove("show");
-          setScreen("settings");
-        });
-      }
-
-      // Keyboard controls
-      addEventListener("keydown", (e) => {
-        if (!playing) return;
-        if (e.key === " ") {
-          e.preventDefault();
-          pause();
-        }
-        if (e.key === "Escape") {
-          e.preventDefault();
-          exit();
-        }
-      });
-
-      // Settings persistence
-      durInput.addEventListener("input", () => {
-        storage.set('traceRevealDuration', durInput.value);
-      });
-
-      function loadSettings() {
-        diffSelect.value = storage.get('traceRevealDifficulty', 'medium');
-        durInput.value = storage.get('traceRevealDuration', '2');
-        applyDifficulty();
-        updatePersonalBest();
-      }
-
-      // Initialize
-      loadSettings();
-      drawIdleGuide();
-      setScreen("settings");
-    });
-  </script>
-</body>
-</html>
+        // For mobile, use the full available space
+        const size = Math.max(10, Math.floor(Math.min(wrapRect.width, wrap
