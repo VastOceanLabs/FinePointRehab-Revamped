@@ -831,22 +831,29 @@
           const DPR = Math.max(1, window.devicePixelRatio || 1);
           const wrap = fx.parentElement; // .stage-wrap
           const game = document.getElementById('game-container');
-          const hud = document.querySelector('.hud');
-          const instr = document.getElementById('instructions');
-
+          
           if (!wrap || !game) return;
 
-          // Measure actual available space
-          const gameStyles = getComputedStyle(game);
-          const padY = parseFloat(gameStyles.paddingTop) + parseFloat(gameStyles.paddingBottom);
-
-          const hudH = hud ? hud.getBoundingClientRect().height : 0;
-          const instrH = (instr && getComputedStyle(instr).display !== 'none') 
-                          ? instr.getBoundingClientRect().height : 0;
-
-          const availW = wrap.clientWidth;
-          const availH = Math.max(0, game.clientHeight - hudH - instrH - padY - 20);
-          const cssSize = Math.max(160, Math.floor(Math.min(availW - 20, availH)));
+          // Be more conservative - use viewport dimensions directly for mobile
+          const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+          const viewportWidth = window.innerWidth;
+          
+          // On mobile, calculate available space more aggressively
+          let availableSize;
+          if (viewportWidth <= 768) {
+            // Mobile: account for header (~60px), HUD (~80px), padding (~40px), safe margins (~60px)
+            const reservedHeight = 240;
+            const availH = Math.max(200, viewportHeight - reservedHeight);
+            const availW = Math.max(200, viewportWidth - 40); // 20px margin each side
+            availableSize = Math.min(availW, availH);
+          } else {
+            // Desktop: use the wrap dimensions
+            const gameRect = game.getBoundingClientRect();
+            const wrapRect = wrap.getBoundingClientRect();
+            availableSize = Math.min(wrapRect.width - 40, wrapRect.height - 40);
+          }
+          
+          const cssSize = Math.max(180, Math.floor(availableSize));
 
           // Apply size to all canvases
           [hidden, mask, fx, ink, guide].forEach((c) => {
