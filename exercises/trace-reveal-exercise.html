@@ -153,7 +153,6 @@
       padding: var(--space-4);
     }
 
-    /* Screen system */
     [data-screen] {
       display: none !important;
     }
@@ -162,7 +161,6 @@
       display: block !important;
     }
 
-    /* Settings screen styling */
     .settings-panel {
       max-width: 480px;
       margin: 0 auto;
@@ -355,7 +353,6 @@
       pointer-events: none;
     }
 
-    /* MOBILE-OPTIMIZED GAME LAYOUT */
     body.playing .page {
       display: grid;
       grid-template-rows: auto 1fr;
@@ -386,7 +383,6 @@
       padding-bottom: max(var(--space-1), env(safe-area-inset-bottom));
     }
 
-    /* IMPROVED MOBILE CANVAS STAGE CONTAINER */
     .stage-wrap {
       position: relative;
       flex: 1;
@@ -403,7 +399,6 @@
       aspect-ratio: 1 / 1;
     }
 
-    /* Stack all canvases */
     .stage-wrap .stage {
       position: absolute;
       inset: 0;
@@ -414,14 +409,12 @@
       touch-action: none;
     }
 
-    /* Ensure correct visual order (bottom → top) */
     #hidden { z-index: 0; }
     #mask   { z-index: 1; }
     #fx     { z-index: 2; }
     #ink    { z-index: 3; pointer-events: none; }
     #guide  { z-index: 4; pointer-events: none; }
 
-    /* Coverage target display */
     .coverage-display {
       position: absolute;
       top: var(--space-2);
@@ -439,7 +432,6 @@
       color: var(--brand-aqua);
     }
 
-    /* Mobile-specific optimizations */
     @media (max-width: 768px) {
       body.playing .hud {
         padding: var(--space-1) var(--space-2);
@@ -463,14 +455,12 @@
       }
     }
 
-    /* Hide instructions on short screens to save space */
     @media (max-height: 720px) {
       .instructions {
         display: none;
       }
     }
 
-    /* Very short screens */
     @media (max-height: 600px) {
       body.playing .hud {
         padding: 4px var(--space-1);
@@ -486,7 +476,6 @@
       }
     }
 
-    /* Completion modal */
     .completion {
       position: fixed;
       inset: 50% auto auto 50%;
@@ -550,7 +539,6 @@
       }
     }
 
-    /* Error bar styling */
     #errbar {
       position: fixed;
       left: 0;
@@ -583,7 +571,6 @@
   <div id="errbar"></div>
 
   <main class="page">
-    <!-- Settings Screen -->
     <aside class="settings-panel panel active" data-screen="settings">
       <h2>Session Settings</h2>
 
@@ -598,7 +585,6 @@
         </p>
       </div>
 
-      <!-- Personal Best display -->
       <div class="stats-row">
         <div class="metric-settings">
           <div id="pb-settings" class="pb-value">0</div>
@@ -628,9 +614,7 @@
       </div>
     </aside>
 
-    <!-- Game Screen -->
     <section class="right-col" data-screen="game">
-      <!-- HUD Row -->
       <div class="hud panel">
         <div class="timer-bar" id="timer-bar"></div>
 
@@ -655,7 +639,6 @@
         </div>
       </div>
 
-      <!-- Game Area -->
       <div class="panel" id="game-container">
         <div id="stars-container"></div>
 
@@ -668,7 +651,6 @@
         </p>
 
         <div class="stage-wrap">
-          <!-- Order: hidden -> mask -> fx -> ink -> guide -->
           <canvas id="hidden" class="stage" aria-hidden="true"></canvas>
           <canvas id="mask" class="stage" aria-hidden="true"></canvas>
           <canvas id="fx" class="stage" aria-hidden="true"></canvas>
@@ -988,9 +970,147 @@
       };
 
       const POOLS = {
-        easy: [lineH, lineV, zigzag, sine],
-        medium: [circle, square, triangle, star, heart],
-        hard: [heart, star, circle, square, triangle]
+        easy: [
+          lineH, lineV, zigzag, sine,
+          () => {
+            const size = getCanvasSize();
+            const m = size * 0.15;
+            return [make([{ x: m, y: m }, { x: size - m, y: size - m }], false, Math.round(size * 0.08))];
+          },
+          () => {
+            const size = getCanvasSize();
+            const m = size * 0.15;
+            return [make([{ x: size - m, y: m }, { x: m, y: size - m }], false, Math.round(size * 0.08))];
+          },
+          () => {
+            const size = getCanvasSize();
+            const pts = [];
+            const l = size * 0.12, r = size * 0.88, mid = size * 0.5, amp = size * 0.15, cyc = 2, steps = 200;
+            for (let i = 0; i <= steps; i++) {
+              const t = i / steps;
+              const x = l + (r - l) * t;
+              const y = mid + Math.sin(t * Math.PI * 2 * cyc) * amp;
+              pts.push({ x, y });
+            }
+            return [make(pts, false, Math.round(size * 0.06))];
+          },
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, pts = [];
+            const steps = 150;
+            for (let i = 0; i <= steps; i++) {
+              const t = i / steps;
+              const a = t * Math.PI * 4;
+              const r = size * 0.05 + t * size * 0.25;
+              pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+            }
+            return [make(pts, false, Math.round(size * 0.06))];
+          }
+        ],
+        medium: [
+          circle, square, triangle, star, heart,
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, r = size * 0.32, pts = [];
+            for (let i = 0; i <= 5; i++) {
+              const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+              pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+            }
+            return [make(pts, true, 0)];
+          },
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, r = size * 0.32, pts = [];
+            for (let i = 0; i <= 6; i++) {
+              const a = (i / 6) * Math.PI * 2;
+              pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+            }
+            return [make(pts, true, 0)];
+          },
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, w = size * 0.3, h = size * 0.4;
+            const pts = [
+              { x: cx, y: cy - h },
+              { x: cx + w, y: cy },
+              { x: cx, y: cy + h },
+              { x: cx - w, y: cy },
+              { x: cx, y: cy - h }
+            ];
+            return [make(pts, true, 0)];
+          },
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, r = size * 0.28, pts = [];
+            for (let i = 0; i <= 180; i++) {
+              const a = (i / 180) * Math.PI * 2 - Math.PI / 4;
+              const rad = i < 90 ? r : r * 0.7;
+              pts.push({ x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad });
+            }
+            return [make(pts, true, 0)];
+          }
+        ],
+        hard: [
+          heart, star,
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, R = size * 0.34, r = R * 0.6, pts = [];
+            for (let i = 0; i < 16; i++) {
+              const a = (i / 16) * Math.PI * 2 - Math.PI / 2;
+              const rad = (i % 2 === 0) ? R : r;
+              pts.push({ x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad });
+            }
+            pts.push(pts[0]);
+            return [make(pts, true, 0)];
+          },
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, r = size * 0.28, pts = [];
+            const petals = 6;
+            for (let i = 0; i <= 360; i += 2) {
+              const a = (i / 180) * Math.PI;
+              const rad = r * (1 + 0.5 * Math.sin(petals * a));
+              pts.push({ x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad });
+            }
+            return [make(pts, true, 0)];
+          },
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, w = size * 0.25, pts = [];
+            for (let i = 0; i <= 360; i += 2) {
+              const t = (i / 180) * Math.PI;
+              const scale = 2 / (3 - Math.cos(2 * t));
+              const x = cx + w * scale * Math.cos(t);
+              const y = cy + w * 0.5 * scale * Math.sin(2 * t);
+              pts.push({ x, y });
+            }
+            return [make(pts, true, 0)];
+          },
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, pts = [];
+            const steps = 200;
+            for (let i = 0; i <= steps; i++) {
+              const t = i / steps;
+              const a = t * Math.PI * 6;
+              const r = size * 0.08 + t * size * 0.3;
+              pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+            }
+            return [make(pts, false, Math.round(size * 0.05))];
+          },
+          () => {
+            const size = getCanvasSize();
+            const cx = size / 2, cy = size / 2, r = size * 0.2, pts = [];
+            for (let i = 0; i <= 360; i += 2) {
+              const t = (i / 180) * Math.PI;
+              const x = cx + r * Math.cos(t) * (2 + Math.cos(3 * t));
+              const y = cy + r * Math.sin(t) * (2 + Math.cos(3 * t));
+              pts.push({ x, y });
+            }
+            return [make(pts, true, 0)];
+          },
+          circle, square, triangle
+        ]
       };
 
       const drawGuide = () => {
