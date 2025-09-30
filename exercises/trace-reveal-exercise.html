@@ -1121,8 +1121,9 @@
 
       const pos = (e) => {
         const r = fx.getBoundingClientRect();
-        const x = ((e.clientX || e.pageX) - r.left);
-        const y = ((e.clientY || e.pageY) - r.top);
+        const DPR = window.devicePixelRatio || 1;
+        const x = ((e.clientX || e.pageX) - r.left) * (fx.width / r.width);
+        const y = ((e.clientY || e.pageY) - r.top) * (fx.height / r.height);
         return { x, y };
       };
 
