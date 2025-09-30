@@ -392,9 +392,7 @@
       flex: 1;
       min-height: 0;
       width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
       border-radius: var(--radius-lg);
       overflow: hidden;
       box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
@@ -405,23 +403,23 @@
       aspect-ratio: 1 / 1;
     }
 
-    canvas.stage {
+    /* Stack all canvases */
+    .stage-wrap .stage {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       display: block;
       background: transparent;
       touch-action: none;
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
     }
 
-    #guide {
-      pointer-events: none;
-    }
-
-    #ink {
-      pointer-events: none;
-    }
+    /* Ensure correct visual order (bottom → top) */
+    #hidden { z-index: 0; }
+    #mask   { z-index: 1; }
+    #fx     { z-index: 2; }
+    #ink    { z-index: 3; pointer-events: none; }
+    #guide  { z-index: 4; pointer-events: none; }
 
     /* Coverage target display */
     .coverage-display {
@@ -611,15 +609,15 @@
       <div class="settings-group">
         <label class="settings-label" for="dur">Session Duration (minutes)</label>
         <input class="input" id="dur" type="number" min="0.5" step="0.5" max="30" value="2" inputmode="decimal">
-        <small class="setting-help">0.5—30 minutes recommended for motor training.</small>
+        <small class="setting-help">0.5–30 minutes recommended for motor training.</small>
       </div>
 
       <div class="settings-group">
         <label class="settings-label" for="difficulty">Difficulty</label>
         <select class="input" id="difficulty">
-          <option value="easy">Easy — lines & zigzags, 70% coverage</option>
-          <option value="medium" selected>Medium — basic shapes, 85% coverage</option>
-          <option value="hard">Hard — complex shapes, 95% coverage</option>
+          <option value="easy">Easy – lines & zigzags, 70% coverage</option>
+          <option value="medium" selected>Medium – basic shapes, 85% coverage</option>
+          <option value="hard">Hard – complex shapes, 95% coverage</option>
         </select>
         <div id="covHint" class="setting-help" aria-live="polite">Coverage target: 85%</div>
       </div>
@@ -674,7 +672,7 @@
           <canvas id="hidden" class="stage" aria-hidden="true"></canvas>
           <canvas id="mask" class="stage" aria-hidden="true"></canvas>
           <canvas id="fx" class="stage" aria-hidden="true"></canvas>
-          <canvas id="ink" class="stage" aria-hidden="true"></canvas>
+          <canvas id="ink" class="stage" aria-label="Drawing canvas"></canvas>
           <canvas id="guide" class="stage" aria-label="Trace guide"></canvas>
         </div>
       </div>
@@ -710,7 +708,7 @@
       }
 
       window.addEventListener("error", (e) => {
-        showErr("Script error: " + (e.message || "") + (e.filename ? " — " + e.filename + ":" + e.lineno : ""));
+        showErr("Script error: " + (e.message || "") + (e.filename ? " – " + e.filename + ":" + e.lineno : ""));
       });
 
       // Enhanced viewport height handling
@@ -864,7 +862,7 @@
           const padTop = parseFloat(cs.paddingTop) || 0;
           const padBottom = parseFloat(cs.paddingBottom) || 0;
           const padLeft = parseFloat(cs.paddingLeft) || 0;
-          const padRight = parseFloat(cs.paddingRight) || 0;
+          const padRight const padRight = parseFloat(cs.paddingRight) || 0;
 
           // Safe area (especially iOS)
           const safeTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)')) || 0;
