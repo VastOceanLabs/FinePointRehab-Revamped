@@ -697,7 +697,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       "use strict";
 
-      // Error handling
       const errbar = document.getElementById("errbar");
       function showErr(e) {
         if (errbar) {
@@ -711,7 +710,6 @@
         showErr("Script error: " + (e.message || "") + (e.filename ? " – " + e.filename + ":" + e.lineno : ""));
       });
 
-      // Enhanced viewport height handling
       function setHeaderH() {
         const header = document.querySelector('.site-header');
         const h = header ? header.getBoundingClientRect().height : 0;
@@ -726,7 +724,6 @@
       setVH();
       setHeaderH();
 
-      // DOM elements
       const startBtn = document.getElementById("start");
       const restartBtn = document.getElementById("restart-session");
       const durInput = document.getElementById("dur");
@@ -749,7 +746,6 @@
       const pbSettingsEl = document.getElementById("pb-settings");
       const starsContainer = document.getElementById('stars-container');
 
-      // Canvas elements
       const hidden = document.getElementById("hidden");
       const mask = document.getElementById("mask");
       const fx = document.getElementById("fx");
@@ -767,7 +763,6 @@
       const gi = ink.getContext("2d");
       const gg = guide.getContext("2d");
 
-      // Generate starfield
       function generateStars(container, count = 150) {
         if (!container) return;
         container.innerHTML = '';
@@ -787,7 +782,6 @@
 
       generateStars(starsContainer, 150);
 
-      // Personal best tracking
       const PB_KEY = 'trace-reveal:best';
       const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
       const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
@@ -797,7 +791,6 @@
         if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
       }
 
-      // Game state - declare early to avoid TDZ
       let playing = false;
       let paused = false;
       let remainingMs = 0;
@@ -812,7 +805,6 @@
       const brush = 28;
       let requiredCov = 85;
 
-      // Screen management
       function setScreen(screenName) {
         document.querySelectorAll('[data-screen]').forEach(el => {
           el.classList.remove('active');
@@ -821,7 +813,6 @@
         if (screen) screen.classList.add('active');
       }
 
-      // Shape generation bags
       const bags = { easy: [], medium: [], hard: [] };
 
       const fmt = (ms) => {
@@ -837,7 +828,6 @@
         if (coverageTarget) coverageTarget.textContent = requiredCov + "%";
       };
 
-      // Complete canvas sizing function
       function resizeStage() {
         try {
           const DPR = Math.max(1, window.devicePixelRatio || 1);
@@ -887,7 +877,7 @@
           gi.lineCap = "round";
           gi.lineJoin = "round";
           gi.strokeStyle = "rgba(111,211,245,0.95)";
-          gi.lineWidth = Math.max(3, Math.round(brush * 0.5));
+          gi.lineWidth = Math.max(2, Math.round(brush * 0.35));
 
           cellSize = Math.max(8, Math.round(brush * 0.8));
 
@@ -1102,18 +1092,15 @@
         gt.drawImage(mask, 0, 0);
 
         gx.clearRect(0, 0, fx.width, fx.height);
+        gx.setTransform(1, 0, 0, 1, 0, 0);
         gx.drawImage(tmp, 0, 0);
-        gx.save();
-        gx.globalCompositeOperation = "lighter";
-        gx.drawImage(tmp, 0, 0);
-        gx.restore();
       };
 
       const pos = (e) => {
-        const r = fx.getBoundingClientRect();
-        const x = ((e.clientX || e.pageX) - r.left);
-        const y = ((e.clientY || e.pageY) - r.top);
-        return { x, y };
+        const r = guide.getBoundingClientRect();
+        const cx = (e.clientX ?? e.pageX);
+        const cy = (e.clientY ?? e.pageY);
+        return { x: cx - r.left, y: cy - r.top };
       };
 
       let isDrawing = false;
@@ -1153,7 +1140,7 @@
         gm.lineCap = "round";
         gm.lineJoin = "round";
         gm.strokeStyle = "white";
-        gm.lineWidth = brush;
+        gm.lineWidth = Math.max(gi.lineWidth, brush * 0.45);
 
         if (lastP) {
           gm.beginPath();
