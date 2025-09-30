@@ -1,68 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- BUILD: Rhythm Reach — final fix: cancel global button backgrounds; identical glow for playback & taps — 2025-09-14 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Rhythm Reach | Fine Point Rehab</title>
   <meta name="description" content="Repeat the rhythm pattern by tapping the pads. Mobile-first, accessible therapy exercise." />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Design system -->
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/components.css">
-  <link rel="stylesheet" href="/css/exercises.css">
 
   <style>
-    :root{
+    :root {
+      --bg-primary: #0f1629;
+      --bg-secondary: #1a1f3a;
+      --bg-tertiary: #252b47;
+      --text-primary: #e8eef5;
+      --text-secondary: #b8c5d1;
+      --text-muted: #8a96a3;
+      --brand-aqua: #6fd3f5;
+      --success: #4caf50;
+      --error: #ff6b6b;
+      --border: #374151;
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --radius: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --font-size-xs: 12px;
+      --font-size-base: 16px;
+      --font-size-lg: 20px;
+      --font-size-xl: 24px;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+      --duration-fast: 150ms;
+      --easing: cubic-bezier(0.4, 0, 0.2, 1);
+      
       --pad-radius: 16px;
       --halo-fast: 160ms;
-      --shadow: 0 8px 24px rgba(0,0,0,0.35);
       --ease: cubic-bezier(.2,.7,.2,1);
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
     body {
-      background:
-        radial-gradient(ellipse at 20% 30%, rgba(40,20,80,0.35) 0%, transparent 40%),
-        radial-gradient(ellipse at 80% 70%, rgba(20,40,80,0.28) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 50%, rgba(10,20,40,0.45) 0%, transparent 70%),
-        linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
-      min-height: 100dvh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0f1524 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      touch-action: manipulation;
     }
 
-    header.app-header {
-      position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: var(--space-4);
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--easing);
+      min-height: 44px;
+    }
+
+    .btn:hover {
+      border-color: var(--brand-aqua);
+      background-color: var(--bg-tertiary);
+    }
+
+    .btn-primary {
+      background-color: var(--brand-aqua);
+      color: #000;
+      border-color: var(--brand-aqua);
+    }
+
+    .btn-primary:hover {
+      background-color: #5bc2e7;
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-tertiary);
+    }
+
+    .input, select {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: var(--font-size-base);
+    }
+
+    .input:focus, select:focus {
+      outline: none;
+      border-color: var(--brand-aqua);
+      box-shadow: 0 0 0 2px rgba(111, 211, 245, 0.25);
+    }
+
+    .panel {
+      background: rgba(15, 22, 41, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+      background: rgba(8, 15, 35, 0.8);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .site-header .inner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
       padding: var(--space-3) var(--space-4);
-      background: linear-gradient(180deg, rgba(8,12,26,0.90) 0%, rgba(8,12,26,0.55) 100%);
-      -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .home-pill { display:inline-flex; align-items:center; gap:.5rem; border:1px solid rgba(255,255,255,0.08); padding:.5rem .75rem; border-radius:999px; background: rgba(20,30,50,0.6); color:#cfe3ff; text-decoration:none; font-weight:600; transition: transform 160ms var(--ease), box-shadow 160ms var(--ease); }
-    .home-pill:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-    header.app-header h1 { color:#e6f2ff; font-size: var(--font-size-2xl); margin:0; letter-spacing:.2px; }
-    .spacer { flex:1; }
-
-    main { display:grid; grid-template-columns: 1fr; gap: var(--space-4); padding: var(--space-4); max-width: 1200px; margin: 0 auto; }
-    @media (min-width: 900px){
-      main { grid-template-columns: 360px 1fr; align-items:start; }
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
-    .card { background: linear-gradient(180deg, rgba(22,28,50,0.85) 0%, rgba(16,20,38,0.85) 100%); border:1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: var(--shadow); overflow:hidden; }
-    .card h2 { margin:0; padding: var(--space-3) var(--space-4); font-size: var(--font-size-xl); color:#e8f1ff; border-bottom:1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0)); }
-    .card .content { padding: var(--space-4); color:#d7e4ff; }
+    .site-header h1 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+      line-height: 1.2;
+    }
 
-    .hud-row { display:flex; flex-wrap:wrap; gap: var(--space-3); align-items:center; }
-    .hud-pill { background: rgba(18,26,48,0.8); border:1px solid rgba(255,255,255,0.07); border-radius: 999px; padding:.5rem .75rem; color:#e8f1ff; font-weight:600; min-width: 90px; text-align:center; }
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-4);
+    }
 
-    .pb-box { display:grid; grid-template-columns: 1fr auto; align-items:center; gap: var(--space-2); background: rgba(18,26,48,0.6); border:1px solid rgba(255,255,255,0.08); border-radius: 12px; padding:.75rem .9rem; }
-    .pb-box .label { color:#a9b7d9; font-size:.9rem; }
-    .pb-box .value { color:#e8f1ff; font-weight:700; font-size:1.1rem; }
+    [data-screen] {
+      display: none !important;
+    }
 
-    .grid { display:grid; grid-template-columns: repeat(3, minmax(72px, 1fr)); gap: clamp(10px, 3vw, 16px); justify-items: center; align-items: center; max-width: 520px; margin: 0 auto; }
+    [data-screen].active {
+      display: block !important;
+    }
 
-    /* --------- Pads (critical overrides) --------- */
+    .settings-panel {
+      max-width: 480px;
+      margin: 0 auto;
+      padding-top: var(--space-6);
+    }
 
-    /* Cancel UA and global button backgrounds across all states */
+    .settings-panel h2 {
+      margin: 0 0 var(--space-4);
+      font-size: var(--font-size-lg);
+      text-align: center;
+    }
+
+    .game-description {
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+      border: 1px solid var(--border);
+    }
+
+    .game-description p {
+      margin: 0 0 var(--space-3);
+    }
+
+    .game-description p:last-child {
+      margin: 0;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
+    }
+
+    .metric-settings {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(111, 211, 245, 0.08);
+      min-width: 110px;
+    }
+
+    .pb-value {
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-lg);
+      color: var(--brand-aqua);
+      text-shadow: 0 0 6px rgba(111, 211, 245, 0.5);
+      line-height: 1.1;
+    }
+
+    .pb-label {
+      font-size: var(--font-size-xs);
+      opacity: 0.9;
+      margin-top: var(--space-1);
+      color: var(--text-secondary);
+    }
+
+    .settings-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .settings-label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .setting-help {
+      display: block;
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      margin-top: var(--space-1);
+      font-style: italic;
+    }
+
+    .controls {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Game screen */
+    .game-container {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .hud {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    .hud-group {
+      display: grid;
+      gap: var(--space-1);
+      text-align: center;
+    }
+
+    .hud-value {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+      text-shadow: 0 0 8px rgba(111, 211, 245, 0.7);
+    }
+
+    .hud-label {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+      opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+      .hud {
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-auto-flow: row;
+        gap: var(--space-1);
+      }
+      
+      .hud-value {
+        font-size: var(--font-size-base);
+      }
+      
+      .hud-label {
+        font-size: 11px;
+      }
+      
+      .hud .controls {
+        grid-column: 1 / -1;
+        margin-top: var(--space-1);
+      }
+      
+      .hud .controls .btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+    }
+
+    .grid-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: var(--space-4);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(72px, 1fr));
+      gap: clamp(10px, 3vw, 16px);
+      max-width: 520px;
+      width: 100%;
+    }
+
+    /* Pads */
     button.pad,
     .pad,
     .pad:active,
@@ -79,127 +338,171 @@
       appearance: none;
     }
 
-    /* Base pad look (no solid fill) */
     .pad {
-      width: 100%; aspect-ratio: 1; border-radius: var(--pad-radius);
-      border:1px solid rgba(255,255,255,0.10);
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: var(--pad-radius);
+      border: 1px solid rgba(255,255,255,0.10);
       background:
         radial-gradient(120% 120% at 30% 30%, rgba(120,150,255,0.16) 0%, rgba(120,150,255,0.06) 40%, rgba(20,26,46,0.88) 70%),
         linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
       box-shadow: inset 0 0 0 1px rgba(140,170,255,0.15), 0 8px 18px rgba(0,0,0,0.35);
-      position: relative; overflow:hidden; cursor:pointer; display:grid; place-items:center;
-      color:#cfe3ff; font-weight:700; letter-spacing:.4px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      color: var(--text-secondary);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.4px;
       transition: transform 120ms var(--ease), box-shadow 160ms var(--ease), border-color 160ms var(--ease);
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
 
-    /* Soft halo lives entirely in ::after */
     .pad::after {
-      content:""; position:absolute; inset:-20%; opacity:0; pointer-events:none;
+      content: "";
+      position: absolute;
+      inset: -20%;
+      opacity: 0;
+      pointer-events: none;
       background: radial-gradient(120% 120% at 50% 50%,
                   rgba(120,170,255,0.40) 0%,
                   rgba(120,170,255,0.22) 35%,
                   rgba(120,170,255,0.06) 65%,
                   transparent 75%);
-      filter: blur(10px); transform: scale(0.92);
+      filter: blur(10px);
+      transform: scale(0.92);
       transition: opacity var(--halo-fast) var(--ease), transform var(--halo-fast) var(--ease);
     }
+
     .pad.glow {
       border-color: rgba(150,190,255,0.85) !important;
       box-shadow: inset 0 0 0 1px rgba(160,190,255,0.45), 0 0 0 2px rgba(120,170,255,0.12), 0 10px 24px rgba(60,100,200,0.55) !important;
     }
-    .pad.glow::after { opacity:1; transform: scale(1); }
 
-    /* Remove any platform focus styling that paints backgrounds */
-    .pad:focus { outline: none; }
-    .pad:active { transform: translateY(1px); }
-
-    .pad.wrong { box-shadow: inset 0 0 0 1px rgba(255,120,120,0.7), 0 10px 22px rgba(255,60,60,0.45); border-color: rgba(255,140,140,0.9); }
-
-    .controls { display:grid; gap: var(--space-3); }
-    .controls label { display:grid; gap:.5rem; color:#cfe3ff; }
-    .controls input, .controls select, .controls button { width:100%; }
-
-    .btn-primary { appearance:none; border:none; border-radius: 12px; padding: .8rem 1rem; font-weight: 800; letter-spacing:.3px; cursor:pointer;
-      background: linear-gradient(180deg, #4cc0ff, #1a7fd0); color:#001225; box-shadow: 0 10px 22px rgba(0,80,160,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
-      transition: transform 160ms var(--ease), filter 160ms var(--ease);
+    .pad.glow::after {
+      opacity: 1;
+      transform: scale(1);
     }
-    .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.03); }
-    .btn-ghost { background: transparent; color:#d7e4ff; border:1px solid rgba(255,255,255,0.12); border-radius: 12px; padding:.7rem 1rem; font-weight:700; }
 
-    .help { color:#a9b7d9; line-height:1.5; }
+    .pad:focus {
+      outline: none;
+    }
 
-    /* Screens */
-    [data-screen]{ display:none; }
-    [data-screen].active{ display:block; }
+    .pad:active {
+      transform: translateY(1px);
+    }
+
+    .pad.wrong {
+      box-shadow: inset 0 0 0 1px rgba(255,120,120,0.7), 0 10px 22px rgba(255,60,60,0.45);
+      border-color: rgba(255,140,140,0.9);
+    }
+
+    :focus-visible {
+      outline: 3px solid rgba(111, 211, 245, 0.85);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .settings-panel {
+        padding: var(--space-3);
+        margin: var(--space-2);
+      }
+      
+      .page {
+        padding: var(--space-2);
+      }
+    }
   </style>
 </head>
+
 <body>
-  <header class="app-header">
-    <a href="/" class="home-pill" aria-label="Home">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-      Home
-    </a>
-    <h1>Rhythm Reach</h1>
-    <div class="spacer"></div>
+  <header class="site-header">
+    <div class="inner">
+      <a class="btn btn-secondary" href="/" aria-label="Go to Home">← Home</a>
+      <h1>Rhythm Reach</h1>
+    </div>
   </header>
 
-  <main>
-    <!-- Left: Settings -->
-    <section class="card" id="settings-screen" data-screen>
-      <h2>Settings</h2>
-      <div class="content controls">
-        <div class="pb-box" aria-live="polite">
-          <div class="label">Personal Best</div>
-          <div class="value"><span id="best">0</span></div>
-        </div>
+  <main class="page">
+    <!-- Settings Screen -->
+    <aside class="settings-panel panel active" data-screen="settings">
+      <h2>Session Settings</h2>
 
-        <label>
-          <span>Starting length</span>
-          <input id="startLen" type="number" min="1" max="9" value="3" inputmode="numeric">
-        </label>
+      <div class="game-description">
+        <p>
+          <strong>How to play:</strong> Watch the glowing tiles. After the sequence finishes, 
+          repeat it by tapping the same tiles in order.
+        </p>
+        <p>
+          Tiles glow the same way during playback and when you tap them yourself.
+        </p>
+      </div>
 
-        <label>
-          <span>Show speed</span>
-          <select id="speed">
-            <option value="slow">Slow</option>
-            <option value="med" selected>Medium</option>
-            <option value="fast">Fast</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Round gap (ms)</span>
-          <select id="roundGap">
-            <option value="1200">1200</option>
-            <option value="1500" selected>1500</option>
-            <option value="2000">2000</option>
-          </select>
-        </label>
-
-        <button class="btn-primary" id="start">Start</button>
-
-        <div class="help">
-          <p><strong>How to play:</strong> Watch the glowing tiles. After the sequence finishes, repeat it by tapping the same tiles in order.</p>
-          <p>Tiles glow the same way during playback and when you tap them yourself — no solid fills.</p>
+      <div class="stats-row">
+        <div class="metric-settings">
+          <div id="best" class="pb-value">0</div>
+          <div class="pb-label">Personal Best</div>
         </div>
       </div>
-    </section>
 
-    <!-- Right: Game -->
-    <section class="card active" id="game-screen" data-screen>
-      <h2>Game</h2>
-      <div class="content">
-        <div class="hud-row" style="margin-bottom: var(--space-4);">
-          <div class="hud-pill">Score: <span id="score">0</span></div>
-          <div class="hud-pill">Best: <span id="pb">0</span></div>
-          <div class="hud-pill">Time: <span id="time">00:00</span></div>
-          <div class="spacer"></div>
-          <button class="btn-ghost" id="pause">Pause</button>
-          <button class="btn-ghost" id="end">End</button>
+      <div class="settings-group">
+        <label class="settings-label" for="startLen">Starting Length</label>
+        <input class="input" id="startLen" type="number" min="1" max="9" value="3" inputmode="numeric">
+        <small class="setting-help">Number of tiles in the first sequence (1-9).</small>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="speed">Show Speed</label>
+        <select class="input" id="speed">
+          <option value="slow">Slow</option>
+          <option value="med" selected>Medium</option>
+          <option value="fast">Fast</option>
+        </select>
+        <small class="setting-help">How quickly the sequence plays back.</small>
+      </div>
+
+      <div class="settings-group">
+        <label class="settings-label" for="roundGap">Wait Time Between Rounds</label>
+        <select class="input" id="roundGap">
+          <option value="1200">Short</option>
+          <option value="1500" selected>Medium</option>
+          <option value="2000">Long</option>
+        </select>
+        <small class="setting-help">How long to wait before each new pattern starts.</small>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="start">Start</button>
+      </div>
+    </aside>
+
+    <!-- Game Screen -->
+    <section class="game-container" data-screen="game">
+      <div class="hud panel">
+        <div class="hud-group">
+          <div id="score" class="hud-value">0</div>
+          <div class="hud-label">Score</div>
         </div>
 
+        <div class="hud-group">
+          <div id="pb" class="hud-value">0</div>
+          <div class="hud-label">Best</div>
+        </div>
+
+        <div class="hud-group">
+          <div id="time" class="hud-value">00:00</div>
+          <div class="hud-label">Time</div>
+        </div>
+
+        <div class="controls">
+          <button class="btn btn-secondary" id="pause">Pause</button>
+          <button class="btn" id="end">Exit</button>
+        </div>
+      </div>
+
+      <div class="panel grid-container">
         <div class="grid" id="grid" aria-label="Rhythm pads">
           <button class="pad" data-idx="1" aria-label="Pad 1">1</button>
           <button class="pad" data-idx="2" aria-label="Pad 2">2</button>
@@ -240,12 +543,12 @@
     // ---------- Screens ----------
     function setScreen(which){
       document.querySelectorAll('[data-screen]').forEach(el => el.classList.remove('active'));
-      document.getElementById(which + '-screen').classList.add('active');
+      document.querySelector(`[data-screen="${which}"]`)?.classList.add('active');
     }
 
     // ---------- Lighting (single source of truth) ----------
     const Light = (() => {
-      let lit = null;       // index (1..9) or null
+      let lit = null;
       let offTO = null;
 
       function hardOff(){
@@ -308,7 +611,7 @@
       const speed = speedSelect.value;
       if(speed === 'slow') return { glow: 700, gap: 300 };
       if(speed === 'fast') return { glow: 380, gap: 160 };
-      return { glow: 550, gap: 220 }; // med
+      return { glow: 550, gap: 220 };
     }
 
     // ---------- Playback ----------
@@ -327,7 +630,7 @@
         while(paused && myToken===playbackToken && running){ await sleep(40); }
         if(myToken !== playbackToken || !running) break;
 
-        await Light.flash(idx, glow);   // identical glow used for playback
+        await Light.flash(idx, glow);
         await sleep(gap);
       }
 
@@ -336,20 +639,18 @@
       userIndex = 0;
     }
 
-    // ---------- User input (identical visual to playback) ----------
+    // ---------- User input ----------
     function onUserPad(idx, pointerType='mouse'){
       if(!running || paused || playingBack) return;
 
       const expected = seq[userIndex];
       if(idx === expected){
         const { glow } = playbackTimings();
-        Light.flash(idx, glow);                 // exact same glow as playback
+        Light.flash(idx, glow);
         if(navigator.vibrate){ try{ navigator.vibrate(15); }catch(_){} }
 
-        // If the page's global CSS paints focused buttons, blur after tap to avoid sticky focus styles.
         if (pointerType !== 'keyboard') {
           const el = pads[idx-1];
-          // blur shortly after so screen readers still announce the press
           setTimeout(()=> el?.blur(), glow + 10);
         }
 
@@ -363,7 +664,6 @@
           }, 500);
         }
       } else {
-        // wrong feedback (brief red)
         const el = pads[idx-1]; if(el){
           el.classList.add('wrong');
           const t = setTimeout(()=>{ el.classList.remove('wrong'); activeTimeouts.delete(t); }, 280);
@@ -374,13 +674,11 @@
       }
     }
 
-    // Pointerdown -> prevents native :active painting and feels snappy
     pads.forEach(p => {
       p.addEventListener('pointerdown', e => {
-        e.preventDefault(); // avoid native :active focus/paint on some browsers
+        e.preventDefault();
         onUserPad(Number(p.dataset.idx), e.pointerType || 'mouse');
       });
-      // Keyboard accessibility
       p.addEventListener('keydown', e => {
         if(e.key === 'Enter' || e.key === ' '){
           e.preventDefault();
@@ -421,7 +719,6 @@
       pauseBtn.textContent = paused ? 'Resume' : 'Pause';
     }
 
-    // Safety: kill any lingering glow when tab hides
     document.addEventListener('visibilitychange', () => { if(document.hidden){ Light.off(); } });
 
     // ---------- Bindings ----------
