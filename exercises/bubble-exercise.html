@@ -66,7 +66,7 @@
     .layout{ display:grid; grid-template-columns: 1fr; gap:16px; padding:16px; height:auto; }
     .panel{ background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
             box-shadow: 0 10px 40px rgba(0,0,0,.35); padding:16px; }
-    .panel h2{ margin:0 0 12px 0; font-size: clamp(18px,3vw,22px); }
+    .panel h2{ margin:0 0 var(--space-4); font-size: var(--font-size-lg); text-align: center; }
     .desc{ margin-bottom:12px; background: rgba(111,211,245,.08);
            border-left: 4px solid rgba(111,211,245,.7); padding:10px; border-radius:8px; font-size:14px; line-height:1.5; }
 
@@ -620,18 +620,34 @@
 
     function spawnBubble(){
       const rect = surface.getBoundingClientRect();
-      const sw = Math.max(rect.width, bubbleSizePx + 2);
-      const sh = Math.max(rect.height, bubbleSizePx + 2);
+      const sw = rect.width;
+      const sh = rect.height;
       const fgH = (fingerGuide && fingerGuide.style.display !== 'none') ? fingerGuide.offsetHeight : 0;
-      const margin = 8;
-      const minX = bubbleSizePx/2 + margin;
-      const maxX = Math.max(minX, sw - bubbleSizePx/2 - margin);
-      const minY = bubbleSizePx/2 + margin;
-      const maxY = Math.max(minY, sh - fgH - bubbleSizePx/2 - margin);
-      const x = minX + Math.random() * Math.max(1, (maxX - minX));
-      const y = minY + Math.random() * Math.max(1, (maxY - minY));
-      bubbleEl.style.left = x+'px'; bubbleEl.style.top = y+'px';
-      bubbleEl.style.width = bubbleSizePx+'px'; bubbleEl.style.height = bubbleSizePx+'px';
+      
+      // Add sufficient margin to ensure bubble never appears cut off at edges
+      const margin = bubbleSizePx / 2 + 10; // Half bubble size plus extra padding
+      const minX = margin;
+      const maxX = Math.max(minX + 10, sw - margin);
+      const minY = margin;
+      const maxY = Math.max(minY + 10, sh - fgH - margin);
+      
+      // Ensure we have valid ranges
+      const xRange = maxX - minX;
+      const yRange = maxY - minY;
+      
+      if (xRange <= 0 || yRange <= 0) {
+        // Fallback to center if play area is too small
+        bubbleEl.style.left = (sw / 2) + 'px';
+        bubbleEl.style.top = (sh / 2) + 'px';
+      } else {
+        const x = minX + Math.random() * xRange;
+        const y = minY + Math.random() * yRange;
+        bubbleEl.style.left = x + 'px';
+        bubbleEl.style.top = y + 'px';
+      }
+      
+      bubbleEl.style.width = bubbleSizePx + 'px';
+      bubbleEl.style.height = bubbleSizePx + 'px';
       bubbleVisible = true;
       bubbleSpawnTime = performance.now();
       bubbleEl.classList.remove('spawn'); void bubbleEl.offsetWidth; bubbleEl.classList.add('spawn');
