@@ -134,7 +134,6 @@
       padding: var(--space-4);
     }
 
-    /* Screen system */
     [data-screen] {
       display: none !important;
     }
@@ -143,7 +142,6 @@
       display: block !important;
     }
 
-    /* Settings screen styling */
     .settings-panel {
       max-width: 480px;
       margin: 0 auto;
@@ -164,7 +162,6 @@
       border: 1px solid var(--border);
     }
 
-    /* Personal Best display on settings */
     .stats-row {
       display: flex;
       gap: 10px;
@@ -332,39 +329,6 @@
       pointer-events: none;
     }
 
-    .orientation-hint {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(15, 22, 41, 0.95);
-      border: 2px solid var(--brand-aqua);
-      border-radius: var(--radius-lg);
-      padding: var(--space-4);
-      text-align: center;
-      z-index: 1500;
-      backdrop-filter: blur(8px);
-      max-width: 90%;
-    }
-
-    .orientation-hint h3 {
-      margin: 0 0 var(--space-2);
-      color: var(--brand-aqua);
-    }
-
-    .orientation-hint p {
-      margin: 0 0 var(--space-3);
-      color: var(--text-secondary);
-    }
-
-    @media (max-width: 900px) and (orientation: portrait) {
-      .orientation-hint {
-        display: block;
-      }
-    }
-
-    /* Mirror Match specific styles */
     .mirror-container {
       position: relative;
       background-color: rgba(0, 0, 0, 0.3);
@@ -428,6 +392,38 @@
       
       .hud-value {
         font-size: var(--font-size-lg);
+      }
+    }
+
+    @media (max-width: 900px) and (orientation: landscape) {
+      .mirror-container {
+        width: 75vw;
+        height: 55vh;
+        max-height: 400px;
+      }
+      
+      .page {
+        padding: var(--space-2);
+      }
+      
+      .right-col {
+        gap: var(--space-2);
+      }
+      
+      .panel {
+        padding: var(--space-3);
+      }
+      
+      .instructions {
+        padding: var(--space-2);
+        margin-bottom: var(--space-2);
+        font-size: 14px;
+      }
+      
+      .progress-display {
+        margin: var(--space-2) 0;
+        padding: var(--space-2);
+        font-size: 14px;
       }
     }
 
@@ -681,7 +677,6 @@
   </header>
 
   <main class="page">
-    <!-- Settings Screen -->
     <aside class="settings-panel panel active" data-screen="settings">
       <h2>Session Settings</h2>
 
@@ -692,7 +687,6 @@
         </p>
       </div>
 
-      <!-- Personal Best display -->
       <div class="stats-row">
         <div class="metric-settings">
           <div id="pb-settings" class="pb-value">0</div>
@@ -741,7 +735,7 @@
       <div class="settings-group">
         <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
         <input class="input" type="number" id="session-duration" min="1" max="10" value="3">
-        <small class="setting-help">1–10 minutes recommended.</small>
+        <small class="setting-help">1—10 minutes recommended.</small>
       </div>
 
       <div class="controls">
@@ -750,9 +744,7 @@
       </div>
     </aside>
 
-    <!-- Game Screen -->
     <section class="right-col" data-screen="game">
-      <!-- HUD Row -->
       <div class="hud panel">
         <div class="timer-bar" id="timer-bar"></div>
 
@@ -782,7 +774,6 @@
         </div>
       </div>
 
-      <!-- Game Area -->
       <div class="panel" id="game-container">
         <div id="stars-container"></div>
 
@@ -821,17 +812,9 @@
     </div>
   </div>
 
-  <!-- Orientation hint for mobile users -->
-  <div class="orientation-hint">
-    <h3>🔄 Better Experience in Landscape</h3>
-    <p>For optimal bilateral coordination training, please rotate your device to landscape mode.</p>
-    <button class="btn btn-secondary" onclick="this.parentElement.style.display='none'">Continue Anyway</button>
-  </div>
-
   <div id="error-message"></div>
 
   <script>
-    // Simple storage utility
     const storage = {
       get: (key, defaultValue) => {
         try {
@@ -850,7 +833,6 @@
       }
     };
 
-    // Generate starfield
     function generateStars(container, count = 150) {
       if (!container) return;
       container.innerHTML = '';
@@ -868,7 +850,6 @@
       }
     }
 
-    // DOM elements
     const starsContainer = document.getElementById('stars-container');
     const mirrorContainer = document.getElementById('mirror-container');
     const difficultySelect = document.getElementById('difficulty-select');
@@ -904,10 +885,8 @@
     const restartModalBtn = document.getElementById('restart-button');
     const errorMessage = document.getElementById('error-message');
 
-    // Generate initial stars
     generateStars(starsContainer, 150);
 
-    // Personal best tracking
     const PB_KEY = 'mirror-match:best';
     const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
     const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
@@ -918,7 +897,6 @@
       if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
     }
 
-    // Game state
     let isSessionActive = false;
     let isPaused = false;
     let sessionMs = 3 * 60 * 1000;
@@ -948,7 +926,6 @@
     let containerWidth = 800;
     let containerHeight = 500;
 
-    // Game configuration
     const targetSizes = { small: 40, medium: 55, large: 70 };
     const difficultySetting = {
       easy:   { pointsPerPattern: 100, patternLength: 3, timeLimit: 60000, baseSync: 750 },
@@ -957,7 +934,6 @@
     };
     const patternTypes = ['random', 'circle', 'square', 'triangle', 'zigzag', 'line', 'spiral'];
 
-    // Touch indicators
     const leftTouchIndicator = document.createElement('div');
     leftTouchIndicator.classList.add('touch-indicator');
     document.body.appendChild(leftTouchIndicator);
@@ -966,7 +942,6 @@
     rightTouchIndicator.classList.add('touch-indicator');
     document.body.appendChild(rightTouchIndicator);
 
-    // Utility functions
     function showError(msg) {
       if (errorMessage) {
         errorMessage.textContent = msg;
@@ -1056,7 +1031,6 @@
       }
     }
 
-    // Screen management
     function setScreen(screenName) {
       document.querySelectorAll('[data-screen]').forEach(el => {
         el.classList.remove('active');
@@ -1065,16 +1039,13 @@
       if (screen) screen.classList.add('active');
     }
 
-    // Session management
     function startSession() {
       if (isSessionActive) return;
-      console.log('Starting session...');
       
       const difficulty = difficultySelect?.value || 'medium';
       const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp?.value) || 3));
       sessionMs = minutes * 60 * 1000;
       
-      // Reset game state
       score = 0;
       patternsCompleted = 0;
       totalAttempts = 0;
@@ -1096,12 +1067,10 @@
       updateHUD();
       setScreen('game');
 
-      // Start session
       isSessionActive = true;
       startTimer();
       updatePersonalBest();
       
-      // Generate patterns and start
       setTimeout(() => {
         adjustContainerSize();
         generateDiversePatterns(difficulty);
@@ -1189,7 +1158,7 @@
             points.push({ x: centerX + Math.cos(a) * r, y: centerY + Math.sin(a) * r });
           }
           break;
-        default: // random
+        default:
           for (let i = 0; i < length; i++) {
             const x = Math.floor(Math.random() * (sideWidth - 100) + 50);
             const y = Math.floor(Math.random() * (areaHeight - 100) + 50);
@@ -1202,7 +1171,6 @@
     function drawPatternPaths() {
       if (!leftSide || !rightSide) return;
       
-      // Left SVG
       const lsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       lsvg.setAttribute("width", "100%");
       lsvg.setAttribute("height", "100%");
@@ -1221,7 +1189,6 @@
       lsvg.appendChild(lpath);
       leftSide.appendChild(lsvg);
 
-      // Right SVG mirrored
       const rsvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       rsvg.setAttribute("width", "100%");
       rsvg.setAttribute("height", "100%");
@@ -1264,7 +1231,6 @@
       rightTarget.style.left = `${containerWidth / 2 - point.x}px`;
       rightTarget.style.top = `${point.y}px`;
 
-      // Event listeners
       leftTarget.addEventListener("touchstart", handleLeftTouch, { passive: false });
       leftTarget.addEventListener("mousedown", handleLeftTouch);
       rightTarget.addEventListener("touchstart", handleRightTouch, { passive: false });
@@ -1427,16 +1393,12 @@
       const averageTime = syncTimes.length ? Math.round(syncTimes.reduce((a, b) => a + b, 0) / syncTimes.length) : 0;
       const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
 
-      // Check for personal best
       const previousPB = getPB();
-      let isNewPB = false;
       if (score > previousPB) {
-        isNewPB = true;
         setPB(score);
         updatePersonalBest();
       }
 
-      // Show completion modal
       if (finalPatternsEl) finalPatternsEl.textContent = `${patternsCompleted}`;
       if (finalSyncRateEl) finalSyncRateEl.textContent = `${syncRate}%`;
       if (finalAvgSyncEl) finalAvgSyncEl.textContent = `${averageTime}ms`;
@@ -1449,7 +1411,6 @@
       setScreen('settings');
     }
 
-    // Event listeners
     if (startBtn) startBtn.addEventListener('click', startSession);
     if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
     if (targetSizeSelect) targetSizeSelect.addEventListener('change', saveSettings);
@@ -1494,7 +1455,6 @@
       setScreen('settings');
     });
 
-    // Initialize
     loadSettings();
     updateHUD();
     updateInstructionsText();
