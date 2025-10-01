@@ -33,6 +33,7 @@
       --space-4: 16px;
       --font-size-xs: 12px;
       --font-size-base: 16px;
+      --font-size-lg: 20px;
       --font-size-xl: 24px;
       --font-weight-semibold: 600;
       --font-weight-bold: 700;
@@ -254,7 +255,13 @@
     }
 
     /* Bubble game surface (DOM-based) */
-    .game-surface{ position:relative; width:100%; height:100%; overflow:hidden; z-index: 2; }
+    .game-surface{ 
+      position:relative; 
+      width:100%; 
+      height:100%; 
+      /* overflow removed to prevent double-clipping bubble shadows */
+      z-index: 2; 
+    }
     #bubble{
       position:absolute; width:80px; height:80px; border-radius:50%;
       background:
@@ -551,9 +558,18 @@
       const h = header ? header.getBoundingClientRect().height : 0;
       document.documentElement.style.setProperty('--header-h', `${h}px`);
     }
+    
+    function onViewportChange(){
+      setVH(); 
+      setStageHeight(); 
+      setHeaderH();
+      // Hide bubble on resize to prevent it from being clipped after layout shift
+      if(isActive) hideBubble();
+    }
+    
     setVH(); setStageHeight(); setHeaderH();
-    addEventListener('resize', () => { setVH(); setStageHeight(); setHeaderH(); });
-    addEventListener('orientationchange', () => { setVH(); setStageHeight(); setHeaderH(); });
+    addEventListener('resize', onViewportChange);
+    addEventListener('orientationchange', onViewportChange);
 
     async function enterImmersive(){
       document.body.classList.add('playing');
@@ -618,20 +634,27 @@
 
     function showFingerGuide(show){ fingerGuide.style.display = show ? 'block' : 'none'; }
 
+    function getStageRadiusPx(node){
+      const cs = getComputedStyle(node);
+      const r = parseFloat(cs.borderTopLeftRadius) || 0;
+      return r;
+    }
+
     function spawnBubble(){
       const rect = surface.getBoundingClientRect();
       const sw = rect.width;
       const sh = rect.height;
       const fgH = (fingerGuide && fingerGuide.style.display !== 'none') ? fingerGuide.offsetHeight : 0;
       
-      // Add sufficient margin to ensure bubble never appears cut off at edges
-      const margin = bubbleSizePx / 2 + 10; // Half bubble size plus extra padding
-      const minX = margin;
-      const maxX = Math.max(minX + 10, sw - margin);
-      const minY = margin;
-      const maxY = Math.max(minY + 10, sh - fgH - margin);
+      // Account for rounded corners by adding stage border radius to margin
+      const stageRadius = getStageRadiusPx(stageWrap);
+      const margin = (bubbleSizePx / 2) + stageRadius + 12; // bubble radius + corner radius + padding
       
-      // Ensure we have valid ranges
+      const minX = margin;
+      const maxX = Math.max(minX, sw - margin);
+      const minY = margin;
+      const maxY = Math.max(minY, sh - fgH - margin);
+      
       const xRange = maxX - minX;
       const yRange = maxY - minY;
       
