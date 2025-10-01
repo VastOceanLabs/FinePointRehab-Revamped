@@ -39,8 +39,8 @@
     <style>
         /* Design Tokens - Mobile-first approach */
         :root {
-            /* Header height */
-            --header-height: 64px;
+            /* Header height - increased for mobile to fit all nav items */
+            --header-height: 70px;
             
             /* Light theme (default - clinical credibility) */
             --bg-primary: #ffffff;
@@ -103,8 +103,7 @@
 
         body {
             margin: 0;
-            padding-top: var(--header-height);
-            padding-top: max(var(--header-height), env(safe-area-inset-top));
+            padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
@@ -134,7 +133,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 var(--space-4);
+            padding: 0 var(--space-3);
         }
         
         /* Header - Fixed with proper mobile layout */
@@ -158,16 +157,20 @@
             flex-direction: row;
             align-items: center;
             justify-content: space-between;
-            gap: var(--space-4);
+            gap: var(--space-2);
             text-align: left;
+            width: 100%;
         }
         
         .logo {
-            font-size: var(--font-size-2xl);
+            font-size: 1.125rem;
             font-weight: 700;
             color: var(--brand-blue);
             margin: 0;
-            line-height: 1;
+            line-height: 1.2;
+            white-space: nowrap;
+            flex-shrink: 0;
+            overflow: visible;
         }
         
         .tagline {
@@ -180,20 +183,35 @@
         header nav {
             display: flex;
             align-items: center;
-            gap: var(--space-4);
+            gap: var(--space-1);
             margin-left: auto;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            flex-shrink: 1;
+            min-width: 0;
+            max-width: 100%;
+        }
+        
+        header nav::-webkit-scrollbar {
+            display: none;
         }
         
         header nav a {
             color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
-            padding: var(--space-2) var(--space-4);
+            padding: var(--space-2);
             border-radius: var(--radius);
             transition: all 0.2s ease;
-            min-height: 44px;
+            min-height: 40px;
             display: inline-flex;
             align-items: center;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         header nav a:hover,
@@ -322,7 +340,7 @@
         /* Sections */
         section {
             padding: var(--space-16) 0;
-            scroll-margin-top: var(--header-height);
+            scroll-margin-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
         }
         
         .section-header {
@@ -420,8 +438,27 @@
                 --header-height: 80px;
             }
             
+            .container {
+                padding: 0 var(--space-4);
+            }
+            
+            .header-content {
+                gap: var(--space-4);
+            }
+            
             .logo {
                 font-size: var(--font-size-3xl);
+            }
+            
+            header nav {
+                gap: var(--space-4);
+                overflow-x: visible;
+            }
+            
+            header nav a {
+                font-size: var(--font-size-base);
+                padding: var(--space-2) var(--space-4);
+                min-height: 44px;
             }
             
             .tagline {
