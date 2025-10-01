@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Bubble Tap — Fine Point Rehab</title>
+  <title>Bubble Tap – Fine Point Rehab</title>
 
   <!-- Global tokens & components -->
   <link rel="stylesheet" href="/css/tokens.css">
@@ -20,7 +20,23 @@
       --panel: rgba(10,16,36,.9);
       --panel-border: rgba(255,255,255,.08);
       --text: #eaf6ff;
+      --text-secondary: #b8c5d1;
+      --text-muted: #8a96a3;
       --good: #8ff5b2;
+      --border: #374151;
+      --bg-secondary: #1a1f3a;
+      --bg-tertiary: #252b47;
+      --radius-lg: 12px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --font-size-xs: 12px;
+      --font-size-base: 16px;
+      --font-size-xl: 24px;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+      --header-h: 0px;
     }
     body{ margin:0; color:var(--text);
       background:
@@ -31,6 +47,7 @@
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     body.playing { overflow: hidden; }
     body.playing header.app { display: none; }
@@ -57,9 +74,9 @@
     .stats-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
     .metric{ flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center;
              text-align:center; padding:8px 12px; border:1px solid rgba(255,255,255,.12); border-radius:12px;
-             background: rgba(255,255,255,.05); min-width:110px; }
+             background: rgba(111,211,245,.08); min-width:110px; }
     .v{ font-weight:900; font-size:18px; color:#bfe6ff; text-shadow: 0 0 6px rgba(150,220,255,.5); line-height:1.1; }
-    .t{ font-size:11px; opacity:.9; margin-top:3px; }
+    .t{ font-size:11px; opacity:.9; margin-top:3px; color: var(--text-secondary); }
 
     .group{ margin-bottom:12px; }
     .label{ display:block; margin-bottom:6px; font-weight:700; letter-spacing:.2px; }
@@ -78,25 +95,146 @@
     .btn:disabled{ opacity:.55; cursor:not-allowed; }
     .btn-primary{ background: rgba(111,211,245,.95); color:#07101e; border-color: rgba(111,211,245,1); }
     .btn-primary:hover:not(:disabled){ background: rgba(111,211,245,1); box-shadow: 0 6px 18px rgba(111,211,245,.45); }
-    .btn-ghost{ background: transparent; border:1px solid rgba(255,255,255,.15); }
+    .btn-ghost{ background: transparent; border:1px solid rgba(255,255,255,.15); padding: var(--space-2) var(--space-4); min-height: 44px; }
 
     /* Game column – hidden until playing */
     #gameCol{ display:none; position:relative; padding:0; overflow:hidden; }
     body.playing #gameCol{ display:block; }
     body.playing #settings{ display:none; }
 
-    .hud{
-      position:sticky; top:0; z-index:5; display:flex; gap:8px; align-items:center; justify-content:space-between;
-      padding:10px; background: linear-gradient(180deg, rgba(6,10,22,.88), rgba(6,10,22,.55)); border-bottom:1px solid rgba(255,255,255,.06);
+    /* NEW HUD DESIGN - matching trace-reveal */
+    .hud {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: var(--space-2);
+      align-items: center;
+      position: relative;
+      padding: var(--space-3);
+      padding-top: calc(var(--space-3) + 8px);
+      background: rgba(15, 22, 41, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
-    .hud .metrics{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    .chip{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:92px;
-           border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:6px 10px; background: rgba(255,255,255,.06); }
-    .chip .v{ font-size:16px; font-weight:800; color:#c9ecff; }
-    .chip .t{ font-size:11px; opacity:.9; }
 
-    .hud .controls{ display:flex; gap:8px; }
-    .stage-wrap{ position:relative; width:100%; height: calc(var(--vh) * 100); }
+    .timer-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 8px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--accent), rgba(111,211,245,.35));
+      transform-origin: left center;
+      transition: width .1s linear;
+      border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg);
+    }
+
+    .hud-group {
+      display: grid;
+      gap: var(--space-1);
+      text-align: center;
+    }
+
+    .hud-value {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--accent);
+      text-shadow: 0 0 8px rgba(111, 211, 245, 0.7);
+    }
+
+    .hud-label {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+      opacity: 0.9;
+    }
+
+    .controls {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+      .hud {
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-auto-flow: row;
+        gap: var(--space-1);
+        padding: var(--space-2);
+        padding-top: calc(var(--space-2) + 6px);
+      }
+      
+      .hud-value {
+        font-size: var(--font-size-base);
+      }
+      
+      .hud-label {
+        font-size: 11px;
+      }
+      
+      .controls {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: var(--space-2);
+        justify-content: center;
+        margin-top: var(--space-1);
+      }
+      
+      .controls .btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+    }
+
+    .right-col {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: var(--space-3);
+      min-height: 0;
+    }
+
+    body.playing .layout {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 0;
+      max-width: none;
+      padding: 0;
+      height: calc(var(--vh) * 100 - var(--header-h, 0px));
+    }
+
+    body.playing .right-col {
+      height: calc(var(--vh) * 100);
+      max-width: none;
+      margin: 0;
+      gap: 0;
+      grid-template-rows: auto 1fr;
+      min-height: 0;
+    }
+
+    #game-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: var(--space-3);
+      background: rgba(0,0,0,0.15);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    body.playing #game-container {
+      height: 100%;
+      border-radius: 0;
+      border: none;
+      padding: var(--space-2);
+    }
+
+    .stage-wrap{ position:relative; flex: 1; width:100%; display: block; overflow: hidden; touch-action: none; }
 
     /* Bubble game surface (DOM-based) */
     .game-surface{ position:relative; width:100%; height:100%; overflow:hidden; }
@@ -189,6 +327,14 @@
       .layout{ grid-template-columns: 1fr 1.2fr; align-items:start; }
       body:not(.playing) #settings{ grid-column: 1 / -1; }
     }
+
+    .setting-help {
+      display: block;
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      margin-top: var(--space-1);
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -214,6 +360,7 @@
       <div class="group">
         <label class="label" for="dur">Session Duration (minutes)</label>
         <input id="dur" type="number" min="0.5" step="0.5" max="10" value="2" inputmode="decimal" />
+        <small class="setting-help">0.5–10 minutes recommended for motor training.</small>
       </div>
 
       <div class="group">
@@ -231,7 +378,7 @@
           <option value="any" selected>Any finger</option>
           <option value="all">All fingers (guided)</option>
         </select>
-        <div id="singleFingerWrap" class="desc" style="display:none; margin-top:8px;">
+        <div id="singleFingerWrap" class="setting-help" style="display:none; margin-top:8px;">
           <strong>All fingers (guided):</strong> a number appears in each bubble (1–5). Match the number to the finger shown below.
         </div>
       </div>
@@ -240,14 +387,26 @@
     </aside>
 
     <!-- GAME COLUMN (hidden until playing) -->
-    <section id="gameCol" class="panel" aria-label="Game">
-      <!-- HUD -->
+    <section id="gameCol" class="right-col" aria-label="Game">
+      <!-- NEW HUD - matching trace-reveal style -->
       <div class="hud" role="region" aria-label="In-game HUD">
-        <div class="metrics">
-          <div class="chip"><div id="score" class="v">0</div><div class="t">Score</div></div>
-          <div class="chip"><div id="pb" class="v">0</div><div class="t">PB</div></div>
-          <div class="chip"><div id="time" class="v">00:00</div><div class="t">Time</div></div>
+        <div class="timer-bar" id="timer-bar"></div>
+
+        <div class="hud-group">
+          <div id="score" class="hud-value">0</div>
+          <div class="hud-label">Score</div>
         </div>
+
+        <div class="hud-group">
+          <div id="pb" class="hud-value">0</div>
+          <div class="hud-label">PB</div>
+        </div>
+
+        <div class="hud-group">
+          <div id="time" class="hud-value">00:00</div>
+          <div class="hud-label">Time Left</div>
+        </div>
+
         <div class="controls">
           <button id="pauseBtn" class="btn btn-ghost" type="button" aria-label="Pause">Pause</button>
           <button id="exitBtn" class="btn btn-ghost" type="button" aria-label="Exit to settings">Exit</button>
@@ -255,16 +414,18 @@
       </div>
 
       <!-- Play surface -->
-      <div class="stage-wrap">
-        <div id="surface" class="game-surface" aria-label="Play area">
-          <div id="bubble" role="button" aria-label="Bubble" tabindex="0"></div>
+      <div id="game-container">
+        <div class="stage-wrap">
+          <div id="surface" class="game-surface" aria-label="Play area">
+            <div id="bubble" role="button" aria-label="Bubble" tabindex="0"></div>
 
-          <!-- Guided finger UI -->
-          <div id="fingerGuide" class="finger-guide" aria-live="polite">
-            <div class="card">
-              <div class="guide-title">Match the bubble number to the finger</div>
-              <div class="fingers" id="fingersRow">
-                <!-- Chips will be filled by JS -->
+            <!-- Guided finger UI -->
+            <div id="fingerGuide" class="finger-guide" aria-live="polite">
+              <div class="card">
+                <div class="guide-title">Match the bubble number to the finger</div>
+                <div class="fingers" id="fingersRow">
+                  <!-- Chips will be filled by JS -->
+                </div>
               </div>
             </div>
           </div>
@@ -316,6 +477,7 @@
     const scoreEl = $('#score');
     const pbEl = $('#pb');
     const pbSettingsEl = $('#pbSettings');
+    const timerBar = $('#timer-bar');
     const doneModal = $('#done');
     const fScore = $('#fScore'), fTaps = $('#fTaps'), fAcc = $('#fAcc'), fAvg = $('#fAvg');
     const newSessionBtn = $('#newSession');
@@ -364,9 +526,14 @@
       const H = window.innerHeight;
       if(stageWrap){ stageWrap.style.height = Math.max(220, H - hudH) + 'px'; }
     }
-    setVH(); setStageHeight();
-    addEventListener('resize', () => { setVH(); setStageHeight(); });
-    addEventListener('orientationchange', () => { setVH(); setStageHeight(); });
+    function setHeaderH() {
+      const header = document.querySelector('.app');
+      const h = header ? header.getBoundingClientRect().height : 0;
+      document.documentElement.style.setProperty('--header-h', `${h}px`);
+    }
+    setVH(); setStageHeight(); setHeaderH();
+    addEventListener('resize', () => { setVH(); setStageHeight(); setHeaderH(); });
+    addEventListener('orientationchange', () => { setVH(); setStageHeight(); setHeaderH(); });
 
     async function enterImmersive(){
       document.body.classList.add('playing');
@@ -385,7 +552,7 @@
     let fingerMode = 'any';
     let lastSpawn = 0, bubbleVisible = false, bubbleSpawnTime = 0;
 
-    const MAX_VISIBLE_MS = 2500; // failsafe: hide bubble after 2.5s to prevent stalls
+    const MAX_VISIBLE_MS = 2500;
 
     const BUBBLE_SIZES = { large: 120, medium: 80, small: 56 };
 
@@ -421,6 +588,12 @@
       const pb = storage.get('PB_'+EXERCISE_ID, 0) || 0;
       pbEl.textContent = String(pb);
       pbSettingsEl.textContent = String(pb);
+      
+      // Update timer bar
+      if (timerBar && sessionDurationMs > 0) {
+        const pct = Math.max(0, Math.min(1, timeRemaining / sessionDurationMs));
+        timerBar.style.width = (pct * 100).toFixed(2) + '%';
+      }
     }
 
     function showFingerGuide(show){ fingerGuide.style.display = show ? 'block' : 'none'; }
@@ -443,7 +616,6 @@
       bubbleSpawnTime = performance.now();
       bubbleEl.classList.remove('spawn'); void bubbleEl.offsetWidth; bubbleEl.classList.add('spawn');
 
-      // If 'all' mode, show a random 1..5 number in the bubble
       if(fingerMode === 'all'){
         const n = 1 + Math.floor(Math.random()*5);
         bubbleEl.textContent = String(n);
@@ -467,7 +639,6 @@
       r.addEventListener('animationend', () => r.remove());
     }
 
-    // Input handlers
     bubbleEl.addEventListener('pointerdown', (ev) => {
       if(!isActive || isPaused || !bubbleVisible) return;
       const rt = performance.now() - bubbleSpawnTime;
@@ -489,7 +660,6 @@
       if(e.target !== bubbleEl){ misses++; audio.miss?.(); }
     }, { passive:true });
 
-    // Timer/loop with real delta
     let rafId = 0, prevTs = 0;
     function loop(now){
       if(!isActive) return;
@@ -498,7 +668,6 @@
       if(!isPaused){
         timeRemaining -= dt;
         if(timeRemaining <= 0){ endSession(); return; }
-        // Failsafe: if a bubble has been visible too long (missed or event lost), hide it
         if(bubbleVisible && (now - bubbleSpawnTime) > MAX_VISIBLE_MS){ hideBubble(); }
         if(!bubbleVisible && (now - lastSpawn) > 450){
           spawnBubble(); lastSpawn = now;
@@ -508,9 +677,7 @@
       rafId = requestAnimationFrame(loop);
     }
 
-    // ===== Controls =====
     function startSession(){
-      // Read settings
       const durMin = Math.max(0.5, parseFloat(durIn.value || '2'));
       sessionDurationMs = durMin * 60 * 1000;
       timeRemaining = sessionDurationMs;
@@ -519,12 +686,10 @@
       showFingerGuide(fingerMode === 'all');
       if(fingerMode === 'all'){ buildFingerChips(); }
 
-      // Reset
       isActive = true; isPaused = false; pauseBtn.textContent = 'Pause';
       taps = 0; misses = 0; score = 0; totalRT = 0;
       hideBubble(); updateHUD();
 
-      // UI
       enterImmersive();
       requestAnimationFrame(ts => { lastSpawn = prevTs = ts; rafId = requestAnimationFrame(loop); });
 
@@ -562,11 +727,9 @@
       fAcc.textContent = acc + '%';
       fAvg.textContent = avg + 'ms';
 
-      // PB
       const prev = storage.get('PB_'+EXERCISE_ID, 0) || 0;
       if(score > prev){ storage.set('PB_'+EXERCISE_ID, score); }
 
-      // Progress + achievements
       try { recordSession(EXERCISE_ID, (sizeSel.value||'medium'), score); } catch {}
       try { checkAndUnlockAchievements(); } catch {}
 
@@ -575,25 +738,20 @@
       bubbleEl.textContent = '';
     }
 
-    // Buttons
     startBtn.addEventListener('click', () => { doneModal.classList.remove('open'); startSession(); });
     pauseBtn.addEventListener('click', pauseSession);
     exitBtn.addEventListener('click', exitToSettings);
     newSessionBtn.addEventListener('click', () => { doneModal.classList.remove('open'); startSession(); });
 
-    // Settings interactivity
     fmSel.addEventListener('change', () => {
       const isAll = fmSel.value === 'all';
       singleWrap.style.display = isAll ? '' : 'none';
     });
-    // reflect current on load
     singleWrap.style.display = (fmSel.value === 'all') ? '' : 'none';
 
-    // Modal UX: backdrop click + Esc
     doneModal.addEventListener('click', (e) => { if(e.target === doneModal){ doneModal.classList.remove('open'); } });
     addEventListener('keydown', (e) => { if(e.key === 'Escape') doneModal.classList.remove('open'); });
 
-    // Init
     updateHUD();
     (async () => {
       try { await initUtils?.({ starfieldTarget: surface }); } catch {}
@@ -604,7 +762,6 @@
       tryStarfield();
     })();
 
-    // Global hook
     window.endSession = function(score, difficulty='medium'){
       try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
       try { checkAndUnlockAchievements(); } catch {}
