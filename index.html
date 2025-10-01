@@ -39,8 +39,8 @@
     <style>
         /* Design Tokens - Mobile-first approach */
         :root {
-            /* Header height - increased for mobile to fit all nav items */
-            --header-height: 70px;
+            /* Header height - compact two-line mobile layout */
+            --header-height: 90px;
             
             /* Light theme (default - clinical credibility) */
             --bg-primary: #ffffff;
@@ -150,20 +150,21 @@
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
+            padding: var(--space-2) 0;
         }
         
         .header-content {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: var(--space-2);
-            text-align: left;
+            justify-content: center;
+            gap: var(--space-3);
+            text-align: center;
             width: 100%;
         }
         
         .logo {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--brand-blue);
             margin: 0;
@@ -183,35 +184,24 @@
         header nav {
             display: flex;
             align-items: center;
-            gap: var(--space-1);
-            margin-left: auto;
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            flex-shrink: 1;
-            min-width: 0;
-            max-width: 100%;
-        }
-        
-        header nav::-webkit-scrollbar {
-            display: none;
+            justify-content: center;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+            width: 100%;
         }
         
         header nav a {
             color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
-            padding: var(--space-2);
+            padding: var(--space-2) var(--space-3);
             border-radius: var(--radius);
             transition: all 0.2s ease;
             min-height: 40px;
             display: inline-flex;
             align-items: center;
-            font-size: 0.75rem;
+            font-size: 0.875rem;
             white-space: nowrap;
-            flex-shrink: 0;
         }
         
         header nav a:hover,
@@ -438,12 +428,19 @@
                 --header-height: 80px;
             }
             
+            header {
+                padding: 0;
+            }
+            
             .container {
                 padding: 0 var(--space-4);
             }
             
             .header-content {
+                flex-direction: row;
+                justify-content: space-between;
                 gap: var(--space-4);
+                text-align: left;
             }
             
             .logo {
@@ -452,7 +449,9 @@
             
             header nav {
                 gap: var(--space-4);
-                overflow-x: visible;
+                justify-content: flex-end;
+                flex-wrap: nowrap;
+                width: auto;
             }
             
             header nav a {
