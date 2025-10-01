@@ -20,16 +20,12 @@
 }
 
 html {
-  /* Prevent font scaling in landscape while allowing user zoom */
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  
-  /* Smooth scrolling for anchor links */
   scroll-behavior: smooth;
 }
 
-/* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -53,18 +49,12 @@ body {
   line-height: var(--line-height-normal);
   color: var(--text-primary);
   background-color: var(--bg-primary);
-  
-  /* Improve text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  
-  /* Prevent horizontal scroll on small screens */
   overflow-x: hidden;
-  
-  /* Mobile viewport units fix */
-  min-height: 100vh; /* Fallback for older browsers */
-  min-height: 100dvh; /* Dynamic viewport height - overrides 100vh where supported (iOS Safari 17+) */
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* =============================================================================
@@ -78,64 +68,25 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: var(--space-4);
 }
 
-h1 {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
-}
+h1 { font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold); }
+h2 { font-size: var(--font-size-2xl); }
+h3 { font-size: var(--font-size-xl); }
+h4 { font-size: var(--font-size-lg); }
+h5 { font-size: var(--font-size-base); }
+h6 { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
 
-h2 {
-  font-size: var(--font-size-2xl);
-}
-
-h3 {
-  font-size: var(--font-size-xl);
-}
-
-h4 {
-  font-size: var(--font-size-lg);
-}
-
-h5 {
-  font-size: var(--font-size-base);
-}
-
-h6 {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-/* Responsive typography scaling */
 @media (min-width: 768px) {
-  h1 {
-    font-size: var(--font-size-4xl);
-  }
-  
-  h2 {
-    font-size: var(--font-size-3xl);
-  }
-  
-  h3 {
-    font-size: var(--font-size-2xl);
-  }
+  h1 { font-size: var(--font-size-4xl); }
+  h2 { font-size: var(--font-size-3xl); }
+  h3 { font-size: var(--font-size-2xl); }
 }
 
 @media (min-width: 1024px) {
-  h1 {
-    font-size: var(--font-size-5xl);
-  }
+  h1 { font-size: var(--font-size-5xl); }
 }
 
-p, ul, ol, dl, blockquote {
-  margin-bottom: var(--space-4);
-}
-
-p:last-child,
-ul:last-child,
-ol:last-child,
-dl:last-child,
-blockquote:last-child {
-  margin-bottom: 0;
-}
+p, ul, ol, dl, blockquote { margin-bottom: var(--space-4); }
+p:last-child, ul:last-child, ol:last-child, dl:last-child, blockquote:last-child { margin-bottom: 0; }
 
 /* =============================================================================
    LINKS & INTERACTIVE ELEMENTS
@@ -148,22 +99,13 @@ a {
   text-underline-offset: 2px;
   transition: color var(--duration-fast) var(--easing);
 }
-
-a:hover {
-  color: var(--brand-teal);
-  text-decoration-thickness: 2px;
-}
-
+a:hover { color: var(--brand-teal); text-decoration-thickness: 2px; }
 a:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
-
-/* Remove outline for mouse users but keep for keyboard users */
-a:focus:not(:focus-visible) {
-  outline: none;
-}
+a:focus:not(:focus-visible) { outline: none; }
 
 /* =============================================================================
    FORM ELEMENTS
@@ -211,16 +153,12 @@ textarea:focus {
 }
 
 input::placeholder,
-textarea::placeholder {
-  color: var(--text-muted);
-}
+textarea::placeholder { color: var(--text-muted); }
 
 /* =============================================================================
    TOUCH TARGETS & MOBILE OPTIMIZATION
    ============================================================================= */
 
-/* Ensure minimum touch target size for accessibility */
-/* Scoped to interactive elements but excluding native form controls that may have explicit sizing */
 button,
 input[type="button"],
 input[type="submit"],
@@ -232,119 +170,47 @@ a[role="button"],
   min-width: var(--touch-target);
 }
 
-/* Exception for inline links and native controls - don't enforce touch target */
-p a,
-li a,
-td a,
-span a,
-input[type="checkbox"],
-input[type="radio"] {
+p a, li a, td a, span a,
+input[type="checkbox"], input[type="radio"] {
   min-height: auto;
   min-width: auto;
 }
 
-/* Improve tap highlighting on mobile */
-button,
-a,
-input,
-select,
-textarea {
+button, a, input, select, textarea {
   -webkit-tap-highlight-color: rgba(72, 202, 228, 0.1);
 }
 
 /* =============================================================================
    LAYOUT UTILITIES
-   Note: Use design tokens first before creating new utility classes
-   Naming pattern: .{property}-{modifier}-{value} with breakpoint prefixes (sm-, md-, lg-)
    ============================================================================= */
 
 .container {
   width: 100%;
-  max-width: 1280px; /* var(--breakpoint-xl) */
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 var(--space-4);
 }
+@media (min-width: 640px) { .container { padding: 0 var(--space-6); } }
+@media (min-width: 1024px) { .container { padding: 0 var(--space-8); } }
 
-@media (min-width: 640px) {
-  .container {
-    padding: 0 var(--space-6);
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding: 0 var(--space-8);
-  }
-}
-
-/* Responsive grid utilities */
-.grid {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.grid-cols-1 {
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
-  .grid-cols-sm-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
+.grid { display: grid; gap: var(--space-4); }
+.grid-cols-1 { grid-template-columns: 1fr; }
+@media (min-width: 640px) { .grid-cols-sm-2 { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 768px) {
-  .grid-cols-md-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .grid-cols-md-3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .grid-cols-md-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-cols-md-3 { grid-template-columns: repeat(3, 1fr); }
 }
+@media (min-width: 1024px) { .grid-cols-lg-4 { grid-template-columns: repeat(4, 1fr); } }
 
-@media (min-width: 1024px) {
-  .grid-cols-lg-4 {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* Flexbox utilities */
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.flex-wrap {
-  flex-wrap: wrap;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.gap-2 {
-  gap: var(--space-2);
-}
-
-.gap-4 {
-  gap: var(--space-4);
-}
-
-.gap-6 {
-  gap: var(--space-6);
-}
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: var(--space-2); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
 
 /* =============================================================================
    SPACING UTILITIES
@@ -365,29 +231,15 @@ textarea {
 .p-6 { padding: var(--space-6); }
 .p-8 { padding: var(--space-8); }
 
-.px-4 { 
-  padding-left: var(--space-4);
-  padding-right: var(--space-4);
-}
-
-.py-2 {
-  padding-top: var(--space-2);
-  padding-bottom: var(--space-2);
-}
-
-.py-4 {
-  padding-top: var(--space-4);
-  padding-bottom: var(--space-4);
-}
+.px-4 { padding-left: var(--space-4); padding-right: var(--space-4); }
+.py-2 { padding-top: var(--space-2); padding-bottom: var(--space-2); }
+.py-4 { padding-top: var(--space-4); padding-bottom: var(--space-4); }
 
 /* =============================================================================
    VISIBILITY & DISPLAY UTILITIES
    ============================================================================= */
 
-.hidden {
-  display: none;
-}
-
+.hidden { display: none; }
 .sr-only {
   position: absolute;
   width: 1px;
@@ -399,23 +251,12 @@ textarea {
   white-space: nowrap;
   border: 0;
 }
-
-/* Show/hide on different screen sizes */
 .block { display: block; }
 .inline { display: inline; }
 .inline-block { display: inline-block; }
 
-@media (max-width: 639px) {
-  .hidden-mobile {
-    display: none;
-  }
-}
-
-@media (min-width: 640px) {
-  .hidden-desktop {
-    display: none;
-  }
-}
+@media (max-width: 639px) { .hidden-mobile { display: none; } }
+@media (min-width: 640px) { .hidden-desktop { display: none; } }
 
 /* =============================================================================
    TEXT UTILITIES
@@ -445,21 +286,15 @@ textarea {
    FOCUS MANAGEMENT & ACCESSIBILITY
    ============================================================================= */
 
-/* Consistent focus styles across all interactive elements */
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
+:focus:not(:focus-visible) { outline: none; }
 
-/* Remove outline for mouse users */
-:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* Skip to main content link */
 .skip-link {
-  position: fixed; /* Use fixed to completely remove from normal flow and prevent layout shifts */
+  position: fixed;
   top: -40px;
   left: 6px;
   background: var(--bg-primary);
@@ -471,37 +306,20 @@ textarea {
   z-index: var(--z-tooltip);
   transition: top var(--duration-fast) var(--easing);
 }
-
-.skip-link:focus {
-  top: 6px;
-}
+.skip-link:focus { top: 6px; }
 
 /* =============================================================================
    MEDIA & IMAGES
    ============================================================================= */
 
-img,
-video {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-img {
-  border-radius: var(--radius);
-}
+img, video { max-width: 100%; height: auto; display: block; }
+img { border-radius: var(--radius); }
 
 /* =============================================================================
    LOADING STATES
    ============================================================================= */
 
-.loading {
-  opacity: 0.6;
-  pointer-events: none;
-  transition: opacity var(--duration-normal) var(--easing);
-}
-
-/* Simple loading spinner */
+.loading { opacity: 0.6; pointer-events: none; transition: opacity var(--duration-normal) var(--easing); }
 .spinner {
   display: inline-block;
   width: 20px;
@@ -511,43 +329,46 @@ img {
   border-top-color: var(--brand-blue);
   animation: spin 1s ease-in-out infinite;
 }
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* =============================================================================
    PRINT STYLES
    ============================================================================= */
 
 @media print {
-  @page {
-    margin: 1in;
-  }
-  
-  *,
-  *::before,
-  *::after {
+  @page { margin: 1in; }
+  *, *::before, *::after {
     background: transparent !important;
     color: black !important;
     box-shadow: none !important;
     text-shadow: none !important;
   }
-  
-  a,
-  a:visited {
-    text-decoration: underline;
-  }
-  
-  img {
-    max-width: 100% !important;
-    page-break-inside: avoid;
-  }
-  
-  h2,
-  h3 {
-    page-break-after: avoid;
-  }
+  a, a:visited { text-decoration: underline; }
+  img { max-width: 100% !important; page-break-inside: avoid; }
+  h2, h3 { page-break-after: avoid; }
+}
+
+/* =============================================================================
+   HEADER + SAFE-AREA FIX
+   ============================================================================= */
+
+:root {
+  --header-height: 56px; /* adjust if your nav is taller */
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: var(--bg-secondary);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+}
+
+main {
+  padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0));
 }
