@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Visual Scanner — Visual-Cognitive Training</title>
+  <title>Visual Scanner – Visual-Cognitive Training</title>
 
   <style>
     :root {
@@ -134,7 +134,6 @@
       padding: var(--space-4);
     }
 
-    /* Screen system */
     [data-screen] {
       display: none !important;
     }
@@ -143,7 +142,6 @@
       display: block !important;
     }
 
-    /* Settings screen styling */
     .settings-panel {
       max-width: 480px;
       margin: 0 auto;
@@ -306,25 +304,32 @@
     .instructions {
       text-align: center;
       color: var(--text-secondary);
-      margin: 0 0 var(--space-3);
-      font-size: var(--font-size-base);
-      padding: var(--space-3);
+      margin: 0;
+      font-size: 14px;
+      padding: var(--space-2);
       background-color: rgba(8, 15, 35, 0.7);
       border-radius: var(--radius);
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      max-width: 90%;
+      pointer-events: none;
     }
 
     #game-container {
       position: relative;
-      display: grid;
-      place-items: center;
+      display: flex;
+      flex-direction: column;
       padding: var(--space-3);
       background: rgba(0,0,0,0.15);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-lg);
       overflow: hidden;
-      height: 70vh;
-      min-height: 500px;
+      height: 75vh;
+      min-height: 400px;
     }
 
     #stars-container {
@@ -333,10 +338,9 @@
       pointer-events: none;
     }
 
-    /* Scan area */
     #scan-area {
+      flex: 1;
       width: 100%;
-      height: 100%;
       border: 2px dashed rgba(111, 211, 245, 0.4);
       border-radius: var(--radius-lg);
       display: flex;
@@ -353,7 +357,6 @@
       background: rgba(111, 211, 245, 0.05);
     }
 
-    /* Target objects */
     .visual-object {
       position: absolute;
       width: 50px;
@@ -405,29 +408,29 @@
       75% { transform: translateX(-4px); }
     }
 
-    /* Target indicator */
     .target-display {
       position: absolute;
-      top: var(--space-4);
+      top: var(--space-3);
       left: 50%;
       transform: translateX(-50%);
       background: rgba(15, 22, 41, 0.95);
       border: 2px solid var(--brand-aqua);
       border-radius: var(--radius-lg);
-      padding: var(--space-3) var(--space-4);
+      padding: var(--space-2) var(--space-3);
       backdrop-filter: blur(8px);
       box-shadow: var(--shadow-lg);
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      font-weight: var(--font-weight-bold);
+      font-weight: var(--font-weight-semibold);
+      font-size: 14px;
       z-index: 20;
     }
 
     .target-icon {
-      font-size: var(--font-size-xl);
-      width: 40px;
-      height: 40px;
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -436,20 +439,19 @@
       border: 1px solid var(--brand-aqua);
     }
 
-    /* Stats display */
     .stats-display {
       position: absolute;
-      bottom: var(--space-4);
-      right: var(--space-4);
+      bottom: var(--space-3);
+      right: var(--space-3);
       background: rgba(15, 22, 41, 0.95);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: var(--space-2) var(--space-3);
+      padding: var(--space-1) var(--space-2);
       backdrop-filter: blur(8px);
       display: flex;
-      gap: var(--space-3);
+      gap: var(--space-2);
       align-items: center;
-      font-size: var(--font-size-xs);
+      font-size: 11px;
       z-index: 20;
     }
 
@@ -469,7 +471,6 @@
       color: var(--text-muted);
     }
 
-    /* Focus area overlay */
     .focus-overlay {
       position: absolute;
       inset: 0;
@@ -521,7 +522,6 @@
       border-bottom: 2px solid var(--brand-aqua);
     }
 
-    /* Feedback message */
     .feedback-message {
       position: absolute;
       top: 30%;
@@ -557,7 +557,6 @@
       color: var(--error);
     }
 
-    /* Completion modal */
     .completion {
       position: fixed;
       inset: 50% auto auto 50%;
@@ -630,22 +629,34 @@
 
       #game-container {
         height: 80vh;
-        min-height: 400px;
+        min-height: 300px;
       }
 
       .target-display {
-        position: relative;
-        top: auto;
-        left: auto;
-        transform: none;
-        margin-bottom: var(--space-3);
+        top: var(--space-2);
+        padding: var(--space-1) var(--space-2);
+        font-size: 12px;
+      }
+
+      .target-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
       }
 
       .stats-display {
-        position: relative;
-        bottom: auto;
-        right: auto;
-        margin-top: var(--space-3);
+        bottom: var(--space-2);
+        right: var(--space-2);
+        font-size: 10px;
+        gap: var(--space-1);
+        padding: var(--space-1);
+      }
+
+      .instructions {
+        font-size: 12px;
+        padding: var(--space-1) var(--space-2);
+        top: 55px;
+        max-width: 85%;
       }
     }
   </style>
@@ -660,7 +671,6 @@
   </header>
 
   <main class="page">
-    <!-- Settings Screen -->
     <aside class="settings-panel panel active" data-screen="settings">
       <h2>Session Settings</h2>
 
@@ -671,7 +681,6 @@
         </p>
       </div>
 
-      <!-- Personal Best display -->
       <div class="stats-row">
         <div class="metric-settings">
           <div id="pb-settings" class="pb-value">0</div>
@@ -682,9 +691,9 @@
       <div class="settings-group">
         <label class="settings-label" for="difficulty">Difficulty</label>
         <select class="input" id="difficulty">
-          <option value="easy">Easy — fewer distractors, larger targets</option>
-          <option value="medium" selected>Medium — moderate challenge</option>
-          <option value="hard">Hard — many distractors, smaller targets</option>
+          <option value="easy">Easy – fewer distractors, larger targets</option>
+          <option value="medium" selected>Medium – moderate challenge</option>
+          <option value="hard">Hard – many distractors, smaller targets</option>
         </select>
         <small class="setting-help">Higher difficulty increases visual complexity and challenge.</small>
       </div>
@@ -692,11 +701,11 @@
       <div class="settings-group">
         <label class="settings-label" for="focus-area">Focus Area</label>
         <select class="input" id="focus-area">
-          <option value="none">Full Field — scan entire area</option>
-          <option value="left">Left Side — focus on left hemisphere</option>
-          <option value="right">Right Side — focus on right hemisphere</option>
-          <option value="top">Upper Field — focus on upper quadrants</option>
-          <option value="bottom">Lower Field — focus on lower quadrants</option>
+          <option value="none">Full Field – scan entire area</option>
+          <option value="left">Left Side – focus on left hemisphere</option>
+          <option value="right">Right Side – focus on right hemisphere</option>
+          <option value="top">Upper Field – focus on upper quadrants</option>
+          <option value="bottom">Lower Field – focus on lower quadrants</option>
         </select>
         <small class="setting-help">Target specific visual field areas for focused training.</small>
       </div>
@@ -704,10 +713,10 @@
       <div class="settings-group">
         <label class="settings-label" for="object-type">Object Type</label>
         <select class="input" id="object-type">
-          <option value="shapes" selected>Shapes — geometric forms and symbols</option>
-          <option value="letters">Letters — alphabet characters</option>
-          <option value="numbers">Numbers — numeric digits</option>
-          <option value="emoji">Emoji — colorful icons and faces</option>
+          <option value="shapes" selected>Shapes – geometric forms and symbols</option>
+          <option value="letters">Letters – alphabet characters</option>
+          <option value="numbers">Numbers – numeric digits</option>
+          <option value="emoji">Emoji – colorful icons and faces</option>
         </select>
         <small class="setting-help">Different object types challenge various visual processing skills.</small>
       </div>
@@ -715,7 +724,7 @@
       <div class="settings-group">
         <label class="settings-label" for="session-duration">Session Duration (minutes)</label>
         <input class="input" type="number" id="session-duration" min="1" max="10" value="3">
-        <small class="setting-help">1—10 minutes recommended.</small>
+        <small class="setting-help">1–10 minutes recommended.</small>
       </div>
 
       <div class="controls">
@@ -724,9 +733,7 @@
       </div>
     </aside>
 
-    <!-- Game Screen -->
     <section class="right-col" data-screen="game">
-      <!-- HUD Row -->
       <div class="hud panel">
         <div class="timer-bar" id="timer-bar"></div>
 
@@ -756,13 +763,12 @@
         </div>
       </div>
 
-      <!-- Game Area -->
       <div class="panel" id="game-container">
         <div id="stars-container"></div>
 
         <div class="target-display" id="target-display">
           <span>Find:</span>
-          <div class="target-icon" id="target-icon">🔍</div>
+          <div class="target-icon" id="target-icon">🔴</div>
         </div>
 
         <p class="instructions" id="instructions">
@@ -808,7 +814,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Simple storage utility
       const storage = {
         get: (key, defaultValue) => {
           try {
@@ -827,7 +832,6 @@
         }
       };
 
-      // Generate starfield
       function generateStars(container, count = 150) {
         if (!container) return;
         container.innerHTML = '';
@@ -845,7 +849,6 @@
         }
       }
 
-      // DOM elements - queried after DOM is ready
       const starsContainer = document.getElementById('stars-container');
       const timerBarEl = document.getElementById('timer-bar');
       const hudScore = document.getElementById('hud-score');
@@ -879,10 +882,8 @@
       const objectTypeSelect = document.getElementById('object-type');
       const sessionDurationInp = document.getElementById('session-duration');
 
-      // Generate initial stars
       generateStars(starsContainer, 150);
 
-      // Personal best tracking
       const PB_KEY = 'visual-scanner:best';
       const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
       const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
@@ -893,7 +894,6 @@
         if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
       }
 
-      // Game state
       let isSessionActive = false;
       let isPaused = false;
       let sessionMs = 3 * 60 * 1000;
@@ -907,8 +907,8 @@
       let targetStartTime = 0;
       let targetElement = null;
       let distractorElements = [];
+      let placedPositions = [];
 
-      // Target object sets
       const TARGET_SETS = {
         shapes: ['🔴', '🔵', '🟡', '🟢', '🟣', '🟠', '⭐', '💎', '🔺', '🔸', '🔹', '⬛'],
         letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
@@ -916,7 +916,6 @@
         emoji: ['😀', '😎', '🎯', '🎨', '🎵', '🎭', '🎊', '🎈', '🌟', '🌈', '🔥', '⚡']
       };
 
-      // Utility functions
       function showFeedback(message, type) {
         if (!feedbackMessage) return;
         feedbackMessage.textContent = message;
@@ -949,7 +948,6 @@
         const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
         if (hudTime) hudTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
 
-        // Update accuracy and reaction time displays
         const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 100;
         const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
         
@@ -974,7 +972,6 @@
         timerInterval = null;
       }
 
-      // Screen management
       function setScreen(screenName) {
         document.querySelectorAll('[data-screen]').forEach(el => {
           el.classList.remove('active');
@@ -983,7 +980,6 @@
         if (screen) screen.classList.add('active');
       }
 
-      // Focus area management
       function updateFocusArea() {
         const area = focusAreaSelect?.value || 'none';
         if (focusOverlay) {
@@ -994,7 +990,6 @@
         }
       }
 
-      // Target generation
       function pickTarget() {
         const type = objectTypeSelect?.value || 'shapes';
         const targets = TARGET_SETS[type] || TARGET_SETS.shapes;
@@ -1014,11 +1009,25 @@
         return selected;
       }
 
-      function getRandomPosition() {
+      // FIXED: Better collision detection and positioning
+      function checkCollision(x, y, objectSize, existingPositions, minDistance = 70) {
+        for (const pos of existingPositions) {
+          const dx = x - pos.x;
+          const dy = y - pos.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < minDistance) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function getRandomPosition(existingPositions = []) {
         if (!scanArea) return { x: 100, y: 100 };
         
         const rect = scanArea.getBoundingClientRect();
-        const padding = 30; // Keep objects away from edges
+        const objectSize = 50;
+        const padding = objectSize;
         
         let bounds = {
           left: padding,
@@ -1046,10 +1055,28 @@
           }
         }
 
-        return {
-          x: Math.random() * (bounds.right - bounds.left) + bounds.left,
-          y: Math.random() * (bounds.bottom - bounds.top) + bounds.top
-        };
+        // Ensure valid bounds
+        if (bounds.right <= bounds.left || bounds.bottom <= bounds.top) {
+          bounds = {
+            left: padding,
+            top: padding,
+            right: rect.width - padding,
+            bottom: rect.height - padding
+          };
+        }
+
+        // Try to find a non-colliding position (max 50 attempts)
+        let attempts = 0;
+        let position;
+        do {
+          position = {
+            x: Math.random() * (bounds.right - bounds.left) + bounds.left,
+            y: Math.random() * (bounds.bottom - bounds.top) + bounds.top
+          };
+          attempts++;
+        } while (checkCollision(position.x, position.y, objectSize, existingPositions) && attempts < 50);
+
+        return position;
       }
 
       function clearTargets() {
@@ -1059,6 +1086,7 @@
         }
         distractorElements.forEach(el => el.remove());
         distractorElements = [];
+        placedPositions = [];
       }
 
       function spawnTarget() {
@@ -1077,7 +1105,9 @@
         targetElement.textContent = currentTarget;
         targetElement.dataset.isTarget = 'true';
 
-        const targetPos = getRandomPosition();
+        const targetPos = getRandomPosition(placedPositions);
+        placedPositions.push(targetPos);
+        
         targetElement.style.left = targetPos.x + 'px';
         targetElement.style.top = targetPos.y + 'px';
 
@@ -1100,7 +1130,9 @@
           el.textContent = distractor;
           el.dataset.isTarget = 'false';
 
-          const pos = getRandomPosition();
+          const pos = getRandomPosition(placedPositions);
+          placedPositions.push(pos);
+          
           el.style.left = pos.x + 'px';
           el.style.top = pos.y + 'px';
 
@@ -1133,7 +1165,6 @@
 
         updateHUD();
         
-        // Spawn next target after brief delay
         setTimeout(() => {
           if (isSessionActive) {
             spawnTarget();
@@ -1153,7 +1184,6 @@
         
         updateHUD();
         
-        // Remove incorrect styling after animation
         setTimeout(() => {
           e.target.classList.remove('incorrect');
         }, 400);
@@ -1165,7 +1195,6 @@
         const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp?.value) || 3));
         sessionMs = minutes * 60 * 1000;
 
-        // Reset game state
         score = 0;
         hits = 0;
         attempts = 0;
@@ -1174,7 +1203,6 @@
         timeRemaining = sessionMs;
         isPaused = false;
 
-        // Clear scan area
         if (scanArea) {
           scanArea.innerHTML = '';
           scanArea.classList.remove('active');
@@ -1205,7 +1233,6 @@
         const accuracy = attempts > 0 ? Math.round((hits / attempts) * 100) : 0;
         const avgReaction = reactionTimes.length > 0 ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length) : 0;
 
-        // Check for personal best
         const previousPB = getPB();
         let isNewPB = false;
         if (score > previousPB) {
@@ -1214,7 +1241,6 @@
           updatePersonalBest();
         }
 
-        // Show completion modal
         if (finalHitsEl) finalHitsEl.textContent = `${hits}`;
         if (finalAccuracyEl) finalAccuracyEl.textContent = `${accuracy}%`;
         if (finalReactionEl) finalReactionEl.textContent = `${avgReaction}ms`;
@@ -1225,7 +1251,6 @@
         setScreen('settings');
       }
 
-      // Event listeners
       if (startBtn) startBtn.addEventListener('click', startSession);
       if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
       if (focusAreaSelect) focusAreaSelect.addEventListener('change', () => {
@@ -1268,7 +1293,6 @@
         setScreen('settings');
       });
 
-      // Initialize
       loadSettings();
       updateHUD();
       updateFocusArea();
