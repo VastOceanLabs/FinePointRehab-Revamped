@@ -39,6 +39,9 @@
     <style>
         /* Design Tokens - Mobile-first approach */
         :root {
+            /* Header height */
+            --header-height: 64px;
+            
             /* Light theme (default - clinical credibility) */
             --bg-primary: #ffffff;
             --bg-secondary: #f8fafc;
@@ -100,7 +103,7 @@
 
         body {
             margin: 0;
-            padding: 0;
+            padding-top: var(--header-height);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
@@ -133,64 +136,67 @@
             padding: 0 var(--space-4);
         }
         
-        /* Header */
+        /* Header - Fixed with proper mobile layout */
         header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            z-index: 1000;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--border);
-            padding: var(--space-6) 0;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            height: 80px;
             display: flex;
             align-items: center;
         }
         
         .header-content {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            text-align: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+            text-align: left;
         }
         
         .logo {
-            font-size: var(--font-size-3xl);
+            font-size: var(--font-size-2xl);
             font-weight: 700;
             color: var(--brand-blue);
-            margin-bottom: var(--space-2);
+            margin: 0;
+            line-height: 1;
         }
         
         .tagline {
+            display: none;
             font-size: var(--font-size-lg);
             color: var(--text-secondary);
-            margin-bottom: var(--space-6);
-            max-width: 600px;
         }
         
         /* Navigation */
-        nav {
+        header nav {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            align-items: center;
             gap: var(--space-4);
+            margin-left: auto;
         }
         
-        nav a {
+        header nav a {
             color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
             padding: var(--space-2) var(--space-4);
             border-radius: var(--radius);
             transition: all 0.2s ease;
-            min-height: 44px; /* Touch-friendly */
-            display: flex;
+            min-height: 44px;
+            display: inline-flex;
             align-items: center;
         }
         
-        nav a:hover,
-        nav a.active {
+        header nav a:hover,
+        header nav a.active {
             color: var(--brand-blue);
             background: var(--bg-secondary);
         }
@@ -207,7 +213,7 @@
             border: none;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-height: 44px; /* Touch-friendly */
+            min-height: 44px;
             font-size: var(--font-size-base);
         }
         
@@ -315,7 +321,7 @@
         /* Sections */
         section {
             padding: var(--space-16) 0;
-            scroll-margin-top: 80px; /* Account for sticky header */
+            scroll-margin-top: var(--header-height);
         }
         
         .section-header {
@@ -409,10 +415,17 @@
         
         /* Responsive Design */
         @media (min-width: 768px) {
-            .header-content {
-                flex-direction: row;
-                justify-content: space-between;
-                text-align: left;
+            :root {
+                --header-height: 80px;
+            }
+            
+            .logo {
+                font-size: var(--font-size-3xl);
+            }
+            
+            .tagline {
+                display: block;
+                margin: 0;
             }
             
             .hero h1 {
@@ -750,10 +763,10 @@
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     const href = this.getAttribute('href');
-                    if (href === '#') return; // ignore placeholder links
+                    if (href === '#') return;
                     
                     const target = document.querySelector(href);
-                    if (!target) return; // target doesn't exist
+                    if (!target) return;
                     
                     e.preventDefault();
                     target.scrollIntoView({
