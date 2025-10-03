@@ -730,25 +730,44 @@
     });
 
     // Maze sizing function
+    function getViewportHeight() {
+      return window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    }
+
     function adjustMazeSize() {
-      if (!mazeContainer) return;
+  const containerWidth = mazeContainer.offsetWidth;
+  const containerHeight = getViewportHeight();
 
-      // Use the CSS-defined dimensions directly
-      const containerStyle = window.getComputedStyle(mazeContainer);
-      const containerWidth = parseInt(containerStyle.width);
-      const containerHeight = parseInt(containerStyle.height);
+  let mazeSize;
+  const isLandscape = window.innerWidth > window.innerHeight;
 
-      if (containerWidth > 0 && containerHeight > 0) {
-        mazeWidth = containerWidth;
-        mazeHeight = containerHeight;
-      } else {
-        // Fallback to default sizes
-        mazeWidth = window.innerWidth <= 768 ? 320 : 600;
-        mazeHeight = window.innerWidth <= 768 ? 240 : 400;
+  if (isLandscape) {
+    // In landscape: allow maze to take up to 90% of width and 90% of height
+    mazeSize = Math.min(containerWidth * 0.9, containerHeight * 0.9);
+  } else {
+    // In portrait: square based on the smaller dimension
+    mazeSize = Math.min(containerWidth, containerHeight);
+  }
+
+  // Reserve small margin for labels
+  mazeWidth = Math.max(150, mazeSize);
+  mazeHeight = Math.max(150, mazeSize - 15);
+
+  mazeCanvas.width = mazeWidth;
+  mazeCanvas.height = mazeHeight;
+  mazeCtx.lineWidth = 2;
+} else {
+        // In portrait: square based on the smaller dimension
+        mazeSize = Math.min(containerWidth, containerHeight);
       }
 
-      // Reserve space for labels (30px top + 30px bottom)
-      mazeHeight = Math.max(150, mazeHeight - 60);
+      // Don’t subtract 60px anymore — rely on clamping for label safety
+      mazeWidth = Math.max(150, mazeSize);
+      mazeHeight = Math.max(150, mazeSize);
+
+      mazeCanvas.width = mazeWidth;
+      mazeCanvas.height = mazeHeight;
+      mazeCtx.lineWidth = 2;
     }
 
     // Utility functions

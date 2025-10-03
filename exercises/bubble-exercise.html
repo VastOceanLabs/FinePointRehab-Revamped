@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="/css/components.css">
 
   <style>
-    /* ==== GLOBAL THEME & BASE ==== */
     :root{
       --vh: 1vh;
       --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
@@ -40,8 +39,7 @@
       --font-weight-bold: 700;
       --header-h: 0px;
     }
-    body {
-      margin:0; color:var(--text);
+    body{ margin:0; color:var(--text);
       background:
         radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
         radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 55%),
@@ -105,7 +103,7 @@
     body.playing #gameCol{ display:block; }
     body.playing #settings{ display:none; }
 
-    /* NEW HUD DESIGN */
+    /* NEW HUD DESIGN - matching trace-reveal */
     .hud {
       display: grid;
       grid-auto-flow: column;
@@ -135,31 +133,11 @@
       border-top-right-radius: var(--radius-lg);
     }
 
-    .hud-group {
-      display: grid;
-      gap: var(--space-1);
-      text-align: center;
-    }
+    .hud-group { display: grid; gap: var(--space-1); text-align: center; }
+    .hud-value { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); color: var(--accent); text-shadow: 0 0 8px rgba(111,211,245,.7); }
+    .hud-label { font-size: var(--font-size-xs); color: var(--text-secondary); opacity: .9; }
 
-    .hud-value {
-      font-size: var(--font-size-xl);
-      font-weight: var(--font-weight-bold);
-      color: var(--accent);
-      text-shadow: 0 0 8px rgba(111, 211, 245, 0.7);
-    }
-
-    .hud-label {
-      font-size: var(--font-size-xs);
-      color: var(--text-secondary);
-      opacity: 0.9;
-    }
-
-    .controls {
-      display: flex;
-      gap: var(--space-2);
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+    .controls { display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap; }
 
     @media (max-width: 768px) {
       .hud {
@@ -171,84 +149,37 @@
       }
       .hud-value { font-size: var(--font-size-base); }
       .hud-label { font-size: 11px; }
-      .controls {
-        grid-column: 1 / -1;
-        display: flex; gap: var(--space-2); justify-content: center; margin-top: var(--space-1);
-      }
+      .controls { grid-column: 1 / -1; gap: var(--space-2); justify-content: center; margin-top: var(--space-1); }
       .controls .btn { padding: 6px 12px; font-size: 13px; }
     }
 
-    .right-col {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: var(--space-3);
-      min-height: 0;
-    }
+    .right-col { display: grid; grid-template-rows: auto 1fr; gap: var(--space-3); min-height: 0; }
 
     body.playing .layout {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 0;
-      max-width: none;
-      padding: 0;
-      height: calc(var(--vh) * 100 - var(--header-h, 0px));
+      display: grid; grid-template-rows: auto 1fr; gap: 0;
+      max-width: none; padding: 0; height: calc(var(--vh) * 100 - var(--header-h, 0px));
     }
-
-    body.playing .right-col {
-      height: calc(var(--vh) * 100);
-      max-width: none;
-      margin: 0;
-      gap: 0;
-      grid-template-rows: auto 1fr;
-      min-height: 0;
-    }
+    body.playing .right-col { height: calc(var(--vh) * 100); max-width: none; margin: 0; gap: 0; grid-template-rows: auto 1fr; min-height: 0; }
 
     #game-container {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      padding: var(--space-3);
-      background: rgba(0,0,0,0.15);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      overflow: hidden;
+      position: relative; display: flex; flex-direction: column; min-height: 0;
+      padding: var(--space-3); background: rgba(0,0,0,0.15);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); overflow: hidden;
     }
+    body.playing #game-container { height: 100%; border-radius: 0; border: none; padding: var(--space-2); }
 
-    body.playing #game-container {
-      height: 100%;
-      border-radius: 0;
-      border: none;
-      padding: var(--space-2);
-    }
-
-    #stars-container {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 1;
-    }
+    #stars-container { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
 
     .stage-wrap{
-      position:relative;
-      flex: 1;
-      width:100%;
-      display: block;
-      overflow: hidden;
-      touch-action: none;
+      position:relative; flex: 1; width:100%; display: block; overflow: hidden; touch-action: none;
       border-radius: var(--radius-lg);
       box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
       background: radial-gradient(60% 45% at 50% 40%, rgba(111, 211, 245, 0.12), transparent 68%);
     }
 
     /* Bubble game surface (DOM-based) */
-    .game-surface{
-      position:relative;
-      width:100%;
-      height:100%;
-      z-index: 2;
-    }
+    .game-surface{ position:relative; width:100%; height:100%; z-index: 2; }
     #bubble{
       position:absolute; width:80px; height:80px; border-radius:50%;
       background:
@@ -259,93 +190,47 @@
         0 12px 30px rgba(111,211,245,.35),
         inset 0 0 22px rgba(255,255,255,.6);
       transform: translate(-50%, -50%);
-      touch-action: none;
-      display:flex; align-items:center; justify-content:center;
+      touch-action: none; display:flex; align-items:center; justify-content:center;
       animation: bubblePulse 2.2s ease-in-out infinite;
       font-weight:900; font-size:22px; color:#eaffff; text-shadow: 0 0 10px rgba(255,255,255,.6);
     }
-    #bubble.spawn {
-      animation: bubbleSpawn .18s ease-out, bubblePulse 2.2s ease-in-out infinite;
-    }
-    @keyframes bubbleSpawn{
-      from{ transform: translate(-50%, -50%) scale(.6); opacity:.0; filter: blur(2px); }
-      to  { transform: translate(-50%, -50%) scale(1); opacity:1; filter: blur(0); }
-    }
-    @keyframes bubblePulse{
-      0%,100{ filter: drop-shadow(0 0 0 rgba(111,211,245,.0)); }
-      50%    { filter: drop-shadow(0 0 12px rgba(111,211,245,.45)); }
-    }
+    #bubble.spawn { animation: bubbleSpawn .18s ease-out, bubblePulse 2.2s ease-in-out infinite; }
+    @keyframes bubbleSpawn{ from{ transform: translate(-50%, -50%) scale(.6); opacity:.0; filter: blur(2px); } to{ transform: translate(-50%, -50%) scale(1); opacity:1; filter: blur(0); } }
+    @keyframes bubblePulse{ 0%,100%{ filter: drop-shadow(0 0 0 rgba(111,211,245,.0)); } 50% { filter: drop-shadow(0 0 12px rgba(111,211,245,.45)); } }
 
-    /* Points popup */
     .points{
       position:absolute; transform: translate(-50%, -50%);
-      font-weight:900; font-size:18px;
-      color: var(--good); text-shadow: 0 0 10px rgba(143,245,178,.45);
-      pointer-events:none; z-index:7;
-      animation: floatUp 700ms ease-out forwards;
+      font-weight:900; font-size:18px; color: var(--good); text-shadow: 0 0 10px rgba(143,245,178,.45);
+      pointer-events:none; z-index:7; animation: floatUp 700ms ease-out forwards;
     }
-    @keyframes floatUp{
-      from{ opacity:0; transform: translate(-50%, -50%) translateY(6px) scale(.9); }
-      20% { opacity:1; }
-      to  { opacity:0; transform: translate(-50%, -50%) translateY(-36px) scale(1.05); }
-    }
+    @keyframes floatUp{ from{ opacity:0; transform: translate(-50%, -50%) translateY(6px) scale(.9); } 20% { opacity:1; } to{ opacity:0; transform: translate(-50%, -50%) translateY(-36px) scale(1.05); } }
 
-    /* Ripple effect */
     .ripple{
       position:absolute; transform: translate(-50%, -50%);
       width:10px; height:10px; border-radius:50%;
-      border:2px solid var(--accent-2); opacity:.6;
-      animation: ripple 600ms ease-out forwards;
+      border:2px solid var(--accent-2); opacity:.6; animation: ripple 600ms ease-out forwards;
       pointer-events:none; z-index:6;
     }
-    @keyframes ripple{
-      from{ opacity:.7; transform: translate(-50%, -50%) scale(.8); }
-      to  { opacity:0; transform: translate(-50%, -50%) scale(8); }
-    }
+    @keyframes ripple{ from{ opacity:.7; transform: translate(-50%, -50%) scale(.8); } to{ opacity:0; transform: translate(-50%, -50%) scale(8); } }
 
-    /* Finger guide (guided mode) */
-    .finger-guide{
-      position:absolute; left:0; right:0; bottom:0; padding:12px; z-index:6;
-      display:none;
-    }
-    .finger-guide .card{
-      margin:0 auto; max-width:720px; border:1px solid rgba(255,255,255,.18); border-radius:12px;
-      background: rgba(0,0,0,.35); padding:12px;
-    }
+    .finger-guide{ position:absolute; left:0; right:0; bottom:0; padding:12px; z-index:6; display:none; }
+    .finger-guide .card{ margin:0 auto; max-width:720px; border:1px solid rgba(255,255,255,.18); border-radius:12px; background: rgba(0,0,0,.35); padding:12px; }
     .fingers{ display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; }
-    .fingers .chip{
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      width:56px; height:56px; border-radius:50%;
-      border:1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
-      font-weight:800;
-    }
+    .fingers .chip{ display:flex; flex-direction:column; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; border:1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); font-weight:800; }
     .fingers .chip .tiny{ font-size:10px; opacity:.9; margin-top:2px; font-weight:600; }
-    .fingers .chip.active{
-      border-color: var(--accent-2);
-      box-shadow: 0 0 0 3px rgba(111,211,245,.25), 0 0 18px rgba(111,211,245,.45) inset;
-      background: rgba(111,211,245,.12);
-    }
+    .fingers .chip.active{ border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(111,211,245,.25), 0 0 18px rgba(111,211,245,.45) inset; background: rgba(111,211,245,.12); }
     .guide-title{ text-align:center; font-weight:700; margin-bottom:8px; }
 
-    /* Completion modal */
-    .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:20;
-            background: rgba(0,0,0,.45); backdrop-filter: blur(4px); }
+    .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:20; background: rgba(0,0,0,.45); backdrop-filter: blur(4px); }
     .modal.open{ display:flex; }
-    .modal .card{ width:min(560px, 92vw); border:1px solid rgba(255,255,255,.18); border-radius:14px;
-                  background: var(--panel); padding:16px; }
+    .modal .card{ width:min(560px, 92vw); border:1px solid rgba(255,255,255,.18); border-radius:14px; background: var(--panel); padding:16px; }
 
     @media (min-width: 920px){
       .layout{ grid-template-columns: 1fr 1.2fr; align-items:start; }
       body:not(.playing) #settings{ grid-column: 1 / -1; }
     }
 
-    .setting-help {
-      display: block;
-      color: var(--text-muted);
-      font-size: var(--font-size-xs);
-      margin-top: var(--space-1);
-      font-style: italic;
-    }
+    .setting-help { display:block; color: var(--text-muted); font-size: var(--font-size-xs); margin-top: var(--space-1); font-style: italic; }
   </style>
 </head>
 <body>
@@ -360,7 +245,6 @@
       <h2>Settings</h2>
       <div class="desc"><strong>How to play:</strong> tap the bubble as soon as it appears. Smaller bubbles are harder (more points).</div>
 
-      <!-- Stats (PB shown on settings) -->
       <div class="stats-row" role="region" aria-label="Player stats">
         <div class="metric" aria-live="polite">
           <div id="pbSettings" class="v">0</div>
@@ -397,9 +281,8 @@
       <button id="startBtn" class="btn btn-primary" type="button" aria-label="Start session">Start</button>
     </aside>
 
-    <!-- GAME COLUMN (hidden until playing) -->
+    <!-- GAME COLUMN -->
     <section id="gameCol" class="right-col" aria-label="Game">
-      <!-- HUD -->
       <div class="hud" role="region" aria-label="In-game HUD">
         <div class="timer-bar" id="timer-bar"></div>
 
@@ -424,10 +307,8 @@
         </div>
       </div>
 
-      <!-- Play surface -->
       <div id="game-container">
         <div id="stars-container"></div>
-
         <div class="stage-wrap">
           <div id="surface" class="game-surface" aria-label="Play area">
             <div id="bubble" role="button" aria-label="Bubble" tabindex="0"></div>
@@ -436,9 +317,7 @@
             <div id="fingerGuide" class="finger-guide" aria-live="polite">
               <div class="card">
                 <div class="guide-title">Match the bubble number to the finger</div>
-                <div class="fingers" id="fingersRow">
-                  <!-- Chips will be filled by JS -->
-                </div>
+                <div class="fingers" id="fingersRow"></div>
               </div>
             </div>
           </div>
@@ -447,7 +326,6 @@
     </section>
   </main>
 
-  <!-- Completion Modal -->
   <div id="done" class="modal" role="dialog" aria-modal="true" aria-labelledby="doneTitle" aria-describedby="doneDesc">
     <div class="card">
       <h2 id="doneTitle" style="margin:0 0 8px 0;">Session Complete</h2>
@@ -545,15 +423,10 @@
       const h = header ? header.getBoundingClientRect().height : 0;
       document.documentElement.style.setProperty('--header-h', `${h}px`);
     }
-
     function onViewportChange(){
-      setVH();
-      setStageHeight();
-      setHeaderH();
-      // Hide bubble on resize to prevent it from being clipped after layout shift
+      setVH(); setStageHeight(); setHeaderH();
       if(isActive) hideBubble();
     }
-
     setVH(); setStageHeight(); setHeaderH();
     addEventListener('resize', onViewportChange);
     addEventListener('orientationchange', onViewportChange);
@@ -574,12 +447,9 @@
     let bubbleSizePx = 80;
     let fingerMode = 'any';
     let lastSpawn = 0, bubbleVisible = false, bubbleSpawnTime = 0;
-
     const MAX_VISIBLE_MS = 2500;
-
     const BUBBLE_SIZES = { large: 120, medium: 80, small: 56 };
 
-    // Finger mapping (1..5)
     const FINGERS = [
       { num:1, name:'Thumb' },
       { num:2, name:'Index' },
@@ -611,8 +481,6 @@
       const pb = storage.get('PB_'+EXERCISE_ID, 0) || 0;
       pbEl.textContent = String(pb);
       pbSettingsEl.textContent = String(pb);
-
-      // Update timer bar
       if (timerBar && sessionDurationMs > 0) {
         const pct = Math.max(0, Math.min(1, timeRemaining / sessionDurationMs));
         timerBar.style.width = (pct * 100).toFixed(2) + '%';
@@ -627,16 +495,16 @@
       return r;
     }
 
-    // ===== Bubble spawn / placement (merged with user's logic) =====
+    // === merged spawnBubble (with +50 margin and fingerGuide offset) ===
     function spawnBubble(){
       const rect = surface.getBoundingClientRect();
       const sw = rect.width;
       const sh = rect.height;
       const fgH = (fingerGuide && fingerGuide.style.display !== 'none') ? fingerGuide.offsetHeight : 0;
 
-      // Account for rounded corners AND shadow space by adding stage border radius + shadow margin
+      // Account for rounded corners AND extra shadow space for mobile
       const stageRadius = getStageRadiusPx(stageWrap);
-      const margin = (bubbleSizePx / 2) + stageRadius + 40; // bubble radius + corner radius + shadow space
+      const margin = (bubbleSizePx / 2) + stageRadius + 50; // bubble radius + corner radius + extra shadow space
 
       const minX = margin;
       const maxX = Math.max(minX, sw - margin);
@@ -647,7 +515,6 @@
       const yRange = maxY - minY;
 
       if (xRange <= 0 || yRange <= 0) {
-        // Fallback to center if play area is too small
         bubbleEl.style.left = (sw / 2) + 'px';
         bubbleEl.style.top = (sh / 2) + 'px';
       } else {
@@ -691,7 +558,7 @@
       const rt = performance.now() - bubbleSpawnTime;
       const pts = Math.max(1, Math.round(1500/Math.max(200, rt)));
       taps++; score += pts; totalRT += rt;
-      const bx = parseFloat(bubbleEl.style.left); const by = parseFloat(bubbleEl.style.top);
+      const bx = parseFloat(bubbleEl.style.left), by = parseFloat(bubbleEl.style.top);
       showPoints(bx, by, pts);
       ripple(bx, by);
       hideBubble();
@@ -802,7 +669,7 @@
 
     updateHUD();
 
-    // Generate stars
+    // Generate stars (fallback simple field + twinkle)
     function generateStars(container, count = 150) {
       if (!container) return;
       container.innerHTML = '';
@@ -821,20 +688,10 @@
         container.appendChild(star);
       }
     }
-
-    // Add twinkle animation
     const style = document.createElement('style');
-    style.textContent = `
-      @keyframes twinkle {
-        0%, 100% { opacity: 0.2; }
-        50% { opacity: 1; }
-      }
-    `;
+    style.textContent = `@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }`;
     document.head.appendChild(style);
-
-    if (starsContainer) {
-      generateStars(starsContainer, 150);
-    }
+    if (starsContainer) generateStars(starsContainer, 150);
 
     (async () => {
       try { await initUtils?.({ starfieldTarget: surface }); } catch {}
@@ -845,7 +702,6 @@
       tryStarfield();
     })();
 
-    // Expose for testing
     window.endSession = function(score, difficulty='medium'){
       try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
       try { checkAndUnlockAchievements(); } catch {}
