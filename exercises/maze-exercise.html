@@ -1038,7 +1038,7 @@
       startLabel.className = 'point-label';
       startLabel.textContent = 'START';
       startLabel.style.left = `${startX * cellSize + cellSize / 2}px`;
-      let startTop = startY * cellSize - (cellSize * 1.5);
+      let startTop = startY * cellSize - (cellSize / 1.2);
       startTop = Math.max(minTop, Math.min(startTop, maxTop));
       startLabel.style.top = `${startTop}px`;
 
