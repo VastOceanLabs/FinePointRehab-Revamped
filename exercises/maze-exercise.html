@@ -743,7 +743,7 @@
         mazeHeight = Math.max(220, Math.round(h));
       }
 
-      mazeContainer.style.width = `${mazeWidth}px`;
+      mazeContainer.style.width = `${mazeWidth}px";
       mazeContainer.style.height = `${mazeHeight}px`;
     }
 
@@ -1038,7 +1038,7 @@
       startLabel.className = 'point-label';
       startLabel.textContent = 'START';
       startLabel.style.left = `${startX * cellSize + cellSize / 2}px`;
-      let startTop = startY * cellSize - (cellSize / 1.2);
+      let startTop = startY * cellSize - (cellSize * 1.5);
       startTop = Math.max(minTop, Math.min(startTop, maxTop));
       startLabel.style.top = `${startTop}px`;
 
