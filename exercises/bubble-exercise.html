@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/components.css">
 
   <style>
+    /* ==== GLOBAL THEME & BASE ==== */
     :root{
       --vh: 1vh;
       --bg-1:#070b16; --bg-2:#0f1630; --bg-3:#0b1024;
@@ -39,7 +40,8 @@
       --font-weight-bold: 700;
       --header-h: 0px;
     }
-    body{ margin:0; color:var(--text);
+    body {
+      margin:0; color:var(--text);
       background:
         radial-gradient(1200px 800px at 20% 25%, rgba(70,30,120,.35), transparent 60%),
         radial-gradient(900px 700px at 75% 65%, rgba(20,120,160,.28), transparent 55%),
@@ -103,7 +105,7 @@
     body.playing #gameCol{ display:block; }
     body.playing #settings{ display:none; }
 
-    /* NEW HUD DESIGN - matching trace-reveal */
+    /* NEW HUD DESIGN */
     .hud {
       display: grid;
       grid-auto-flow: column;
@@ -167,27 +169,13 @@
         padding: var(--space-2);
         padding-top: calc(var(--space-2) + 6px);
       }
-      
-      .hud-value {
-        font-size: var(--font-size-base);
-      }
-      
-      .hud-label {
-        font-size: 11px;
-      }
-      
+      .hud-value { font-size: var(--font-size-base); }
+      .hud-label { font-size: 11px; }
       .controls {
         grid-column: 1 / -1;
-        display: flex;
-        gap: var(--space-2);
-        justify-content: center;
-        margin-top: var(--space-1);
+        display: flex; gap: var(--space-2); justify-content: center; margin-top: var(--space-1);
       }
-      
-      .controls .btn {
-        padding: 6px 12px;
-        font-size: 13px;
-      }
+      .controls .btn { padding: 6px 12px; font-size: 13px; }
     }
 
     .right-col {
@@ -242,12 +230,12 @@
       z-index: 1;
     }
 
-    .stage-wrap{ 
-      position:relative; 
-      flex: 1; 
-      width:100%; 
-      display: block; 
-      overflow: hidden; 
+    .stage-wrap{
+      position:relative;
+      flex: 1;
+      width:100%;
+      display: block;
+      overflow: hidden;
       touch-action: none;
       border-radius: var(--radius-lg);
       box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
@@ -255,12 +243,11 @@
     }
 
     /* Bubble game surface (DOM-based) */
-    .game-surface{ 
-      position:relative; 
-      width:100%; 
-      height:100%; 
-      /* overflow removed to prevent double-clipping bubble shadows */
-      z-index: 2; 
+    .game-surface{
+      position:relative;
+      width:100%;
+      height:100%;
+      z-index: 2;
     }
     #bubble{
       position:absolute; width:80px; height:80px; border-radius:50%;
@@ -285,7 +272,7 @@
       to  { transform: translate(-50%, -50%) scale(1); opacity:1; filter: blur(0); }
     }
     @keyframes bubblePulse{
-      0%,100%{ filter: drop-shadow(0 0 0 rgba(111,211,245,.0)); }
+      0%,100{ filter: drop-shadow(0 0 0 rgba(111,211,245,.0)); }
       50%    { filter: drop-shadow(0 0 12px rgba(111,211,245,.45)); }
     }
 
@@ -412,7 +399,7 @@
 
     <!-- GAME COLUMN (hidden until playing) -->
     <section id="gameCol" class="right-col" aria-label="Game">
-      <!-- NEW HUD - matching trace-reveal style -->
+      <!-- HUD -->
       <div class="hud" role="region" aria-label="In-game HUD">
         <div class="timer-bar" id="timer-bar"></div>
 
@@ -440,7 +427,7 @@
       <!-- Play surface -->
       <div id="game-container">
         <div id="stars-container"></div>
-        
+
         <div class="stage-wrap">
           <div id="surface" class="game-surface" aria-label="Play area">
             <div id="bubble" role="button" aria-label="Bubble" tabindex="0"></div>
@@ -558,15 +545,15 @@
       const h = header ? header.getBoundingClientRect().height : 0;
       document.documentElement.style.setProperty('--header-h', `${h}px`);
     }
-    
+
     function onViewportChange(){
-      setVH(); 
-      setStageHeight(); 
+      setVH();
+      setStageHeight();
       setHeaderH();
       // Hide bubble on resize to prevent it from being clipped after layout shift
       if(isActive) hideBubble();
     }
-    
+
     setVH(); setStageHeight(); setHeaderH();
     addEventListener('resize', onViewportChange);
     addEventListener('orientationchange', onViewportChange);
@@ -624,7 +611,7 @@
       const pb = storage.get('PB_'+EXERCISE_ID, 0) || 0;
       pbEl.textContent = String(pb);
       pbSettingsEl.textContent = String(pb);
-      
+
       // Update timer bar
       if (timerBar && sessionDurationMs > 0) {
         const pct = Math.max(0, Math.min(1, timeRemaining / sessionDurationMs));
@@ -640,24 +627,25 @@
       return r;
     }
 
+    // ===== Bubble spawn / placement (merged with user's logic) =====
     function spawnBubble(){
       const rect = surface.getBoundingClientRect();
       const sw = rect.width;
       const sh = rect.height;
       const fgH = (fingerGuide && fingerGuide.style.display !== 'none') ? fingerGuide.offsetHeight : 0;
-      
-      // Account for rounded corners by adding stage border radius to margin
+
+      // Account for rounded corners AND shadow space by adding stage border radius + shadow margin
       const stageRadius = getStageRadiusPx(stageWrap);
-      const margin = (bubbleSizePx / 2) + stageRadius + 12; // bubble radius + corner radius + padding
-      
+      const margin = (bubbleSizePx / 2) + stageRadius + 40; // bubble radius + corner radius + shadow space
+
       const minX = margin;
       const maxX = Math.max(minX, sw - margin);
       const minY = margin;
       const maxY = Math.max(minY, sh - fgH - margin);
-      
+
       const xRange = maxX - minX;
       const yRange = maxY - minY;
-      
+
       if (xRange <= 0 || yRange <= 0) {
         // Fallback to center if play area is too small
         bubbleEl.style.left = (sw / 2) + 'px';
@@ -668,7 +656,7 @@
         bubbleEl.style.left = x + 'px';
         bubbleEl.style.top = y + 'px';
       }
-      
+
       bubbleEl.style.width = bubbleSizePx + 'px';
       bubbleEl.style.height = bubbleSizePx + 'px';
       bubbleVisible = true;
@@ -703,8 +691,9 @@
       const rt = performance.now() - bubbleSpawnTime;
       const pts = Math.max(1, Math.round(1500/Math.max(200, rt)));
       taps++; score += pts; totalRT += rt;
-      showPoints(parseFloat(bubbleEl.style.left), parseFloat(bubbleEl.style.top), pts);
-      ripple(parseFloat(bubbleEl.style.left), parseFloat(bubbleEl.style.top));
+      const bx = parseFloat(bubbleEl.style.left); const by = parseFloat(bubbleEl.style.top);
+      showPoints(bx, by, pts);
+      ripple(bx, by);
       hideBubble();
       audio.click?.();
     });
@@ -812,7 +801,7 @@
     addEventListener('keydown', (e) => { if(e.key === 'Escape') doneModal.classList.remove('open'); });
 
     updateHUD();
-    
+
     // Generate stars
     function generateStars(container, count = 150) {
       if (!container) return;
@@ -846,7 +835,7 @@
     if (starsContainer) {
       generateStars(starsContainer, 150);
     }
-    
+
     (async () => {
       try { await initUtils?.({ starfieldTarget: surface }); } catch {}
       const tryStarfield = () => {
@@ -856,6 +845,7 @@
       tryStarfield();
     })();
 
+    // Expose for testing
     window.endSession = function(score, difficulty='medium'){
       try { recordSession(EXERCISE_ID, difficulty, score); } catch {}
       try { checkAndUnlockAchievements(); } catch {}
