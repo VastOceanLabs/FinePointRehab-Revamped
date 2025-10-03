@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -85,7 +86,8 @@
       background-color: var(--bg-tertiary);
     }
 
-    .input, select {
+    .input,
+    select {
       width: 100%;
       padding: var(--space-2) var(--space-3);
       border: 2px solid var(--border);
@@ -206,15 +208,15 @@
         padding: var(--space-2);
         padding-top: calc(var(--space-2) + 6px);
       }
-      
+
       .hud-value {
         font-size: var(--font-size-base);
       }
-      
+
       .hud-label {
         font-size: 11px;
       }
-      
+
       .controls {
         grid-column: 1 / -1;
         display: flex;
@@ -222,7 +224,7 @@
         justify-content: center;
         margin-top: var(--space-1);
       }
-      
+
       .controls .btn {
         padding: 6px 12px;
         font-size: 13px;
@@ -252,7 +254,7 @@
       left: 0;
       height: 8px;
       width: 100%;
-      background: linear-gradient(90deg, var(--brand-aqua), rgba(111,211,245,.35));
+      background: linear-gradient(90deg, var(--brand-aqua), rgba(111, 211, 245, .35));
       transform-origin: left center;
       transition: transform .1s linear;
       border-top-left-radius: var(--radius);
@@ -281,7 +283,7 @@
       display: grid;
       place-items: center;
       padding: var(--space-3);
-      background: rgba(0,0,0,0.15);
+      background: rgba(0, 0, 0, 0.15);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-lg);
@@ -371,8 +373,15 @@
     }
 
     @keyframes hover {
-      0%, 100% { transform: translate(-50%, -50%) rotate(90deg) translateY(0); }
-      50% { transform: translate(-50%, -50%) rotate(90deg) translateY(-2px); }
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) rotate(90deg) translateY(0);
+      }
+
+      50% {
+        transform: translate(-50%, -50%) rotate(90deg) translateY(-2px);
+      }
     }
 
     #goal {
@@ -444,6 +453,7 @@
         transform: translate(-50%, -50%) scale(.95);
         opacity: .6;
       }
+
       to {
         transform: translate(-50%, -50%) scale(1);
         opacity: 1;
@@ -460,9 +470,17 @@
     }
 
     @keyframes celebrate {
-      0% { box-shadow: 0 0 0 rgba(111,211,245,0); }
-      40% { box-shadow: 0 0 40px rgba(111,211,245,.8); }
-      100% { box-shadow: 0 0 20px rgba(111,211,245,.2); }
+      0% {
+        box-shadow: 0 0 0 rgba(111, 211, 245, 0);
+      }
+
+      40% {
+        box-shadow: 0 0 40px rgba(111, 211, 245, .8);
+      }
+
+      100% {
+        box-shadow: 0 0 20px rgba(111, 211, 245, .2);
+      }
     }
 
     #error-message {
@@ -480,8 +498,13 @@
     }
 
     @keyframes slideDown {
-      from { transform: translate(-50%, -100%); }
-      to { transform: translate(-50%, 0); }
+      from {
+        transform: translate(-50%, -100%);
+      }
+
+      to {
+        transform: translate(-50%, 0);
+      }
     }
 
     .hidden {
@@ -573,7 +596,8 @@
         <div id="stars-container"></div>
 
         <p class="instructions" id="instructions">
-          Guide the spaceship through the cosmic maze to reach Earth. Drag the ship or use arrow keys to follow the dotted lines.
+          Guide the spaceship through the cosmic maze to reach Earth. Drag the ship or use arrow keys to follow the
+          dotted lines.
         </p>
 
         <div id="maze-container" tabindex="0"></div>
@@ -708,12 +732,12 @@
     // Maze sizing function
     function adjustMazeSize() {
       if (!mazeContainer) return;
-      
+
       // Use the CSS-defined dimensions directly
       const containerStyle = window.getComputedStyle(mazeContainer);
       const containerWidth = parseInt(containerStyle.width);
       const containerHeight = parseInt(containerStyle.height);
-      
+
       if (containerWidth > 0 && containerHeight > 0) {
         mazeWidth = containerWidth;
         mazeHeight = containerHeight;
@@ -722,6 +746,9 @@
         mazeWidth = window.innerWidth <= 768 ? 320 : 600;
         mazeHeight = window.innerWidth <= 768 ? 240 : 400;
       }
+
+      // Reserve space for labels (30px top + 30px bottom)
+      mazeHeight = Math.max(150, mazeHeight - 60);
     }
 
     // Utility functions
@@ -754,7 +781,7 @@
 
     function updateHUD() {
       scoreEl.textContent = `${score}`;
-      
+
       // Only update elements that exist in the DOM
       if (pbEl) pbEl.textContent = `${personalBest}`;
       if (completedEl) completedEl.textContent = `${mazesCompleted}`;
@@ -840,7 +867,7 @@
         { dx: 0, dy: 1 },
         { dx: -1, dy: 0 }
       ]);
-      
+
       for (const dir of directions) {
         const nx = x + dir.dx;
         const ny = y + dir.dy;
@@ -887,9 +914,9 @@
         for (let x = 0; x < cols; x++) {
           const currentIndex = pathNodes.findIndex(n => n.gridX === x && n.gridY === y);
           if (currentIndex === -1) continue;
-          
+
           const currentNode = pathNodes[currentIndex];
-          
+
           // Check connections in all directions
           if (x > 0 && !maze[y][x].walls.left) {
             const leftIndex = pathNodes.findIndex(n => n.gridX === x - 1 && n.gridY === y);
@@ -937,7 +964,7 @@
             connections: []
           };
           pathNodes.push(node);
-          
+
           const nodeElement = document.createElement('div');
           nodeElement.className = 'path-node';
           nodeElement.style.left = `${centerX}px`;
@@ -957,7 +984,7 @@
             const nodeB = pathNodes[connectionIndex];
             const line = document.createElement('div');
             line.className = 'path-line';
-            
+
             if (nodeA.gridX === nodeB.gridX) {
               // Vertical line
               line.classList.add('vertical');
@@ -1002,19 +1029,25 @@
     }
 
     function createPointLabels(startX, startY, endX, endY) {
+      const labelOffsetTop = 15;
+      const labelOffsetBottom = 15;
+
       startLabel = document.createElement('div');
       startLabel.id = 'start-label';
       startLabel.className = 'point-label';
       startLabel.textContent = 'START';
       startLabel.style.left = `${startX * cellSize + cellSize / 2}px`;
-      startLabel.style.top = `${startY * cellSize - 15}px`;
+      startLabel.style.top = `${Math.max(labelOffsetTop, startY * cellSize - labelOffsetTop)}px`;
 
       endLabel = document.createElement('div');
       endLabel.id = 'end-label';
       endLabel.className = 'point-label';
       endLabel.textContent = 'FINISH';
       endLabel.style.left = `${endX * cellSize + cellSize / 2}px`;
-      endLabel.style.top = `${endY * cellSize + cellSize + 15}px`;
+      // Position below the goal, but ensure it stays within visible bounds
+      const endLabelTop = endY * cellSize + cellSize + labelOffsetBottom;
+      const maxAllowedTop = (Math.ceil(mazeHeight / cellSize) * cellSize) - 5;
+      endLabel.style.top = `${Math.min(endLabelTop, maxAllowedTop)}px`;
 
       mazeContainer.appendChild(startLabel);
       mazeContainer.appendChild(endLabel);
@@ -1034,7 +1067,7 @@
       if (mazeContainer && mazeContainer.children.length > 0) {
         clearMaze();
       }
-      
+
       maze = [];
       pathNodes = [];
       pathTraces = [];
@@ -1068,14 +1101,14 @@
       while (stack.length > 0) {
         const current = stack[stack.length - 1];
         const neighbors = getUnvisitedNeighbors(current.x, current.y);
-        
+
         if (neighbors.length === 0) {
           stack.pop();
           continue;
         }
 
         const next = neighbors[Math.floor(Math.random() * neighbors.length)];
-        
+
         // Remove walls between current and next cell
         if (next.x > current.x) {
           maze[current.y][current.x].walls.right = false;
@@ -1104,7 +1137,7 @@
 
       // Setup player movement
       setupPlayerMovement();
-      
+
       // Reset maze-specific counters
       moveCountThisMaze = 0;
       updateHUD();
@@ -1112,16 +1145,16 @@
 
     function findPath(startIndex, targetIndex) {
       if (startIndex === targetIndex) return [startIndex];
-      
+
       const visited = new Set();
       const queue = [[startIndex]];
-      
+
       while (queue.length > 0) {
         const path = queue.shift();
         const currentIndex = path[path.length - 1];
-        
+
         if (currentIndex === targetIndex) return path;
-        
+
         if (!visited.has(currentIndex)) {
           visited.add(currentIndex);
           for (const nextIndex of pathNodes[currentIndex].connections) {
@@ -1161,7 +1194,7 @@
 
       function addPathTrace(fromX, fromY, toX, toY) {
         if (!showTrace) return;
-        
+
         const trace = document.createElement('div');
         trace.className = 'path-trace';
         const centerX = (fromX + toX) / 2;
@@ -1181,7 +1214,7 @@
         const goalY = parseFloat(goal.style.top);
         const distance = Math.sqrt((playerX - goalX) ** 2 + (playerY - goalY) ** 2);
         const goalRadius = parseFloat(goal.style.width) / 2 || 22;
-        
+
         if (distance < goalRadius) {
           // Celebration animation
           mazeContainer.classList.add('maze-celebrate');
@@ -1192,7 +1225,7 @@
 
       function moveToNode(nodeIndex) {
         if (nodeIndex < 0 || nodeIndex >= pathNodes.length) return;
-        
+
         const targetNode = pathNodes[nodeIndex];
         addPathTrace(playerX, playerY, targetNode.x, targetNode.y);
         playerX = targetNode.x;
@@ -1207,35 +1240,35 @@
 
       function handleKeyboard(e) {
         if (!isSessionActive || isPaused) return;
-        
+
         const currentNode = pathNodes[closestNodeIndex];
         let nextNodeIndex = -1;
-        
+
         switch (e.key) {
           case 'ArrowUp':
-            nextNodeIndex = currentNode.connections.find(i => 
+            nextNodeIndex = currentNode.connections.find(i =>
               pathNodes[i].y < currentNode.y && pathNodes[i].x === currentNode.x
             );
             break;
           case 'ArrowDown':
-            nextNodeIndex = currentNode.connections.find(i => 
+            nextNodeIndex = currentNode.connections.find(i =>
               pathNodes[i].y > currentNode.y && pathNodes[i].x === currentNode.x
             );
             break;
           case 'ArrowLeft':
-            nextNodeIndex = currentNode.connections.find(i => 
+            nextNodeIndex = currentNode.connections.find(i =>
               pathNodes[i].x < currentNode.x && pathNodes[i].y === currentNode.y
             );
             break;
           case 'ArrowRight':
-            nextNodeIndex = currentNode.connections.find(i => 
+            nextNodeIndex = currentNode.connections.find(i =>
               pathNodes[i].x > currentNode.x && pathNodes[i].y === currentNode.y
             );
             break;
           default:
             return;
         }
-        
+
         if (nextNodeIndex !== undefined && nextNodeIndex !== -1) {
           moveToNode(nextNodeIndex);
           e.preventDefault();
@@ -1253,10 +1286,10 @@
 
       function handleDrag(e) {
         if (!isDragging || !isSessionActive || isPaused) return;
-        
+
         const rect = mazeContainer.getBoundingClientRect();
         let clientX, clientY;
-        
+
         if (e.type === 'mousemove') {
           clientX = e.clientX - rect.left;
           clientY = e.clientY - rect.top;
@@ -1271,7 +1304,7 @@
           closestNodeIndex,
           ...currentNode.connections.flatMap(i => [i, ...pathNodes[i].connections])
         ]);
-        
+
         let bestNodeIndex = -1;
         let minDistance = Infinity;
 
@@ -1279,13 +1312,13 @@
           const node = pathNodes[nodeIndex];
           const distance = Math.sqrt((node.x - clientX) ** 2 + (node.y - clientY) ** 2) +
             (dragPath.includes(nodeIndex) ? cellSize * 0.5 : 0);
-          
+
           if (distance < minDistance && nodeIndex !== lastVisitedNode) {
             minDistance = distance;
             bestNodeIndex = nodeIndex;
           }
         }
-        
+
         if (bestNodeIndex !== -1 && minDistance < cellSize * 0.7) {
           const path = findPath(closestNodeIndex, bestNodeIndex);
           if (path.length > 0) {
@@ -1331,7 +1364,7 @@
       totalCompletionTime += completionTime;
       mazesCompleted++;
       currentMaze++;
-      
+
       // Calculate score based on speed and completion
       const averageTime = (totalCompletionTime / mazesCompleted / 1000) || 1;
       score = Math.max(score, Math.round((mazesCompleted * 100) / averageTime));
@@ -1347,8 +1380,8 @@
       isSessionActive = false;
 
       // Calculate final statistics
-      const averageTimeString = (mazesCompleted > 0) 
-        ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) 
+      const averageTimeString = (mazesCompleted > 0)
+        ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1)
         : '0.0';
       const averageTime = parseFloat(averageTimeString);
       const computedScore = Math.round((mazesCompleted * 100) / (averageTime > 0 ? averageTime : 1));
@@ -1369,7 +1402,7 @@
 
       // Clear the maze
       clearMaze();
-      
+
       // Return to settings screen
       setScreen('settings');
     }
@@ -1386,14 +1419,14 @@
     startBtn.addEventListener('click', () => {
       if (isSessionActive) return;
       if (timerInterval) stopTimer();
-      
+
       try {
         currentDifficulty = difficultySelect.value;
-        
+
         const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp.value) || 5));
         sessionMs = minutes * 60 * 1000;
         sessionDurationInp.value = minutes;
-        
+
         showTrace = showTraceSelect.value === 'yes';
         saveSettings();
 
@@ -1415,20 +1448,20 @@
         // Start session
         isSessionActive = true;
         startTimer();
-        
+
         // Wait a frame for the screen transition to complete, then generate maze
         setTimeout(() => {
           try {
             console.log('Starting maze generation...');
             console.log('Maze container:', mazeContainer);
             console.log('Container dimensions:', mazeContainer ? mazeContainer.getBoundingClientRect() : 'null');
-            
+
             adjustMazeSize();
             console.log('Adjusted maze size:', mazeWidth, 'x', mazeHeight);
-            
+
             generateMaze();
             console.log('Maze generated successfully');
-            
+
             mazeStartTime = Date.now();
             mazeContainer.focus();
           } catch (error) {
@@ -1482,7 +1515,7 @@
     // Initialize
     loadSettings();
     updateHUD();
-    
+
     // Start on settings screen
     setScreen('settings');
 
@@ -1511,4 +1544,5 @@
     });
   </script>
 </body>
+
 </html>
