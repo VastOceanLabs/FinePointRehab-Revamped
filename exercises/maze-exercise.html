@@ -198,6 +198,7 @@
       align-items: center;
       position: relative;
       padding-top: calc(var(--space-3) + 8px);
+      min-height: 60px; /* keep HUD from collapsing into maze on small screens */
     }
 
     @media (max-width: 768px) {
@@ -308,6 +309,7 @@
       width: 600px;
       height: 400px;
       margin: 0 auto;
+      max-height: 70vh; /* ensure maze never exceeds viewport height on small screens */
     }
 
     @media (max-width: 768px) {
@@ -710,19 +712,23 @@
     function adjustMazeSize() {
       const containerWidth = mazeContainer.offsetWidth || 600;
       const containerHeight = getViewportHeight();
-
       const isLandscape = window.innerWidth > window.innerHeight;
-      // Choose a square-ish play area that fits comfortably inside the viewport
-      let mazeSize = isLandscape
-        ? Math.min(containerWidth * 0.9, containerHeight * 0.9)
-        : Math.min(containerWidth, containerHeight * 0.8);
 
-      // Leave a little vertical headroom for labels
-      mazeWidth = Math.max(150, Math.round(mazeSize));
-      mazeHeight = Math.max(150, Math.round(mazeSize - 15));
+      if (isLandscape) {
+        // Wider than tall: respect height so HUD + chrome fit
+        let w = Math.min(containerWidth * 0.95, containerHeight * 1.2);
+        let h = Math.min(containerHeight * 0.70, w * 0.70);
+        mazeWidth = Math.max(220, Math.round(w));
+        mazeHeight = Math.max(180, Math.round(h));
+      } else {
+        // Portrait: taller than wide, but still leave space for HUD
+        let w = Math.min(containerWidth * 0.95, containerHeight * 0.90);
+        let h = Math.min(containerHeight * 0.70, w * 0.90);
+        mazeWidth = Math.max(220, Math.round(w));
+        mazeHeight = Math.max(220, Math.round(h));
+      }
 
-      // reflect the computed size in the container box
-      mazeContainer.style.width = `${mazeWidth}px`;
+      mazeContainer.style.width = `${mazeWidth}px";
       mazeContainer.style.height = `${mazeHeight}px`;
     }
 
@@ -756,8 +762,6 @@
 
     function updateHUD() {
       scoreEl.textContent = `${score}`;
-
-      // Only update elements that exist in the DOM
       if (pbEl) pbEl.textContent = `${personalBest}`;
       if (completedEl) completedEl.textContent = `${mazesCompleted}`;
       if (movesEl) movesEl.textContent = `${moveCountThisMaze}`;
@@ -892,7 +896,6 @@
 
           const currentNode = pathNodes[currentIndex];
 
-          // Check connections in all directions
           if (x > 0 && !maze[y][x].walls.left) {
             const leftIndex = pathNodes.findIndex(n => n.gridX === x - 1 && n.gridY === y);
             if (leftIndex !== -1 && !currentNode.connections.includes(leftIndex)) {
@@ -931,13 +934,7 @@
         for (let j = 0; j < cols; j++) {
           const centerX = j * cellSize + cellSize / 2;
           const centerY = i * cellSize + cellSize / 2;
-          const node = {
-            x: centerX,
-            y: centerY,
-            gridX: j,
-            gridY: i,
-            connections: []
-          };
+          const node = { x: centerX, y: centerY, gridX: j, gridY: i, connections: [] };
           pathNodes.push(node);
 
           const nodeElement = document.createElement('div');
@@ -955,13 +952,12 @@
       for (let i = 0; i < pathNodes.length; i++) {
         const nodeA = pathNodes[i];
         for (const connectionIndex of nodeA.connections) {
-          if (i < connectionIndex) { // Only draw each line once
+          if (i < connectionIndex) {
             const nodeB = pathNodes[connectionIndex];
             const line = document.createElement('div');
             line.className = 'path-line';
 
             if (nodeA.gridX === nodeB.gridX) {
-              // Vertical line
               line.classList.add('vertical');
               const top = Math.min(nodeA.y, nodeB.y);
               const height = Math.abs(nodeA.y - nodeB.y);
@@ -969,7 +965,6 @@
               line.style.top = `${top}px`;
               line.style.height = `${height}px`;
             } else {
-              // Horizontal line
               line.classList.add('horizontal');
               const left = Math.min(nodeA.x, nodeB.x);
               const width = Math.abs(nodeA.x - nodeB.x);
@@ -999,15 +994,16 @@
 
       // goal graphic is 44px -> radius ≈ 22
       const r = 22;
-      const inset = 4; // safety margin from walls
+      // stronger safety margin from walls/borders
+      const margin = Math.max(6, wallThickness * 2);
 
       // raw centers
       let goalX = x * cellSize + cellSize / 2;
       let goalY = y * cellSize + cellSize / 2;
 
-      // clamp within the visible maze area (post sizing)
-      goalX = Math.min(Math.max(goalX, r + inset), mazeWidth  - (r + inset));
-      goalY = Math.min(Math.max(goalY, r + inset), mazeHeight - (r + inset));
+      // clamp within the visible maze area
+      goalX = Math.min(Math.max(goalX, r + margin), mazeWidth  - (r + margin));
+      goalY = Math.min(Math.max(goalY, r + margin), mazeHeight - (r + margin));
 
       goal.style.left = `${goalX}px`;
       goal.style.top = `${goalY}px`;
@@ -1031,7 +1027,7 @@
       startTop = Math.max(minTop, Math.min(startTop, maxTop));
       startLabel.style.top = `${startTop}px`;
 
-      // FINISH label — try below goal; if it would clip, flip above
+      // FINISH label — prefer below goal; flip above if it would clip
       endLabel = document.createElement('div');
       endLabel.id = 'end-label';
       endLabel.className = 'point-label';
@@ -1039,7 +1035,7 @@
       endLabel.style.left = `${endX * cellSize + cellSize / 2}px`;
 
       let endTop = endY * cellSize + cellSize + labelOffsetBottom; // below
-      if (endTop > maxTop) endTop = endY * cellSize - labelOffsetBottom; // above if needed
+      if (endTop > maxTop) endTop = endY * cellSize - labelOffsetBottom;     // above if needed
       endTop = Math.max(minTop, Math.min(endTop, maxTop));
       endLabel.style.top = `${endTop}px`;
 
@@ -1068,12 +1064,7 @@
       for (let i = 0; i < rows; i++) {
         const row = [];
         for (let j = 0; j < cols; j++) {
-          row.push({
-            x: j,
-            y: i,
-            visited: false,
-            walls: { top: true, right: true, bottom: true, left: true }
-          });
+          row.push({ x: j, y: i, visited: false, walls: { top: true, right: true, bottom: true, left: true } });
         }
         maze.push(row);
       }
@@ -1093,7 +1084,6 @@
 
         const next = neighbors[Math.floor(Math.random() * neighbors.length)];
 
-        // Remove walls between current and next cell
         if (next.x > current.x) {
           maze[current.y][current.x].walls.right = false;
           maze[next.y][next.x].walls.left = false;
@@ -1129,16 +1119,12 @@
 
     function findPath(startIndex, targetIndex) {
       if (startIndex === targetIndex) return [startIndex];
-
       const visited = new Set();
       const queue = [[startIndex]];
-
       while (queue.length > 0) {
         const path = queue.shift();
         const currentIndex = path[path.length - 1];
-
         if (currentIndex === targetIndex) return path;
-
         if (!visited.has(currentIndex)) {
           visited.add(currentIndex);
           for (const nextIndex of pathNodes[currentIndex].connections) {
@@ -1322,12 +1308,10 @@
       mazesCompleted++;
       currentMaze++;
 
-      // Calculate score based on speed and completion
       const averageTime = (totalCompletionTime / mazesCompleted / 1000) || 1;
       score = Math.max(score, Math.round((mazesCompleted * 100) / averageTime));
       updateHUD();
 
-      // Generate new maze
       generateMaze();
       mazeStartTime = Date.now();
     }
@@ -1336,33 +1320,28 @@
       if (timerInterval) stopTimer();
       isSessionActive = false;
 
-      // Final stats
       const averageTimeString = (mazesCompleted > 0)
         ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1)
         : '0.0';
       const averageTime = parseFloat(averageTimeString);
       const computedScore = Math.round((mazesCompleted * 100) / (averageTime > 0 ? averageTime : 1));
 
-      // Personal best
       if (computedScore > personalBest) {
         personalBest = computedScore;
         storage.set('mazePersonalBest', personalBest);
       }
       updateHUD();
 
-      // Show completion modal
       finalCompleted.textContent = `${mazesCompleted}`;
       finalAvgTime.textContent = `${averageTimeString}s`;
       finalScore.textContent = `${computedScore}`;
       finalXP.textContent = `${Math.max(10, Math.round(computedScore * 0.5))}`;
       completionModal.classList.add('show');
 
-      // Clear the maze and return to settings
       clearMaze();
       setScreen('settings');
     }
 
-    // Screen management
     function setScreen(screenName) {
       document.querySelectorAll('[data-screen]').forEach(el => el.classList.remove('active'));
       document.querySelector(`[data-screen="${screenName}"]`).classList.add('active');
@@ -1383,7 +1362,6 @@
         showTrace = showTraceSelect.value === 'yes';
         saveSettings();
 
-        // Reset state
         score = 0;
         mazesCompleted = 0;
         currentMaze = 1;
@@ -1395,17 +1373,15 @@
         clearMaze();
         updateHUD();
 
-        // Switch to game screen and initialize
         setScreen('game');
 
-        // Start session
         isSessionActive = true;
         startTimer();
 
-        // Wait a frame for the screen transition to complete, then generate maze
         setTimeout(() => {
           try {
             adjustMazeSize();
+            clearMaze();
             generateMaze();
             mazeStartTime = Date.now();
             mazeContainer.focus();
@@ -1475,12 +1451,12 @@
 
     document.addEventListener('contextmenu', e => e.preventDefault());
 
-    // Resize: keep play area sized during sessions
+    // Resize/orientation: keep play area sized and reflow maze during sessions
     window.addEventListener('resize', () => {
       if (!isSessionActive) return;
       adjustMazeSize();
-      // Optionally, regenerate here if you want the grid to reflow on resize:
-      // clearMaze(); generateMaze();
+      clearMaze();
+      generateMaze();
     });
   </script>
 </body>
