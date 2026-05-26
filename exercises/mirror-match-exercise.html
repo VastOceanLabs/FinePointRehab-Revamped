@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Prevent iOS text size adjustment -->
+  <meta name="format-detection" content="telephone=no">
   <title>Mirror Match — Bilateral Coordination Rehabilitation</title>
 
   <style>
@@ -17,6 +19,8 @@
       --success: #4caf50;
       --error: #ff6b6b;
       --error-bg: #2d1b1b;
+      --warning: #ffd93d;
+      --perfect: #ff6bff;
       --border: #374151;
       --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
       --radius: 8px;
@@ -29,9 +33,12 @@
       --space-4: 16px;
       --space-6: 24px;
       --font-size-xs: 12px;
+      --font-size-sm: 14px;
       --font-size-base: 16px;
       --font-size-lg: 20px;
       --font-size-xl: 24px;
+      --font-size-2xl: 32px;
+      --font-size-3xl: 48px;
       --font-weight-semibold: 600;
       --font-weight-bold: 700;
       --duration-fast: 150ms;
@@ -40,6 +47,15 @@
 
     * {
       box-sizing: border-box;
+    }
+
+    /* Prevent iOS touch callout and text selection on interactive elements */
+    .mirror-target,
+    .btn,
+    .mirror-container {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     body {
@@ -181,7 +197,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       background: rgba(111, 211, 245, 0.08);
-      min-width: 110px;
+      min-width: 100px;
     }
 
     .pb-value {
@@ -197,6 +213,11 @@
       opacity: 0.9;
       margin-top: var(--space-1);
       color: var(--text-secondary);
+    }
+
+    .level-value {
+      color: var(--perfect);
+      text-shadow: 0 0 6px rgba(255, 107, 255, 0.5);
     }
 
     .settings-group {
@@ -225,8 +246,7 @@
 
     .hud {
       display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: 1fr;
+      grid-template-columns: repeat(6, 1fr);
       gap: var(--space-2);
       align-items: center;
       position: relative;
@@ -235,8 +255,7 @@
 
     @media (max-width: 768px) {
       .hud {
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-auto-flow: row;
+        grid-template-columns: repeat(3, 1fr);
         gap: var(--space-1);
         padding: var(--space-2);
         padding-top: calc(var(--space-2) + 6px);
@@ -247,7 +266,7 @@
       }
       
       .hud-label {
-        font-size: 11px;
+        font-size: 10px;
       }
       
       .controls {
@@ -266,14 +285,30 @@
 
     .hud-group {
       display: grid;
-      gap: var(--space-1);
+      gap: 2px;
       text-align: center;
     }
 
     .hud-value {
-      font-size: var(--font-size-xl);
+      font-size: var(--font-size-lg);
       font-weight: var(--font-weight-bold);
       color: var(--brand-aqua);
+    }
+
+    .hud-value.multiplier {
+      color: var(--warning);
+      text-shadow: 0 0 8px rgba(255, 217, 61, 0.6);
+    }
+
+    .hud-value.multiplier.high {
+      color: var(--perfect);
+      text-shadow: 0 0 10px rgba(255, 107, 255, 0.8);
+      animation: multiplierPulse 0.5s ease infinite;
+    }
+
+    @keyframes multiplierPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
 
     .hud-label {
@@ -336,7 +371,7 @@
       border-radius: var(--radius-lg);
       overflow: hidden;
       box-shadow: 0 0 20px rgba(111, 211, 245, 0.2);
-      touch-action: none;
+      touch-action: manipulation;
       outline: none;
       width: 800px;
       height: 500px;
@@ -382,7 +417,7 @@
       }
       
       .hud {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: var(--space-1);
       }
       
@@ -391,7 +426,7 @@
       }
       
       .hud-value {
-        font-size: var(--font-size-lg);
+        font-size: var(--font-size-base);
       }
     }
 
@@ -484,16 +519,24 @@
       opacity: 0.85;
     }
 
+    .mirror-target.perfect {
+      background: var(--perfect);
+      transform: translate(-50%, -50%) scale(1.2);
+      box-shadow: 
+        0 0 0 10px rgba(255, 107, 255, 0.2),
+        0 0 30px 6px rgba(255, 107, 255, 0.6),
+        inset 0 0 12px rgba(255,255,255,0.4);
+      animation: perfectBurst 0.6s ease-out;
+    }
+
+    @keyframes perfectBurst {
+      0% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.85; }
+    }
+
     .mirror-target.failed {
       background: var(--error);
       animation: mirrorShake 0.5s ease-in-out;
-    }
-
-    .mirror-target.perfect-glow {
-      box-shadow:
-        0 0 0 10px rgba(111, 211, 245, 0.2),
-        0 0 30px 6px rgba(111, 211, 245, 0.6),
-        inset 0 0 12px rgba(255,255,255,0.4);
     }
 
     .mirror-path {
@@ -529,6 +572,10 @@
     }
 
     .progress-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
       text-align: center;
       margin: 15px 0;
       padding: 12px 14px;
@@ -537,6 +584,29 @@
       border-radius: var(--radius);
       font-size: var(--font-size-base);
       color: var(--brand-aqua);
+    }
+
+    .pattern-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .pattern-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .pattern-dot.active {
+      background: var(--brand-aqua);
+      box-shadow: 0 0 8px rgba(111, 211, 245, 0.6);
+    }
+
+    .pattern-dot.completed {
+      background: var(--success);
     }
 
     .feedback-message {
@@ -569,9 +639,93 @@
       color: var(--success);
     }
 
+    .feedback-message.perfect {
+      border-color: var(--perfect);
+      color: var(--perfect);
+      font-size: var(--font-size-lg);
+      animation: perfectFeedback 0.5s ease;
+    }
+
+    @keyframes perfectFeedback {
+      0% { transform: translateX(-50%) scale(0.8); }
+      50% { transform: translateX(-50%) scale(1.1); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
     .feedback-message.error {
       border-color: var(--error);
       color: var(--error);
+    }
+
+    /* Countdown overlay */
+    .countdown-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 22, 41, 0.9);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .countdown-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .countdown-number {
+      font-size: 120px;
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+      text-shadow: 0 0 40px rgba(111, 211, 245, 0.8);
+      animation: countdownPop 1s ease infinite;
+    }
+
+    .countdown-number.go {
+      color: var(--success);
+      text-shadow: 0 0 40px rgba(76, 175, 80, 0.8);
+    }
+
+    @keyframes countdownPop {
+      0% { transform: scale(1.2); opacity: 0; }
+      20% { transform: scale(1); opacity: 1; }
+      80% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.8); opacity: 0; }
+    }
+
+    /* New PB celebration */
+    .new-pb-banner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: linear-gradient(135deg, rgba(111, 211, 245, 0.95), rgba(255, 107, 255, 0.95));
+      padding: var(--space-6);
+      border-radius: var(--radius-xl);
+      z-index: 1200;
+      text-align: center;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .new-pb-banner.show {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    .new-pb-banner h3 {
+      margin: 0 0 var(--space-2);
+      font-size: var(--font-size-2xl);
+      color: #000;
+    }
+
+    .new-pb-banner .score {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      color: #000;
     }
 
     .completion {
@@ -604,6 +758,58 @@
     .score-highlight {
       color: var(--brand-aqua);
       font-weight: var(--font-weight-bold);
+    }
+
+    .score-highlight.perfect {
+      color: var(--perfect);
+    }
+
+    .completion-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+      margin: var(--space-4) 0;
+      text-align: left;
+    }
+
+    .completion-stat {
+      background: var(--bg-tertiary);
+      padding: var(--space-3);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .completion-stat-label {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+      margin-bottom: var(--space-1);
+    }
+
+    .completion-stat-value {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+    }
+
+    .completion-big-score {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+      text-shadow: 0 0 20px rgba(111, 211, 245, 0.5);
+      margin: var(--space-4) 0;
+    }
+
+    .xp-earned {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: linear-gradient(135deg, var(--perfect), var(--brand-aqua));
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-xl);
+      color: #000;
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-lg);
+      margin-bottom: var(--space-4);
     }
 
     .mirror-celebrate {
@@ -658,27 +864,127 @@
       display: none !important;
     }
 
+    /* Sound toggle styling */
+    .sound-toggle {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sound-toggle input {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .mirror-target.pulse, 
+      .mirror-target.pulse,
       .mirror-target.failed,
-      .mirror-celebrate { 
-        animation: none; 
+      .mirror-celebrate,
+      .countdown-number {
+        animation: none;
       }
     }
+
+    /* ===== Session-complete medal (matches other games) ===== */
+    .medal {
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px; margin: 4px 0 14px;
+      padding: 14px 18px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.08);
+      animation: medalReveal .65s cubic-bezier(.18,.89,.32,1.28);
+    }
+    .medal-disc {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; flex-shrink: 0;
+      box-shadow: 0 4px 18px rgba(0,0,0,.35), inset 0 -3px 6px rgba(0,0,0,.25), inset 0 3px 4px rgba(255,255,255,.25);
+    }
+    .medal-disc.bronze   { background: radial-gradient(circle at 35% 30%, #f3a872, #a06030 70%); }
+    .medal-disc.silver   { background: radial-gradient(circle at 35% 30%, #e8eef6, #8a98ad 70%); }
+    .medal-disc.gold     { background: radial-gradient(circle at 35% 30%, #fff3a0, #d49216 70%); }
+    .medal-disc.platinum { background: radial-gradient(circle at 35% 30%, #d4f0ff, #62a3ce 70%); box-shadow: 0 4px 18px rgba(98,163,206,.6), inset 0 -3px 6px rgba(0,0,0,.25), inset 0 3px 4px rgba(255,255,255,.4); }
+    .medal-text { text-align: left; line-height: 1.25; }
+    .medal-tier { font-size: 18px; font-weight: 900; letter-spacing: .5px; text-transform: uppercase; }
+    .medal-tier.bronze   { color: #f3a872; }
+    .medal-tier.silver   { color: #e8eef6; }
+    .medal-tier.gold     { color: #ffd700; }
+    .medal-tier.platinum { color: #b7e3ff; text-shadow: 0 0 18px rgba(183,227,255,.55); }
+    .medal-caption { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    @keyframes medalReveal {
+      0% { opacity: 0; transform: scale(.6) rotate(-8deg); }
+      60% { opacity: 1; transform: scale(1.05) rotate(2deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    /* ===== Per-session insight callout ===== */
+    .session-insight {
+      display: flex; align-items: center; gap: 10px;
+      margin: 0 0 14px; padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(111,211,245,.10);
+      border-left: 4px solid rgba(111,211,245,.65);
+      color: #e7f6ff;
+      font-size: 14px; line-height: 1.4;
+      text-align: left;
+    }
+    .session-insight .ins-icon { font-size: 20px; flex-shrink: 0; }
+    .session-insight .ins-text strong { color: #bfe6ff; }
+
+    /* ===== Streak milestone toast + particles ===== */
+    .streak-milestone-toast {
+      position: fixed; top: 18%; left: 50%;
+      transform: translate(-50%, -20px) scale(.6);
+      padding: 14px 32px; border-radius: 14px;
+      font-size: 32px; font-weight: 900;
+      color: #ffd700;
+      text-shadow: 0 0 24px rgba(255,215,0,1), 0 0 8px rgba(255,140,0,.7);
+      background: linear-gradient(135deg, rgba(255,215,0,.28), rgba(255,90,0,.18));
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 40px rgba(255,215,0,.45);
+      z-index: 1300;
+      pointer-events: none;
+      white-space: nowrap;
+      animation: streakSlide 2.4s ease-out forwards;
+    }
+    @keyframes streakSlide {
+      0% { opacity: 0; transform: translate(-50%, -30px) scale(.6); }
+      15% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
+      30% { transform: translate(-50%, 0) scale(1); }
+      80% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -12px) scale(.95); }
+    }
+    .streak-burst-container { position: fixed; inset: 0; pointer-events: none; z-index: 1299; }
+    .streak-burst {
+      position: absolute; width: 8px; height: 8px;
+      border-radius: 50%; pointer-events: none;
+      will-change: transform, opacity;
+    }
+    @keyframes streakBurst {
+      0% { opacity: 1; transform: translate(0,0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(.3); }
+    }
   </style>
+  <!-- Unified game chrome -->
+  <link rel="stylesheet" href="/css/game-shell.css">
+  <script src="/js/fpr-native.js" defer></script>
+  <script src="/js/fpr-reminders.js" defer></script>
 </head>
 
-<body>
+<body class="game-page">
   <header class="site-header">
     <div class="inner">
-      <a class="btn btn-secondary" href="/" aria-label="Go to Home">← Home</a>
+      <a class="btn btn-secondary" href="../" aria-label="Go to Home">← Home</a>
       <h1>Mirror Match</h1>
     </div>
   </header>
 
   <main class="page">
     <aside class="settings-panel panel active" data-screen="settings">
-      <h2>Session Settings</h2>
+      <h2>Settings</h2>
 
       <div class="game-description">
         <p>
@@ -691,6 +997,14 @@
         <div class="metric-settings">
           <div id="pb-settings" class="pb-value">0</div>
           <div class="pb-label">Personal Best</div>
+        </div>
+        <div class="metric-settings">
+          <div id="level-settings" class="pb-value level-value">1</div>
+          <div class="pb-label">Level</div>
+        </div>
+        <div class="metric-settings">
+          <div id="total-xp-settings" class="pb-value">0</div>
+          <div class="pb-label">Total XP</div>
         </div>
       </div>
 
@@ -738,6 +1052,14 @@
         <small class="setting-help">1—10 minutes recommended.</small>
       </div>
 
+      <div class="settings-group">
+        <label class="sound-toggle">
+          <input type="checkbox" id="sound-enabled" checked>
+          <span>Sound Effects</span>
+        </label>
+        <small class="setting-help">Audio cues can improve motor learning.</small>
+      </div>
+
       <div class="controls">
         <button id="start-session" class="btn btn-primary">Start</button>
         <button id="restart-session" class="btn">Restart</button>
@@ -754,8 +1076,8 @@
         </div>
 
         <div class="hud-group">
-          <div id="hud-pb" class="hud-value">0</div>
-          <div class="hud-label">Personal Best</div>
+          <div id="hud-multiplier" class="hud-value multiplier">1.0x</div>
+          <div class="hud-label">Multiplier</div>
         </div>
 
         <div class="hud-group">
@@ -764,8 +1086,13 @@
         </div>
 
         <div class="hud-group">
+          <div id="hud-best-streak" class="hud-value">0</div>
+          <div class="hud-label">Best</div>
+        </div>
+
+        <div class="hud-group">
           <div id="hud-time" class="hud-value">3:00</div>
-          <div class="hud-label">Time Left</div>
+          <div class="hud-label">Time</div>
         </div>
 
         <div class="controls">
@@ -778,7 +1105,8 @@
         <div id="stars-container"></div>
 
         <div class="progress-display" id="progress-display">
-          Pattern <span id="current-pattern">1</span> of <span id="total-patterns">10</span>
+          <span>Pattern <span id="current-pattern">1</span>/<span id="total-patterns">10</span></span>
+          <div class="pattern-dots" id="pattern-dots"></div>
         </div>
 
         <p class="instructions" id="instructions">
@@ -791,30 +1119,241 @@
             <div class="mirror-side right" id="right-side" aria-label="Right side"></div>
           </div>
           <div class="feedback-message hidden" id="feedback-message" role="status" aria-live="polite"></div>
+          <div class="countdown-overlay" id="countdown-overlay">
+            <div class="countdown-number" id="countdown-number">3</div>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
   <div id="completion-message" class="completion panel">
-    <h2>Therapy Session Complete!</h2>
-    <div id="completion-scores">
-      <p>Patterns Completed: <span id="final-patterns" class="score-highlight">0</span></p>
-      <p>Success Rate: <span id="final-sync-rate" class="score-highlight">0%</span></p>
-      <p>Average Sync Time: <span id="final-avg-sync" class="score-highlight">0ms</span></p>
-      <p>Perfect Syncs: <span id="final-perfects" class="score-highlight">0</span></p>
-      <p>Motor Performance Score: <span id="final-score" class="score-highlight">0</span></p>
-      <p>XP Earned: <span id="final-xp" class="score-highlight">0</span></p>
+    <h2>🎯 Session Complete!</h2>
+
+    <div id="medal" class="medal" style="display:none;" aria-live="polite">
+      <div id="medalDisc" class="medal-disc"></div>
+      <div class="medal-text">
+        <div id="medalTier" class="medal-tier"></div>
+        <div id="medalCaption" class="medal-caption"></div>
+      </div>
     </div>
+    <div id="sessionInsight" class="session-insight" style="display:none;" aria-live="polite">
+      <span class="ins-icon" id="insIcon">✨</span>
+      <span class="ins-text" id="insText"></span>
+    </div>
+
+    <div class="completion-big-score" id="final-score">0</div>
+    <div class="xp-earned">+<span id="final-xp">0</span> XP</div>
+    
+    <div class="completion-stats">
+      <div class="completion-stat">
+        <div class="completion-stat-label">Patterns</div>
+        <div class="completion-stat-value" id="final-patterns">0</div>
+      </div>
+      <div class="completion-stat">
+        <div class="completion-stat-label">Success Rate</div>
+        <div class="completion-stat-value" id="final-sync-rate">0%</div>
+      </div>
+      <div class="completion-stat">
+        <div class="completion-stat-label">Avg Sync Time</div>
+        <div class="completion-stat-value" id="final-avg-sync">0ms</div>
+      </div>
+      <div class="completion-stat">
+        <div class="completion-stat-label">Best Sync</div>
+        <div class="completion-stat-value" id="final-best-sync">0ms</div>
+      </div>
+      <div class="completion-stat">
+        <div class="completion-stat-label">Perfect Syncs</div>
+        <div class="completion-stat-value score-highlight perfect" id="final-perfects">0</div>
+      </div>
+      <div class="completion-stat">
+        <div class="completion-stat-label">Best Streak</div>
+        <div class="completion-stat-value" id="final-best-streak">0</div>
+      </div>
+    </div>
+    
     <div class="controls">
-      <button id="restart-button" class="btn btn-primary">Start New Therapy Session</button>
+      <button id="restart-button" class="btn btn-primary">Play Again</button>
       <button class="btn" id="close-complete">Close</button>
     </div>
+  </div>
+
+  <div id="new-pb-banner" class="new-pb-banner">
+    <h3>🏆 NEW PERSONAL BEST!</h3>
+    <div class="score" id="new-pb-score">0</div>
   </div>
 
   <div id="error-message"></div>
 
   <script>
+    // ===== AUDIO SYSTEM =====
+    class AudioManager {
+      constructor() {
+        this.enabled = true;
+        this.audioContext = null;
+        this.initialized = false;
+      }
+
+      init() {
+        if (this.initialized) return;
+        try {
+          // Create audio context - iOS requires this to happen during a user gesture
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.audioContext = new AudioContext();
+            this.initialized = true;
+          }
+        } catch (e) {
+          console.warn('Audio not supported:', e);
+          this.enabled = false;
+        }
+      }
+
+      async play(type) {
+        if (!this.enabled) return;
+        
+        // Initialize on first play if not already done
+        if (!this.initialized) {
+          this.init();
+        }
+        
+        if (!this.audioContext) return;
+        
+        // Resume context if suspended (required for iOS Safari)
+        if (this.audioContext.state === 'suspended') {
+          try {
+            await this.audioContext.resume();
+          } catch (e) {
+            console.warn('Could not resume audio context');
+            return;
+          }
+        }
+
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        const now = this.audioContext.currentTime;
+
+        switch (type) {
+          case 'tap':
+            osc.frequency.value = 600;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialDecayTo && gain.gain.exponentialDecayTo(0.01, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+            break;
+
+          case 'success':
+            osc.frequency.value = 523.25; // C5
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+            
+            // Second note
+            const osc2 = this.audioContext.createOscillator();
+            const gain2 = this.audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(this.audioContext.destination);
+            osc2.frequency.value = 659.25; // E5
+            osc2.type = 'sine';
+            gain2.gain.setValueAtTime(0.15, now + 0.1);
+            gain2.gain.linearRampToValueAtTime(0.01, now + 0.3);
+            osc2.start(now + 0.1);
+            osc2.stop(now + 0.3);
+            break;
+
+          case 'perfect':
+            // Arpeggio for perfect
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            notes.forEach((freq, i) => {
+              const o = this.audioContext.createOscillator();
+              const g = this.audioContext.createGain();
+              o.connect(g);
+              g.connect(this.audioContext.destination);
+              o.frequency.value = freq;
+              o.type = 'sine';
+              const start = now + i * 0.08;
+              g.gain.setValueAtTime(0.12, start);
+              g.gain.linearRampToValueAtTime(0.01, start + 0.25);
+              o.start(start);
+              o.stop(start + 0.25);
+            });
+            break;
+
+          case 'error':
+            osc.frequency.value = 200;
+            osc.type = 'sawtooth';
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+            osc.start(now);
+            osc.stop(now + 0.15);
+            break;
+
+          case 'countdown':
+            osc.frequency.value = 440;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+            break;
+
+          case 'go':
+            osc.frequency.value = 880;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+            break;
+
+          case 'patternComplete':
+            const chord = [523.25, 659.25, 783.99];
+            chord.forEach(freq => {
+              const o = this.audioContext.createOscillator();
+              const g = this.audioContext.createGain();
+              o.connect(g);
+              g.connect(this.audioContext.destination);
+              o.frequency.value = freq;
+              o.type = 'sine';
+              g.gain.setValueAtTime(0.1, now);
+              g.gain.linearRampToValueAtTime(0.01, now + 0.4);
+              o.start(now);
+              o.stop(now + 0.4);
+            });
+            break;
+
+          case 'newPB':
+            // Triumphant fanfare
+            const fanfare = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+            fanfare.forEach((freq, i) => {
+              const o = this.audioContext.createOscillator();
+              const g = this.audioContext.createGain();
+              o.connect(g);
+              g.connect(this.audioContext.destination);
+              o.frequency.value = freq;
+              o.type = 'triangle';
+              const start = now + i * 0.12;
+              g.gain.setValueAtTime(0.15, start);
+              g.gain.linearRampToValueAtTime(0.01, start + 0.4);
+              o.start(start);
+              o.stop(start + 0.4);
+            });
+            break;
+        }
+      }
+    }
+
+    const audio = new AudioManager();
+
+    // ===== STORAGE =====
     const storage = {
       get: (key, defaultValue) => {
         try {
@@ -833,6 +1372,7 @@
       }
     };
 
+    // ===== STARS BACKGROUND =====
     function generateStars(container, count = 150) {
       if (!container) return;
       container.innerHTML = '';
@@ -850,6 +1390,7 @@
       }
     }
 
+    // ===== DOM ELEMENTS =====
     const starsContainer = document.getElementById('stars-container');
     const mirrorContainer = document.getElementById('mirror-container');
     const difficultySelect = document.getElementById('difficulty-select');
@@ -857,46 +1398,89 @@
     const mirrorModeSelect = document.getElementById('mirror-mode-select');
     const adaptiveTimingSelect = document.getElementById('adaptive-timing-select');
     const sessionDurationInp = document.getElementById('session-duration');
+    const soundEnabledCheckbox = document.getElementById('sound-enabled');
     const startBtn = document.getElementById('start-session');
     const pauseBtn = document.getElementById('pause-session');
     const restartBtn = document.getElementById('restart-session');
     const timerBarEl = document.getElementById('timer-bar');
     const hudScore = document.getElementById('hud-score');
-    const hudPB = document.getElementById('hud-pb');
-    const pbSettingsEl = document.getElementById('pb-settings');
+    const hudMultiplier = document.getElementById('hud-multiplier');
     const hudStreak = document.getElementById('hud-streak');
+    const hudBestStreak = document.getElementById('hud-best-streak');
     const hudTime = document.getElementById('hud-time');
+    const pbSettingsEl = document.getElementById('pb-settings');
+    const levelSettingsEl = document.getElementById('level-settings');
+    const totalXpSettingsEl = document.getElementById('total-xp-settings');
     const progressDisplay = document.getElementById('progress-display');
     const currentPatternEl = document.getElementById('current-pattern');
     const totalPatternsEl = document.getElementById('total-patterns');
+    const patternDotsEl = document.getElementById('pattern-dots');
     const instructions = document.getElementById('instructions');
     const mirrorArea = document.getElementById('mirror-area');
     const leftSide = document.getElementById('left-side');
     const rightSide = document.getElementById('right-side');
     const feedbackMessage = document.getElementById('feedback-message');
+    const countdownOverlay = document.getElementById('countdown-overlay');
+    const countdownNumber = document.getElementById('countdown-number');
     const completionModal = document.getElementById('completion-message');
     const finalPatternsEl = document.getElementById('final-patterns');
     const finalSyncRateEl = document.getElementById('final-sync-rate');
     const finalAvgSyncEl = document.getElementById('final-avg-sync');
+    const finalBestSyncEl = document.getElementById('final-best-sync');
     const finalPerfectsEl = document.getElementById('final-perfects');
+    const finalBestStreakEl = document.getElementById('final-best-streak');
     const finalScoreEl = document.getElementById('final-score');
     const finalXPEl = document.getElementById('final-xp');
     const completeClose = document.getElementById('close-complete');
     const restartModalBtn = document.getElementById('restart-button');
+    const newPbBanner = document.getElementById('new-pb-banner');
+    const newPbScore = document.getElementById('new-pb-score');
     const errorMessage = document.getElementById('error-message');
+    const medalEl = document.getElementById('medal');
+    const medalDisc = document.getElementById('medalDisc');
+    const medalTier = document.getElementById('medalTier');
+    const medalCaption = document.getElementById('medalCaption');
+    const insightEl = document.getElementById('sessionInsight');
+    const insIcon = document.getElementById('insIcon');
+    const insText = document.getElementById('insText');
 
     generateStars(starsContainer, 150);
 
+    // ===== STORAGE KEYS =====
     const PB_KEY = 'mirror-match:best';
+    const XP_KEY = 'mirror-match:totalXp';
+    const LEVEL_KEY = 'mirror-match:level';
+
     const getPB = () => parseInt(localStorage.getItem(PB_KEY) || '0', 10);
     const setPB = (score) => localStorage.setItem(PB_KEY, String(score));
+    const getTotalXP = () => parseInt(localStorage.getItem(XP_KEY) || '0', 10);
+    const setTotalXP = (xp) => localStorage.setItem(XP_KEY, String(xp));
+    const getLevel = () => parseInt(localStorage.getItem(LEVEL_KEY) || '1', 10);
+    const setLevel = (level) => localStorage.setItem(LEVEL_KEY, String(level));
 
-    function updatePersonalBest() {
-      const pb = getPB();
-      if (hudPB) hudPB.textContent = pb ? String(pb) : '0';
-      if (pbSettingsEl) pbSettingsEl.textContent = pb ? String(pb) : '0';
+    // Level thresholds (XP needed for each level)
+    const levelThresholds = [0, 100, 300, 600, 1000, 1500, 2200, 3000, 4000, 5200, 6600, 8200, 10000, 12000, 14500, 17500, 21000, 25000, 30000, 36000];
+
+    function calculateLevel(totalXP) {
+      for (let i = levelThresholds.length - 1; i >= 0; i--) {
+        if (totalXP >= levelThresholds[i]) return i + 1;
+      }
+      return 1;
     }
 
+    function updateProfileDisplay() {
+      const pb = getPB();
+      const totalXP = getTotalXP();
+      const level = calculateLevel(totalXP);
+      
+      if (pbSettingsEl) pbSettingsEl.textContent = pb || '0';
+      if (levelSettingsEl) levelSettingsEl.textContent = level;
+      if (totalXpSettingsEl) totalXpSettingsEl.textContent = totalXP;
+      
+      setLevel(level);
+    }
+
+    // ===== GAME STATE =====
     let isSessionActive = false;
     let isPaused = false;
     let sessionMs = 3 * 60 * 1000;
@@ -923,16 +1507,143 @@
     let streak = 0;
     let bestStreak = 0;
     let perfectCount = 0;
+    let multiplier = 1.0;
     let containerWidth = 800;
     let containerHeight = 500;
+    let firedStreakMilestones = new Set();
+
+    // Perfect threshold in milliseconds
+    const PERFECT_THRESHOLD = 100;
+
+    // ===== Medal + per-session insight =====
+    const SESSIONS_KEY = 'mirror-match:sessions';
+    function loadPastSessions() {
+      try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) || '[]'); } catch { return []; }
+    }
+    function savePastSession(stats) {
+      try {
+        const arr = loadPastSessions();
+        arr.unshift(stats);
+        if (arr.length > 10) arr.length = 10;
+        localStorage.setItem(SESSIONS_KEY, JSON.stringify(arr));
+      } catch {}
+    }
+    function computeMedalTier(currentScore, prevPb) {
+      if (prevPb <= 0) return { tier: 'silver', label: 'Silver', caption: 'First completed session — keep going!' };
+      if (currentScore > prevPb) return { tier: 'platinum', label: 'Platinum', caption: 'New personal best!' };
+      const r = currentScore / prevPb;
+      if (r >= 0.90) return { tier: 'gold',   label: 'Gold',   caption: 'Within 10% of your best — strong session.' };
+      if (r >= 0.70) return { tier: 'silver', label: 'Silver', caption: 'Solid session — keep building momentum.' };
+      return { tier: 'bronze', label: 'Bronze', caption: 'Every session counts. Try again to climb the tiers.' };
+    }
+    function showMedal(currentScore, prevPb) {
+      if (!medalEl) return;
+      const m = computeMedalTier(currentScore, prevPb);
+      medalDisc.className = 'medal-disc ' + m.tier;
+      medalDisc.textContent = m.tier === 'platinum' ? '🏆' : m.tier === 'gold' ? '🥇' : m.tier === 'silver' ? '🥈' : '🥉';
+      medalTier.className = 'medal-tier ' + m.tier;
+      medalTier.textContent = m.label;
+      medalCaption.textContent = m.caption;
+      medalEl.style.display = 'flex';
+    }
+    function computeInsight(curr, past) {
+      if (!past || past.length === 0) return null;
+      const prev = past[0];
+      if (curr.syncRate >= 95 && curr.patterns >= 2) {
+        return { icon: '🎯', text: `<strong>Outstanding sync rate</strong> — ${curr.syncRate}% this session.` };
+      }
+      const bestStreakEver = Math.max(...past.map(p => p.bestStreak || 0));
+      if (curr.bestStreak > bestStreakEver && curr.bestStreak >= 3) {
+        return { icon: '🔥', text: `<strong>Longest streak yet</strong> — ${curr.bestStreak} clean syncs in a row.` };
+      }
+      const bestPerfectsEver = Math.max(...past.map(p => p.perfects || 0));
+      if (curr.perfects > bestPerfectsEver && curr.perfects >= 1) {
+        return { icon: '✨', text: `<strong>Most perfect syncs yet</strong> — ${curr.perfects} this session.` };
+      }
+      if (prev.avgSync > 0 && curr.avgSync > 0 && (prev.avgSync - curr.avgSync) >= 20 && curr.patterns >= 1) {
+        const diff = prev.avgSync - curr.avgSync;
+        return { icon: '⚡', text: `<strong>${diff}ms faster sync</strong> than your last session.` };
+      }
+      const bestPatternsEver = Math.max(...past.map(p => p.patterns || 0));
+      if (curr.patterns > bestPatternsEver && curr.patterns >= 1) {
+        return { icon: '🚀', text: `<strong>Most patterns yet</strong> — ${curr.patterns} this session.` };
+      }
+      if (curr.patterns >= 1 && curr.patterns === prev.patterns) {
+        return { icon: '📈', text: `<strong>Consistent output</strong> — ${curr.patterns} patterns two sessions in a row.` };
+      }
+      return { icon: '💪', text: `<strong>Practice logged</strong> — every session builds the pattern.` };
+    }
+    function showInsight(curr, past) {
+      if (!insightEl) return;
+      const ins = computeInsight(curr, past);
+      if (!ins) { insightEl.style.display = 'none'; return; }
+      insIcon.textContent = ins.icon;
+      insText.innerHTML = ins.text;
+      insightEl.style.display = 'flex';
+    }
+
+    // ===== Streak milestone celebrations =====
+    const STREAK_MILESTONES = [5, 10, 15, 25, 50];
+    function checkStreakMilestone(s) {
+      if (!STREAK_MILESTONES.includes(s)) return;
+      if (firedStreakMilestones.has(s)) return;
+      firedStreakMilestones.add(s);
+      celebrateStreak(s);
+    }
+    function celebrateStreak(n) {
+      const flame = n >= 25 ? '🔥🔥🔥' : n >= 10 ? '🔥🔥' : '🔥';
+      const toast = document.createElement('div');
+      toast.className = 'streak-milestone-toast';
+      toast.textContent = `${flame} ${n} Syncs in a Row!`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+      burstStreakParticles(n >= 25 ? 36 : n >= 10 ? 28 : 22);
+      try { audio.play('perfect'); } catch {}
+      // Native haptics in the Android app, web vibration fallback in browser.
+        FPRNative.haptic('milestone')
+    }
+    function burstStreakParticles(count) {
+      const colors = ['#ffd700', '#ffb347', '#bfe6ff', '#8ff5b2', '#ff6ec7'];
+      const target = (typeof mirrorContainer !== 'undefined' && mirrorContainer) ? mirrorContainer : document.body;
+      const rect = target.getBoundingClientRect();
+      const container = document.createElement('div');
+      container.className = 'streak-burst-container';
+      document.body.appendChild(container);
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height * 0.4;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'streak-burst';
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+        p.style.background = colors[i % colors.length];
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 80 + Math.random() * 140;
+        p.style.setProperty('--bx', `${Math.cos(angle) * distance}px`);
+        p.style.setProperty('--by', `${Math.sin(angle) * distance - 40}px`);
+        const dur = 800 + Math.random() * 400;
+        p.style.animation = `streakBurst ${dur}ms ease-out forwards`;
+        container.appendChild(p);
+      }
+      setTimeout(() => container.remove(), 1400);
+    }
 
     const targetSizes = { small: 40, medium: 55, large: 70 };
     const difficultySetting = {
-      easy:   { pointsPerPattern: 100, patternLength: 3, timeLimit: 60000, baseSync: 750 },
-      medium: { pointsPerPattern: 200, patternLength: 5, timeLimit: 45000, baseSync: 500 },
-      hard:   { pointsPerPattern: 300, patternLength: 7, timeLimit: 30000, baseSync: 350 }
+      easy:   { pointsPerPattern: 100, patternLength: 3, timeLimit: 60000, baseSync: 750, perfectThreshold: 150 },
+      medium: { pointsPerPattern: 200, patternLength: 5, timeLimit: 45000, baseSync: 500, perfectThreshold: 100 },
+      hard:   { pointsPerPattern: 300, patternLength: 7, timeLimit: 30000, baseSync: 350, perfectThreshold: 75 }
     };
     const patternTypes = ['random', 'circle', 'square', 'triangle', 'zigzag', 'line', 'spiral'];
+
+    // Multiplier thresholds
+    function getMultiplier(currentStreak) {
+      if (currentStreak >= 10) return 3.0;
+      if (currentStreak >= 7) return 2.5;
+      if (currentStreak >= 5) return 2.0;
+      if (currentStreak >= 3) return 1.5;
+      return 1.0;
+    }
 
     const leftTouchIndicator = document.createElement('div');
     leftTouchIndicator.classList.add('touch-indicator');
@@ -956,6 +1667,7 @@
       if (mirrorModeSelect) storage.set('mirrorMode', mirrorModeSelect.value);
       if (adaptiveTimingSelect) storage.set('mirrorAdaptiveTiming', adaptiveTimingSelect.value);
       if (sessionDurationInp) storage.set('mirrorSessionDuration', sessionDurationInp.value);
+      if (soundEnabledCheckbox) storage.set('mirrorSoundEnabled', soundEnabledCheckbox.checked);
     }
 
     function loadSettings() {
@@ -964,7 +1676,11 @@
       if (mirrorModeSelect) mirrorModeSelect.value = storage.get('mirrorMode', 'simultaneous');
       if (adaptiveTimingSelect) adaptiveTimingSelect.value = storage.get('mirrorAdaptiveTiming', 'on');
       if (sessionDurationInp) sessionDurationInp.value = storage.get('mirrorSessionDuration', 3);
-      updatePersonalBest();
+      if (soundEnabledCheckbox) {
+        soundEnabledCheckbox.checked = storage.get('mirrorSoundEnabled', true);
+        audio.enabled = soundEnabledCheckbox.checked;
+      }
+      updateProfileDisplay();
     }
 
     function updateInstructionsText() {
@@ -979,18 +1695,34 @@
 
     function updateHUD() {
       if (hudScore) hudScore.textContent = `${score}`;
-      if (hudPB) hudPB.textContent = `${getPB()}`;
       if (hudStreak) hudStreak.textContent = `${streak}`;
+      if (hudBestStreak) hudBestStreak.textContent = `${bestStreak}`;
+      
+      // Update multiplier display
+      if (hudMultiplier) {
+        hudMultiplier.textContent = `${multiplier.toFixed(1)}x`;
+        hudMultiplier.classList.toggle('high', multiplier >= 2.0);
+      }
 
       const mins = Math.max(0, Math.floor(timeRemaining / 60000));
       const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
       if (hudTime) hudTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function updateStats() {
-      if (hudScore) hudScore.textContent = String(score);
-      if (hudPB) hudPB.textContent = String(getPB());
-      if (hudStreak) hudStreak.textContent = String(streak);
+    function updatePatternDots() {
+      if (!patternDotsEl || !pattern.length) return;
+      patternDotsEl.innerHTML = '';
+      
+      for (let i = 0; i < pattern.length; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'pattern-dot';
+        if (i < currentTargetIndex) {
+          dot.classList.add('completed');
+        } else if (i === currentTargetIndex) {
+          dot.classList.add('active');
+        }
+        patternDotsEl.appendChild(dot);
+      }
     }
 
     function startTimer() {
@@ -1039,8 +1771,44 @@
       if (screen) screen.classList.add('active');
     }
 
-    function startSession() {
+    // ===== COUNTDOWN =====
+    function showCountdown() {
+      return new Promise((resolve) => {
+        if (!countdownOverlay || !countdownNumber) {
+          resolve();
+          return;
+        }
+
+        countdownOverlay.classList.add('active');
+        let count = 3;
+        
+        const tick = () => {
+          if (count > 0) {
+            countdownNumber.textContent = count;
+            countdownNumber.classList.remove('go');
+            audio.play('countdown');
+            count--;
+            setTimeout(tick, 1000);
+          } else {
+            countdownNumber.textContent = 'GO!';
+            countdownNumber.classList.add('go');
+            audio.play('go');
+            setTimeout(() => {
+              countdownOverlay.classList.remove('active');
+              resolve();
+            }, 500);
+          }
+        };
+        
+        tick();
+      });
+    }
+
+    async function startSession() {
       if (isSessionActive) return;
+      
+      // Initialize audio on first user interaction
+      audio.init();
       
       const difficulty = difficultySelect?.value || 'medium';
       const minutes = Math.max(1, Math.min(10, Number(sessionDurationInp?.value) || 3));
@@ -1054,6 +1822,10 @@
       perfectCount = 0;
       streak = 0;
       bestStreak = 0;
+      multiplier = 1.0;
+      firedStreakMilestones = new Set();
+      if (medalEl) medalEl.style.display = 'none';
+      if (insightEl) insightEl.style.display = 'none';
       currentPatternIndex = 0;
       currentTargetIndex = 0;
       pattern = [];
@@ -1067,9 +1839,12 @@
       updateHUD();
       setScreen('game');
 
+      // Show countdown before starting
+      await showCountdown();
+
       isSessionActive = true;
       startTimer();
-      updatePersonalBest();
+      updateProfileDisplay();
       
       setTimeout(() => {
         adjustContainerSize();
@@ -1241,11 +2016,17 @@
 
       currentTargets.left = leftTarget;
       currentTargets.right = rightTarget;
+      
+      updatePatternDots();
     }
 
     function handleLeftTouch(e) {
       if (!isSessionActive || leftTouched || isPaused) return;
-      e.preventDefault();
+      // Only prevent default for touch events to stop double-tap zoom, not for mouse
+      if (e.type === 'touchstart') {
+        e.preventDefault();
+      }
+      audio.play('tap');
       leftTouched = true;
       leftTouchTime = Date.now();
       if (!rightTouched) lastTouchedSide = 'left';
@@ -1256,7 +2037,11 @@
 
     function handleRightTouch(e) {
       if (!isSessionActive || rightTouched || isPaused) return;
-      e.preventDefault();
+      // Only prevent default for touch events to stop double-tap zoom, not for mouse
+      if (e.type === 'touchstart') {
+        e.preventDefault();
+      }
+      audio.play('tap');
       rightTouched = true;
       rightTouchTime = Date.now();
       if (!leftTouched) lastTouchedSide = 'right';
@@ -1271,7 +2056,9 @@
       totalAttempts++;
       const timeDiff = Math.abs(leftTouchTime - rightTouchTime);
       const difficulty = difficultySelect?.value || 'medium';
-      const baseWindow = difficultySetting[difficulty]?.baseSync || 500;
+      const settings = difficultySetting[difficulty] || difficultySetting.medium;
+      const baseWindow = settings.baseSync;
+      const perfectThreshold = settings.perfectThreshold || PERFECT_THRESHOLD;
       const usingAdaptive = adaptiveTimingSelect?.value === 'on';
       const currentSyncWindow = usingAdaptive ? adaptiveSyncWindow : baseWindow;
 
@@ -1279,25 +2066,53 @@
       const isSimul = (mode === 'simultaneous');
       
       let isSync = isSimul ? (timeDiff < currentSyncWindow) : (lastTouchedSide === 'left' && timeDiff < currentSyncWindow);
+      const isPerfect = isSync && timeDiff < perfectThreshold;
 
       if (isSync) {
         successfulAttempts++;
         if (isSimul) syncTimes.push(timeDiff);
 
-        const feedbackText = isSimul ? `Perfect! Sync time: ${timeDiff}ms` : `Excellent! Sequence completed.`;
-        showFeedback(feedbackText, 'success');
-
-        if (currentTargets.left) {
-          currentTargets.left.classList.remove("touched");
-          currentTargets.left.classList.add("completed");
-        }
-        if (currentTargets.right) {
-          currentTargets.right.classList.remove("touched");
-          currentTargets.right.classList.add("completed");
-        }
-
+        // Update streak and multiplier
         streak += 1;
         if (streak > bestStreak) bestStreak = streak;
+        multiplier = getMultiplier(streak);
+        checkStreakMilestone(streak);
+
+        // Calculate points with multiplier
+        const basePoints = 50;
+        const perfectBonus = isPerfect ? 50 : 0;
+        const earnedPoints = Math.round((basePoints + perfectBonus) * multiplier);
+        score += earnedPoints;
+
+        if (isPerfect) {
+          perfectCount++;
+          audio.play('perfect');
+          showFeedback(`✨ PERFECT! ${timeDiff}ms (+${earnedPoints})`, 'perfect');
+          
+          if (currentTargets.left) {
+            currentTargets.left.classList.remove("touched");
+            currentTargets.left.classList.add("perfect");
+          }
+          if (currentTargets.right) {
+            currentTargets.right.classList.remove("touched");
+            currentTargets.right.classList.add("perfect");
+          }
+        } else {
+          audio.play('success');
+          const feedbackText = isSimul 
+            ? `Great! ${timeDiff}ms (+${earnedPoints})` 
+            : `Excellent! (+${earnedPoints})`;
+          showFeedback(feedbackText, 'success');
+
+          if (currentTargets.left) {
+            currentTargets.left.classList.remove("touched");
+            currentTargets.left.classList.add("completed");
+          }
+          if (currentTargets.right) {
+            currentTargets.right.classList.remove("touched");
+            currentTargets.right.classList.add("completed");
+          }
+        }
 
         currentTargetIndex++;
         if (currentTargetIndex >= pattern.length) {
@@ -1309,8 +2124,9 @@
           setTimeout(() => createTargetPair(), 350);
         }
       } else {
+        audio.play('error');
         const feedbackText = isSimul ? 
-          `Try again! Sync time: ${timeDiff}ms (need < ${currentSyncWindow}ms)` :
+          `Try again! ${timeDiff}ms (need < ${currentSyncWindow}ms)` :
           `Try again! Touch left first, then right within ${currentSyncWindow}ms`;
         showFeedback(feedbackText, 'error');
         
@@ -1322,7 +2138,10 @@
           currentTargets.right.classList.remove("touched");
           currentTargets.right.classList.add("failed");
         }
+        
+        // Reset streak and multiplier
         streak = 0;
+        multiplier = 1.0;
 
         setTimeout(() => {
           if (currentTargets.left && currentTargets.right) {
@@ -1337,16 +2156,18 @@
         }, 750);
       }
 
-      updateStats();
+      updateHUD();
     }
 
     function completePattern() {
       patternsCompleted++;
       const difficulty = difficultySelect?.value || 'medium';
       const settings = difficultySetting[difficulty] || difficultySetting.medium;
-      score += settings.pointsPerPattern;
+      const patternBonus = Math.round(settings.pointsPerPattern * multiplier);
+      score += patternBonus;
 
-      updateStats();
+      audio.play('patternComplete');
+      updateHUD();
 
       currentPatternIndex++;
       if (currentPatternIndex >= patterns.length) {
@@ -1386,31 +2207,80 @@
       }
     }
 
+    function showNewPBBanner(newScore) {
+      if (!newPbBanner || !newPbScore) return;
+      
+      audio.play('newPB');
+      newPbScore.textContent = newScore;
+      newPbBanner.classList.add('show');
+      
+      setTimeout(() => {
+        newPbBanner.classList.remove('show');
+      }, 3000);
+    }
+
     function endSession() {
       if (timerInterval) stopTimer();
       isSessionActive = false;
 
       const averageTime = syncTimes.length ? Math.round(syncTimes.reduce((a, b) => a + b, 0) / syncTimes.length) : 0;
+      const bestTime = syncTimes.length ? Math.min(...syncTimes) : 0;
       const syncRate = totalAttempts ? Math.round((successfulAttempts / totalAttempts) * 100) : 0;
 
+      // Calculate XP earned
+      const xpEarned = Math.max(10, Math.round(score * 0.5));
+      
+      // Update total XP and check for level up
+      const previousXP = getTotalXP();
+      const newTotalXP = previousXP + xpEarned;
+      setTotalXP(newTotalXP);
+
+      // Check for new PB (capture prior PB BEFORE writing the new one — used by medal tier)
       const previousPB = getPB();
-      if (score > previousPB) {
+      const isNewPB = score > previousPB;
+      if (isNewPB) {
         setPB(score);
-        updatePersonalBest();
       }
 
+      // Medal + per-session insight
+      const currStats = {
+        score,
+        patterns: patternsCompleted,
+        syncRate,
+        avgSync: averageTime,
+        bestStreak,
+        perfects: perfectCount
+      };
+      const past = loadPastSessions();
+      showMedal(score, previousPB);
+      showInsight(currStats, past);
+      savePastSession({ ...currStats, ts: Date.now() });
+
+      // Update completion modal
       if (finalPatternsEl) finalPatternsEl.textContent = `${patternsCompleted}`;
       if (finalSyncRateEl) finalSyncRateEl.textContent = `${syncRate}%`;
       if (finalAvgSyncEl) finalAvgSyncEl.textContent = `${averageTime}ms`;
+      if (finalBestSyncEl) finalBestSyncEl.textContent = `${bestTime}ms`;
       if (finalPerfectsEl) finalPerfectsEl.textContent = `${perfectCount}`;
+      if (finalBestStreakEl) finalBestStreakEl.textContent = `${bestStreak}`;
       if (finalScoreEl) finalScoreEl.textContent = `${score}`;
-      if (finalXPEl) finalXPEl.textContent = `${Math.max(10, Math.round(score * 0.5))}`;
+      if (finalXPEl) finalXPEl.textContent = `${xpEarned}`;
       
-      if (completionModal) completionModal.classList.add('show');
+      // Show new PB banner if applicable
+      if (isNewPB && score > 0) {
+        showNewPBBanner(score);
+      }
+
       clearMirrorArea();
-      setScreen('settings');
+      
+      setTimeout(() => {
+        if (completionModal) completionModal.classList.add('show');
+        setScreen('settings');
+        updateProfileDisplay();
+      }, isNewPB ? 2500 : 300);
     }
 
+    // ===== EVENT LISTENERS =====
     if (startBtn) startBtn.addEventListener('click', startSession);
     if (difficultySelect) difficultySelect.addEventListener('change', saveSettings);
     if (targetSizeSelect) targetSizeSelect.addEventListener('change', saveSettings);
@@ -1420,6 +2290,10 @@
     });
     if (adaptiveTimingSelect) adaptiveTimingSelect.addEventListener('change', saveSettings);
     if (sessionDurationInp) sessionDurationInp.addEventListener('input', saveSettings);
+    if (soundEnabledCheckbox) soundEnabledCheckbox.addEventListener('change', () => {
+      audio.enabled = soundEnabledCheckbox.checked;
+      saveSettings();
+    });
 
     if (pauseBtn) pauseBtn.addEventListener('click', () => {
       if (!isSessionActive) return;

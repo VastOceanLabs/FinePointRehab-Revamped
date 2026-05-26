@@ -3,7 +3,12 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cosmic Maze">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
   <title>Cosmic Maze – Fine Motor Skills Rehabilitation</title>
 
   <style>
@@ -18,6 +23,8 @@
       --success: #4caf50;
       --error: #ff6b6b;
       --error-bg: #2d1b1b;
+      --warning: #ffb347;
+      --gold: #ffd700;
       --border: #374151;
       --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
       --radius: 8px;
@@ -33,6 +40,7 @@
       --font-size-base: 16px;
       --font-size-lg: 20px;
       --font-size-xl: 24px;
+      --font-size-2xl: 32px;
       --font-weight-semibold: 600;
       --font-weight-bold: 700;
       --duration-fast: 150ms;
@@ -166,6 +174,28 @@
       border: 1px solid var(--border);
     }
 
+    .personal-best-display {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+      border: 1px solid var(--gold);
+      border-radius: var(--radius);
+      padding: var(--space-3);
+      margin-bottom: var(--space-4);
+      text-align: center;
+    }
+
+    .personal-best-display .label {
+      font-size: var(--font-size-xs);
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .personal-best-display .value {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--gold);
+    }
+
     .settings-group {
       margin-bottom: var(--space-4);
     }
@@ -198,7 +228,7 @@
       align-items: center;
       position: relative;
       padding-top: calc(var(--space-3) + 8px);
-      min-height: 60px; /* keep HUD from collapsing into maze on small screens */
+      min-height: 60px;
     }
 
     @media (max-width: 768px) {
@@ -249,6 +279,26 @@
       color: var(--text-secondary);
     }
 
+    /* Streak display styling */
+    .hud-group.streak .hud-value {
+      color: var(--gold);
+    }
+
+    .hud-group.streak.active {
+      animation: streakPulse 0.5s ease;
+    }
+
+    @keyframes streakPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .streak-multiplier {
+      font-size: var(--font-size-xs);
+      color: var(--gold);
+      opacity: 0.8;
+    }
+
     .timer-bar {
       position: absolute;
       top: 0;
@@ -257,9 +307,17 @@
       width: 100%;
       background: linear-gradient(90deg, var(--brand-aqua), rgba(111, 211, 245, .35));
       transform-origin: left center;
-      transition: transform .1s linear;
+      transition: transform .1s linear, background 0.5s ease;
       border-top-left-radius: var(--radius);
       border-top-right-radius: var(--radius);
+    }
+
+    .timer-bar.warning {
+      background: linear-gradient(90deg, var(--warning), rgba(255, 179, 71, .35));
+    }
+
+    .timer-bar.danger {
+      background: linear-gradient(90deg, var(--error), rgba(255, 107, 107, .35));
     }
 
     .controls {
@@ -309,7 +367,7 @@
       width: 600px;
       height: 400px;
       margin: 0 auto;
-      max-height: 70vh; /* ensure maze never exceeds viewport height on small screens */
+      max-height: 70vh;
     }
 
     @media (max-width: 768px) {
@@ -428,6 +486,127 @@
       z-index: 2;
     }
 
+    /* Floating score popup */
+    .floating-score {
+      position: absolute;
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      color: var(--gold);
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+      pointer-events: none;
+      z-index: 100;
+      animation: floatUp 1.5s ease-out forwards;
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      20% {
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -150%) scale(1);
+      }
+    }
+
+    /* Particle effects */
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    @keyframes particleExplode {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0);
+      }
+    }
+
+    /* Countdown overlay */
+    .countdown-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 22, 41, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .countdown-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .countdown-number {
+      font-size: 120px;
+      font-weight: var(--font-weight-bold);
+      color: var(--brand-aqua);
+      text-shadow: 0 0 40px rgba(111, 211, 245, 0.8);
+      animation: countdownPulse 1s ease-in-out;
+    }
+
+    .countdown-go {
+      font-size: 80px;
+      color: var(--success);
+      text-shadow: 0 0 40px rgba(76, 175, 80, 0.8);
+    }
+
+    @keyframes countdownPulse {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* New record banner */
+    .new-record-banner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+      border: 3px solid var(--gold);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      z-index: 1050;
+      text-align: center;
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .new-record-banner.show {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    .new-record-banner h3 {
+      margin: 0 0 var(--space-2);
+      font-size: var(--font-size-2xl);
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    .new-record-banner p {
+      margin: 0;
+      font-size: var(--font-size-lg);
+      color: var(--text-primary);
+    }
+
+    /* Completion modal enhancements */
     .completion {
       position: fixed;
       inset: 50% auto auto 50%;
@@ -454,6 +633,11 @@
       font-weight: var(--font-weight-bold);
     }
 
+    .streak-highlight {
+      color: var(--gold);
+      font-weight: var(--font-weight-bold);
+    }
+
     .maze-celebrate {
       animation: celebrate 900ms ease-out 1;
     }
@@ -462,6 +646,57 @@
       0%   { box-shadow: 0 0 0 rgba(111, 211, 245, 0); }
       40%  { box-shadow: 0 0 40px rgba(111, 211, 245, .8); }
       100% { box-shadow: 0 0 20px rgba(111, 211, 245, .2); }
+    }
+
+    /* Screen flash effect */
+    .screen-flash {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, rgba(111, 211, 245, 0.3), transparent);
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0;
+    }
+
+    .screen-flash.active {
+      animation: flash 0.4s ease-out;
+    }
+
+    @keyframes flash {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Perfect run indicator */
+    .perfect-indicator {
+      position: absolute;
+      top: var(--space-2);
+      right: var(--space-2);
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+      border: 1px solid var(--gold);
+      border-radius: var(--radius);
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--font-size-xs);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    .perfect-indicator.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .perfect-indicator .star {
+      font-size: 14px;
     }
 
     #error-message {
@@ -484,13 +719,109 @@
     }
 
     .hidden { display: none !important; }
+
+    /* Sound toggle in settings */
+    .sound-toggle {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .sound-toggle input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    /* ===== Session-complete medal (matches other games) ===== */
+    .medal {
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px; margin: 4px 0 14px;
+      padding: 14px 18px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.08);
+      animation: medalReveal .65s cubic-bezier(.18,.89,.32,1.28);
+    }
+    .medal-disc {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; flex-shrink: 0;
+      box-shadow: 0 4px 18px rgba(0,0,0,.35), inset 0 -3px 6px rgba(0,0,0,.25), inset 0 3px 4px rgba(255,255,255,.25);
+    }
+    .medal-disc.bronze   { background: radial-gradient(circle at 35% 30%, #f3a872, #a06030 70%); }
+    .medal-disc.silver   { background: radial-gradient(circle at 35% 30%, #e8eef6, #8a98ad 70%); }
+    .medal-disc.gold     { background: radial-gradient(circle at 35% 30%, #fff3a0, #d49216 70%); }
+    .medal-disc.platinum { background: radial-gradient(circle at 35% 30%, #d4f0ff, #62a3ce 70%); box-shadow: 0 4px 18px rgba(98,163,206,.6), inset 0 -3px 6px rgba(0,0,0,.25), inset 0 3px 4px rgba(255,255,255,.4); }
+    .medal-text { text-align: left; line-height: 1.25; }
+    .medal-tier { font-size: 18px; font-weight: 900; letter-spacing: .5px; text-transform: uppercase; }
+    .medal-tier.bronze   { color: #f3a872; }
+    .medal-tier.silver   { color: #e8eef6; }
+    .medal-tier.gold     { color: #ffd700; }
+    .medal-tier.platinum { color: #b7e3ff; text-shadow: 0 0 18px rgba(183,227,255,.55); }
+    .medal-caption { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    @keyframes medalReveal {
+      0% { opacity: 0; transform: scale(.6) rotate(-8deg); }
+      60% { opacity: 1; transform: scale(1.05) rotate(2deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    /* ===== Per-session insight callout ===== */
+    .session-insight {
+      display: flex; align-items: center; gap: 10px;
+      margin: 0 0 14px; padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(111,211,245,.10);
+      border-left: 4px solid rgba(111,211,245,.65);
+      color: #e7f6ff;
+      font-size: 14px; line-height: 1.4;
+    }
+    .session-insight .ins-icon { font-size: 20px; flex-shrink: 0; }
+    .session-insight .ins-text strong { color: #bfe6ff; }
+
+    /* ===== Streak milestone toast + particles ===== */
+    .streak-milestone-toast {
+      position: fixed; top: 18%; left: 50%;
+      transform: translate(-50%, -20px) scale(.6);
+      padding: 14px 32px; border-radius: 14px;
+      font-size: 32px; font-weight: 900;
+      color: #ffd700;
+      text-shadow: 0 0 24px rgba(255,215,0,1), 0 0 8px rgba(255,140,0,.7);
+      background: linear-gradient(135deg, rgba(255,215,0,.28), rgba(255,90,0,.18));
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 40px rgba(255,215,0,.45);
+      z-index: 80;
+      pointer-events: none;
+      white-space: nowrap;
+      animation: streakSlide 2.4s ease-out forwards;
+    }
+    @keyframes streakSlide {
+      0% { opacity: 0; transform: translate(-50%, -30px) scale(.6); }
+      15% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
+      30% { transform: translate(-50%, 0) scale(1); }
+      80% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -12px) scale(.95); }
+    }
+    .streak-burst-container { position: fixed; inset: 0; pointer-events: none; z-index: 79; }
+    .streak-burst {
+      position: absolute; width: 8px; height: 8px;
+      border-radius: 50%; pointer-events: none;
+      will-change: transform, opacity;
+    }
+    @keyframes streakBurst {
+      0% { opacity: 1; transform: translate(0,0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(.3); }
+    }
   </style>
+  <!-- Unified game chrome -->
+  <link rel="stylesheet" href="/css/game-shell.css">
+  <script src="/js/fpr-native.js" defer></script>
+  <script src="/js/fpr-reminders.js" defer></script>
 </head>
 
-<body>
+<body class="game-page">
   <header class="site-header">
     <div class="inner">
-      <a class="btn btn-secondary" href="/" aria-label="Go to Home">← Home</a>
+      <a class="btn btn-secondary" href="../" aria-label="Go to Home">← Home</a>
       <h1>Cosmic Maze</h1>
     </div>
   </header>
@@ -498,13 +829,18 @@
   <main class="page">
     <!-- Settings Screen -->
     <aside class="settings-panel panel active" data-screen="settings">
-      <h2>Session Settings</h2>
+      <h2>Settings</h2>
 
       <div class="game-description">
         <p>
           Navigate a spaceship through randomly generated mazes to reach Earth. Improves fine motor control,
           hand-eye coordination, and precision. Drag the spaceship or use arrow keys to follow the dotted paths.
         </p>
+      </div>
+
+      <div class="personal-best-display">
+        <div class="label">🏆 Personal Best</div>
+        <div class="value" id="settings-pb">0</div>
       </div>
 
       <div class="settings-group">
@@ -532,6 +868,15 @@
         <small class="setting-help">Trail helps visualize movement patterns.</small>
       </div>
 
+      <div class="settings-group">
+        <label class="settings-label">Sound Effects</label>
+        <div class="sound-toggle">
+          <input type="checkbox" id="sound-enabled" checked>
+          <label for="sound-enabled">Enable sounds</label>
+        </div>
+        <small class="setting-help">Audio feedback for movement and completion.</small>
+      </div>
+
       <div class="controls">
         <button id="start-session" class="btn btn-primary">Start</button>
         <button id="restart-session" class="btn">Restart</button>
@@ -549,9 +894,20 @@
           <div class="hud-label">Score</div>
         </div>
 
+        <div class="hud-group streak" id="streak-group">
+          <div id="hud-streak" class="hud-value">0</div>
+          <div class="hud-label">Streak</div>
+          <div class="streak-multiplier" id="streak-multiplier"></div>
+        </div>
+
+        <div class="hud-group">
+          <div id="hud-completed" class="hud-value">0</div>
+          <div class="hud-label">Completed</div>
+        </div>
+
         <div class="hud-group">
           <div id="hud-avg" class="hud-value">0.0s</div>
-          <div class="hud-label">Avg. Completion</div>
+          <div class="hud-label">Avg. Time</div>
         </div>
 
         <div class="hud-group">
@@ -574,15 +930,35 @@
           dotted lines.
         </p>
 
-        <div id="maze-container" tabindex="0"></div>
+        <div id="maze-container" tabindex="0">
+          <div class="countdown-overlay" id="countdown-overlay">
+            <div class="countdown-number" id="countdown-text">3</div>
+          </div>
+          <div class="perfect-indicator" id="perfect-indicator">
+            <span class="star">⭐</span> Perfect Run
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
   <div id="completion-message" class="completion panel">
-    <h2>Therapy Session Complete!</h2>
+    <h2>🎉 Therapy Session Complete!</h2>
+    <div id="medal" class="medal" style="display:none;" aria-live="polite">
+      <div id="medalDisc" class="medal-disc"></div>
+      <div class="medal-text">
+        <div id="medalTier" class="medal-tier"></div>
+        <div id="medalCaption" class="medal-caption"></div>
+      </div>
+    </div>
+    <div id="sessionInsight" class="session-insight" style="display:none;" aria-live="polite">
+      <span class="ins-icon" id="insIcon">✨</span>
+      <span class="ins-text" id="insText"></span>
+    </div>
     <div id="completion-scores">
       <p>Mazes Completed: <span id="final-completed" class="score-highlight">0</span></p>
+      <p>Best Streak: <span id="final-streak" class="streak-highlight">0</span></p>
+      <p>Perfect Runs: <span id="final-perfect" class="streak-highlight">0</span></p>
       <p>Average Completion Time: <span id="final-avg-time" class="score-highlight">0.0s</span></p>
       <p>Motor Performance Score: <span id="final-score" class="score-highlight">0</span></p>
       <p>XP Earned: <span id="final-xp" class="score-highlight">0</span></p>
@@ -593,10 +969,253 @@
     </div>
   </div>
 
+  <div class="new-record-banner" id="new-record-banner">
+    <h3>🏆 NEW RECORD!</h3>
+    <p id="new-record-score">0</p>
+  </div>
+
+  <div class="screen-flash" id="screen-flash"></div>
+
   <div id="error-message"></div>
 
   <script>
-    // Simple storage utility
+    // ============================================
+    // AUDIO SYSTEM
+    // ============================================
+    const AudioSystem = {
+      ctx: null,
+      enabled: true,
+      
+      init() {
+        try {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+          console.warn('Web Audio API not supported');
+          this.enabled = false;
+        }
+      },
+
+      resume() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+
+      // Gentle movement sound
+      playMove() {
+        if (!this.enabled || !this.ctx) return;
+        this.resume();
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.05);
+        
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+        
+        osc.start(this.ctx.currentTime);
+        osc.stop(this.ctx.currentTime + 0.08);
+      },
+
+      // Completion chime
+      playComplete() {
+        if (!this.enabled || !this.ctx) return;
+        this.resume();
+
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          
+          const startTime = this.ctx.currentTime + i * 0.08;
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.15, startTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
+          
+          osc.start(startTime);
+          osc.stop(startTime + 0.3);
+        });
+      },
+
+      // Perfect run fanfare
+      playPerfect() {
+        if (!this.enabled || !this.ctx) return;
+        this.resume();
+
+        const notes = [523.25, 659.25, 783.99, 880, 1046.50, 1318.51]; // C5, E5, G5, A5, C6, E6
+        
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          
+          const startTime = this.ctx.currentTime + i * 0.06;
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.12, startTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+          
+          osc.start(startTime);
+          osc.stop(startTime + 0.4);
+        });
+      },
+
+      // Victory fanfare for session end
+      playVictory() {
+        if (!this.enabled || !this.ctx) return;
+        this.resume();
+
+        const melody = [
+          { freq: 392, time: 0, dur: 0.15 },      // G4
+          { freq: 523.25, time: 0.15, dur: 0.15 }, // C5
+          { freq: 659.25, time: 0.3, dur: 0.15 },  // E5
+          { freq: 783.99, time: 0.45, dur: 0.3 },  // G5
+          { freq: 659.25, time: 0.75, dur: 0.1 },  // E5
+          { freq: 783.99, time: 0.85, dur: 0.5 },  // G5
+        ];
+        
+        melody.forEach(note => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(note.freq, this.ctx.currentTime);
+          
+          const startTime = this.ctx.currentTime + note.time;
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.15, startTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + note.dur);
+          
+          osc.start(startTime);
+          osc.stop(startTime + note.dur + 0.1);
+        });
+      },
+
+      // New record celebration
+      playNewRecord() {
+        if (!this.enabled || !this.ctx) return;
+        this.resume();
+
+        const melody = [
+          { freq: 523.25, time: 0, dur: 0.1 },
+          { freq: 659.25, time: 0.1, dur: 0.1 },
+          { freq: 783.99, time: 0.2, dur: 0.1 },
+          { freq: 1046.50, time: 0.3, dur: 0.1 },
+          { freq: 1318.51, time: 0.4, dur: 0.1 },
+          { freq: 1567.98, time: 0.5, dur: 0.4 },
+        ];
+        
+        melody.forEach(note => {
+          const osc = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.connect(gain);
+          osc2.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.type = 'triangle';
+          osc2.type = 'sine';
+          osc.frequency.setValueAtTime(note.freq, this.ctx.currentTime);
+          osc2.frequency.setValueAtTime(note.freq * 2, this.ctx.currentTime);
+          
+          const startTime = this.ctx.currentTime + note.time;
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.12, startTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + note.dur);
+          
+          osc.start(startTime);
+          osc2.start(startTime);
+          osc.stop(startTime + note.dur + 0.1);
+          osc2.stop(startTime + note.dur + 0.1);
+        });
+      },
+
+      // Countdown beep
+      playCountdown(final = false) {
+        if (!this.enabled || !this.ctx) return;
+        this.resume();
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(final ? 880 : 440, this.ctx.currentTime);
+        
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + (final ? 0.3 : 0.15));
+        
+        osc.start(this.ctx.currentTime);
+        osc.stop(this.ctx.currentTime + (final ? 0.3 : 0.15));
+      }
+    };
+
+    // Initialize audio system
+    AudioSystem.init();
+
+    // ============================================
+    // PARTICLE SYSTEM
+    // ============================================
+    const ParticleSystem = {
+      createExplosion(container, x, y, count = 20, colors = ['#6fd3f5', '#ffd700', '#4caf50', '#ff6b6b']) {
+        for (let i = 0; i < count; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          
+          const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+          const velocity = 50 + Math.random() * 100;
+          const tx = Math.cos(angle) * velocity + 'px';
+          const ty = Math.sin(angle) * velocity + 'px';
+          
+          particle.style.cssText = `
+            left: ${x}px;
+            top: ${y}px;
+            width: ${4 + Math.random() * 8}px;
+            height: ${4 + Math.random() * 8}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            box-shadow: 0 0 ${6 + Math.random() * 6}px currentColor;
+            --tx: ${tx};
+            --ty: ${ty};
+            animation: particleExplode ${0.6 + Math.random() * 0.4}s ease-out forwards;
+          `;
+          
+          container.appendChild(particle);
+          
+          setTimeout(() => particle.remove(), 1000);
+        }
+      },
+
+      createStarBurst(container, x, y) {
+        this.createExplosion(container, x, y, 30, ['#ffd700', '#ffec8b', '#fff8dc', '#ffa500']);
+      }
+    };
+
+    // ============================================
+    // STORAGE UTILITY
+    // ============================================
     const storage = {
       get: (key, defaultValue) => {
         try {
@@ -650,25 +1269,43 @@
     const difficultySelect = document.getElementById('difficulty-select');
     const sessionDurationInp = document.getElementById('session-duration');
     const showTraceSelect = document.getElementById('show-trace');
+    const soundEnabledCheckbox = document.getElementById('sound-enabled');
     const startBtn = document.getElementById('start-session');
     const pauseBtn = document.getElementById('pause-session');
     const restartBtn = document.getElementById('restart-session');
     const timerBarEl = document.getElementById('timer-bar');
     const scoreEl = document.getElementById('hud-score');
-    const pbEl = document.getElementById('hud-pb');
-    const diffEl = document.getElementById('hud-difficulty');
+    const streakEl = document.getElementById('hud-streak');
+    const streakGroup = document.getElementById('streak-group');
+    const streakMultiplierEl = document.getElementById('streak-multiplier');
     const completedEl = document.getElementById('hud-completed');
-    const movesEl = document.getElementById('hud-moves');
     const avgEl = document.getElementById('hud-avg');
     const timeEl = document.getElementById('hud-time');
     const completionModal = document.getElementById('completion-message');
     const finalCompleted = document.getElementById('final-completed');
+    const finalStreak = document.getElementById('final-streak');
+    const finalPerfect = document.getElementById('final-perfect');
     const finalAvgTime = document.getElementById('final-avg-time');
     const finalScore = document.getElementById('final-score');
     const finalXP = document.getElementById('final-xp');
     const completeClose = document.getElementById('close-complete');
     const restartModalBtn = document.getElementById('restart-button');
     const errorMessage = document.getElementById('error-message');
+    const countdownOverlay = document.getElementById('countdown-overlay');
+    const countdownText = document.getElementById('countdown-text');
+    const perfectIndicator = document.getElementById('perfect-indicator');
+    const screenFlash = document.getElementById('screen-flash');
+    const newRecordBanner = document.getElementById('new-record-banner');
+    const newRecordScore = document.getElementById('new-record-score');
+    const settingsPB = document.getElementById('settings-pb');
+    // Session-complete polish: medal + insight elements
+    const medalEl = document.getElementById('medal');
+    const medalDisc = document.getElementById('medalDisc');
+    const medalTier = document.getElementById('medalTier');
+    const medalCaption = document.getElementById('medalCaption');
+    const insightEl = document.getElementById('sessionInsight');
+    const insIcon = document.getElementById('insIcon');
+    const insText = document.getElementById('insText');
 
     // Generate initial stars
     generateStars(starsContainer, 150);
@@ -701,6 +1338,128 @@
     let moveCountThisMaze = 0;
     let eventHandlers = {};
 
+    // Streak & gamification state
+    let currentStreak = 0;
+    let bestStreak = 0;
+    let perfectRuns = 0;
+    let isPerfectRun = true;
+    let firedStreakMilestones = new Set();
+
+    // ===== Medal + per-session insight =====
+    const SESSIONS_KEY = 'cosmic-maze:sessions';
+    function loadPastSessions() {
+      try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) || '[]'); } catch { return []; }
+    }
+    function savePastSession(stats) {
+      try {
+        const arr = loadPastSessions();
+        arr.unshift(stats);
+        if (arr.length > 10) arr.length = 10;
+        localStorage.setItem(SESSIONS_KEY, JSON.stringify(arr));
+      } catch {}
+    }
+    function computeMedalTier(currentScore, prevPb) {
+      if (prevPb <= 0) return { tier: 'silver', label: 'Silver', caption: 'First completed session — keep going!' };
+      if (currentScore > prevPb) return { tier: 'platinum', label: 'Platinum', caption: 'New personal best!' };
+      const r = currentScore / prevPb;
+      if (r >= 0.90) return { tier: 'gold',   label: 'Gold',   caption: 'Within 10% of your best — strong session.' };
+      if (r >= 0.70) return { tier: 'silver', label: 'Silver', caption: 'Solid session — keep building momentum.' };
+      return { tier: 'bronze', label: 'Bronze', caption: 'Every session counts. Try again to climb the tiers.' };
+    }
+    function showMedal(currentScore, prevPb) {
+      if (!medalEl) return;
+      const m = computeMedalTier(currentScore, prevPb);
+      medalDisc.className = 'medal-disc ' + m.tier;
+      medalDisc.textContent = m.tier === 'platinum' ? '🏆' : m.tier === 'gold' ? '🥇' : m.tier === 'silver' ? '🥈' : '🥉';
+      medalTier.className = 'medal-tier ' + m.tier;
+      medalTier.textContent = m.label;
+      medalCaption.textContent = m.caption;
+      medalEl.style.display = 'flex';
+    }
+    function computeInsight(curr, past) {
+      if (!past || past.length === 0) return null;
+      const prev = past[0];
+      if (curr.perfectRuns > 0 && curr.mazes >= 3 && curr.perfectRuns === curr.mazes) {
+        return { icon: '✨', text: `<strong>Flawless run</strong> — every maze a perfect path.` };
+      }
+      const bestStreakEver = Math.max(...past.map(p => p.bestStreak || 0));
+      if (curr.bestStreak > bestStreakEver && curr.bestStreak >= 3) {
+        return { icon: '🔥', text: `<strong>Longest streak yet</strong> — ${curr.bestStreak} mazes in a row.` };
+      }
+      if (prev.avgTime > 0 && curr.avgTime > 0 && (prev.avgTime - curr.avgTime) >= 1.0 && curr.mazes >= 2) {
+        const diff = (prev.avgTime - curr.avgTime).toFixed(1);
+        return { icon: '⚡', text: `<strong>${diff}s faster per maze</strong> than your last session.` };
+      }
+      const bestMazesEver = Math.max(...past.map(p => p.mazes || 0));
+      if (curr.mazes > bestMazesEver && curr.mazes >= 2) {
+        return { icon: '🚀', text: `<strong>Most mazes yet</strong> — completed ${curr.mazes} this session.` };
+      }
+      const bestPerfectEver = Math.max(...past.map(p => p.perfectRuns || 0));
+      if (curr.perfectRuns > bestPerfectEver && curr.perfectRuns >= 1) {
+        return { icon: '✨', text: `<strong>Most perfect runs yet</strong> — ${curr.perfectRuns} this session.` };
+      }
+      if (curr.mazes >= 1 && curr.mazes === prev.mazes) {
+        return { icon: '📈', text: `<strong>Consistent output</strong> — ${curr.mazes} mazes two sessions in a row.` };
+      }
+      return { icon: '💪', text: `<strong>Practice logged</strong> — every session builds the pattern.` };
+    }
+    function showInsight(curr, past) {
+      if (!insightEl) return;
+      const ins = computeInsight(curr, past);
+      if (!ins) { insightEl.style.display = 'none'; return; }
+      insIcon.textContent = ins.icon;
+      insText.innerHTML = ins.text;
+      insightEl.style.display = 'flex';
+    }
+
+    // ===== Streak milestone celebrations =====
+    const STREAK_MILESTONES = [3, 5, 10, 15, 25];
+    function checkStreakMilestone(streak) {
+      if (!STREAK_MILESTONES.includes(streak)) return;
+      if (firedStreakMilestones.has(streak)) return;
+      firedStreakMilestones.add(streak);
+      celebrateStreak(streak);
+    }
+    function celebrateStreak(n) {
+      const flame = n >= 15 ? '🔥🔥🔥' : n >= 10 ? '🔥🔥' : '🔥';
+      const toast = document.createElement('div');
+      toast.className = 'streak-milestone-toast';
+      toast.textContent = `${flame} ${n} Mazes in a Row!`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+      burstStreakParticles(n >= 15 ? 36 : n >= 10 ? 28 : 22);
+      try { AudioSystem?.playPerfect?.(); } catch {}
+      // Native haptics in the Android app, web vibration fallback in browser.
+        FPRNative.haptic('milestone')
+    }
+    function burstStreakParticles(count) {
+      const colors = ['#ffd700', '#ffb347', '#bfe6ff', '#8ff5b2', '#ff6ec7'];
+      const target = (typeof mazeContainer !== 'undefined' && mazeContainer) ? mazeContainer : document.body;
+      const rect = target.getBoundingClientRect();
+      const container = document.createElement('div');
+      container.className = 'streak-burst-container';
+      document.body.appendChild(container);
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height * 0.4;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'streak-burst';
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+        p.style.background = colors[i % colors.length];
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 80 + Math.random() * 140;
+        p.style.setProperty('--bx', `${Math.cos(angle) * distance}px`);
+        p.style.setProperty('--by', `${Math.sin(angle) * distance - 40}px`);
+        const dur = 800 + Math.random() * 400;
+        p.style.animation = `streakBurst ${dur}ms ease-out forwards`;
+        container.appendChild(p);
+      }
+      setTimeout(() => container.remove(), 1400);
+    }
+    let visitedNodes = new Set();
+    let optimalPathLength = 0;
+
     // Difficulty settings
     const difficultySizes = {
       easy: { cellSize: 60, wallThickness: 12 },
@@ -708,10 +1467,12 @@
       hard: { cellSize: 30, wallThickness: 8 }
     };
 
+    // Update settings PB display
+    settingsPB.textContent = personalBest;
+
     // Update difficulty display
     difficultySelect.addEventListener('change', () => {
       currentDifficulty = difficultySelect.value;
-      if (diffEl) diffEl.textContent = currentDifficulty;
     });
 
     // Maze sizing function
@@ -725,13 +1486,11 @@
       const isLandscape = window.innerWidth > window.innerHeight;
 
       if (isLandscape) {
-        // Wider than tall: respect height so HUD + chrome fit
         let w = Math.min(containerWidth * 0.95, containerHeight * 1.2);
         let h = Math.min(containerHeight * 0.70, w * 0.70);
         mazeWidth = Math.max(220, Math.round(w));
         mazeHeight = Math.max(180, Math.round(h));
       } else {
-        // Portrait: taller than wide, but still leave space for HUD
         let w = Math.min(containerWidth * 0.95, containerHeight * 0.90);
         let h = Math.min(containerHeight * 0.70, w * 0.90);
         mazeWidth = Math.max(220, Math.round(w));
@@ -752,21 +1511,46 @@
       storage.set('mazeSessionDuration', sessionDurationInp.value);
       storage.set('mazeDifficulty', difficultySelect.value);
       storage.set('mazeShowTrace', showTraceSelect.value);
+      storage.set('mazeSoundEnabled', soundEnabledCheckbox.checked);
     }
 
     function loadSettings() {
       sessionDurationInp.value = storage.get('mazeSessionDuration', 5);
       difficultySelect.value = storage.get('mazeDifficulty', 'easy');
       showTraceSelect.value = storage.get('mazeShowTrace', 'yes');
-      if (diffEl) diffEl.textContent = difficultySelect.value;
+      soundEnabledCheckbox.checked = storage.get('mazeSoundEnabled', true);
+      AudioSystem.enabled = soundEnabledCheckbox.checked;
+    }
+
+    // Sound toggle handler
+    soundEnabledCheckbox.addEventListener('change', () => {
+      AudioSystem.enabled = soundEnabledCheckbox.checked;
+      if (AudioSystem.enabled) {
+        AudioSystem.resume();
+        AudioSystem.playMove();
+      }
+    });
+
+    function getStreakMultiplier() {
+      if (currentStreak >= 10) return 2.0;
+      if (currentStreak >= 7) return 1.75;
+      if (currentStreak >= 5) return 1.5;
+      if (currentStreak >= 3) return 1.25;
+      return 1.0;
     }
 
     function updateHUD() {
       scoreEl.textContent = `${score}`;
-      if (pbEl) pbEl.textContent = `${personalBest}`;
-      if (completedEl) completedEl.textContent = `${mazesCompleted}`;
-      if (movesEl) movesEl.textContent = `${moveCountThisMaze}`;
-      if (diffEl) diffEl.textContent = currentDifficulty;
+      streakEl.textContent = `${currentStreak}`;
+      completedEl.textContent = `${mazesCompleted}`;
+
+      const multiplier = getStreakMultiplier();
+      if (multiplier > 1) {
+        streakMultiplierEl.textContent = `×${multiplier}`;
+        streakMultiplierEl.style.display = 'block';
+      } else {
+        streakMultiplierEl.style.display = 'none';
+      }
 
       const avg = (mazesCompleted > 0)
         ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1) : '0.0';
@@ -775,6 +1559,15 @@
       const mins = Math.max(0, Math.floor(timeRemaining / 60000));
       const secs = Math.max(0, Math.floor((timeRemaining % 60000) / 1000));
       timeEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+      // Timer bar color based on time remaining
+      const progress = timeRemaining / sessionMs;
+      timerBarEl.classList.remove('warning', 'danger');
+      if (progress < 0.2) {
+        timerBarEl.classList.add('danger');
+      } else if (progress < 0.4) {
+        timerBarEl.classList.add('warning');
+      }
     }
 
     function startTimer() {
@@ -796,9 +1589,17 @@
 
     function clearMaze() {
       removeAllEventListeners();
-      while (mazeContainer.firstChild) {
-        mazeContainer.removeChild(mazeContainer.firstChild);
-      }
+      // Hide perfect indicator when clearing
+      perfectIndicator.classList.remove('show');
+      // Keep countdown overlay and perfect indicator elements but remove others
+      const overlay = countdownOverlay;
+      const indicator = perfectIndicator;
+      // Remove all children except overlay and indicator
+      Array.from(mazeContainer.children).forEach(child => {
+        if (child !== overlay && child !== indicator) {
+          child.remove();
+        }
+      });
       pathTraces = [];
       pathNodes = [];
       player = goal = startLabel = endLabel = null;
@@ -870,10 +1671,10 @@
       }
 
       // Outer walls
-      addWall(0, 0, cols * cellSize, wallThickness); // top
-      addWall(0, 0, wallThickness, rows * cellSize); // left
-      addWall(0, cols * cellSize - wallThickness, wallThickness, rows * cellSize); // right
-      addWall(rows * cellSize - wallThickness, 0, cols * cellSize, wallThickness); // bottom
+      addWall(0, 0, cols * cellSize, wallThickness);
+      addWall(0, 0, wallThickness, rows * cellSize);
+      addWall(0, cols * cellSize - wallThickness, wallThickness, rows * cellSize);
+      addWall(rows * cellSize - wallThickness, 0, cols * cellSize, wallThickness);
 
       // Inner walls
       for (let i = 0; i < rows; i++) {
@@ -930,7 +1731,6 @@
     }
 
     function createPathLines(cols, rows) {
-      // Create path nodes
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
           const centerX = j * cellSize + cellSize / 2;
@@ -946,10 +1746,8 @@
         }
       }
 
-      // Connect nodes based on maze structure
       connectPathNodes(cols, rows);
 
-      // Draw connection lines
       for (let i = 0; i < pathNodes.length; i++) {
         const nodeA = pathNodes[i];
         for (const connectionIndex of nodeA.connections) {
@@ -1012,7 +1810,6 @@
       const minTop = 10;
       const maxTop = mazeHeight - 10;
 
-      // START label
       startLabel = document.createElement('div');
       startLabel.id = 'start-label';
       startLabel.className = 'point-label';
@@ -1022,13 +1819,11 @@
       startTop = Math.max(minTop, Math.min(startTop, maxTop));
       startLabel.style.top = `${startTop}px`;
 
-      // If start is too close to the top-left, shift the label to the right
       if (startY === 0 && startTop <= (cellSize * 0.6)) {
         startLabel.style.left = `${startX * cellSize + cellSize * 1.3}px`;
         startLabel.style.top = `${startY * cellSize + cellSize * 0.35}px`;
       }
 
-      // FINISH label
       endLabel = document.createElement('div');
       endLabel.id = 'end-label';
       endLabel.className = 'point-label';
@@ -1044,24 +1839,47 @@
       mazeContainer.appendChild(endLabel);
     }
 
+    // BFS to find optimal path length
+    function findOptimalPath(startIndex, endIndex) {
+      const queue = [[startIndex]];
+      const visited = new Set([startIndex]);
+
+      while (queue.length > 0) {
+        const path = queue.shift();
+        const current = path[path.length - 1];
+
+        if (current === endIndex) {
+          return path;
+        }
+
+        for (const neighbor of pathNodes[current].connections) {
+          if (!visited.has(neighbor)) {
+            visited.add(neighbor);
+            queue.push([...path, neighbor]);
+          }
+        }
+      }
+
+      return [];
+    }
+
     function generateMaze() {
-      // Set difficulty parameters
       const dims = difficultySizes[currentDifficulty] || difficultySizes.easy;
       cellSize = dims.cellSize;
       wallThickness = dims.wallThickness;
 
-      // Calculate grid dimensions based on current mazeWidth/mazeHeight
       const cols = Math.max(3, Math.floor(mazeWidth / cellSize));
       const rows = Math.max(3, Math.floor(mazeHeight / cellSize));
 
-      // Clear existing maze if any
-      if (mazeContainer && mazeContainer.children.length > 0) clearMaze();
+      if (mazeContainer && mazeContainer.children.length > 2) clearMaze();
 
       maze = [];
       pathNodes = [];
       pathTraces = [];
+      visitedNodes = new Set();
+      isPerfectRun = true;
+      perfectIndicator.classList.add('show');
 
-      // Initialize maze grid
       for (let i = 0; i < rows; i++) {
         const row = [];
         for (let j = 0; j < cols; j++) {
@@ -1070,7 +1888,6 @@
         maze.push(row);
       }
 
-      // Generate maze using depth-first search
       const stack = [];
       let currentX = 0;
       let currentY = 0;
@@ -1103,91 +1920,87 @@
         stack.push(next);
       }
 
-      // Create visual elements
       createMazeWalls(cols, rows);
       createPathLines(cols, rows);
-      createPlayer(0, 0);
-      createGoal(cols - 1, rows - 1);
-      createPointLabels(0, 0, cols - 1, rows - 1);
 
-      // Setup player movement
-      setupPlayerMovement();
+      const startX = 0;
+      const startY = 0;
+      const endX = cols - 1;
+      const endY = rows - 1;
 
-      // Reset maze-specific counters
+      createPlayer(startX, startY);
+      createGoal(endX, endY);
+      createPointLabels(startX, startY, endX, endY);
+
+      // Calculate optimal path
+      const startNodeIndex = pathNodes.findIndex(n => n.gridX === startX && n.gridY === startY);
+      const endNodeIndex = pathNodes.findIndex(n => n.gridX === endX && n.gridY === endY);
+      const optimalPath = findOptimalPath(startNodeIndex, endNodeIndex);
+      optimalPathLength = optimalPath.length;
+
+      setupControls(startX, startY, endX, endY);
       moveCountThisMaze = 0;
-      updateHUD();
+      visitedNodes.add(startNodeIndex);
     }
 
-    function findPath(startIndex, targetIndex) {
-      if (startIndex === targetIndex) return [startIndex];
-      const visited = new Set();
-      const queue = [[startIndex]];
-      while (queue.length > 0) {
-        const path = queue.shift();
-        const currentIndex = path[path.length - 1];
-        if (currentIndex === targetIndex) return path;
-        if (!visited.has(currentIndex)) {
-          visited.add(currentIndex);
-          for (const nextIndex of pathNodes[currentIndex].connections) {
-            if (!visited.has(nextIndex)) queue.push([...path, nextIndex]);
-          }
-        }
-      }
-      return [];
+    function addPathTrace(fromX, fromY, toX, toY) {
+      if (!showTrace) return;
+      const trace = document.createElement('div');
+      trace.className = 'path-trace';
+      const minX = Math.min(fromX, toX);
+      const minY = Math.min(fromY, toY);
+      const width = Math.abs(toX - fromX) || 4;
+      const height = Math.abs(toY - fromY) || 4;
+      trace.style.left = `${minX - 2}px`;
+      trace.style.top = `${minY - 2}px`;
+      trace.style.width = `${width + 4}px`;
+      trace.style.height = `${height + 4}px`;
+      mazeContainer.appendChild(trace);
+      pathTraces.push(trace);
     }
 
-    function setupPlayerMovement() {
-      if (!player || !pathNodes.length) return;
-
-      let playerX = parseFloat(player.style.left);
-      let playerY = parseFloat(player.style.top);
-      let closestNodeIndex = 0;
+    function setupControls(startX, startY, endX, endY) {
+      let playerX = startX * cellSize + cellSize / 2;
+      let playerY = startY * cellSize + cellSize / 2;
+      let closestNodeIndex = pathNodes.findIndex(n => n.gridX === startX && n.gridY === startY);
+      const goalNodeIndex = pathNodes.findIndex(n => n.gridX === endX && n.gridY === endY);
       let isDragging = false;
       let dragPath = [];
-      let lastVisitedNode = 0;
+      let lastVisitedNode = closestNodeIndex;
 
-      function updateClosestNodeIndex() {
-        let minDistance = Infinity;
-        for (let i = 0; i < pathNodes.length; i++) {
-          const node = pathNodes[i];
-          const dx = node.x - playerX;
-          const dy = node.y - playerY;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < minDistance) { minDistance = distance; closestNodeIndex = i; }
+      function findPath(from, to) {
+        if (from === to) return [];
+        const queue = [[from]];
+        const visited = new Set([from]);
+        while (queue.length > 0) {
+          const path = queue.shift();
+          const current = path[path.length - 1];
+          if (current === to) return path;
+          for (const neighbor of pathNodes[current].connections) {
+            if (!visited.has(neighbor)) {
+              visited.add(neighbor);
+              queue.push([...path, neighbor]);
+            }
+          }
         }
-      }
-      updateClosestNodeIndex();
-
-      function addPathTrace(fromX, fromY, toX, toY) {
-        if (!showTrace) return;
-        const trace = document.createElement('div');
-        trace.className = 'path-trace';
-        const centerX = (fromX + toX) / 2;
-        const centerY = (fromY + toY) / 2;
-        const width = Math.abs(toX - fromX) + 10;
-        const height = Math.abs(toY - fromY) + 10;
-        trace.style.left = `${centerX - width / 2}px`;
-        trace.style.top = `${centerY - height / 2}px`;
-        trace.style.width = `${width}px`;
-        trace.style.height = `${height}px`;
-        mazeContainer.appendChild(trace);
-        pathTraces.push(trace);
+        return [];
       }
 
       function checkGoalReached() {
-        const goalX = parseFloat(goal.style.left);
-        const goalY = parseFloat(goal.style.top);
-        const distance = Math.sqrt((playerX - goalX) ** 2 + (playerY - goalY) ** 2);
-        const goalRadius = parseFloat(getComputedStyle(goal).width) / 2 || 22;
-        if (distance < goalRadius) {
-          mazeContainer.classList.add('maze-celebrate');
-          setTimeout(() => mazeContainer.classList.remove('maze-celebrate'), 900);
+        if (closestNodeIndex === goalNodeIndex) {
           completeCurrentMaze();
         }
       }
 
       function moveToNode(nodeIndex) {
         if (nodeIndex < 0 || nodeIndex >= pathNodes.length) return;
+        
+        // Check if this is a backtrack (revisiting a node)
+        if (visitedNodes.has(nodeIndex)) {
+          isPerfectRun = false;
+          perfectIndicator.classList.remove('show');
+        }
+        
         const targetNode = pathNodes[nodeIndex];
         addPathTrace(playerX, playerY, targetNode.x, targetNode.y);
         playerX = targetNode.x;
@@ -1196,6 +2009,11 @@
         player.style.top = `${playerY}px`;
         closestNodeIndex = nodeIndex;
         moveCountThisMaze++;
+        visitedNodes.add(nodeIndex);
+        
+        // Play move sound
+        AudioSystem.playMove();
+        
         updateHUD();
         checkGoalReached();
       }
@@ -1206,17 +2024,29 @@
         let nextNodeIndex = -1;
         switch (e.key) {
           case 'ArrowUp':
+          case 'w':
+          case 'W':
             nextNodeIndex = currentNode.connections.find(i => pathNodes[i].y < currentNode.y && pathNodes[i].x === currentNode.x);
             break;
           case 'ArrowDown':
+          case 's':
+          case 'S':
             nextNodeIndex = currentNode.connections.find(i => pathNodes[i].y > currentNode.y && pathNodes[i].x === currentNode.x);
             break;
           case 'ArrowLeft':
+          case 'a':
+          case 'A':
             nextNodeIndex = currentNode.connections.find(i => pathNodes[i].x < currentNode.x && pathNodes[i].y === currentNode.y);
             break;
           case 'ArrowRight':
+          case 'd':
+          case 'D':
             nextNodeIndex = currentNode.connections.find(i => pathNodes[i].x > currentNode.x && pathNodes[i].y === currentNode.y);
             break;
+          case ' ':
+            e.preventDefault();
+            pauseBtn.click();
+            return;
           default: return;
         }
         if (nextNodeIndex !== undefined && nextNodeIndex !== -1) {
@@ -1285,7 +2115,6 @@
         lastVisitedNode = closestNodeIndex;
       }
 
-      // Register event handlers
       eventHandlers.keydown = handleKeyboard;
       eventHandlers.mousedown = startDrag;
       eventHandlers.touchstart = startDrag;
@@ -1303,41 +2132,173 @@
       document.addEventListener('touchend', eventHandlers.touchend);
     }
 
+    function showFloatingScore(points, x, y, text = null) {
+      const floating = document.createElement('div');
+      floating.className = 'floating-score';
+      floating.textContent = text || `+${points}`;
+      floating.style.left = `${x}px`;
+      floating.style.top = `${y}px`;
+      mazeContainer.appendChild(floating);
+      setTimeout(() => floating.remove(), 1500);
+    }
+
+    function triggerScreenFlash() {
+      screenFlash.classList.add('active');
+      setTimeout(() => screenFlash.classList.remove('active'), 400);
+    }
+
     function completeCurrentMaze() {
       const completionTime = Date.now() - mazeStartTime;
       totalCompletionTime += completionTime;
       mazesCompleted++;
       currentMaze++;
 
-      const averageTime = (totalCompletionTime / mazesCompleted / 1000) || 1;
-      score = Math.max(score, Math.round((mazesCompleted * 100) / averageTime));
+      // Calculate base score
+      const timeBonus = Math.max(0, Math.round(1000 - completionTime / 10));
+      let mazeScore = 100 + timeBonus;
+
+      // Perfect run bonus
+      if (isPerfectRun) {
+        perfectRuns++;
+        mazeScore = Math.round(mazeScore * 1.5);
+        AudioSystem.playPerfect();
+      } else {
+        AudioSystem.playComplete();
+      }
+
+      // Streak bonus
+      currentStreak++;
+      if (currentStreak > bestStreak) {
+        bestStreak = currentStreak;
+      }
+      checkStreakMilestone(currentStreak);
+
+      const multiplier = getStreakMultiplier();
+      mazeScore = Math.round(mazeScore * multiplier);
+
+      score += mazeScore;
+
+      // Visual feedback
+      const goalRect = goal.getBoundingClientRect();
+      const mazeRect = mazeContainer.getBoundingClientRect();
+      const particleX = goalRect.left - mazeRect.left + goalRect.width / 2;
+      const particleY = goalRect.top - mazeRect.top + goalRect.height / 2;
+
+      ParticleSystem.createExplosion(mazeContainer, particleX, particleY, 25);
+      if (isPerfectRun) {
+        ParticleSystem.createStarBurst(mazeContainer, particleX, particleY);
+      }
+
+      showFloatingScore(mazeScore, particleX, particleY);
+      triggerScreenFlash();
+
+      // Animate streak
+      streakGroup.classList.add('active');
+      setTimeout(() => streakGroup.classList.remove('active'), 500);
+
+      // Celebrate animation on maze container
+      mazeContainer.classList.add('maze-celebrate');
+      setTimeout(() => mazeContainer.classList.remove('maze-celebrate'), 900);
+
       updateHUD();
 
-      generateMaze();
-      mazeStartTime = Date.now();
+      // Generate next maze after brief delay
+      setTimeout(() => {
+        generateMaze();
+        mazeStartTime = Date.now();
+      }, 600);
+    }
+
+    function showCountdown(callback) {
+      countdownOverlay.classList.add('active');
+      let count = 3;
+
+      function tick() {
+        if (count > 0) {
+          countdownText.textContent = count;
+          countdownText.className = 'countdown-number';
+          AudioSystem.playCountdown(false);
+          count--;
+          setTimeout(tick, 800);
+        } else {
+          countdownText.textContent = 'GO!';
+          countdownText.className = 'countdown-number countdown-go';
+          AudioSystem.playCountdown(true);
+          setTimeout(() => {
+            countdownOverlay.classList.remove('active');
+            callback();
+          }, 500);
+        }
+      }
+
+      tick();
     }
 
     function endSession() {
       if (timerInterval) stopTimer();
       isSessionActive = false;
 
+      // Hide perfect indicator
+      perfectIndicator.classList.remove('show');
+
       const averageTimeString = (mazesCompleted > 0)
         ? (totalCompletionTime / mazesCompleted / 1000).toFixed(1)
         : '0.0';
       const averageTime = parseFloat(averageTimeString);
-      const computedScore = Math.round((mazesCompleted * 100) / (averageTime > 0 ? averageTime : 1));
+      const computedScore = score;
 
+      // Capture prior PB BEFORE writing the new one (used by the medal tier)
+      const prevPb = personalBest;
+
+      // Check for new record
+      let isNewRecord = false;
       if (computedScore > personalBest) {
+        isNewRecord = true;
         personalBest = computedScore;
         storage.set('mazePersonalBest', personalBest);
+        settingsPB.textContent = personalBest;
       }
+
+      // Medal + per-session insight
+      const currStats = {
+        score: computedScore,
+        mazes: mazesCompleted,
+        bestStreak,
+        perfectRuns,
+        avgTime: averageTime
+      };
+      const past = loadPastSessions();
+      showMedal(computedScore, prevPb);
+      showInsight(currStats, past);
+      savePastSession({ ...currStats, ts: Date.now() });
+
+      // Play appropriate sound
+      if (isNewRecord) {
+        AudioSystem.playNewRecord();
+      } else {
+        AudioSystem.playVictory();
+      }
+
       updateHUD();
 
       finalCompleted.textContent = `${mazesCompleted}`;
+      finalStreak.textContent = `${bestStreak}`;
+      finalPerfect.textContent = `${perfectRuns}`;
       finalAvgTime.textContent = `${averageTimeString}s`;
       finalScore.textContent = `${computedScore}`;
       finalXP.textContent = `${Math.max(10, Math.round(computedScore * 0.5))}`;
-      completionModal.classList.add('show');
+
+      // Show new record banner if applicable
+      if (isNewRecord) {
+        newRecordScore.textContent = computedScore;
+        newRecordBanner.classList.add('show');
+        setTimeout(() => {
+          newRecordBanner.classList.remove('show');
+          completionModal.classList.add('show');
+        }, 2500);
+      } else {
+        completionModal.classList.add('show');
+      }
 
       clearMaze();
       setScreen('settings');
@@ -1346,12 +2307,20 @@
     function setScreen(screenName) {
       document.querySelectorAll('[data-screen]').forEach(el => el.classList.remove('active'));
       document.querySelector(`[data-screen="${screenName}"]`).classList.add('active');
+      
+      // Hide perfect indicator when leaving game screen
+      if (screenName !== 'game') {
+        perfectIndicator.classList.remove('show');
+      }
     }
 
     // Event Listeners
     startBtn.addEventListener('click', () => {
       if (isSessionActive) return;
       if (timerInterval) stopTimer();
+
+      // Resume audio context on user interaction
+      AudioSystem.resume();
 
       try {
         currentDifficulty = difficultySelect.value;
@@ -1361,6 +2330,7 @@
         sessionDurationInp.value = minutes;
 
         showTrace = showTraceSelect.value === 'yes';
+        AudioSystem.enabled = soundEnabledCheckbox.checked;
         saveSettings();
 
         score = 0;
@@ -1370,22 +2340,31 @@
         timeRemaining = sessionMs;
         moveCountThisMaze = 0;
         isPaused = false;
+        currentStreak = 0;
+        bestStreak = 0;
+        perfectRuns = 0;
+        firedStreakMilestones = new Set();
+        if (medalEl) medalEl.style.display = 'none';
+        if (insightEl) insightEl.style.display = 'none';
 
         clearMaze();
         updateHUD();
 
         setScreen('game');
 
-        isSessionActive = true;
-        startTimer();
-
         setTimeout(() => {
           try {
             adjustMazeSize();
             clearMaze();
             generateMaze();
-            mazeStartTime = Date.now();
-            mazeContainer.focus();
+
+            // Show countdown before starting
+            showCountdown(() => {
+              isSessionActive = true;
+              startTimer();
+              mazeStartTime = Date.now();
+              mazeContainer.focus();
+            });
           } catch (error) {
             console.error('Error generating maze:', error);
             showError('Failed to generate maze: ' + error.message);
@@ -1404,6 +2383,8 @@
       pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
       if (isPaused) {
         stopTimer();
+        // Reset streak on pause (optional - remove if too punishing)
+        // currentStreak = 0;
       } else {
         startTimer();
         mazeContainer.focus();
@@ -1434,25 +2415,39 @@
     updateHUD();
     setScreen('settings');
 
-    // Touch event handling for mobile
-    document.addEventListener('touchstart', e => {
-      if (e.touches.length > 1) e.preventDefault();
+    // Touch event handling for mobile - only prevent defaults within the game area
+    // This avoids triggering iOS security warnings about page manipulation
+    mazeContainer.addEventListener('touchstart', e => {
+      if (isSessionActive && !isPaused) {
+        // Allow the event but prevent zoom on double-tap within maze
+        if (e.touches.length > 1) {
+          e.preventDefault();
+        }
+      }
     }, { passive: false });
 
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', e => {
-      const now = Date.now();
-      if (now - lastTouchEnd <= 300) e.preventDefault();
-      lastTouchEnd = now;
-    }, false);
-
-    document.addEventListener('touchmove', e => {
-      if (isSessionActive && !isPaused) e.preventDefault();
+    mazeContainer.addEventListener('touchmove', e => {
+      if (isSessionActive && !isPaused) {
+        e.preventDefault();
+      }
     }, { passive: false });
 
-    document.addEventListener('contextmenu', e => e.preventDefault());
+    // Prevent double-tap zoom only on interactive elements
+    let lastTap = 0;
+    document.querySelectorAll('.btn, #player').forEach(el => {
+      el.addEventListener('touchend', e => {
+        const now = Date.now();
+        if (now - lastTap < 300) {
+          e.preventDefault();
+        }
+        lastTap = now;
+      });
+    });
 
-    // Resize/orientation: keep play area sized and reflow maze during sessions
+    // Only prevent context menu on the maze itself
+    mazeContainer.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Resize/orientation
     window.addEventListener('resize', () => {
       if (!isSessionActive) return;
       adjustMazeSize();
